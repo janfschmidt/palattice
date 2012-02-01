@@ -29,8 +29,8 @@ int main (int argc, char *argv[])
   unsigned int fmax_x = 6;     // max Frequency used for magnetic field spectrum (in revolution harmonics)
   unsigned int fmax_z = 6;
   double t = 0.531;    // moment of elsa-cycle (s)
-  char importFile[1024] = "madx-input/elsa_test.orbit";
-  char spurenFolder[1024] = "Spuren/2012-01-24-15-11-27";
+  char importFile[1024] = "../project/madx/elsa_test.orbit";
+  char spurenFolder[1024] = "../project/ELSA-Spuren/2012-01-24-15-11-27";
   bool elsa = true;       // true: orbit, correctors, k & m read from /sgt/elsa/bpm/... 
 
   char filename[1024];

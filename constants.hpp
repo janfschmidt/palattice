@@ -3,7 +3,7 @@
 
 
 /* program options */
-#define OUTPUTFOLDER "output"
+#define OUTPUTFOLDER "../project/inout"
 #define MIN_AMPLITUDE 1e-10  // For smaller Amplitudes in Field Spectrum the phase is set to 0.0
 
 /* Accelerator properties */
