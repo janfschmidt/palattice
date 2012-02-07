@@ -1,5 +1,5 @@
 /* create particle orbit from BPM data  */
-/* 13.01.2012 - J.Schmidt */
+/* 03.02.2012 - J.Schmidt */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,7 +31,6 @@ int getorbit (orbitvec &orbit, double circumference, orbitvec &bpmorbit, int n_s
   double tmp_pos[n_bpm+1], tmp_x[n_bpm+1], tmp_z[n_bpm+1];
 
   struct ORBIT otmp;
-  memset(&otmp, 0, sizeof(struct ORBIT));
 
   for (i=0; i<n_bpm; i++) {
     tmp_pos[i] = bpmorbit[i].pos;

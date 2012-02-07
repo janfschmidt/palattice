@@ -1,7 +1,7 @@
 /* Calculation of the magnetic spectrum (horizontal, vertical) of a periodic accelerator  *
  * Based on MadX output data and (optional for ELSA) on measured orbit and corrector data *
  * Used as input for Simulations of polarization by solving Thomas-BMT equation           *
- * 02.02.2012 - J.Schmidt                                                                 *
+ * 03.02.2012 - J.Schmidt                                                                 *
  */
 
 #include <stdio.h>
@@ -28,7 +28,7 @@ int main (int argc, char *argv[])
   unsigned int n_samp = 16440;   // number of sampling points along ring for magn. field strengths
   unsigned int fmax_x = 6;     // max Frequency used for magnetic field spectrum (in revolution harmonics)
   unsigned int fmax_z = 6;
-  double t = 0.531;    // moment of elsa-cycle (s)
+  double t = 0.552;    // moment of elsa-cycle (s)
   char importFile[1024] = "../project/madx/madx.twiss";
   char spurenFolder[1024] = "../project/ELSA-Spuren/2012-01-24-15-11-27";
   bool elsa = false;       // true: orbit, correctors, k & m read from /sgt/elsa/bpm/... 
@@ -124,6 +124,7 @@ int main (int argc, char *argv[])
   // elsa=true: re-read from ELSA "Spuren": orbit, corrector data, quad-&sext-strengths
   if (elsa) {
     metadata.add("Program Mode", "elsa");
+    metadata.add("Spuren", spurenFolder);
     ELSAimport(ELSAbpms, ELSAvcorrs, quads, sexts, spurenFolder); 
     ELSAimport_getbpmorbit(ELSAbpms, bpmorbit, t);
     ELSAimport_getvcorrs(ELSAvcorrs, vcorrs, t);
