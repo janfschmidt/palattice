@@ -34,28 +34,30 @@ int ELSAimport_magnetstrengths(magnetvec &quads, magnetvec &sexts, char *spurenF
   int i, n;
   char filename[1024];
   string tmp;
-  double x=0, kf=0, kd=0, mf=0, md=0;
+  double kf=0, kd=0, mf=0, md=0;
   fstream f_magnets;
 
  // Read "magnets.dat"
   snprintf(filename, 1024, "%s/magnets.dat", spurenFolder);
   f_magnets.open(filename, ios::in);
   if (!f_magnets.is_open()) {
-    printf("Cannot open %s\n", filename);
+    printf("ERROR: ELSAimport.cpp: Cannot open %s\n", filename);
     return 1;
   }
   while(!f_magnets.eof()) {
-    f_magnets >> tmp >> x;
+    f_magnets >> tmp;
     if (tmp=="ELS_MAGNETE_QUADF.KF_AC")
-      kf = x;
+      f_magnets >> kf;
     else if (tmp=="ELS_MAGNETE_QUADD.KD_AC")
-      kd = x;
+      f_magnets >> kd;
     else if (tmp=="ELS_MAGNETE_SEXTF.MF_AC")
-      mf = x;
+      f_magnets >> mf;
     else if (tmp=="ELS_MAGNETE_SEXTD.MD_AC")
-      md = x;
+      f_magnets >> md;
+    else if (tmp=="#")         //jump over comment lines
+      getline(f_magnets, tmp);
     else
-      printf("unexpected entry in %s\n", filename);
+      printf("ERROR: ELSAimport.cpp: Unexpected entry in %s\n", filename);
   }
   f_magnets.close();
 
