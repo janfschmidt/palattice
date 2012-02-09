@@ -14,7 +14,6 @@
 #include <vector>
 #include "constants.hpp"
 #include "types.hpp"
-#include "gamma.hpp"
 
 using namespace std;
 
