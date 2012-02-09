@@ -17,7 +17,7 @@ using namespace std;
 
 
 
-int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, string tag, bool timetaged)
+int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, char *outputFolder, string tag, bool timetaged)
 {
   int i;
   char filename[1024];
@@ -38,10 +38,10 @@ int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, string tag, bool timet
 
   /* create&open file */
   if (timetaged) {
-    snprintf(filename, 1024, "%s/%s_%s.spectrum", OUTPUTFOLDER, timestamp().c_str(), tag.c_str());
+    snprintf(filename, 1024, "%s/%s_%s.spectrum", outputFolder, timestamp().c_str(), tag.c_str());
   }
   else {
-    snprintf(filename, 1024, "%s/%s.spectrum", OUTPUTFOLDER, tag.c_str());
+    snprintf(filename, 1024, "%s/%s.spectrum", outputFolder, tag.c_str());
   }
   file.open(filename, ios::out);
   if (!file.is_open()) {

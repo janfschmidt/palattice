@@ -31,6 +31,7 @@ int main (int argc, char *argv[])
   double t = 0.552;    // moment of elsa-cycle (s)
   char importFile[1024] = "../project/madx/madx.twiss";
   char spurenFolder[1024] = "../project/ELSA-Spuren/2012-01-24-15-11-27";
+  char outputFolder[1024] = "../project/inout";
   bool elsa = false;       // true: orbit, correctors, k & m read from /sgt/elsa/bpm/... 
 
   char filename[1024];
@@ -147,28 +148,28 @@ int main (int argc, char *argv[])
 
   if (elsa) {
     //BPM data
-    snprintf(filename, 1024, "%s/elsabpms.dat", OUTPUTFOLDER);
+    snprintf(filename, 1024, "%s/elsabpms.dat", outputFolder);
     bpms_out(ELSAbpms, t, filename);
     //corrector data
-    snprintf(filename, 1024, "%s/elsacorrs.dat", OUTPUTFOLDER);
+    snprintf(filename, 1024, "%s/elsacorrs.dat", outputFolder);
     corrs_out(ELSAvcorrs, t, filename);
   }
   //orbit data (interpolated BPMs)
-  snprintf(filename, 1024, "%s/orbit.dat", OUTPUTFOLDER);
+  snprintf(filename, 1024, "%s/orbit.dat", outputFolder);
   orbit_out(orbit, filename);
   //field data
-  snprintf(filename, 1024, "%s/fields.dat", OUTPUTFOLDER);
+  snprintf(filename, 1024, "%s/fields.dat", outputFolder);
   fields_out(B, n_samp, filename);
   //evaluated field data
-  snprintf(filename, 1024, "%s/eval.dat", OUTPUTFOLDER);
+  snprintf(filename, 1024, "%s/eval.dat", outputFolder);
   eval_out(bx, bz, fmax_x, fmax_z, n_samp, circumference, filename);
   //export spectrum files for polarization-calculation
-  //exportfile(bx, fmax_x, metadata, "horizontal", true);
-  exportfile(bx, fmax_x, metadata, "horizontal", false); // file without timestamp (false)
-  //exportfile(bz, fmax_z, metadata, "vertical", true);
-  exportfile(bz, fmax_z, metadata, "vertical", false);   // file without timestamp (false)
+  //exportfile(bx, fmax_x, metadata, outputFolder, "horizontal", true);
+  exportfile(bx, fmax_x, metadata, outputFolder, "horizontal", false); // file without timestamp (false)
+  //exportfile(bz, fmax_z, metadata, outputFolder, "vertical", true);
+  exportfile(bz, fmax_z, metadata, outputFolder, "vertical", false);   // file without timestamp (false)
   
-  cout << "Finished. (Run inout/Bsupply.gp for plots)" << endl << endl;
+  cout << "Finished. (Run "<<outputFolder<<"/Bsupply.gp for plots)" << endl << endl;
   
 
   return 0;

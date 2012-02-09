@@ -3,7 +3,7 @@
 
 #include "metadata.hpp"
 
-int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, string tag, bool timetaged);
+int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, char *outputFolder, string tag, bool timetaged);
 
 int columnwidth(METADATA metadata);
 
