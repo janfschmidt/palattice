@@ -28,7 +28,7 @@ int main (int argc, char *argv[])
   unsigned int n_samp = 16440;   // number of sampling points along ring for magn. field strengths
   unsigned int fmax_x = 6;     // max Frequency used for magnetic field spectrum (in revolution harmonics)
   unsigned int fmax_z = 6;
-  double t = 0.552;    // moment of elsa-cycle (s)
+  double t = 0.55;    // moment of elsa-cycle (s)
   char importFile[1024] = "../project/madx/madx.twiss";
   char spurenFolder[1024] = "../project/ELSA-Spuren/2012-01-24-15-11-27";
   char outputFolder[1024] = "../project/inout";
@@ -36,6 +36,7 @@ int main (int argc, char *argv[])
 
   char filename[1024];
   string tmp;
+  char ctmp[10];
   double circumference=0;
   BPM ELSAbpms[NBPMS];         //ELSAbpms[0]=BPM01, ELSAbpms[31]=BPM32
   CORR ELSAvcorrs[NVCORRS];    //ELSAvcorrs[0]=VC01, ELSAvcorrs[31]=VC32
@@ -99,7 +100,6 @@ int main (int argc, char *argv[])
   char madxLabels[100];
   snprintf(madxLabels, 100, "TITLE,LENGTH,ORIGIN,PARTICLE");
   metadata.madximport(madxLabels, importFile);
-  metadata.add("personal message", "juchu, es klappt :-)");
   tmp = metadata.getbyLabel("LENGTH");
   if (tmp == "NA") {
     cout << "ERROR: cannot read accelerator circumference from MadX file." << endl;
@@ -126,6 +126,8 @@ int main (int argc, char *argv[])
   if (elsa) {
     metadata.add("Program Mode", "elsa");
     metadata.add("Spuren", spurenFolder);
+    snprintf(ctmp, 10, "%.3lf s", t);
+    metadata.add("Zeitpunkt Zyklus", ctmp);
     ELSAimport(ELSAbpms, ELSAvcorrs, quads, sexts, spurenFolder); 
     ELSAimport_getbpmorbit(ELSAbpms, bpmorbit, t);
     ELSAimport_getvcorrs(ELSAvcorrs, vcorrs, t);

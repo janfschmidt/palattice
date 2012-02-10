@@ -20,5 +20,8 @@ ELSAimport.o: ELSAimport.cpp constants.hpp types.hpp
 metadata.o: metadata.cpp
 	g++ $(cflags) -c metadata.cpp
 
+strom2kick: strom2kick.c
+	gcc $(cflags) -lm strom2kick.c -o strom2kick
+
 clean: 
-	rm Bsupply main.o getorbit.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o
+	rm Bsupply main.o getorbit.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o strom2kick
