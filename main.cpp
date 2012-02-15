@@ -1,7 +1,7 @@
 /* Calculation of the magnetic spectrum (horizontal, vertical) of a periodic accelerator  *
  * Based on MadX output data and (optional for ELSA) on measured orbit and corrector data *
  * Used as input for Simulations of polarization by solving Thomas-BMT equation           *
- * 03.02.2012 - J.Schmidt                                                                 *
+ * 15.02.2012 - J.Schmidt                                                                 *
  */
 
 #include <stdio.h>
@@ -29,12 +29,13 @@ int main (int argc, char *argv[])
   unsigned int fmax_x = 6;     // max Frequency used for magnetic field spectrum (in revolution harmonics)
   unsigned int fmax_z = 6;
   double t = 0.55;    // moment of elsa-cycle (s)
-  char importFile[1024] = "../project/madx/madx.twiss";
-  char spurenFolder[1024] = "../project/ELSA-Spuren/2012-01-24-15-11-27";
-  char outputFolder[1024] = "../project/inout";
-  bool elsa = false;       // true: orbit, correctors, k & m read from /sgt/elsa/bpm/... 
+  bool elsa = false;       // true: orbit, correctors, k & m read from /sgt/elsa/bpm/...
+  char spuren[20] = "2011-03-01-18-18-59";
 
   char filename[1024];
+  char importFile[1024];
+  char spurenFolder[1024];
+  char outputFolder[1024];
   string tmp;
   char ctmp[10];
   double circumference=0;
@@ -63,41 +64,47 @@ int main (int argc, char *argv[])
 
 
   // read input-arguments
-  if (argc>1) {
-    if (strcmp(argv[1], "-madx")==0) {
-      elsa = false;
-      if (argc==3) {
-	strncpy(importFile, argv[2], 1024);
+  if(argc>1) {
+    snprintf(importFile, 1024, "%s/madx/madx.twiss", argv[1]);
+    snprintf(outputFolder, 1024, "%s/inout", argv[1]);
+    if(argc>2) {
+      if (strcmp(argv[2], "-madx")==0) {
+	elsa = false;
+	if (argc>3) {
+	  cout << "ERROR: -madx has no additional arguments." << endl;
+	  return 1;
+	}
       }
-      else if (argc>3) {
-	cout << "ERROR: use -madx path_of_madxfile" << endl;
+      else if (strcmp(argv[2], "-elsa")==0) {
+	elsa = true;
+	if (argc==3) {
+	  cout << endl << "WARNING: default Spuren "<< spuren << " used." << endl;
+	}
+	else if (argc==4) {
+	  strncpy(spuren, argv[3], 20);
+	}
+	else if(argc>4){
+	  cout << "ERROR: Too many arguments for -elsa." << endl << "Try e.g. -elsa 2012-01-24-15-11-27" << endl;
+	  return 1;
+	}
+	snprintf(spurenFolder, 1024, "%s/ELSA-Spuren/%s", argv[1], spuren);
+      }
+      else {
+	cout << "ERROR: Second argument sets mode: -elsa or -madx" << endl;
 	return 1;
       }
     }
-    else if (strcmp(argv[1], "-elsa")==0) {
-      elsa = true;
-      if (argc==3) {
-	strncpy(spurenFolder, argv[2], 1024);
-      }
-      else if (argc==4) {
-	strncpy(spurenFolder, argv[2], 1024);
-	strncpy(importFile, argv[3], 1024);
-      }
-      else if (argc>4) {
-	cout << "ERROR: use -elsa path_of_spuren [path_of_madxfile]" << endl;
-	return 1;
-      }
-    }
-    else {
-      cout << "First argument sets mode: -elsa or -madx" << endl;
-      return 1;
-    }
+  }
+  else {
+    cout << "Please enter project path as first argument." << endl;
+    return 1;
   }
 
 
   //metadata for spectrum files
   METADATA metadata;
   char madxLabels[100];
+  metadata.add("Project path", argv[1]);
   snprintf(madxLabels, 100, "TITLE,LENGTH,ORIGIN,PARTICLE");
   metadata.madximport(madxLabels, importFile);
   tmp = metadata.getbyLabel("LENGTH");
@@ -125,9 +132,9 @@ int main (int argc, char *argv[])
   // elsa=true: re-read from ELSA "Spuren": orbit, corrector data, quad-&sext-strengths
   if (elsa) {
     metadata.add("Program Mode", "elsa");
-    metadata.add("Spuren", spurenFolder);
+    metadata.add("Spuren", spuren);
     snprintf(ctmp, 10, "%.3lf s", t);
-    metadata.add("Zeitpunkt Zyklus", ctmp);
+    metadata.add("Time in cycle", ctmp);
     ELSAimport(ELSAbpms, ELSAvcorrs, quads, sexts, spurenFolder); 
     ELSAimport_getbpmorbit(ELSAbpms, bpmorbit, t);
     ELSAimport_getvcorrs(ELSAvcorrs, vcorrs, t);
