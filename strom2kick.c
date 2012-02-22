@@ -21,7 +21,7 @@ int run(const char *path, const int schleppfehler, const int t_rdownstart, const
 int readfile(char *filename, float *array, int length);
 
 
-int main()
+int main(int argc, char *argv[])
 {
   int choice = 9;
   int loop = 1;
@@ -34,7 +34,13 @@ int main()
   int t_rdownstart = 4000;    //ms
   float rdownspeed = -0.004007;  //GeV/ms
 
-  //menu
+  //direct run with path as argument
+  if(argc==2) {
+    run(argv[1], schleppfehler, t_rdownstart, rdownspeed);
+    return 0;
+  }
+
+  //menu (if executed without argument)
   while(loop == 1)
     {
       printf("---------strom2kick---------\n");

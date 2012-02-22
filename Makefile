@@ -1,5 +1,8 @@
 cflags = -Wall -g -O0 #last 2 for valgrind
 
+all: Bsupply strom2kick
+.PHONY: all
+
 Bsupply: main.o getorbit.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o
 	g++ $(cflags) -lgsl -lgslcblas -lm -o Bsupply main.o getorbit.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o
 
