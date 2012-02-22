@@ -2,8 +2,8 @@
  * Calculate vertical corrector-kickangles from currents saved with "Spuren"
  * This function was added to /sgt/ccs/apl/bpms/read_traces.cc in Jan. 2012
  * Older "Spuren" get these additional files by use of this program.
- * compile with "make strom2kick"
- * 09.02.2012 - J.Schmidt
+ * compile with "make" or "make strom2kick"
+ * 22.02.2012 - J.Schmidt
  */
 
 #include <stdio.h>
