@@ -1,7 +1,7 @@
 /* Calculation of the magnetic spectrum (horizontal, vertical) of a periodic accelerator  *
  * Based on MadX output data and (optional for ELSA) on measured orbit and corrector data *
  * Used as input for Simulations of polarization by solving Thomas-BMT equation           *
- * 15.02.2012 - J.Schmidt                                                                 *
+ * 06.03.2012 - J.Schmidt                                                                 *
  */
 
 #include <stdio.h>
@@ -26,9 +26,9 @@ using namespace std;
 int main (int argc, char *argv[])
 {
   unsigned int n_samp = 16440;   // number of sampling points along ring for magn. field strengths
-  unsigned int fmax_x = 6;     // max Frequency used for magnetic field spectrum (in revolution harmonics)
-  unsigned int fmax_z = 6;
-  double t = 0.55;    // moment of elsa-cycle (s)
+  unsigned int fmax_x = 1000;     // max Frequency used for magnetic field spectrum (in revolution harmonics)
+  unsigned int fmax_z = 1000;
+  double t = 0.530;    // moment of elsa-cycle (s)
   bool elsa = false;       // true: orbit, correctors, k & m read from /sgt/elsa/bpm/...
   char spuren[20] = "2011-03-01-18-18-59";
 
@@ -52,17 +52,6 @@ int main (int argc, char *argv[])
   SPECTRUM bz[fmax_z+1];
 
 
-  // check input
-  if (fmax_x >= n_samp/2 || fmax_z >= n_samp/2) {
-    cout << "ERROR: The maximum frequency is to large to be calculated with "<<n_samp<<" sampling points." << endl;
-    return 1;
-  }
-  if (t < 0.0) {
-    cout << "ERROR: t = "<<t<<" < 0 is no valid moment of ELSA cycle." << endl;
-    return 1;
-  }
-
-
   // read input-arguments
   if(argc>1) {
     snprintf(importFile, 1024, "%s/madx/madx.twiss", argv[1]);
@@ -80,11 +69,17 @@ int main (int argc, char *argv[])
 	if (argc==3) {
 	  cout << endl << "WARNING: default Spuren "<< spuren << " used." << endl;
 	}
-	else if (argc==4) {
+	else if (argc>=4 && argc<=6) {
 	  strncpy(spuren, argv[3], 20);
+	  if (argc==5 || argc==6) {
+	    t = strtod(argv[4], NULL);
+	  }
+	  if (argc==6) {
+	    fmax_x = fmax_z = atoi(argv[5]);
+	  }
 	}
-	else if(argc>4){
-	  cout << "ERROR: Too many arguments for -elsa." << endl << "Try e.g. -elsa 2012-01-24-15-11-27" << endl;
+	else {
+	  cout << "ERROR: Too many arguments for -elsa." << endl << "Try e.g. -elsa [spur] [t] [fmax]" << endl;
 	  return 1;
 	}
 	snprintf(spurenFolder, 1024, "%s/ELSA-Spuren/%s", argv[1], spuren);
@@ -97,6 +92,17 @@ int main (int argc, char *argv[])
   }
   else {
     cout << "Please enter project path as first argument." << endl;
+    return 1;
+  }
+
+
+  // check input
+  if (fmax_x >= n_samp/2 || fmax_z >= n_samp/2) {
+    cout << "ERROR: The maximum frequency is to large to be calculated with "<<n_samp<<" sampling points." << endl;
+    return 1;
+  }
+  if (t < 0.0) {
+    cout << "ERROR: t = "<<t<<" < 0 is no valid moment of ELSA cycle." << endl;
     return 1;
   }
 
@@ -122,7 +128,8 @@ int main (int argc, char *argv[])
   cout << "--------------------------------------------" << endl;
   cout << "Bsupply: calculate magnetic field & spectrum" << endl;
   cout << "--------------------------------------------" << endl;
-  cout << "* "<<n_samp<<" sampling points along ELSA ring" << endl;
+  cout << "* "<<n_samp<<" sampling points along ring" << endl;
+  if (elsa) cout << "* "<<t<<" s after start of ELSA cycle" << endl;
   cout << "* maximum frequencies used for B-field evaluation: Bx:"<<fmax_x<<", Bz:"<<fmax_z << endl;
 
 
