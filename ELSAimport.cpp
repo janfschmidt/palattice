@@ -1,5 +1,5 @@
 /* Read data from ELSA CCS, /sgt and ELSA MadX Lattice: element positions, bpm- & magnet-data, ... */
-/* 27.01.2012 - J.Schmidt */
+/* 07.03.2012 - J.Schmidt */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,9 +17,9 @@ using namespace std;
 
 
 /* read ELSA data */
-int ELSAimport(BPM *ELSAbpms, CORR *ELSAvcorrs, magnetvec &quads, magnetvec &sexts, char *spurenFolder)
+int ELSAimport(BPM *ELSAbpms, CORR *ELSAvcorrs, char *spurenFolder)
 {
-  ELSAimport_magnetstrengths(quads, sexts, spurenFolder);
+  
   ELSAimport_bpms(ELSAbpms, spurenFolder);
   ELSAimport_vcorrs(ELSAvcorrs, spurenFolder);
 
@@ -209,12 +209,11 @@ int ELSAimport_vcorrs(CORR *ELSAvcorrs, char *spurenFolder)
 
 /* write corrector data for time t to vcorrs
   !vcorrs must be read from madx before to get length! */
-int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, double t)
+int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, double corrlength, double t)
 {
   int i;
   MAGNET mtmp;
   char name[20];
-  double corrlength;
 
   unsigned int t_ms = (int)floor(t*1000+0.5); // moment of cycle in ms (int) from input time t in s (double)
   if (t_ms > ELSAvcorrs[1].time.size()) {  //ELSAvcorrs[1] chosen, all have same .size()
@@ -222,7 +221,6 @@ int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, double t)
     return 1;
   }
   
-  corrlength = vcorrs[1].end-vcorrs[1].start; //save corrector length. vcorrs[1] chosen, all have equal length
   vcorrs.clear(); //delete old corrector-data (from madx or previous t)
 
   for (i=0; i<NVCORRS; i++) {
@@ -244,23 +242,22 @@ int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, double t)
 
 
 /* create output file with BPM data */
-int bpms_out(BPM *ELSAbpms, double t, char *filename)
+int bpms_out(orbitvec bpmorbit, char *filename)
 {
- int i=0;
+ unsigned int i=0;
  int w=10;
- int t_ms = (int)floor(t*1000+0.5); /* moment of cycle in ms (int) from input time t in s (double) */
  fstream file;
  
  file.open(filename, ios::out);
  if (!file.is_open()) {
-   cout << "ERROR: Cannot open " << filename << "." << endl;
+   cout << "ERROR: bpms_out: Cannot open " << filename << "." << endl;
    return 1;
  }
  
  file <<setw(w)<< "s [m]" <<setw(w)<< "x [mm]" <<setw(w)<< "z [mm]" << endl;
- for (i=0; i<NBPMS; i++) {
+ for (i=0; i<bpmorbit.size(); i++) {
    file <<setiosflags(ios::fixed)<<showpoint<<setprecision(3);
-   file <<setw(w)<< ELSAbpms[i].pos <<setw(w)<< ELSAbpms[i].time[t_ms].x <<setw(w)<< ELSAbpms[i].time[t_ms].z << endl;
+   file <<setw(w)<< bpmorbit[i].pos <<setw(w)<< bpmorbit[i].x*1000 <<setw(w)<< bpmorbit[i].z*1000 << endl;
  }
  file.close();
  cout << "Wrote " << filename  << endl;
@@ -272,23 +269,22 @@ int bpms_out(BPM *ELSAbpms, double t, char *filename)
 
 
 /* create output file with corrector data */
-int corrs_out(CORR *ELSAvcorrs, double t, char *filename)
+int corrs_out(magnetvec vcorrs, char *filename)
 {
- int i=0;
- int w=12;
- int t_ms = (int)floor(t*1000+0.5); /* moment of cycle in ms (int) from input time t in s (double) */
+ unsigned int i=0;
+ int w=14;
  fstream file;
  
  file.open(filename, ios::out);
  if (!file.is_open()) {
-   cout << "ERROR: Cannot open " << filename << "." << endl;
+   cout << "ERROR: corrs_out: Cannot open " << filename << "." << endl;
    return 1;
  }
  
- file <<setw(w)<< "s[m]" <<setw(w)<< "kick[mrad]" << endl;
- for (i=0; i<NVCORRS; i++) {
+ file <<setw(w)<< "s[m](start)" <<setw(w)<< "strength[1/m]" << endl;
+ for (i=0; i<vcorrs.size(); i++) {
    file <<setiosflags(ios::scientific)<<showpoint<<setprecision(3);
-   file <<setw(w)<< ELSAvcorrs[i].pos <<setw(w)<< ELSAvcorrs[i].time[t_ms].kick << endl;
+   file <<setw(w)<< vcorrs[i].start <<setw(w)<< vcorrs[i].strength << endl;
  }
  file.close();
  cout << "Wrote " << filename  << endl;

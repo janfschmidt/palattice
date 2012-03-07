@@ -1,5 +1,5 @@
 /* Create export file of magnetic field spectrum as readin for Polarization simulation (Olli) */
-/* 27.01.2012 - J.Schmidt */
+/* 07.03.2012 - J.Schmidt */
 
 #include <fstream>
 #include <iostream>
@@ -17,7 +17,7 @@ using namespace std;
 
 
 
-int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, char *outputFolder, string tag, bool timetaged)
+int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, char *outputFolder, char *difftag, string tag, bool timetaged)
 {
   int i;
   char filename[1024];
@@ -38,10 +38,10 @@ int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, char *outputFolder, st
 
   /* create&open file */
   if (timetaged) {
-    snprintf(filename, 1024, "%s/%s_%s.spectrum", outputFolder, timestamp().c_str(), tag.c_str());
+    snprintf(filename, 1024, "%s/%s_%s%s.spectrum", outputFolder, timestamp().c_str(), tag.c_str(), difftag);
   }
   else {
-    snprintf(filename, 1024, "%s/%s.spectrum", outputFolder, tag.c_str());
+    snprintf(filename, 1024, "%s/%s%s.spectrum", outputFolder, tag.c_str(), difftag);
   }
   file.open(filename, ios::out);
   if (!file.is_open()) {
