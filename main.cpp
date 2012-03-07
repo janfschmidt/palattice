@@ -21,6 +21,7 @@
 #include "madximport.hpp"
 #include "ELSAimport.hpp"
 #include "metadata.hpp"
+#include "difference.hpp"
 
 using namespace std;
 
@@ -34,7 +35,6 @@ int main (int argc, char *argv[])
   bool diff = false;            // true: "harmcorr mode", calculate difference of two "Spuren"...
   char spuren[20] = "2011-03-01-18-18-59";
   char Ref_spuren[20];
-  char difftag[6] = "";
 
   char filename[1024];
   char importFile[1024];
@@ -55,12 +55,12 @@ int main (int argc, char *argv[])
   FIELD B[n_samp];             // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
   SPECTRUM bx[fmax_x+1];       // magnetic spectrum (amplitudes & phases) up to fmax
   SPECTRUM bz[fmax_z+1];
+  double corrlength;
+  char difftag[6] = "";
 
   int opt, warnflg=0;          //for getopt()
   extern char *optarg;
   extern int optopt, optind;
-  unsigned int i;
-  double corrlength;
 
 
   // read input arguments
@@ -85,12 +85,6 @@ int main (int argc, char *argv[])
     case 'f':
       fmax_x = fmax_z = atoi(optarg);
       break;
-    case ':':
-      cout << "ERROR: -" << (char)optopt << " without argument." << endl;
-      return 1;
-    case '?':
-      cout << "ERROR: unknown option -" << (char)optopt << "." << endl;
-      return 1;
     case 'd':
       if (!elsa) warnflg++;
       diff = true;
@@ -104,9 +98,15 @@ int main (int argc, char *argv[])
       cout << "* -e [spuren] enables ELSA-mode, Spuren as argument (path: [project]/ELSA-Spuren/) " << endl;
       cout << "* -f [fmax] sets maximum frequency for B-Field spectrum output" << endl;
       cout << "* -t [time] sets time of ELSA cycle to evaluate BPMs and correctors (in sec.)" << endl;
-      cout << "* -d [refspuren] enables difference-mode, where refspuren are subtracted from spuren set with -e to analyse harmonic corrections"  << endl;
+      cout << "* -d [refspuren] enables difference-mode, where refspuren are subtracted from spuren set with -e to analyse harmcorr"  << endl;
       cout << "* -h displays this help" << endl << endl;
       return 0;
+    case ':':
+      cout << "ERROR: -" << (char)optopt << " without argument. Use -h for help." << endl;
+      return 1;
+    case '?':
+      cout << "ERROR: unknown option -" << (char)optopt << "." << endl;
+      return 1;
     }
   }
 
@@ -181,44 +181,9 @@ int main (int argc, char *argv[])
   }
 
 
-  //diff=true: additionaly read reference orbit & corrector data
+  //diff=true: read and subtract reference orbit & corrector data
   if (diff) {
-    BPM Ref_ELSAbpms[NBPMS];
-    CORR Ref_ELSAvcorrs[NVCORRS];
-    orbitvec Ref_bpmorbit;
-    magnetvec Ref_vcorrs;
-    ELSAimport(Ref_ELSAbpms, Ref_ELSAvcorrs, Ref_spurenFolder); 
-    ELSAimport_getbpmorbit(Ref_ELSAbpms, Ref_bpmorbit, t);
-    ELSAimport_getvcorrs(Ref_ELSAvcorrs, Ref_vcorrs, corrlength, t);
-    cout << "* "<<vcorrs.size()<<" correctors and "
-	 <<bpmorbit.size()<<" BPMs read from "<<Ref_spurenFolder << endl;
-    if (bpmorbit.size() != Ref_bpmorbit.size()) {
-      cout << "ERROR: main: Unequal number of BPMs in "<<spuren<<" and "<<Ref_spuren<< endl;
-      return 1;
-    }
-    for (i=0; i<bpmorbit.size(); i++) {
-      if (bpmorbit[i].pos==Ref_bpmorbit[i].pos) {
-	bpmorbit[i].x -= Ref_bpmorbit[i].x;
-	bpmorbit[i].z -= Ref_bpmorbit[i].z;
-      }
-      else {
-	cout << "ERROR: main: "<<i<<". BPM position is not equal in "<<spuren<<" and "<<Ref_spuren<< endl;
-	return 1;
-      }
-    }
-    if (vcorrs.size() != Ref_vcorrs.size()) {
-      cout << "ERROR: main: Unequal number of VCs in "<<spuren<<" and "<<Ref_spuren<< endl;
-      return 1;
-    }
-    for (i=0; i<vcorrs.size(); i++) {
-      if (vcorrs[i].start==Ref_vcorrs[i].start) {
-	vcorrs[i].strength -= Ref_vcorrs[i].strength;
-      }
-      else {
-	cout << "ERROR: main: "<<i<<". VC position is not equal in "<<spuren<<" and "<<Ref_spuren<< endl;
-	return 1;
-      }
-    }
+    if (difference(Ref_spurenFolder, spuren, Ref_spuren, t, corrlength, bpmorbit, vcorrs) != 0) return 1;
   }
 
 
@@ -238,6 +203,11 @@ int main (int argc, char *argv[])
     //corrector data
     snprintf(filename, 1024, "%s/elsacorrs%s.dat", outputFolder, difftag);
     corrs_out(vcorrs, filename);
+    if (diff) {
+      //harmcorr data
+      snprintf(filename, 1024, "%s/harmcorr%s.dat", outputFolder, difftag);
+      harmcorr_out(vcorrs, dipols, filename);
+    }
   }
   //orbit data (interpolated BPMs)
   snprintf(filename, 1024, "%s/orbit%s.dat", outputFolder, difftag);

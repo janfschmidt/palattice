@@ -3,10 +3,10 @@ cflags = -Wall -g -O0 #last 2 for valgrind
 all: Bsupply strom2kick
 .PHONY: all
 
-Bsupply: main.o getorbit.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o
-	g++ $(cflags) -lgsl -lgslcblas -lm -o Bsupply main.o getorbit.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o
+Bsupply: main.o getorbit.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o difference.o
+	g++ $(cflags) -lgsl -lgslcblas -lm -o Bsupply main.o getorbit.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o difference.o
 
-main.o: main.cpp constants.hpp types.hpp getorbit.hpp getfields.hpp exportfile.hpp madximport.hpp metadata.hpp
+main.o: main.cpp constants.hpp types.hpp getorbit.hpp getfields.hpp exportfile.hpp madximport.hpp metadata.hpp difference.hpp
 	g++ $(cflags) -c main.cpp
 getorbit.o: getorbit.cpp constants.hpp types.hpp
 	g++ $(cflags) -c getorbit.cpp
@@ -22,9 +22,11 @@ ELSAimport.o: ELSAimport.cpp constants.hpp types.hpp
 	g++ $(cflags) -c ELSAimport.cpp
 metadata.o: metadata.cpp
 	g++ $(cflags) -c metadata.cpp
+difference.o: difference.cpp constants.hpp types.hpp ELSAimport.hpp
+	g++ $(cflags) -c difference.cpp
 
 strom2kick: strom2kick.c
 	gcc $(cflags) -lm strom2kick.c -o strom2kick
 
 clean: 
-	rm Bsupply main.o getorbit.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o strom2kick
+	rm Bsupply main.o getorbit.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o difference.o strom2kick
