@@ -1,5 +1,5 @@
 /* difference-mode for harmcorr analysis */
-/* 07.03.2012 - J. Schmidt */
+/* 08.03.2012 - J. Schmidt */
 
 #include <stdio.h>
 #include <iostream>
@@ -70,7 +70,8 @@ int harmcorr_out(magnetvec vcorrs, magnetvec dipols, char *filename)
 {
   unsigned int i=0,j=0;
  int w=14;
- unsigned int n = dipols.size();
+ unsigned int nd = dipols.size();
+ unsigned int nc = vcorrs.size();
  double tmp=0;
  fstream file;
  
@@ -81,15 +82,15 @@ int harmcorr_out(magnetvec vcorrs, magnetvec dipols, char *filename)
  }
  
  file <<setw(w)<< "dipol interval" <<setw(w)<< "strength[1/m]" << endl;
- for (i=0; i<=n; i++) {
-   if (i<n) {
-     while(vcorrs[j].start < dipols[i].start) {
+ for (i=0; i<=nd; i++) {
+   if (i<nd) {
+     while(vcorrs[j].start < dipols[i].start && j < nc) {
        tmp += vcorrs[j].strength;
        j++;
      }
    }
-   else if (i==n) {
-     while (j<vcorrs.size()) {
+   else if (i==nd) {
+     while (j<nc) {
        tmp += vcorrs[j].strength;
        j++;
      }
