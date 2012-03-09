@@ -1,7 +1,7 @@
 /* Calculation of the magnetic spectrum (horizontal, vertical) of a periodic accelerator  *
  * Based on MadX output data and (optional for ELSA) on measured orbit and corrector data *
  * Used as input for Simulations of polarization by solving Thomas-BMT equation           *
- * 07.03.2012 - J.Schmidt                                                                 *
+ * 09.03.2012 - J.Schmidt                                                                 *
  */
 
 #include <stdio.h>
@@ -53,8 +53,6 @@ int main (int argc, char *argv[])
   orbitvec bpmorbit;           // orbit at discrete positions (e.g. BPMs) for a specific time in elsa-cycle
   orbitvec orbit;              // orbit interpolated from bpmorbit with n_samp sampling points
   FIELD B[n_samp];             // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
-  SPECTRUM bx[fmax_x+1];       // magnetic spectrum (amplitudes & phases) up to fmax
-  SPECTRUM bz[fmax_z+1];
   double corrlength;
   char difftag[6] = "";
 
@@ -83,7 +81,8 @@ int main (int argc, char *argv[])
       t = strtod(optarg, NULL);
       break;
     case 'f':
-      fmax_x = fmax_z = atoi(optarg);
+      fmax_x = atoi(optarg);
+      fmax_z = atoi(optarg);
       break;
     case 'd':
       if (!elsa) warnflg++;
@@ -121,6 +120,11 @@ int main (int argc, char *argv[])
     cout << "ERROR: t = "<<t<<" < 0 is no valid moment of ELSA cycle." << endl;
     return 1;
   }
+
+
+  // magnetic spectrum (amplitudes & phases) up to fmax
+  SPECTRUM bx[fmax_x+1];
+  SPECTRUM bz[fmax_z+1];
 
 
   //metadata for spectrum files
