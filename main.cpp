@@ -44,8 +44,7 @@ int main (int argc, char *argv[])
   char Ref_spurenFolder[1024];
   char outputFolder[1024];
   string tmp;
-  stringstream tmpstream;
-  string t_str;
+  char t_str[10];
   double circumference=0;
   BPM ELSAbpms[NBPMS];         // ELSAbpms[0]=BPM01, ELSAbpms[31]=BPM32
   CORR ELSAvcorrs[NVCORRS];    // ELSAvcorrs[0]=VC01, ELSAvcorrs[31]=VC32
@@ -58,6 +57,7 @@ int main (int argc, char *argv[])
   FIELD *B = new FIELD[n_samp]; // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
   double corrlength;
   char difftag[6] = "";
+  char timetag[10] = "";
 
   int opt, warnflg=0;          //for getopt()
   extern char *optarg;
@@ -146,6 +146,17 @@ int main (int argc, char *argv[])
   metadata.add("Project path", argv[1]);
   snprintf(madxLabels, 100, "TITLE,LENGTH,ORIGIN,PARTICLE");
   metadata.madximport(madxLabels, importFile);
+  if (elsa) {
+    if (diff) { metadata.add("Program Mode", "elsa + difference"); }
+    else      { metadata.add("Program Mode", "elsa"); }
+    metadata.add("Spuren", spuren);
+    if (diff) { metadata.add("Referenz-Spuren", Ref_spuren); }
+    snprintf(t_str, 10, "%d ms", t);
+    metadata.add("Time in cycle", t_str);
+  }
+  else {
+    metadata.add("Program Mode", "madx");
+  }
   tmp = metadata.getbyLabel("LENGTH");
   if (tmp == "NA") {
     cout << "ERROR: metadata: cannot read accelerator circumference from "<< importFile << endl;
@@ -175,13 +186,6 @@ int main (int argc, char *argv[])
 
   // elsa=true: re-read from ELSA "Spuren": orbit, corrector data, quad-&sext-strengths
   if (elsa) {
-    if (diff) { metadata.add("Program Mode", "elsa + difference"); }
-    else      { metadata.add("Program Mode", "elsa"); }
-    metadata.add("Spuren", spuren);
-    if (diff) { metadata.add("Referenz-Spuren", Ref_spuren); }
-    tmpstream << t;                                                // convert int to string
-    t_str = tmpstream.str();
-    metadata.add("Time in cycle", t_str+" ms");
     ELSAimport_magnetstrengths(quads, sexts, spurenFolder);
     ELSAimport(ELSAbpms, ELSAvcorrs, spurenFolder); 
     ELSAimport_getbpmorbit(ELSAbpms, bpmorbit, t);
@@ -192,7 +196,6 @@ int main (int argc, char *argv[])
 	 <<bpmorbit.size()<<" BPMs read from "<<spurenFolder << endl;
   }
   else {
-    metadata.add("Program Mode", "madx");
     cout << "* "<<dipols.size()<<" dipoles, "<<quads.size()<<" quadrupoles, "
 	 <<sexts.size()<<" sextupoles, "<<vcorrs.size()<<" correctors and "
 	 <<bpmorbit.size()<<" BPMs read from "<<importFile << endl;
@@ -212,36 +215,37 @@ int main (int argc, char *argv[])
 
 
   // generate output files
+  if (elsa && multi) { snprintf(timetag, 10, "_%dms", t); }
   cout << "Write output files:" << endl;
 
   if (elsa) {
     //BPM data
-    snprintf(filename, 1024, "%s/elsabpms%s.dat", outputFolder, difftag);
+    snprintf(filename, 1024, "%s/elsabpms%s%s.dat", outputFolder, timetag, difftag);
     bpms_out(bpmorbit, filename);
     //corrector data
-    snprintf(filename, 1024, "%s/elsacorrs%s.dat", outputFolder, difftag);
+    snprintf(filename, 1024, "%s/elsacorrs%s%s.dat", outputFolder, timetag, difftag);
     corrs_out(vcorrs, filename);
     if (diff) {
       //harmcorr data
-      snprintf(filename, 1024, "%s/harmcorr%s.dat", outputFolder, difftag);
+      snprintf(filename, 1024, "%s/harmcorr%s%s.dat", outputFolder, timetag, difftag);
       harmcorr_out(vcorrs, dipols, filename);
     }
   }
+
   //orbit data (interpolated BPMs)
-  snprintf(filename, 1024, "%s/orbit%s.dat", outputFolder, difftag);
+  snprintf(filename, 1024, "%s/orbit%s%s.dat", outputFolder, timetag, difftag);
   orbit_out(orbit, filename);
   //field data
-  snprintf(filename, 1024, "%s/fields%s.dat", outputFolder, difftag);
+  snprintf(filename, 1024, "%s/fields%s%s.dat", outputFolder, timetag, difftag);
   fields_out(B, n_samp, filename);
   //evaluated field data
-  snprintf(filename, 1024, "%s/eval%s.dat", outputFolder, difftag);
+  snprintf(filename, 1024, "%s/eval%s%s.dat", outputFolder, timetag, difftag);
   eval_out(bx, bz, fmax_x, fmax_z, n_samp, circumference, filename);
+
   //export spectrum files for polarization-calculation
-  if (elsa && multi) snprintf(filename, 1024, "%s/horizontal_%sms%s.spectrum", outputFolder, t_str.c_str(), difftag);
-  else               snprintf(filename, 1024, "%s/horizontal%s.spectrum", outputFolder, difftag);
+  snprintf(filename, 1024, "%s/horizontal%s%s.spectrum", outputFolder, timetag, difftag);
   exportfile(bx, fmax_x, metadata, "horizontal", filename);
-  if (elsa && multi) snprintf(filename, 1024, "%s/vertical_%sms%s.spectrum", outputFolder, t_str.c_str(), difftag);
-  else               snprintf(filename, 1024, "%s/vertical%s.spectrum", outputFolder, difftag);
+  snprintf(filename, 1024, "%s/vertical%s%s.spectrum", outputFolder, timetag, difftag);
   exportfile(bz, fmax_z, metadata, "vertical", filename);
   
   cout << "Finished. (Run "<<outputFolder<<"/Bsupply"<<difftag<<".gp for plots)" << endl << endl;
