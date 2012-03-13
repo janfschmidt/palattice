@@ -17,10 +17,9 @@ using namespace std;
 
 
 
-int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, char *outputFolder, char *difftag, string tag, bool timetaged)
+int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, string tag, char *filename)
 {
   int i;
-  char filename[1024];
   fstream file;
   const int w = 15;     /* column width in spectrum data  */
   char tmp[10];
@@ -35,14 +34,6 @@ int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, char *outputFolder, ch
   int metaw = columnwidth(metadata);
 
   
-
-  /* create&open file */
-  if (timetaged) {
-    snprintf(filename, 1024, "%s/%s_%s%s.spectrum", outputFolder, timestamp().c_str(), tag.c_str(), difftag);
-  }
-  else {
-    snprintf(filename, 1024, "%s/%s%s.spectrum", outputFolder, tag.c_str(), difftag);
-  }
   file.open(filename, ios::out);
   if (!file.is_open()) {
     cout << "ERROR: Cannot open " << filename << "." << endl;
@@ -94,7 +85,7 @@ int columnwidth(METADATA metadata)
 
 
 
-/* get date&time */
+/* get date&time, can be used for filenames (set in main.cpp) */
 string timestamp()
 {
   time_t rawtime;
