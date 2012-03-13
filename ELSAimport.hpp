@@ -10,9 +10,9 @@ int ELSAimport_bpms(BPM *ELSAbpms, char *spurenFolder);
 
 int ELSAimport_vcorrs(CORR *ELSAvcorrs, char *spurenFolder);
 
-int ELSAimport_getbpmorbit(BPM *ELSAbpms, orbitvec &bpmorbit, double t);
+int ELSAimport_getbpmorbit(BPM *ELSAbpms, orbitvec &bpmorbit, unsigned int t);
 
-int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, double corrlength, double t);
+int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, double corrlength, unsigned int t);
 
 int bpms_out(orbitvec bpmorbit, char *filename);
 

@@ -1,5 +1,5 @@
 /* Read data from ELSA CCS, /sgt and ELSA MadX Lattice: element positions, bpm- & magnet-data, ... */
-/* 07.03.2012 - J.Schmidt */
+/* 13.03.2012 - J.Schmidt */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -128,14 +128,13 @@ int ELSAimport_bpms(BPM *ELSAbpms, char *spurenFolder)
 
 
 /* write BPM data for time t to bpmorbit */
-int ELSAimport_getbpmorbit(BPM *ELSAbpms, orbitvec &bpmorbit, double t)
+int ELSAimport_getbpmorbit(BPM *ELSAbpms, orbitvec &bpmorbit, unsigned int t)
 {
   int i;
   ORBIT otmp;
 
-  unsigned int t_ms = (int)floor(t*1000+0.5); // moment of cycle in ms (int) from input time t in s (double)
-  if (t_ms > ELSAbpms[1].time.size()) {  //ELSAbpms[1] chosen, all have same .size()
-    printf("Error: No ELSA BPM data available for %d ms.\n", t_ms);
+  if (t > ELSAbpms[1].time.size()) {  //ELSAbpms[1] chosen, all have same .size()
+    printf("Error: No ELSA BPM data available for %d ms.\n", t);
     return 1;
   }
 
@@ -143,8 +142,8 @@ int ELSAimport_getbpmorbit(BPM *ELSAbpms, orbitvec &bpmorbit, double t)
   
   for (i=0; i<NBPMS; i++) {
     otmp.pos = ELSAbpms[i].pos;
-    otmp.x = ELSAbpms[i].time[t_ms].x / 1000; // unit mm -> m
-    otmp.z = ELSAbpms[i].time[t_ms].z / 1000;
+    otmp.x = ELSAbpms[i].time[t].x / 1000; // unit mm -> m
+    otmp.z = ELSAbpms[i].time[t].z / 1000;
     bpmorbit.push_back(otmp);
   }
   
@@ -209,15 +208,14 @@ int ELSAimport_vcorrs(CORR *ELSAvcorrs, char *spurenFolder)
 
 /* write corrector data for time t to vcorrs
   !vcorrs must be read from madx before to get length! */
-int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, double corrlength, double t)
+int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, double corrlength, unsigned int t)
 {
   int i;
   MAGNET mtmp;
   char name[20];
 
-  unsigned int t_ms = (int)floor(t*1000+0.5); // moment of cycle in ms (int) from input time t in s (double)
-  if (t_ms > ELSAvcorrs[1].time.size()) {  //ELSAvcorrs[1] chosen, all have same .size()
-    printf("Error: No ELSA vertical corrector data available for %d ms.\n", t_ms);
+  if (t > ELSAvcorrs[1].time.size()) {  //ELSAvcorrs[1] chosen, all have same .size()
+    printf("Error: No ELSA vertical corrector data available for %d ms.\n", t);
     return 1;
   }
   
@@ -231,7 +229,7 @@ int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, double corrlength,
     mtmp.name = name;
     mtmp.start = ELSAvcorrs[i].pos - corrlength/2.0;
     mtmp.end = ELSAvcorrs[i].pos + corrlength/2.0; 
-    mtmp.strength = ELSAvcorrs[i].time[t_ms].kick/1000.0/corrlength;   //unit 1/m
+    mtmp.strength = ELSAvcorrs[i].time[t].kick/1000.0/corrlength;   //unit 1/m
     vcorrs.push_back(mtmp);
   }
   

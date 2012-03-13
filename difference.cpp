@@ -1,5 +1,5 @@
 /* difference-mode for harmcorr analysis */
-/* 08.03.2012 - J. Schmidt */
+/* 13.03.2012 - J. Schmidt */
 
 #include <stdio.h>
 #include <iostream>
@@ -13,7 +13,7 @@
 using namespace std;
 
 // read and subtract reference orbit & corrector data
-int difference(char *Ref_spurenFolder, char *spuren, char *Ref_spuren, double t, double corrlength, orbitvec &bpmorbit, magnetvec &vcorrs)
+int difference(char *Ref_spurenFolder, char *spuren, char *Ref_spuren, unsigned int t, double corrlength, orbitvec &bpmorbit, magnetvec &vcorrs)
 {
 
   unsigned int i;

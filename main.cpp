@@ -1,7 +1,7 @@
 /* Calculation of the magnetic spectrum (horizontal, vertical) of a periodic accelerator  *
  * Based on MadX output data and (optional for ELSA) on measured orbit and corrector data *
  * Used as input for Simulations of polarization by solving Thomas-BMT equation           *
- * 09.03.2012 - J.Schmidt                                                                 *
+ * 13.03.2012 - J.Schmidt                                                                 *
  */
 
 #include <stdio.h>
@@ -28,9 +28,9 @@ using namespace std;
 int main (int argc, char *argv[])
 {
   unsigned int n_samp = 16440;   // number of sampling points along ring for magn. field strengths
-  unsigned int fmax_x = 10;     // max Frequency used for magnetic field spectrum (in revolution harmonics)
-  unsigned int fmax_z = 10;
-  double t = 0.530;             // moment of elsa-cycle (s)
+  unsigned int fmax_x = 6;     // max Frequency used for magnetic field spectrum (in revolution harmonics)
+  unsigned int fmax_z = 6;
+  unsigned int t = 530;             // moment of elsa-cycle (s)
   bool elsa = false;            // true: orbit, correctors, k & m read from /sgt/elsa/bpm/...
   bool diff = false;            // true: "harmcorr mode", calculate difference of two "Spuren"...
   char spuren[20] = "2011-03-01-18-18-59";
@@ -42,7 +42,7 @@ int main (int argc, char *argv[])
   char Ref_spurenFolder[1024];
   char outputFolder[1024];
   string tmp;
-  char ctmp[10];
+  char t_str[10];
   double circumference=0;
   BPM ELSAbpms[NBPMS];         //ELSAbpms[0]=BPM01, ELSAbpms[31]=BPM32
   CORR ELSAvcorrs[NVCORRS];    //ELSAvcorrs[0]=VC01, ELSAvcorrs[31]=VC32
@@ -78,7 +78,8 @@ int main (int argc, char *argv[])
       break;
     case 't':
       if (!elsa) warnflg++;
-      t = strtod(optarg, NULL);
+      t = atoi(optarg);
+      snprintf(t_str, 10, "%dms", t);
       break;
     case 'f':
       fmax_x = atoi(optarg);
@@ -96,15 +97,15 @@ int main (int argc, char *argv[])
       cout << "* First argument is project path." << endl;
       cout << "* -e [spuren] enables ELSA-mode, Spuren as argument (path: [project]/ELSA-Spuren/) " << endl;
       cout << "* -f [fmax] sets maximum frequency for B-Field spectrum output" << endl;
-      cout << "* -t [time] sets time of ELSA cycle to evaluate BPMs and correctors (in sec.)" << endl;
-      cout << "* -d [refspuren] enables difference-mode, where refspuren are subtracted from spuren set with -e to analyse harmcorr"  << endl;
+      cout << "* -t [time] sets time of ELSA cycle to evaluate BPMs and correctors (in ms)" << endl;
+      cout << "* -d [refspuren] enables difference-mode, where refspuren are subtracted from spuren (set with -e) to analyse harmcorr"  << endl;
       cout << "* -h displays this help" << endl << endl;
       return 0;
     case ':':
       cout << "ERROR: -" << (char)optopt << " without argument. Use -h for help." << endl;
       return 1;
     case '?':
-      cout << "ERROR: unknown option -" << (char)optopt << "." << endl;
+      cout << "ERROR: unknown option -" << (char)optopt << ". Use -h for help." << endl;
       return 1;
     }
   }
@@ -116,7 +117,7 @@ int main (int argc, char *argv[])
     cout << "ERROR: The maximum frequency is to large to be calculated with "<<n_samp<<" sampling points." << endl;
     return 1;
   }
-  if (t < 0.0) {
+  if (t < 0) {
     cout << "ERROR: t = "<<t<<" < 0 is no valid moment of ELSA cycle." << endl;
     return 1;
   }
@@ -166,8 +167,7 @@ int main (int argc, char *argv[])
     else      metadata.add("Program Mode", "elsa"); 
     metadata.add("Spuren", spuren);
     if (diff) metadata.add("Referenz-Spuren", Ref_spuren);
-    snprintf(ctmp, 10, "%.3lf s", t);
-    metadata.add("Time in cycle", ctmp);
+    metadata.add("Time in cycle", t_str);
     ELSAimport_magnetstrengths(quads, sexts, spurenFolder);
     ELSAimport(ELSAbpms, ELSAvcorrs, spurenFolder); 
     ELSAimport_getbpmorbit(ELSAbpms, bpmorbit, t);
