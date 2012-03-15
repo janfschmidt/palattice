@@ -94,7 +94,7 @@ string TIMETAG::tag(unsigned int i) const
   stringstream tag;
   if (multi) {
     if (i<Tvec.size())
-      tag << "_" <<setprecision(4)<< Tvec[i] << "ms";
+      tag << "_" <<setw(4)<<setfill('0')<< Tvec[i] << "ms";
     else
       tag << "notValid";
   }
