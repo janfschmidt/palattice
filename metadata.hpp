@@ -12,13 +12,16 @@ private:
   vector<string> entry;
 
 public:
-  METADATA();
+  METADATA() {METADATA::add("created at", timestamp());}
+  METADATA(char *path, bool elsa, bool diff, char *spuren, char *Ref_spuren);
+  ~METADATA() {}
   int madximport(char *madxLabels, char *madxfile);
   void add(string inLabel, string inEntry);
   int size() const;
   string getLabel(int i) const;
   string getEntry(int i) const;
   string getbyLabel(string inLabel) const;
+  void setbyLabel(string inLabel, string inEntry);
 
 private:
   string timestamp() const;

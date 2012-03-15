@@ -99,7 +99,7 @@ int ELSAimport_bpms(BPM *ELSAbpms, char *spurenFolder)
   snprintf(filename, 1024, "%s/bpms_spos.dat", spurenFolder);
   file.open(filename, ios::in);
   if (!file.is_open()) {
-    printf("Cannot open %s\n", filename);
+    printf("ERROR: ELSAimport.cpp: Cannot open %s\n", filename);
     return 1;
   }
   for (i=0; i<NBPMS; i++) {
@@ -112,7 +112,7 @@ int ELSAimport_bpms(BPM *ELSAbpms, char *spurenFolder)
     snprintf(filename, 1024, "%s/bpm%02i.dat", spurenFolder, i+1);
     file.open(filename, ios::in);
     if (!file.is_open()) {
-      printf("Cannot open %s\n", filename);
+      printf("ERROR: ELSAimport.cpp: Cannot open %s\n", filename);
       return 1;
     }
     while(!file.eof()) {
@@ -133,12 +133,12 @@ int ELSAimport_getbpmorbit(BPM *ELSAbpms, orbitvec &bpmorbit, unsigned int t)
   int i;
   ORBIT otmp;
 
+  bpmorbit.clear(); //delete old-BPM-data (from madx or previous t)
+
   if (t > ELSAbpms[1].time.size()) {  //ELSAbpms[1] chosen, all have same .size()
-    printf("Error: No ELSA BPM data available for %d ms.\n", t);
+    printf("ERROR: ELSAimport.cpp: No ELSA BPM data available for %d ms.\n", t);
     return 1;
   }
-
-  bpmorbit.clear(); //delete old-BPM-data (from madx or previous t)
   
   for (i=0; i<NBPMS; i++) {
     otmp.pos = ELSAbpms[i].pos;
@@ -166,7 +166,7 @@ int ELSAimport_vcorrs(CORR *ELSAvcorrs, char *spurenFolder)
   snprintf(filename, 1024, "%s/correctors/VCORRS.SPOS", spurenFolder);
   file.open(filename, ios::in);
   if (!file.is_open()) {
-    printf("Cannot open %s\n", filename);
+    printf("ERROR: ELSAimport.cpp: Cannot open %s\n", filename);
     return 1;
   }
   for (i=0; i<NVCORRS; i++) {
@@ -179,7 +179,7 @@ int ELSAimport_vcorrs(CORR *ELSAvcorrs, char *spurenFolder)
     snprintf(filename, 1024, "%s/correctors/VC%02d.KICK", spurenFolder, i+1);
     file.open(filename, ios::in);
     if (!file.is_open()) {
-      printf("Cannot open %s\n", filename);
+      printf("ERROR: ELSAimport.cpp: Cannot open %s\n", filename);
       //return 1;
     }
     //read Headline
@@ -214,12 +214,12 @@ int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, double corrlength,
   MAGNET mtmp;
   char name[20];
 
+  vcorrs.clear(); //delete old corrector-data (from madx or previous t)
+
   if (t > ELSAvcorrs[1].time.size()) {  //ELSAvcorrs[1] chosen, all have same .size()
-    printf("Error: No ELSA vertical corrector data available for %d ms.\n", t);
+    printf("ERROR: ELSAimport.cpp: No ELSA vertical corrector data available for %d ms.\n", t);
     return 1;
   }
-  
-  vcorrs.clear(); //delete old corrector-data (from madx or previous t)
 
   for (i=0; i<NVCORRS; i++) {
     if (ELSAvcorrs[i].pos==0.0) {
@@ -248,7 +248,7 @@ int bpms_out(orbitvec bpmorbit, char *filename)
  
  file.open(filename, ios::out);
  if (!file.is_open()) {
-   cout << "ERROR: bpms_out: Cannot open " << filename << "." << endl;
+   cout << "ERROR: ELSAimport.cpp: Cannot open " << filename << "." << endl;
    return 1;
  }
  
@@ -258,7 +258,7 @@ int bpms_out(orbitvec bpmorbit, char *filename)
    file <<setw(w)<< bpmorbit[i].pos <<setw(w)<< bpmorbit[i].x*1000 <<setw(w)<< bpmorbit[i].z*1000 << endl;
  }
  file.close();
- cout << "Wrote " << filename  << endl;
+ cout << "* Wrote " << filename  << endl;
 
  return 0;
 }
@@ -275,7 +275,7 @@ int corrs_out(magnetvec vcorrs, char *filename)
  
  file.open(filename, ios::out);
  if (!file.is_open()) {
-   cout << "ERROR: corrs_out: Cannot open " << filename << "." << endl;
+   cout << "ERROR: ELSAimport.cpp: Cannot open " << filename << "." << endl;
    return 1;
  }
  
@@ -285,7 +285,7 @@ int corrs_out(magnetvec vcorrs, char *filename)
    file <<setw(w)<< vcorrs[i].start <<setw(w)<< vcorrs[i].strength << endl;
  }
  file.close();
- cout << "Wrote " << filename  << endl;
+ cout << "* Wrote " << filename  << endl;
 
  return 0;
 }

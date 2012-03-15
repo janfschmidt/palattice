@@ -125,7 +125,7 @@ int eval_out(SPECTRUM *bx, SPECTRUM *bz, int fmax_x, int fmax_z, int n_samp, dou
    file <<setw(w)<< i*delta_s <<setw(w)<< eval(bx, fmax_x, i*delta_t) <<setw(w)<< eval(bz, fmax_z, i*delta_t) << endl;
  }
  file.close();
- cout << "Wrote " << filename  << endl;
+ cout << "* Wrote " << filename  << endl;
 
  return 0;
 }

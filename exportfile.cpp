@@ -60,7 +60,7 @@ int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, string tag, char *file
   }
 
   file.close();
-  cout << "Wrote " << filename  << endl;
+  cout << "* Wrote " << filename  << endl;
 
   return 0;
 }

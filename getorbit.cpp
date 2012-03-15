@@ -1,5 +1,5 @@
 /* create particle orbit from BPM data  */
-/* 03.02.2012 - J.Schmidt */
+/* 14.03.2012 - J.Schmidt */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,6 +32,8 @@ int getorbit (orbitvec &orbit, double circumference, orbitvec &bpmorbit, int n_s
   double tmp_pos[n_bpm+2], tmp_x[n_bpm+2], tmp_z[n_bpm+2];
 
   struct ORBIT otmp;
+
+  orbit.clear(); //delete old orbit (from previous t)
 
   // add initial entry to avoid extrapolation (Frank)
   tmp_pos[0] = bpmorbit[n_bpm-1].pos-circumference;
@@ -103,7 +105,7 @@ file <<setw(w)<< "s [m]" <<setw(w)<< "x [mm]" <<setw(w)<< "z [mm]" << endl;
    file <<setw(w)<< orbit[i].pos <<setw(w)<< orbit[i].x*1000 <<setw(w)<< orbit[i].z*1000 << endl;
  }
  file.close();
- cout << "Wrote " << filename  << endl;
+ cout << "* Wrote " << filename  << endl;
 
  return 0;
 }

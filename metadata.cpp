@@ -1,5 +1,5 @@
 /* class METADATA: supply all additional "meta"information for exportfiles */
-/* 24.01.2012 - J. Schmidt */
+/* 15.03.2012 - J. Schmidt */
 
 #include <ctime>
 #include <cstring>
@@ -11,10 +11,26 @@
 
 using namespace std;
 
-METADATA::METADATA()
+
+/* constructor with entries for project, mode & spuren */
+METADATA::METADATA(char *path, bool elsa, bool diff, char *spuren, char *Ref_spuren)
 {
-  label.push_back("created at");
-  entry.push_back(timestamp());
+  METADATA::add("created at", timestamp());
+  METADATA::add("Project path", path);
+
+  if (elsa) {
+    if (diff) {
+      METADATA::add("Program Mode", "elsa + difference");
+      METADATA::add("Referenz-Spuren", Ref_spuren);
+    }
+    else {
+      METADATA::add("Program Mode", "elsa");
+    }
+    METADATA::add("Spuren", spuren);
+  }
+  else {
+    METADATA::add("Program Mode", "madx");
+  }  
 }
 
 
@@ -61,6 +77,7 @@ int METADATA::madximport(char *madxLabels, char *madxfile)
 
   }
 
+  madx.close();
   return n;
 }
 
@@ -112,6 +129,20 @@ string METADATA::getbyLabel(string inLabel) const
       return entry[i];
   }
   return "NA";
+}
+
+
+/* re-set entry with input-label. add entry if label not found */
+void METADATA::setbyLabel(string inLabel, string inEntry)
+{
+  unsigned int i;
+  for(i=0; i<label.size(); i++) {
+    if (label[i] == inLabel) {
+      entry[i] = inEntry;
+      return;
+    }
+  }
+  METADATA::add(inLabel, inEntry);
 }
 
 

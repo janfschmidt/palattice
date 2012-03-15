@@ -26,8 +26,8 @@ int difference(char *Ref_spurenFolder, char *spuren, char *Ref_spuren, unsigned 
   ELSAimport(Ref_ELSAbpms, Ref_ELSAvcorrs, Ref_spurenFolder); 
   ELSAimport_getbpmorbit(Ref_ELSAbpms, Ref_bpmorbit, t);
   ELSAimport_getvcorrs(Ref_ELSAvcorrs, Ref_vcorrs, corrlength, t);
-  cout << "* "<<vcorrs.size()<<" correctors and "
-       <<bpmorbit.size()<<" BPMs read from "<<Ref_spurenFolder << endl;
+  cout << "* "<<Ref_vcorrs.size()<<" correctors and "
+       <<Ref_bpmorbit.size()<<" BPMs read from "<<Ref_spurenFolder << endl;
 
   //subtract orbit
   if (bpmorbit.size() != Ref_bpmorbit.size()) {

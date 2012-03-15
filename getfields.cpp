@@ -110,7 +110,7 @@ int fields_out(FIELD *B, int n_samp, char *filename)
    file <<setw(w)<< B[i].pos <<setw(w)<< B[i].name <<setw(w)<< B[i].x <<setw(w)<< B[i].z << endl;
  }
  file.close();
- cout << "Wrote " << filename  << endl;
+ cout << "* Wrote " << filename  << endl;
 
  return 0;
 }
