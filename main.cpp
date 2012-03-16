@@ -1,7 +1,7 @@
 /* Calculation of the magnetic spectrum (horizontal, vertical) of a periodic accelerator  *
  * Based on MadX output data and (optional for ELSA) on measured orbit and corrector data *
  * Used as input for Simulations of polarization by solving Thomas-BMT equation           *
- * 14.03.2012 - J.Schmidt                                                                 *
+ * 16.03.2012 - J.Schmidt                                                                 *
  */
 
 #include <stdio.h>
@@ -33,6 +33,7 @@ int main (int argc, char *argv[])
   unsigned int n_samp = 16440;   // number of sampling points along ring for magn. field strengths
   unsigned int fmax_x = 6;      // max Frequency used for magnetic field spectrum (in revolution harmonics)
   unsigned int fmax_z = 6;
+  unsigned int fmax_s = 0;
   TIMETAG t(530);               // moment(s) of elsa-cycle (ms)
   bool elsa = false;            // true: orbit, correctors, k & m read from /sgt/elsa/bpm/...
   bool diff = false;            // true: "harmcorr mode", calculate difference of two "Spuren"...
@@ -145,6 +146,7 @@ int main (int argc, char *argv[])
   // magnetic spectrum (amplitudes & phases) up to fmax
   SPECTRUM bx[fmax_x+1];
   SPECTRUM bz[fmax_z+1];
+  SPECTRUM bs[fmax_s+1];
 
 
   //metadata for spectrum files
@@ -249,6 +251,8 @@ int main (int argc, char *argv[])
     exportfile(bx, fmax_x, metadata, "horizontal", filename);
     snprintf(filename, 1024, "%s/vertical%s%s.spectrum", outputFolder, t.tag(i).c_str(), difftag);
     exportfile(bz, fmax_z, metadata, "vertical", filename);
+    snprintf(filename, 1024, "%s/longitudinal%s%s.spectrum", outputFolder, t.tag(i).c_str(), difftag);
+    exportfile(bs, fmax_s-1, metadata, "longitudinal", filename); // empty spectrum (fmax_s-1)
 
     cout << "--------------------------------------------" << endl;
   }

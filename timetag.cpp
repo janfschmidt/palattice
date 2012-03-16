@@ -23,7 +23,6 @@ TIMETAG::TIMETAG(char *tagfile)
     //!!!!! return -1;
   }
 
-  // file >> tmp;
   while(!file.eof()) {
     file >> tmp;
     if (tmp=="#") {
