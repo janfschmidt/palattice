@@ -3,6 +3,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+/* Import parameters and measured data from ELSA by reading "Spuren" */
+/* 16.03.2012 - J. Schmidt */
+
 #include <cstring>
 #include <cmath>
 #include <vector>
@@ -112,8 +115,8 @@ int ELSAimport_bpms(BPM *ELSAbpms, char *spurenFolder)
     snprintf(filename, 1024, "%s/bpm%02i.dat", spurenFolder, i+1);
     file.open(filename, ios::in);
     if (!file.is_open()) {
-      printf("ERROR: ELSAimport.cpp: Cannot open %s\n", filename);
-      return 1;
+      printf("! ELSAimport.cpp: Cannot open %s\n", filename);
+      continue;
     }
     while(!file.eof()) {
       file >> tmptime.ms >> tmptime.x >> tmptime.z >> tmp;
@@ -179,8 +182,8 @@ int ELSAimport_vcorrs(CORR *ELSAvcorrs, char *spurenFolder)
     snprintf(filename, 1024, "%s/correctors/VC%02d.KICK", spurenFolder, i+1);
     file.open(filename, ios::in);
     if (!file.is_open()) {
-      printf("ERROR: ELSAimport.cpp: Cannot open %s\n", filename);
-      //return 1;
+      printf("! ELSAimport.cpp: Cannot open %s\n", filename);
+      continue;
     }
     //read Headline
     file >> str >> str;

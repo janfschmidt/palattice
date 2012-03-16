@@ -1,5 +1,5 @@
 /* class TIMETAG: time(s) of ELSA-cycle to read orbit&fields */
-/* 15.03.2012 - J. Schmidt */
+/* 16.03.2012 - J. Schmidt */
 
 #include <stdlib.h>
 #include <string>
@@ -23,15 +23,15 @@ TIMETAG::TIMETAG(char *tagfile)
     //!!!!! return -1;
   }
 
-  file >> tmp;
+  // file >> tmp;
   while(!file.eof()) {
+    file >> tmp;
     if (tmp=="#") {
       getline(file, tmp);
     }
     else {
       Tvec.push_back(atoi(tmp.c_str()));
     }
-    file >> tmp;
   }
 
   multi = true;
