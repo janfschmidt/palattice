@@ -3,7 +3,7 @@
 
 int difference(char *Ref_spurenFolder, char *spuren, char *Ref_spuren, unsigned int t, double corrlength, orbitvec &bpmorbit, magnetvec &vcorrs);
 
-int harmcorr_out(magnetvec vcorrs, magnetvec dipols, char *filename);
+int harmcorr_out(magnetvec vcorrs, magnetvec quads, orbitvec orbit, magnetvec dipols, double sample, char *filename);
 
 #endif
 

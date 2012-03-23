@@ -106,7 +106,7 @@ int fields_out(FIELD *B, int n_samp, char *filename)
 
  file <<setw(w)<< "s [m]" <<setw(w)<< "name" <<setw(w)<< "Bx [1/m]" <<setw(w)<< "Bz [1/m]" << endl;
  for (i=0; i<n_samp; i++) {
-   file <<setiosflags(ios::scientific)<<showpoint<<setprecision(3);
+   file <<setiosflags(ios::scientific)<<showpoint<<setprecision(4);
    file <<setw(w)<< B[i].pos <<setw(w)<< B[i].name <<setw(w)<< B[i].x <<setw(w)<< B[i].z << endl;
  }
  file.close();

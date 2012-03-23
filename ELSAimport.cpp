@@ -137,13 +137,12 @@ int ELSAimport_getbpmorbit(BPM *ELSAbpms, orbitvec &bpmorbit, unsigned int t)
   ORBIT otmp;
 
   bpmorbit.clear(); //delete old-BPM-data (from madx or previous t)
-
-  if (t > ELSAbpms[1].time.size()) {  //ELSAbpms[1] chosen, all have same .size()
-    printf("ERROR: ELSAimport.cpp: No ELSA BPM data available for %d ms.\n", t);
-    return 1;
-  }
   
   for (i=0; i<NBPMS; i++) {
+    if (t > ELSAbpms[i].time.size()) {
+      printf("ERROR: ELSAimport.cpp: No ELSA BPM%02d data available for %d ms.\n", i+1, t);
+      return 1;
+    }
     otmp.pos = ELSAbpms[i].pos;
     otmp.x = ELSAbpms[i].time[t].x / 1000; // unit mm -> m
     otmp.z = ELSAbpms[i].time[t].z / 1000;
@@ -219,14 +218,13 @@ int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, double corrlength,
 
   vcorrs.clear(); //delete old corrector-data (from madx or previous t)
 
-  if (t > ELSAvcorrs[1].time.size()) {  //ELSAvcorrs[1] chosen, all have same .size()
-    printf("ERROR: ELSAimport.cpp: No ELSA vertical corrector data available for %d ms.\n", t);
-    return 1;
-  }
-
   for (i=0; i<NVCORRS; i++) {
     if (ELSAvcorrs[i].pos==0.0) {
       continue;
+    }
+    else if (t > ELSAvcorrs[i].time.size()) {
+      printf("ERROR: ELSAimport.cpp: No ELSA VC%02d corrector data available for %d ms.\n", i+1, t);
+      return 1;
     }
     snprintf(name, 20, "\"KV%02i\"", i+1);
     mtmp.name = name;

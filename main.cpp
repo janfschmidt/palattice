@@ -62,16 +62,25 @@ int main (int argc, char *argv[])
   int opt, warnflg=0, conflictflg=0;          //for getopt()
   extern char *optarg;
   extern int optopt, optind;
+ 
 
 
   // read input arguments
-  if (argc<=1 || strncmp(argv[1], "-", 1)==0) {
+  optind=2;
+  if (argc<=1) {                             // handle input without project-path
     cout << "Please enter project path as first argument." << endl;
     return 1;
   }
+  else if (strncmp(argv[1],"-",1)==0) {
+    if (strncmp(argv[1],"-h",2)==0)         // -h is ok without project-path
+      optind=1;
+    else {
+      cout << "Please enter project path as first argument." << endl;
+      return 1;
+    }
+  }
   snprintf(importFile, 1024, "%s/madx/madx.twiss", argv[1]);
   snprintf(outputFolder, 1024, "%s/inout", argv[1]);
-  optind = 2;
   while ((opt = getopt(argc, argv, ":e:t:f:d:m:ah")) != -1) {
     switch(opt) {
     case 'e':
@@ -229,11 +238,6 @@ int main (int argc, char *argv[])
 	//corrector data
 	snprintf(filename, 1024, "%s/elsacorrs%s%s.dat", outputFolder, t.tag(i).c_str(), difftag);
 	corrs_out(vcorrs, filename);
-	if (diff) {
-	  //harmcorr data
-	  snprintf(filename, 1024, "%s/harmcorr%s%s.dat", outputFolder, t.tag(i).c_str(), difftag);
-	  harmcorr_out(vcorrs, dipols, filename);
-	}
       }
       //orbit data (interpolated BPMs)
       snprintf(filename, 1024, "%s/orbit%s%s.dat", outputFolder, t.tag(i).c_str(), difftag);
@@ -253,6 +257,11 @@ int main (int argc, char *argv[])
     exportfile(bz, fmax_z, metadata, "vertical", filename);
     snprintf(filename, 1024, "%s/longitudinal%s%s.spectrum", outputFolder, t.tag(i).c_str(), difftag);
     exportfile(bs, fmax_s-1, metadata, "longitudinal", filename); // empty spectrum (fmax_s-1)
+    //harmcorr data
+    if (diff) {
+      snprintf(filename, 1024, "%s/harmcorr%s%s.dat", outputFolder, t.tag(i).c_str(), difftag);
+      harmcorr_out(vcorrs, quads, orbit, dipols, circumference/n_samp, filename);
+    }
 
     cout << "--------------------------------------------" << endl;
   }
