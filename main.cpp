@@ -1,7 +1,7 @@
 /* Calculation of the magnetic spectrum (horizontal, vertical) of a periodic accelerator  *
  * Based on MadX output data and (optional for ELSA) on measured orbit and corrector data *
  * Used as input for Simulations of polarization by solving Thomas-BMT equation           *
- * 16.03.2012 - J.Schmidt                                                                 *
+ * 29.03.2012 - J.Schmidt                                                                 *
  */
 
 #include <stdio.h>
@@ -39,11 +39,11 @@ int main (int argc, char *argv[])
   bool diff = false;            // true: "harmcorr mode", calculate difference of two "Spuren"...
   bool allout = false;          // true: additional output files (orbit, field, bpms, ...)
   char spuren[20] = "dummy";
-  char Ref_spuren[20] = "dummy";
+  char Reference[50] = "dummy";
   char filename[1024];
   char importFile[1024];
   char spurenFolder[1024];
-  char Ref_spurenFolder[1024];
+  char ReferenceFolder[1024];
   char outputFolder[1024];
   string tmp;
   double circumference=0;
@@ -103,8 +103,7 @@ int main (int argc, char *argv[])
     case 'd':
       diff = true;
       strncpy(difftag, "_diff", 6);
-      strncpy(Ref_spuren, optarg, 20);
-      snprintf(Ref_spurenFolder, 1024, "%s/ELSA-Spuren/%s", argv[1], Ref_spuren);
+      strncpy(Reference, optarg, 50);
       break;
     case 'a':
       allout = true;
@@ -117,7 +116,8 @@ int main (int argc, char *argv[])
       cout << "* -t [time] sets time of ELSA cycle to evaluate BPMs and correctors (in ms)" << endl;
       cout << "* -m [tagfile] multiple times of ELSA cycle evaluated. Times listed in [tagfile]" << endl;
       cout << "* -a enables all output files (orbit, fields, correctors, ...)" << endl;
-      cout << "* -d [refspuren] enables difference-mode, where refspuren are subtracted from spuren (set with -e) to analyse harmcorr"  << endl;
+      cout << "* -d [reference] enables difference-mode, where a reference orbit and corrector kicks are subtracted to analyse harmcorr."  << endl;
+      cout << "     in ELSA-mode [reference] are Spuren ([project]/ELSA-Spuren/), else a MadX-twiss file ([project]/madx/)" << endl;
       cout << "* -h displays this help" << endl << endl;
       return 0;
     case ':':
@@ -131,10 +131,6 @@ int main (int argc, char *argv[])
 
 
   // check input
-  if (diff && !elsa) {
-    cout << "ERROR: option -d can only be used in ELSA-mode (-e). Use -h for help." << endl;
-    return 1;
-  }
   if (conflictflg==2) {
     cout << "ERROR: do not use both options -t and -m. Use -h for help." << endl;
     return 1;
@@ -159,7 +155,7 @@ int main (int argc, char *argv[])
 
 
   //metadata for spectrum files
-  METADATA metadata(argv[1], elsa, diff, spuren, Ref_spuren);
+  METADATA metadata(argv[1], elsa, diff, spuren, Reference);
   char madxLabels[100];
   snprintf(madxLabels, 100, "TITLE,LENGTH,ORIGIN,PARTICLE");
   metadata.madximport(madxLabels, importFile);
@@ -194,12 +190,13 @@ int main (int argc, char *argv[])
     ELSAimport(ELSAbpms, ELSAvcorrs, spurenFolder);
     cout << "* "<<dipols.size()<<" dipoles, "<<quads.size()<<" quadrupoles, "
 	 <<sexts.size()<<" sextupoles read"<<endl<<"  from "<<importFile << endl;
+    if (diff) snprintf(ReferenceFolder, 1024, "%s/ELSA-Spuren/%s", argv[1], Reference);
   }
   else {
     cout << "* "<<dipols.size()<<" dipoles, "<<quads.size()<<" quadrupoles, "
 	 <<sexts.size()<<" sextupoles, "<<vcorrs.size()<<" correctors and "
 	 <<bpmorbit.size()<<" BPMs read"<<endl<<"  from "<<importFile << endl;
-    
+    if (diff) snprintf(ReferenceFolder, 1024, "%s/madx/%s", argv[1], Reference);
   }
   cout << "--------------------------------------------" << endl;
 
@@ -217,11 +214,10 @@ int main (int argc, char *argv[])
       ELSAimport_getvcorrs(ELSAvcorrs, vcorrs, corrlength, t.get(i));
       cout << "* "<<t.label(i)<<": "<<vcorrs.size()<<" correctors and "
 	   <<bpmorbit.size()<<" BPMs read"<<endl<<"  from "<<spurenFolder << endl;
-    
-      //diff=true: read and subtract reference orbit & corrector data
-      if (diff) {
-	if (difference(Ref_spurenFolder, spuren, Ref_spuren, t.get(i), corrlength, bpmorbit, vcorrs) != 0) return 1;
-      }
+    }
+    //diff=true: read and subtract reference orbit & corrector data
+    if (diff) {
+      if (difference(ReferenceFolder, t.get(i), corrlength, bpmorbit, vcorrs, elsa) != 0) return 1;
     }
 
     // interpolate orbit, calculate field distribution & spectrum
@@ -231,14 +227,12 @@ int main (int argc, char *argv[])
     
     // generate output files
     if (allout) {
-      if (elsa) {
-	//BPM data
-	snprintf(filename, 1024, "%s/elsabpms%s%s.dat", outputFolder, t.tag(i).c_str(), difftag);
-	bpms_out(bpmorbit, filename);
-	//corrector data
-	snprintf(filename, 1024, "%s/elsacorrs%s%s.dat", outputFolder, t.tag(i).c_str(), difftag);
-	corrs_out(vcorrs, filename);
-      }
+      //BPM data
+      snprintf(filename, 1024, "%s/bpms%s%s.dat", outputFolder, t.tag(i).c_str(), difftag);
+      bpms_out(bpmorbit, filename);
+      //corrector data
+      snprintf(filename, 1024, "%s/vcorrs%s%s.dat", outputFolder, t.tag(i).c_str(), difftag);
+      corrs_out(vcorrs, filename);
       //orbit data (interpolated BPMs)
       snprintf(filename, 1024, "%s/orbit%s%s.dat", outputFolder, t.tag(i).c_str(), difftag);
       orbit_out(orbit, filename);

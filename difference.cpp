@@ -1,5 +1,5 @@
 /* difference-mode for harmcorr analysis */
-/* 13.03.2012 - J. Schmidt */
+/* 29.03.2012 - J. Schmidt */
 
 #include <stdio.h>
 #include <iostream>
@@ -9,29 +9,38 @@
 #include "types.hpp"
 #include "constants.hpp"
 #include "ELSAimport.hpp"
+#include "madximport.hpp"
 
 using namespace std;
 
 // read and subtract reference orbit & corrector data
-int difference(char *Ref_spurenFolder, char *spuren, char *Ref_spuren, unsigned int t, double corrlength, orbitvec &bpmorbit, magnetvec &vcorrs)
+int difference(char *ReferenceFolder, unsigned int t, double corrlength, orbitvec &bpmorbit, magnetvec &vcorrs, bool elsa)
 {
 
   unsigned int i;
-  BPM Ref_ELSAbpms[NBPMS];
-  CORR Ref_ELSAvcorrs[NVCORRS];
   orbitvec Ref_bpmorbit;
   magnetvec Ref_vcorrs;
 
   //read reference
-  ELSAimport(Ref_ELSAbpms, Ref_ELSAvcorrs, Ref_spurenFolder); 
-  ELSAimport_getbpmorbit(Ref_ELSAbpms, Ref_bpmorbit, t);
-  ELSAimport_getvcorrs(Ref_ELSAvcorrs, Ref_vcorrs, corrlength, t);
-  cout << "* "<<t<<" ms: "<<vcorrs.size()<<" correctors and "
-	   <<bpmorbit.size()<<" BPMs read"<<endl<<"  from "<<Ref_spurenFolder << endl;
+  if (elsa) {
+    BPM Ref_ELSAbpms[NBPMS];
+    CORR Ref_ELSAvcorrs[NVCORRS];
+    ELSAimport(Ref_ELSAbpms, Ref_ELSAvcorrs, ReferenceFolder); 
+    ELSAimport_getbpmorbit(Ref_ELSAbpms, Ref_bpmorbit, t);
+    ELSAimport_getvcorrs(Ref_ELSAvcorrs, Ref_vcorrs, corrlength, t);
+    cout << "* "<<t<<" ms: ";
+  }
+  else {
+    magnetvec tmpDip, tmpQuad, tmpSext;
+    madximport(ReferenceFolder, Ref_bpmorbit, tmpDip, tmpQuad, tmpSext, Ref_vcorrs);
+    cout << "* ";
+  }
+  cout <<Ref_vcorrs.size()<<" correctors and "
+       <<Ref_bpmorbit.size()<<" BPMs read"<<endl<<"  from "<< ReferenceFolder << endl;
 
   //subtract orbit
   if (bpmorbit.size() != Ref_bpmorbit.size()) {
-    cout << "ERROR: difference.cpp: Unequal number of BPMs in "<<spuren<<" and "<<Ref_spuren<< endl;
+    cout << "ERROR: difference.cpp: Unequal number of BPMs to subtract."<< endl;
     return 1;
   }
   for (i=0; i<bpmorbit.size(); i++) {
@@ -40,14 +49,14 @@ int difference(char *Ref_spurenFolder, char *spuren, char *Ref_spuren, unsigned 
       bpmorbit[i].z -= Ref_bpmorbit[i].z;
     }
     else {
-      cout << "ERROR: difference.cpp: "<<i<<". BPM position is not equal in "<<spuren<<" and "<<Ref_spuren<< endl;
+      cout << "ERROR: difference.cpp: Unequal positions of "<<i+1<<". BPM for subtraction."<< endl;
       return 1;
     }
   }
 
   //subtract corrector strengths
   if (vcorrs.size() != Ref_vcorrs.size()) {
-    cout << "ERROR: difference.cpp: Unequal number of VCs in "<<spuren<<" and "<<Ref_spuren<< endl;
+    cout << "ERROR: difference.cpp: Unequal number of VCs to subtract."<< endl;
     return 1;
   }
   for (i=0; i<vcorrs.size(); i++) {
@@ -55,7 +64,7 @@ int difference(char *Ref_spurenFolder, char *spuren, char *Ref_spuren, unsigned 
       vcorrs[i].strength -= Ref_vcorrs[i].strength;
     }
     else {
-      cout << "ERROR: difference.cpp: "<<i<<". VC position is not equal in "<<spuren<<" and "<<Ref_spuren<< endl;
+      cout << "ERROR: difference.cpp: Unequal positions of "<<i+1<<". VC for subtraction."<< endl;
       return 1;
     }
   }

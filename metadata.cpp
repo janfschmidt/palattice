@@ -1,5 +1,5 @@
 /* class METADATA: supply all additional "meta"information for exportfiles */
-/* 15.03.2012 - J. Schmidt */
+/* 29.03.2012 - J. Schmidt */
 
 #include <ctime>
 #include <cstring>
@@ -13,7 +13,7 @@ using namespace std;
 
 
 /* constructor with entries for project, mode & spuren */
-METADATA::METADATA(char *path, bool elsa, bool diff, char *spuren, char *Ref_spuren)
+METADATA::METADATA(char *path, bool elsa, bool diff, char *spuren, char *Reference)
 {
   METADATA::add("created at", timestamp());
   METADATA::add("Project path", path);
@@ -21,7 +21,7 @@ METADATA::METADATA(char *path, bool elsa, bool diff, char *spuren, char *Ref_spu
   if (elsa) {
     if (diff) {
       METADATA::add("Program Mode", "elsa + difference");
-      METADATA::add("Referenz-Spuren", Ref_spuren);
+      METADATA::add("Referenz-Spuren", Reference);
     }
     else {
       METADATA::add("Program Mode", "elsa");
@@ -29,7 +29,13 @@ METADATA::METADATA(char *path, bool elsa, bool diff, char *spuren, char *Ref_spu
     METADATA::add("Spuren", spuren);
   }
   else {
-    METADATA::add("Program Mode", "madx");
+    if (diff) {
+      METADATA::add("Program Mode", "madx + difference");
+      METADATA::add("Referenz-MadXfile", Reference);
+    }
+    else {
+      METADATA::add("Program Mode", "madx");
+    }
   }  
 }
 
