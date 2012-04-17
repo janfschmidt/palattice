@@ -26,9 +26,6 @@ int getspectrum (SPECTRUM *bx, SPECTRUM *bz, FIELD *B, int n_samp, int fmax_x, i
   double *BX = new double[2*n_samp];
   double *BZ = new double[2*n_samp];
 
-  //memset(BX, 0, 2*n_samp*sizeof(double));
-  //memset(BZ, 0, 2*n_samp*sizeof(double));
-
   for (i=0; i<n_samp; i++) { /* set real parts */
     REAL(BX,i) = B[i].x;
     IMAG(BX,i) = 0;

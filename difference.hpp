@@ -3,7 +3,9 @@
 
 int difference(char *ReferenceFolder, unsigned int t, double corrlength, orbitvec &bpmorbit, magnetvec &vcorrs, bool elsa);
 
-int harmcorr_out(magnetvec vcorrs, magnetvec quads, orbitvec orbit, magnetvec dipols, double sample, char *filename);
+int harmcorr(SPECTRUM *hc, int fmax_x, magnetvec vcorrs, magnetvec quads, orbitvec orbit, magnetvec dipols, double circumference, int n_samp, char *filename);
+
+int harmcorr_out(double *HCvcorr, double *HCquad, double *HCsum, unsigned int nd, char *filename);
 
 #endif
 

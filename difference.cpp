@@ -1,7 +1,8 @@
 /* difference-mode for harmcorr analysis */
-/* 29.03.2012 - J. Schmidt */
+/* 16.04.2012 - J. Schmidt */
 
 #include <stdio.h>
+#include <cstring>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -10,6 +11,7 @@
 #include "constants.hpp"
 #include "ELSAimport.hpp"
 #include "madximport.hpp"
+#include "getspectrum.hpp"
 
 using namespace std;
 
@@ -73,73 +75,83 @@ int difference(char *ReferenceFolder, unsigned int t, double corrlength, orbitve
 }
 
 
+//output file with harmcorr data
+int harmcorr_out(double *HCvcorr, double *HCquad, double *HCsum, unsigned int nd, char *filename)
+{
+  unsigned int i=0;
+  int w=14;
+  fstream file;
+  
+  file.open(filename, ios::out);
+  if (!file.is_open()) {
+    cout << "ERROR: harmcorr_out: Cannot open " << filename << "." << endl;
+    return 1;
+  }
+  
+  file <<setw(w)<< "dipol interval" <<setw(w)<< "corrs [mrad]" <<setw(w)<< "quads [mrad]" <<setw(w)<< "sum [mrad]" << endl;
 
-//output file with difference-corrector data (->harmcorr) as a function of spin-phaseadvance
-int harmcorr_out(magnetvec vcorrs, magnetvec quads, orbitvec orbit, magnetvec dipols, double sample, char *filename)
+  file <<setiosflags(ios::scientific)<<showpoint<<setprecision(3);
+  for (i=0; i<nd; i++) {
+    HCsum[2*i] = HCvcorr[2*i]+HCquad[2*i];
+    file <<setw(w)<< i <<setw(w)<< HCvcorr[2*i] <<setw(w)<< HCquad[2*i] <<setw(w)<< HCsum[2*i] << endl;
+  }
+  file.close();
+  cout << "* Wrote " << filename  << endl;
+  
+  return 0;
+}
+
+
+//calculates difference-corrector data (->harmcorr) as a function of spin-phaseadvance
+//and does fft for harmcorr-spectrum hc
+int harmcorr(SPECTRUM *hc, int fmax_x, magnetvec vcorrs, magnetvec quads, orbitvec orbit, magnetvec dipols, double circumference, int n_samp, char *filename)
 {
  unsigned int i=0,j=0,k=0;
- int w=14;
  unsigned int nd = dipols.size();
  unsigned int nc = vcorrs.size();
  unsigned int nq = quads.size();
- double vcorr_tmp=0, quad_tmp=0, vcorr0_tmp=0, quad0_tmp=0;
+ double *HCvcorr = new double[2*nd];
+ double *HCquad = new double[2*nd];
+ double *HCsum = new double[2*nd];
  double length;
- fstream file;
- 
- file.open(filename, ios::out);
- if (!file.is_open()) {
-   cout << "ERROR: harmcorr_out: Cannot open " << filename << "." << endl;
-   return 1;
- }
- 
- file <<setw(w)<< "dipol interval" <<setw(w)<< "corrs [mrad]" <<setw(w)<< "quads [mrad]" <<setw(w)<< "sum [mrad]" << endl;
+ double sample = circumference/n_samp;
 
- // first=last dipol-interval! save kicks of first interval.
- while(vcorrs[j].start < dipols[0].start && j < nc) {
-   length = vcorrs[j].end - vcorrs[j].start;
-   vcorr0_tmp += vcorrs[j].strength * length * 1000; // mrad
-       j++;
- }
- while(quads[k].start < dipols[0].start && k < nq) {
-   length = quads[k].end - quads[k].start;
-   quad0_tmp += quads[k].strength * orbit[int(quads[k].start/sample+0.5)].z * length * 1000; // mrad
-   k++;
- }
+ memset(HCvcorr, 0, 2*nd*sizeof(double));
+ memset(HCquad, 0, 2*nd*sizeof(double));
+ memset(HCsum, 0, 2*nd*sizeof(double));
 
- for (i=1; i<=nd; i++) {
-   if (i<nd) {
+ for (i=0; i<nd; i++) {
      while(vcorrs[j].start < dipols[i].start && j < nc) {
        length = vcorrs[j].end - vcorrs[j].start;
-       vcorr_tmp += vcorrs[j].strength * length * 1000; // mrad
+       HCvcorr[2*i] += vcorrs[j].strength * length * 1000; // mrad
        j++;
      }
      while(quads[k].start < dipols[i].start && k < nq) {
        length = quads[k].end - quads[k].start;
-       quad_tmp += quads[k].strength * orbit[int(quads[k].start/sample+0.5)].z * length * 1000; // mrad
+       HCquad[2*i] += quads[k].strength * orbit[int(quads[k].start/sample+0.5)].z * length * 1000; // mrad
        k++;
      }
-   }
-   else if (i==nd) {
-     vcorr_tmp = vcorr0_tmp; //add kicks of first interval
-     quad_tmp = quad0_tmp;
-     while (j<nc) {
-       length = vcorrs[j].end - vcorrs[j].start;
-       vcorr_tmp += vcorrs[j].strength * length * 1000; // mrad
-       j++;
-     }
-     while (k<nq) {
-       length = quads[k].end - quads[k].start;
-       quad_tmp += quads[k].strength * orbit[int(quads[k].start/sample+0.5)].z * length * 1000; // mrad
-       k++;
-     }
-   }
-   file <<setiosflags(ios::scientific)<<showpoint<<setprecision(3);
-   file <<setw(w)<< i <<setw(w)<< vcorr_tmp <<setw(w)<< quad_tmp <<setw(w)<< (vcorr_tmp+quad_tmp) << endl;
-   vcorr_tmp = 0; quad_tmp = 0;
+ }
+ // first=last dipol-interval! add kicks of last interval to first.
+ while (j<nc) {
+   length = vcorrs[j].end - vcorrs[j].start;
+   HCvcorr[0] += vcorrs[j].strength * length * 1000; // mrad
+   j++;
+ }
+ while (k<nq) {
+   length = quads[k].end - quads[k].start;
+   HCquad[0] += quads[k].strength * orbit[int(quads[k].start/sample+0.5)].z * length * 1000; // mrad
+   k++;
  }
 
- file.close();
- cout << "* Wrote " << filename  << endl;
+ harmcorr_out(HCvcorr, HCquad, HCsum, nd, filename);
+
+ fft(hc, HCsum, nd, fmax_x, circumference);
+
+ delete[] HCvcorr;
+ delete[] HCquad;
+ delete[] HCsum;
 
  return 0;
 }
+

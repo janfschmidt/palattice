@@ -1,7 +1,7 @@
 /* Calculation of the magnetic spectrum (horizontal, vertical) of a periodic accelerator  *
  * Based on MadX output data and (optional for ELSA) on measured orbit and corrector data *
  * Used as input for Simulations of polarization by solving Thomas-BMT equation           *
- * 29.03.2012 - J.Schmidt                                                                 *
+ * 16.04.2012 - J.Schmidt                                                                 *
  */
 
 #include <stdio.h>
@@ -152,6 +152,7 @@ int main (int argc, char *argv[])
   SPECTRUM bx[fmax_x+1];
   SPECTRUM bz[fmax_z+1];
   SPECTRUM bs[fmax_s+1];
+  SPECTRUM hc[fmax_x+1]; //harmcorr
 
 
   //metadata for spectrum files
@@ -254,7 +255,9 @@ int main (int argc, char *argv[])
     //harmcorr data
     if (diff) {
       snprintf(filename, 1024, "%s/harmcorr%s%s.dat", outputFolder, t.tag(i).c_str(), difftag);
-      harmcorr_out(vcorrs, quads, orbit, dipols, circumference/n_samp, filename);
+      harmcorr(hc, fmax_x, vcorrs, quads, orbit, dipols, circumference, n_samp, filename);
+      snprintf(filename, 1024, "%s/harmcorr%s%s.spectrum", outputFolder, t.tag(i).c_str(), difftag);
+      exportfile(hc, fmax_x, metadata, "harmcorr", filename);
     }
 
     cout << "--------------------------------------------" << endl;
