@@ -1,11 +1,8 @@
 /* Read data from ELSA CCS, /sgt and ELSA MadX Lattice: element positions, bpm- & magnet-data, ... */
-/* 13.03.2012 - J.Schmidt */
+/* 24.04.2012 - J.Schmidt */
 
 #include <stdio.h>
 #include <stdlib.h>
-/* Import parameters and measured data from ELSA by reading "Spuren" */
-/* 16.03.2012 - J. Schmidt */
-
 #include <cstring>
 #include <cmath>
 #include <vector>
@@ -161,7 +158,7 @@ int ELSAimport_vcorrs(CORR *ELSAvcorrs, char *spurenFolder)
   int i, j, tmp;
   char filename[1024];
   string str;
-  CORR_MS tmptime, tmpzero;
+  CORR_MS tmpA, tmpB, tmpC;
   fstream file;
  
   // Read corrector positions from "VCORRS.SPOS"
@@ -176,7 +173,7 @@ int ELSAimport_vcorrs(CORR *ELSAvcorrs, char *spurenFolder)
   }
   file.close();
   
-  //Read corrector kickangles from "VCxx.KICK"
+  //Read corrector kickangles [mrad] from "VCxx.KICK"
   for (i=0; i<NVCORRS; i++) {
     snprintf(filename, 1024, "%s/correctors/VC%02d.KICK", spurenFolder, i+1);
     file.open(filename, ios::in);
@@ -187,17 +184,27 @@ int ELSAimport_vcorrs(CORR *ELSAvcorrs, char *spurenFolder)
     //read Headline
     file >> str >> str;
     //read t[ms] from first line to detect "Schleppfehler"
-    file >> tmptime.ms >> tmptime.kick;
-    for (j=0; j<tmptime.ms; j++) {
-      tmpzero.ms = j;
-      tmpzero.kick=0.0;
-      ELSAvcorrs[i].time.push_back(tmpzero);
+    file >> tmpA.ms >> tmpA.kick;
+    for (j=0; j<tmpA.ms; j++) {
+      tmpB.ms = j;
+      tmpB.kick=0.0;
+      ELSAvcorrs[i].time.push_back(tmpB);
     }
-    ELSAvcorrs[i].time.push_back(tmptime);
+    ELSAvcorrs[i].time.push_back(tmpA);
     //now continue normally
+    file >> tmpA.ms >> tmpA.kick;
+    ELSAvcorrs[i].time.push_back(tmpA);
     while (!file.eof()) {
-      file >> tmptime.ms >> tmptime.kick;  //kickangle [mrad]  
-      ELSAvcorrs[i].time.push_back(tmptime);
+      file >> tmpB.ms >> tmpB.kick;
+      for(j=tmpA.ms; j<tmpB.ms; j++) {
+	tmpC.ms = j;
+	//linear interpolation of kicks
+	tmpC.kick = tmpA.kick + (tmpB.kick-tmpA.kick)/(tmpB.ms-tmpA.ms)*(j-tmpA.ms);
+	ELSAvcorrs[i].time.push_back(tmpC);
+      }
+      ELSAvcorrs[i].time.push_back(tmpB);
+      tmpA.ms = tmpB.ms;
+      tmpA.kick = tmpB.kick;
     }
     file.close();
   }
