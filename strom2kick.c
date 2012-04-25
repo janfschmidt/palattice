@@ -3,7 +3,7 @@
  * This function was added to /sgt/ccs/apl/bpms/read_traces.cc in Jan. 2012
  * Older "Spuren" get these additional files by use of this program.
  * compile with "make" or "make strom2kick"
- * 22.02.2012 - J.Schmidt
+ * 25.04.2012 - J.Schmidt
  */
 
 #include <stdio.h>
@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
  //parameters (user input)
   snprintf(path, 1024, "/home/jan/Kontrollsystem/");
   snprintf(folder, 1024, "2012-01-24-15-11-27");
-  int schleppfehler = 10;     //ms
+  int schleppfehler = 0;     //ms
   int t_rdownstart = 4000;    //ms
   float rdownspeed = -0.004007;  //GeV/ms
 
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 int run(const char *path, const int schleppfehler, const int t_rdownstart, const float rdownspeed)
 {
   unsigned int i, j, n=0;
-  int num_strom, tmp, t_cycle, t_rupstart, t_rupstop;
+  int num_strom, t_rupstart, t_rupstop;
   char filename[1024];
   float status[NUMCORR], timing[NUMTIMING];
   float strom[NUMTIMING], scaling[NUMCORR];
@@ -162,26 +162,21 @@ int run(const char *path, const int schleppfehler, const int t_rdownstart, const
       }
     
     fprintf(out, "#t[ms]  kick[mrad]\n");
-    t_cycle = 0 + schleppfehler;
     
     for (j=0; j<num_strom; j++)
       {
-	for (tmp=timing[j]; tmp>0; tmp--)
-	  {
 	    //get energy(t_cycle)
-	    if (t_cycle >= t_rupstart && t_cycle < t_rupstop)
-	      energy = E_inj + rupspeed * (t_cycle - t_rupstart);
-	    else if (t_cycle >= t_rupstop && t_cycle < t_rdownstart)
+	    if (timing[j] >= t_rupstart && timing[j] < t_rupstop)
+	      energy = E_inj + rupspeed * (timing[j] - t_rupstart);
+	    else if (timing[j] >= t_rupstop && timing[j] < t_rdownstart)
 	      energy = E_ext;
-	    else if (t_cycle >= t_rdownstart && energy > E_inj)
-	      energy = E_ext + rdownspeed * (t_cycle - t_rdownstart);
+	    else if (timing[j] >= t_rdownstart && energy > E_inj)
+	      energy = E_ext + rdownspeed * (timing[j] - t_rdownstart);
 	    else
 	      energy = E_inj;
 	    
 	    kick = strom[j] / scaling[i] / energy;
-	    fprintf(out, "%d     %g\n", t_cycle, kick);
-	    t_cycle++;
-	  }
+	    fprintf(out, "%0.lf     %g\n", timing[j]+schleppfehler, kick);
       }
     printf("VC%02d(%d) ", i+1, num_strom);
     if ((i+1)%10 == 0)
@@ -192,7 +187,7 @@ int run(const char *path, const int schleppfehler, const int t_rdownstart, const
 
 
   //write magnet-strengths (fixed values, no input)
-  snprintf(filename, 1024, "%s/magnets.dat", path);
+  snprintf(filename, 1024, "%s/optics.dat", path);
   if ((out = fopen(filename, "w")) == NULL)
     {
       printf("ERROR: Cannot open %s.\n", filename);

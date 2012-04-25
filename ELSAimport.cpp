@@ -1,5 +1,5 @@
 /* Read data from ELSA CCS, /sgt and ELSA MadX Lattice: element positions, bpm- & magnet-data, ... */
-/* 24.04.2012 - J.Schmidt */
+/* 25.04.2012 - J.Schmidt */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,8 +37,8 @@ int ELSAimport_magnetstrengths(magnetvec &quads, magnetvec &sexts, char *spurenF
   double kf=0, kd=0, mf=0, md=0;
   fstream f_magnets;
 
- // Read "magnets.dat"
-  snprintf(filename, 1024, "%s/magnets.dat", spurenFolder);
+ // Read "optics.dat"
+  snprintf(filename, 1024, "%s/optics.dat", spurenFolder);
   f_magnets.open(filename, ios::in);
   if (!f_magnets.is_open()) {
     printf("ERROR: ELSAimport.cpp: Cannot open %s\n", filename);
@@ -192,11 +192,9 @@ int ELSAimport_vcorrs(CORR *ELSAvcorrs, char *spurenFolder)
     }
     ELSAvcorrs[i].time.push_back(tmpA);
     //now continue normally
-    file >> tmpA.ms >> tmpA.kick;
-    ELSAvcorrs[i].time.push_back(tmpA);
     while (!file.eof()) {
       file >> tmpB.ms >> tmpB.kick;
-      for(j=tmpA.ms; j<tmpB.ms; j++) {
+      for(j=tmpA.ms+1; j<tmpB.ms; j++) {
 	tmpC.ms = j;
 	//linear interpolation of kicks
 	tmpC.kick = tmpA.kick + (tmpB.kick-tmpA.kick)/(tmpB.ms-tmpA.ms)*(j-tmpA.ms);
@@ -208,7 +206,7 @@ int ELSAimport_vcorrs(CORR *ELSAvcorrs, char *spurenFolder)
     }
     file.close();
   }
-
+  
   return 0;
 }
 
