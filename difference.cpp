@@ -92,7 +92,6 @@ int harmcorr_out(double *HCvcorr, double *HCquad, double *HCsum, unsigned int nd
 
   file <<setiosflags(ios::scientific)<<showpoint<<setprecision(3);
   for (i=0; i<nd; i++) {
-    HCsum[2*i] = HCvcorr[2*i]+HCquad[2*i];
     file <<setw(w)<< i <<setw(w)<< HCvcorr[2*i] <<setw(w)<< HCquad[2*i] <<setw(w)<< HCsum[2*i] << endl;
   }
   file.close();
@@ -144,8 +143,11 @@ int harmcorr(SPECTRUM *hc, int fmax_x, magnetvec vcorrs, magnetvec quads, orbitv
    k++;
  }
 
- harmcorr_out(HCvcorr, HCquad, HCsum, nd, filename);
+ for (i=0; i<nd; i++) {
+   HCsum[2*i] = HCvcorr[2*i]+HCquad[2*i];
+ }
 
+ harmcorr_out(HCvcorr, HCquad, HCsum, nd, filename);
  fft(hc, HCsum, nd, fmax_x, circumference);
 
  delete[] HCvcorr;
