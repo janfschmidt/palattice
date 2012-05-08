@@ -1,5 +1,5 @@
 /* create magnetic field distributions Bx & Bz along ring from magnet-position-data and orbit */
-/* 18.01.2012 - J.Schmidt */
+/* 08.05.2012 - J.Schmidt */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -97,6 +97,7 @@ int fields_out(FIELD *B, int n_samp, char *filename)
  int i=0;
  int w=12;
  fstream file;
+ double c = 299792458;
 
  file.open(filename, ios::out);
  if (!file.is_open()) {
@@ -104,10 +105,10 @@ int fields_out(FIELD *B, int n_samp, char *filename)
    return 1;
  }
 
- file <<setw(w)<< "s [m]" <<setw(w)<< "name" <<setw(w)<< "Bx [1/m]" <<setw(w)<< "Bz [1/m]" << endl;
+ file <<setw(w)<< "s [m]" <<setw(w)<< "t [s]" <<setw(w)<< "name" <<setw(w)<< "Bx [1/m]" <<setw(w)<< "Bz [1/m]" <<setw(w)<< "Bs [1/m]" << endl;
  for (i=0; i<n_samp; i++) {
    file <<setiosflags(ios::scientific)<<showpoint<<setprecision(4);
-   file <<setw(w)<< B[i].pos <<setw(w)<< B[i].name <<setw(w)<< B[i].x <<setw(w)<< B[i].z << endl;
+   file <<setw(w)<< B[i].pos <<setw(w)<< B[i].pos/c <<setw(w)<< B[i].name <<setw(w)<< B[i].x <<setw(w)<< B[i].z <<setw(w)<< 0.0 << endl;
  }
  file.close();
  cout << "* Wrote " << filename  << endl;
