@@ -231,6 +231,10 @@ int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, double corrlength,
       printf("ERROR: ELSAimport.cpp: No ELSA VC%02d corrector data available for %d ms.\n", i+1, t);
       return 1;
     }
+
+    //geplant: corrlength ersetzen durch Übernehmen von start&end aus vcorrs
+    //problem: indexverschiebung vcorrs gg ELSAvcorrs (zB KV23)
+
     snprintf(name, 20, "\"KV%02i\"", i+1);
     mtmp.name = name;
     mtmp.start = ELSAvcorrs[i].pos - corrlength/2.0;

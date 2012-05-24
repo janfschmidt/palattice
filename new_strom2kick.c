@@ -1,12 +1,15 @@
-/* ------strom2kick------
+/* ------new_strom2kick------
+ * ==============================================================
+ * special version of strom2kick
+ * only for "Spuren" from 2012-03-25 up to 2012-04-12
+ * older "Spuren" have wrong CORRS.TIMING format, use strom2kick.
+ * newer "Spuren" already have correct .KICK files
+ * ==============================================================
  * Calculate vertical corrector-kickangles from currents saved with "Spuren"
  * This function was added to /sgt/ccs/apl/bpms/read_traces.cc in Jan. 2012
- * Older "Spuren" get these additional files by use of this program.
- * =======================================================================
- * ATTENTION: Do not use with "Spuren" recorded after 25.03.2012
- *            because of new VORRS.TIMING format (new power-supplies)
- * =======================================================================
- * compile with "make" or "make strom2kick"
+ * and updated to new corrector power-supplies on 25.03.2012 (CORRS.TIMING)
+ * This version writes .KICK files compatible with new version of Bsupply
+ * compile with "make" or "make new_strom2kick"
  * no argument: menu is called; argument spuren-path: direct run
  * 24.05.2012 - J.Schmidt
  */
@@ -35,7 +38,7 @@ int main(int argc, char *argv[])
  //parameters (user input, default values(!))
   snprintf(path, 1024, "/home/jan/Kontrollsystem/");
   snprintf(folder, 1024, "2012-01-24-15-11-27");
-  int schleppfehler = 11;     //ms
+  int schleppfehler = 0;     //ms
   int t_rdownstart = 4000;    //ms
   float rdownspeed = -0.004007;  //GeV/ms
 
@@ -46,10 +49,10 @@ int main(int argc, char *argv[])
   }
 
   //menu (if executed without argument)
-  printf("\nATTENTION: Do not use with Spuren recorded after 2012-03-25 (new CORRS.TIMING format)\n\n");
+  printf("\nATTENTION: Do not use with Spuren recorded before 2012-03-25 (new CORRS.TIMING format)\n\n");
   while(loop == 1)
     {
-      printf("---------strom2kick---------\n");
+      printf("---------new_strom2kick---------\n");
       printf("(1) Pfad zu Spuren: %s\n", path);
       printf("(2) Spuren: %s\n", folder);
       printf("(3) Schleppfehler: %d ms\n", schleppfehler);
@@ -106,14 +109,14 @@ int main(int argc, char *argv[])
 int run(const char *path, const int schleppfehler, const int t_rdownstart, const float rdownspeed)
 {
   unsigned int i, j, n=0;
-  int num_strom, t_cycle, t_rupstart, t_rupstop;
+  int num_strom, t_rupstart, t_rupstop;
   char filename[1024];
   float status[NUMCORR], timing[NUMTIMING];
   float strom[NUMTIMING], scaling[NUMCORR];
   float kick, energy, rupspeed, E_inj, E_ext, f_tmp;
   FILE *file, *out;
 
-  printf("\nATTENTION: Do not use with Spuren recorded after 2012-03-25 (new CORRS.TIMING format)\n");
+  printf("\nATTENTION: Do not use with Spuren recorded before 2012-03-25 (new CORRS.TIMING format)\n");
   printf("\nStart calculation:\n");
 
   //read E-ramp
@@ -169,24 +172,21 @@ int run(const char *path, const int schleppfehler, const int t_rdownstart, const
       }
     
     fprintf(out, "#t[ms]  kick[mrad]\n");
-    t_cycle = 0 + schleppfehler;
     
     for (j=0; j<num_strom; j++)
       {
 	    //get energy(t_cycle)
-	    if (t_cycle >= t_rupstart && t_cycle < t_rupstop)
-	      energy = E_inj + rupspeed * (t_cycle - t_rupstart);
-	    else if (t_cycle >= t_rupstop && t_cycle < t_rdownstart)
+	    if (timing[j] >= t_rupstart && timing[j] < t_rupstop)
+	      energy = E_inj + rupspeed * (timing[j] - t_rupstart);
+	    else if (timing[j] >= t_rupstop && timing[j] < t_rdownstart)
 	      energy = E_ext;
-	    else if (t_cycle >= t_rdownstart && energy > E_inj)
-	      energy = E_ext + rdownspeed * (t_cycle - t_rdownstart);
+	    else if (timing[j] >= t_rdownstart && energy > E_inj)
+	      energy = E_ext + rdownspeed * (timing[j] - t_rdownstart);
 	    else
 	      energy = E_inj;
 	    
 	    kick = strom[j] / scaling[i] / energy;
-	    fprintf(out, "%d     %g\n", t_cycle, kick);
-	    t_cycle += timing[j];
-	  
+	    fprintf(out, "%0.lf     %g\n", timing[j]+schleppfehler, kick);
       }
     printf("VC%02d(%d) ", i+1, num_strom);
     if ((i+1)%10 == 0)
