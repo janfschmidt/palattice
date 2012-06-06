@@ -34,6 +34,7 @@ int main (int argc, char *argv[])
   unsigned int fmax_x = 6;      // max Frequency used for magnetic field spectrum (in revolution harmonics)
   unsigned int fmax_z = 6;
   unsigned int fmax_s = 0;
+  unsigned int fmax_hc = 12;    // harmcorr spectrum fmax = #dipoles/2 (is set to dipols.size()/2 below)
   TIMETAG t(530);               // moment(s) of elsa-cycle (ms)
   bool elsa = false;            // true: orbit, correctors, k & m read from /sgt/elsa/bpm/...
   bool diff = false;            // true: "harmcorr mode", calculate difference of two "Spuren"...
@@ -148,12 +149,6 @@ int main (int argc, char *argv[])
   }
   
 
-  // magnetic spectrum (amplitudes & phases) up to fmax
-  SPECTRUM bx[fmax_x+1];
-  SPECTRUM bz[fmax_z+1];
-  SPECTRUM bs[fmax_s+1];
-  SPECTRUM hc[fmax_x+1]; //harmcorr
-
 
   //metadata for spectrum files
   METADATA metadata(argv[1], elsa, diff, spuren, Reference);
@@ -202,7 +197,14 @@ int main (int argc, char *argv[])
   cout << "--------------------------------------------" << endl;
 
 
+ // magnetic spectrum (amplitudes & phases) up to fmax
+  fmax_hc = dipols.size() / 2;
+  SPECTRUM bx[fmax_x+1];
+  SPECTRUM bz[fmax_z+1];
+  SPECTRUM bs[fmax_s+1];
+  SPECTRUM hc[fmax_hc+1]; //harmcorr
  
+
   for(i=0; i<t.size(); i++) {
     if (elsa) {
       if (t.get(i) < 0) {
@@ -255,9 +257,9 @@ int main (int argc, char *argv[])
     //harmcorr data
     if (diff) {
       snprintf(filename, 1024, "%s/harmcorr%s%s.dat", outputFolder, t.tag(i).c_str(), difftag);
-      harmcorr(hc, fmax_x, vcorrs, quads, orbit, dipols, circumference, n_samp, filename);
+      harmcorr(hc, fmax_hc, vcorrs, quads, orbit, dipols, circumference, n_samp, filename);
       snprintf(filename, 1024, "%s/harmcorr%s%s.spectrum", outputFolder, t.tag(i).c_str(), difftag);
-      exportfile(hc, fmax_x, metadata, "harmcorr", filename);
+      exportfile(hc, fmax_hc, metadata, "harmcorr", filename);
     }
 
     cout << "--------------------------------------------" << endl;
