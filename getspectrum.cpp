@@ -116,10 +116,10 @@ int eval_out(SPECTRUM *bx, SPECTRUM *bz, int fmax_x, int fmax_z, int n_samp, dou
    return 1;
  }
  
- file <<setw(w)<< "s [m]" <<setw(w)<< "Bx [1/m]" <<setw(w)<< "Bz [1/m]" << endl;
+ file <<"# "<<setw(w)<< "s [m]" <<setw(w)<< "t [s]" <<setw(w)<< "Bx [1/m]" <<setw(w)<< "Bz [1/m]" <<setw(w)<< "Bs [1/m]" << endl;
  for (i=0; i<n_samp; i++) {
-   file <<setiosflags(ios::scientific)<<showpoint<<setprecision(3);
-   file <<setw(w)<< i*delta_s <<setw(w)<< eval(bx, fmax_x, i*delta_t) <<setw(w)<< eval(bz, fmax_z, i*delta_t) << endl;
+   file <<setiosflags(ios::scientific)<<showpoint<<setprecision(4);
+   file <<setw(w+2)<< i*delta_s <<setw(w)<< i*delta_t <<setw(w)<< eval(bx, fmax_x, i*delta_t) <<setw(w)<< eval(bz, fmax_z, i*delta_t) <<setw(w)<< 0.0 << endl;
  }
  file.close();
  cout << "* Wrote " << filename  << endl;
