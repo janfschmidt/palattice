@@ -1,7 +1,7 @@
 /* Calculation of the magnetic spectrum (horizontal, vertical) of a periodic accelerator  *
  * Based on MadX output data and (optional for ELSA) on measured orbit and corrector data *
  * Used as input for Simulations of polarization by solving Thomas-BMT equation           *
- * 16.04.2012 - J.Schmidt                                                                 *
+ * 14.06.2012 - J.Schmidt                                                                 *
  */
 
 #include <stdio.h>
@@ -57,8 +57,8 @@ int main (int argc, char *argv[])
   orbitvec bpmorbit;            // orbit at discrete positions (e.g. BPMs) for a specific time in elsa-cycle
   orbitvec orbit;               // orbit interpolated from bpmorbit with n_samp sampling points
   FIELD *B = new FIELD[n_samp]; // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
-  double corrlength;
   char difftag[6] = "";
+  int err;
 
   int opt, warnflg=0, conflictflg=0;          //for getopt()
   extern char *optarg;
@@ -155,13 +155,10 @@ int main (int argc, char *argv[])
   char madxLabels[100];
   snprintf(madxLabels, 100, "TITLE,LENGTH,ORIGIN,PARTICLE");
   metadata.madximport(madxLabels, importFile);
-  tmp = metadata.getbyLabel("LENGTH");
-  if (tmp == "NA") {
+  circumference = strtod(metadata.getbyLabel("LENGTH").c_str(), NULL);
+  if (circumference == 0) {
     cout << "ERROR: metadata: cannot read accelerator circumference from "<< importFile << endl;
     return 1;
-  }
-  else {
-    circumference = strtod(tmp.c_str(), NULL);
   }
 
   
@@ -178,14 +175,14 @@ int main (int argc, char *argv[])
 
   // MAD-X: read particle orbit and lattice (magnet positions & strengths)
   madximport(importFile, bpmorbit, dipols, quads, sexts, vcorrs);
-  corrlength = vcorrs[1].end-vcorrs[1].start; //save corrector length. vcorrs[1] chosen, all have equal length
+
 
   // elsa=true: quad-&sext-strengths, BPM- & corrector-data from ELSA "Spuren"
   if (elsa) {
     ELSAimport_magnetstrengths(quads, sexts, spurenFolder);
     ELSAimport(ELSAbpms, ELSAvcorrs, spurenFolder);
     cout << "* "<<dipols.size()<<" dipoles, "<<quads.size()<<" quadrupoles, "
-	 <<sexts.size()<<" sextupoles read"<<endl<<"  from "<<importFile << endl;
+	 <<sexts.size()<<" sextupoles, "<<vcorrs.size()<<" correctors read"<<endl<<"  from "<<importFile << endl;
     if (diff) snprintf(ReferenceFolder, 1024, "%s/ELSA-Spuren/%s", argv[1], Reference);
   }
   else {
@@ -213,14 +210,15 @@ int main (int argc, char *argv[])
       }
 
       metadata.setbyLabel("Time in cycle", t.label(i));
-      ELSAimport_getbpmorbit(ELSAbpms, bpmorbit, t.get(i));
-      ELSAimport_getvcorrs(ELSAvcorrs, vcorrs, corrlength, t.get(i));
+      err += ELSAimport_getbpmorbit(ELSAbpms, bpmorbit, t.get(i));
+      err += ELSAimport_getvcorrs(ELSAvcorrs, vcorrs, t.get(i));
+      if (err != 0) return 1;
       cout << "* "<<t.label(i)<<": "<<vcorrs.size()<<" correctors and "
 	   <<bpmorbit.size()<<" BPMs read"<<endl<<"  from "<<spurenFolder << endl;
     }
     //diff=true: read and subtract reference orbit & corrector data
     if (diff) {
-      if (difference(ReferenceFolder, t.get(i), corrlength, bpmorbit, vcorrs, elsa) != 0) return 1;
+      if (difference(ReferenceFolder, t.get(i), bpmorbit, vcorrs, elsa) != 0) return 1;
     }
 
     // interpolate orbit, calculate field distribution & spectrum

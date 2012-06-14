@@ -16,7 +16,7 @@
 using namespace std;
 
 // read and subtract reference orbit & corrector data
-int difference(char *ReferenceFolder, unsigned int t, double corrlength, orbitvec &bpmorbit, magnetvec &vcorrs, bool elsa)
+int difference(char *ReferenceFolder, unsigned int t, orbitvec &bpmorbit, magnetvec &vcorrs, bool elsa)
 {
 
   unsigned int i;
@@ -29,7 +29,7 @@ int difference(char *ReferenceFolder, unsigned int t, double corrlength, orbitve
     CORR Ref_ELSAvcorrs[NVCORRS];
     ELSAimport(Ref_ELSAbpms, Ref_ELSAvcorrs, ReferenceFolder); 
     ELSAimport_getbpmorbit(Ref_ELSAbpms, Ref_bpmorbit, t);
-    ELSAimport_getvcorrs(Ref_ELSAvcorrs, Ref_vcorrs, corrlength, t);
+    ELSAimport_getvcorrs(Ref_ELSAvcorrs, Ref_vcorrs, t);
     cout << "* "<<t<<" ms: ";
   }
   else {

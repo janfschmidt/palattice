@@ -46,9 +46,10 @@ public:
   string name;
   double start;
   double end;
+  double length;
   double strength;
 
-  MAGNET() : start(0), end(0), strength(0) {}
+  MAGNET() : start(0), end(0), length(0), strength(0) {}
 };
 
 class FIELD {

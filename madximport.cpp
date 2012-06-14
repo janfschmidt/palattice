@@ -40,6 +40,7 @@ int madximport(char *filename, orbitvec &bpmorbit, magnetvec &dipols, magnetvec 
       mtmp.name = name;
       mtmp.start = s-l;
       mtmp.end = s;
+      mtmp.length = l;
       mtmp.strength = angle/l;   // 1/R
       dipols.push_back(mtmp);    // add new entry to dipols
     }
@@ -48,10 +49,11 @@ int madximport(char *filename, orbitvec &bpmorbit, magnetvec &dipols, magnetvec 
       mtmp.name = name;
       mtmp.start = s-l;
       mtmp.end = s;
+      mtmp.length = l;
       mtmp.strength = k1l/l;   // k
       quads.push_back(mtmp);     // add new entries to quads & bpmorbit
       // BPMs at quads
-      if (x!="na" && y!="na") {
+      if (x!="na" && y!="na" && k1l!=0) { //k1l: no BPM for inactive quad (ELSA: SQ, LQ)
 	otmp.pos = s;
 	otmp.x = strtod(x.c_str(), NULL); // ! double x=0.0 if no valid format in string x
 	otmp.z = strtod(y.c_str(), NULL);
@@ -63,21 +65,23 @@ int madximport(char *filename, orbitvec &bpmorbit, magnetvec &dipols, magnetvec 
       mtmp.name = name;
       mtmp.start = s-l;
       mtmp.end = s;
+      mtmp.length = l;
       mtmp.strength = k2l/l;
       sexts.push_back(mtmp);    // add new entries to sexts & bpmorbit      
       // BPMs at sexts
-      if (x!="na" && y!="na") {
-	otmp.pos = s;
-	otmp.x = strtod(x.c_str(), NULL); // ! double x=0.0 if no valid format in string x
-	otmp.z = strtod(y.c_str(), NULL);
-	bpmorbit.push_back(otmp);
-      }
+      //if (x!="na" && y!="na") {
+      //otmp.pos = s;
+      //otmp.x = strtod(x.c_str(), NULL); // ! double x=0.0 if no valid format in string x
+      //otmp.z = strtod(y.c_str(), NULL);
+      //bpmorbit.push_back(otmp);
+      //}
     }
     else if (tmp == "\"VKICKER\"") {
       madx >> name >> s >> x >> y >> l >> angle >> k1l >> k2l >> vkick;
       mtmp.name = name;
       mtmp.start = s-l;
       mtmp.end = s;
+      mtmp.length = l;
       mtmp.strength = vkick/l;   // 1/R from kick-angle
       vcorrs.push_back(mtmp);    // add new entry to vcorrs
     }

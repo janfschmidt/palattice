@@ -1,5 +1,5 @@
 /* Read data from ELSA CCS, /sgt and ELSA MadX Lattice: element positions, bpm- & magnet-data, ... */
-/* 25.04.2012 - J.Schmidt */
+/* 14.06.2012 - J.Schmidt */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +15,7 @@
 
 using namespace std;
 
+#define VCPOS_WARNDIFF 0.05  //warning for larger VC pos.diff. in MadX & ELSA-Spuren
 
 /* read ELSA data */
 int ELSAimport(BPM *ELSAbpms, CORR *ELSAvcorrs, char *spurenFolder)
@@ -215,16 +216,16 @@ int ELSAimport_vcorrs(CORR *ELSAvcorrs, char *spurenFolder)
 
 /* write corrector data for time t to vcorrs
   !vcorrs must be read from madx before to get length! */
-int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, double corrlength, unsigned int t)
+int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, unsigned int t)
 {
-  int i;
+  unsigned int i, j=0;
   MAGNET mtmp;
   char name[20];
+  double diff=0;
 
-  vcorrs.clear(); //delete old corrector-data (from madx or previous t)
 
   for (i=0; i<NVCORRS; i++) {
-    if (ELSAvcorrs[i].pos==0.0) {
+    if (ELSAvcorrs[i].pos==0.0) {   //inactive correctors have pos=0 in VCORRS.SPOS
       continue;
     }
     else if (t > ELSAvcorrs[i].time.size()) {
@@ -232,16 +233,29 @@ int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, double corrlength,
       return 1;
     }
 
-    //geplant: corrlength ersetzen durch Übernehmen von start&end aus vcorrs
-    //problem: indexverschiebung vcorrs gg ELSAvcorrs (zB KV23)
 
+    //same corrector in Mad-X and ELSA-Spuren?
+    //...check by name
     snprintf(name, 20, "\"KV%02i\"", i+1);
-    mtmp.name = name;
-    mtmp.start = ELSAvcorrs[i].pos - corrlength/2.0;
-    mtmp.end = ELSAvcorrs[i].pos + corrlength/2.0; 
-    mtmp.strength = ELSAvcorrs[i].time[t].kick/1000.0/corrlength;   //unit 1/m
-    vcorrs.push_back(mtmp);
+    if (vcorrs[j].name != name) {
+      cout << "ERROR: ELSAimport.cpp: Unexpected corrector name" << endl;
+      cout << "Maybe Mad-X lattice does not fit to ELSA-Spuren." << endl;
+      return 2;
+    }
+    //...check by position
+    diff = fabs(ELSAvcorrs[i].pos - (vcorrs[j].start+vcorrs[j].length/2.0));
+    if (diff > VCPOS_WARNDIFF) {
+      cout << "! Position of " <<name<< " differs by " <<diff<< "m in Mad-X and ELSA-Spuren. Use ELSA-Spuren." << endl;
+    }
+
+    vcorrs[j].start = ELSAvcorrs[i].pos - vcorrs[j].length/2.0;
+    vcorrs[j].end = ELSAvcorrs[i].pos + vcorrs[j].length/2.0; 
+    vcorrs[j].strength = ELSAvcorrs[i].time[t].kick/1000.0/vcorrs[j].length;   //unit 1/m
+    j++;
   }
+
+  if (j != vcorrs.size())
+    cout << "WARNING: Not all correctors overwritten by ELSA-Spuren" << endl;
   
   return 0;
 }
