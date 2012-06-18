@@ -3,6 +3,8 @@
 
 int madximport(char *filename, orbitvec &bpmorbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs);
 
+int misalignments(char *filename, magnetvec &dipols);
+
 #endif
 
 /*__POLSIM__MADXIMPORT_HPP_*/

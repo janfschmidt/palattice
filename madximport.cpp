@@ -1,5 +1,5 @@
 /* Read data from madX output file: magnet positions, strengths, orbit, ...  */
-/* 18.01.2012 - J.Schmidt */
+/* 18.06.2012 - J.Schmidt */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,7 +35,7 @@ int madximport(char *filename, orbitvec &bpmorbit, magnetvec &dipols, magnetvec 
   while (!madx.eof()) {
     madx >> tmp;
 
-    if (tmp == "\"SBEND\"") {
+    if (tmp == "\"SBEND\"" || tmp == "\"RBEND\"") {
       madx >> name >> s >> x >> y >> l >> angle;
       mtmp.name = name;
       mtmp.start = s-l;
@@ -92,3 +92,31 @@ int madximport(char *filename, orbitvec &bpmorbit, magnetvec &dipols, magnetvec 
   return 0;
 }
 
+
+/* import magnet misalignments from madx an change field accordingly */
+int misalignments(char *filename, magnetvec &dipols)
+{
+  string tmp;
+  unsigned int j,d=0;
+  fstream madx;
+  unsigned int dmax=dipols.size();
+
+  madx.open(filename, ios::in);
+  if (!madx.is_open()) {
+    return 1;
+  }
+  
+  while (!madx.eof() && d<dmax) {
+    madx >> tmp;
+
+    if (tmp == dipols[d].name) {
+      for (j=0; j<47; j++) madx >> tmp; //read stupid unnecessary columns
+      madx >> dipols[d].dpsi;           //rotation around s-axis
+      d++;
+    }
+
+  }
+
+
+  return 0;
+}

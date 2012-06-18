@@ -175,7 +175,8 @@ int main (int argc, char *argv[])
 
   // MAD-X: read particle orbit and lattice (magnet positions & strengths)
   madximport(importFile, bpmorbit, dipols, quads, sexts, vcorrs);
-
+  snprintf(importFile, 1024, "%s/madx/dipols.ealign", argv[1]); // will be replaced by filename-class
+  misalignments(importFile, dipols);
 
   // elsa=true: quad-&sext-strengths, BPM- & corrector-data from ELSA "Spuren"
   if (elsa) {

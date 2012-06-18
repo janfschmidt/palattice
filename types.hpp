@@ -48,8 +48,9 @@ public:
   double end;
   double length;
   double strength;
+  double dpsi;   //rotation around s
 
-  MAGNET() : start(0), end(0), length(0), strength(0) {}
+  MAGNET() : start(0), end(0), length(0), strength(0), dpsi(0) {}
 };
 
 class FIELD {

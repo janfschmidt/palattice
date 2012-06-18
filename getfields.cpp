@@ -1,5 +1,5 @@
 /* create magnetic field distributions Bx & Bz along ring from magnet-position-data and orbit */
-/* 08.05.2012 - J.Schmidt */
+/* 18.06.2012 - J.Schmidt */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,8 +34,8 @@ int getfields (FIELD *B, double circumference, orbitvec &orbit, magnetvec &dipol
    /* dipoles */
    if (d<dipols.size() && B[i].pos >= dipols[d].start && B[i].pos <= dipols[d].end) {
      B[i].name = dipols[d].name;
-     B[i].x = 0;
-     B[i].z = dipols[d].strength;
+     B[i].x = - dipols[d].strength * sin(dipols[d].dpsi);
+     B[i].z = + dipols[d].strength * cos(dipols[d].dpsi);
      dSwitch=1;
    }
    /* quadrupoles */
