@@ -102,7 +102,7 @@ double eval(SPECTRUM *bx, int fmax, double t)
 
 
 /* create output file with evaluated field data */
-int eval_out(SPECTRUM *bx, SPECTRUM *bz, int fmax_x, int fmax_z, int n_samp, double circumference, char *filename)
+int eval_out(SPECTRUM *bx, SPECTRUM *bz, int fmax_x, int fmax_z, int n_samp, double circumference, const char *filename)
 {
  int i;
  int w=12;

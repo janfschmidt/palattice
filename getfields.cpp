@@ -92,7 +92,7 @@ int getfields (FIELD *B, double circumference, orbitvec &orbit, magnetvec &dipol
 
 
 /* create output file with field data */
-int fields_out(FIELD *B, int n_samp, char *filename)
+int fields_out(FIELD *B, int n_samp, const char *filename)
 {
  int i=0;
  int w=12;

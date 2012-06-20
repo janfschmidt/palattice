@@ -86,7 +86,7 @@ int getorbit (orbitvec &orbit, double circumference, orbitvec &bpmorbit, int n_s
 
 
 /* create output file with orbit data */
-int orbit_out(orbitvec &orbit, char *filename)
+int orbit_out(orbitvec &orbit, const char *filename)
 {
  int i=0;
  int w=10;

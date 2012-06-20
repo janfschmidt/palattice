@@ -1,7 +1,7 @@
 /* Calculation of the magnetic spectrum (horizontal, vertical) of a periodic accelerator  *
  * Based on MadX output data and (optional for ELSA) on measured orbit and corrector data *
  * Used as input for Simulations of polarization by solving Thomas-BMT equation           *
- * 14.06.2012 - J.Schmidt                                                                 *
+ * 19.06.2012 - J.Schmidt                                                                 *
  */
 
 #include <stdio.h>
@@ -24,6 +24,7 @@
 #include "metadata.hpp"
 #include "difference.hpp"
 #include "timetag.hpp"
+#include "filenames.hpp"
 
 using namespace std;
 
@@ -41,11 +42,11 @@ int main (int argc, char *argv[])
   bool allout = false;          // true: additional output files (orbit, field, bpms, ...)
   char spuren[20] = "dummy";
   char Reference[50] = "dummy";
-  char filename[1024];
-  char importFile[1024];
-  char spurenFolder[1024];
-  char ReferenceFolder[1024];
-  char outputFolder[1024];
+  //char filename[1024];
+  //char importFile[1024];
+  //char spurenFolder[1024];
+  //char ReferenceFolder[1024];
+  //char outputFolder[1024];
   string tmp;
   double circumference=0;
   BPM ELSAbpms[NBPMS];         // ELSAbpms[0]=BPM01, ELSAbpms[31]=BPM32
@@ -80,14 +81,14 @@ int main (int argc, char *argv[])
       return 1;
     }
   }
-  snprintf(importFile, 1024, "%s/madx/madx.twiss", argv[1]);
-  snprintf(outputFolder, 1024, "%s/inout", argv[1]);
+  //snprintf(importFile, 1024, "%s/madx/madx.twiss", argv[1]);
+  //snprintf(outputFolder, 1024, "%s/inout", argv[1]);
   while ((opt = getopt(argc, argv, ":e:t:f:d:m:ah")) != -1) {
     switch(opt) {
     case 'e':
       elsa = true;
       strncpy(spuren, optarg, 20);
-      snprintf(spurenFolder, 1024, "%s/ELSA-Spuren/%s", argv[1], spuren);
+      //snprintf(spurenFolder, 1024, "%s/ELSA-Spuren/%s", argv[1], spuren);
       break;
     case 't':
       conflictflg++; warnflg++;
@@ -103,7 +104,7 @@ int main (int argc, char *argv[])
       break;
     case 'd':
       diff = true;
-      strncpy(difftag, "_diff", 6);
+      //strncpy(difftag, "_diff", 6);
       strncpy(Reference, optarg, 50);
       break;
     case 'a':
@@ -149,15 +150,19 @@ int main (int argc, char *argv[])
   }
   
 
+  //initialize filenames
+  FILENAMES file(argv[1], elsa, diff, spuren, Reference);
+  cout << "Pfad: "<<file.path() << endl;
+
 
   //metadata for spectrum files
-  METADATA metadata(argv[1], elsa, diff, spuren, Reference);
+  METADATA metadata(file.path(), elsa, diff, spuren, Reference);
   char madxLabels[100];
   snprintf(madxLabels, 100, "TITLE,LENGTH,ORIGIN,PARTICLE");
-  metadata.madximport(madxLabels, importFile);
+  metadata.madximport(madxLabels, file.import());
   circumference = strtod(metadata.getbyLabel("LENGTH").c_str(), NULL);
   if (circumference == 0) {
-    cout << "ERROR: metadata: cannot read accelerator circumference from "<< importFile << endl;
+    cout << "ERROR: metadata: cannot read accelerator circumference from "<< file.import() << endl;
     return 1;
   }
 
@@ -174,23 +179,23 @@ int main (int argc, char *argv[])
 
 
   // MAD-X: read particle orbit and lattice (magnet positions & strengths)
-  madximport(importFile, bpmorbit, dipols, quads, sexts, vcorrs);
-  snprintf(importFile, 1024, "%s/madx/dipols.ealign", argv[1]); // will be replaced by filename-class
-  misalignments(importFile, dipols);
+  madximport(file.import(), bpmorbit, dipols, quads, sexts, vcorrs);
+  //snprintf(importFile, 1024, "%s/madx/dipols.ealign", argv[1]); // will be replaced by filename-class
+  misalignments(file.misalign_dip(), dipols);
 
   // elsa=true: quad-&sext-strengths, BPM- & corrector-data from ELSA "Spuren"
   if (elsa) {
-    ELSAimport_magnetstrengths(quads, sexts, spurenFolder);
-    ELSAimport(ELSAbpms, ELSAvcorrs, spurenFolder);
+    ELSAimport_magnetstrengths(quads, sexts, file.spuren());
+    ELSAimport(ELSAbpms, ELSAvcorrs, file.spuren());
     cout << "* "<<dipols.size()<<" dipoles, "<<quads.size()<<" quadrupoles, "
-	 <<sexts.size()<<" sextupoles, "<<vcorrs.size()<<" correctors read"<<endl<<"  from "<<importFile << endl;
-    if (diff) snprintf(ReferenceFolder, 1024, "%s/ELSA-Spuren/%s", argv[1], Reference);
+	 <<sexts.size()<<" sextupoles, "<<vcorrs.size()<<" correctors read"<<endl<<"  from "<<file.import() << endl;
+    //if (diff) snprintf(ReferenceFolder, 1024, "%s/ELSA-Spuren/%s", argv[1], Reference);
   }
   else {
     cout << "* "<<dipols.size()<<" dipoles, "<<quads.size()<<" quadrupoles, "
 	 <<sexts.size()<<" sextupoles, "<<vcorrs.size()<<" correctors and "
-	 <<bpmorbit.size()<<" BPMs read"<<endl<<"  from "<<importFile << endl;
-    if (diff) snprintf(ReferenceFolder, 1024, "%s/madx/%s", argv[1], Reference);
+	 <<bpmorbit.size()<<" BPMs read"<<endl<<"  from "<<file.import() << endl;
+    //if (diff) snprintf(ReferenceFolder, 1024, "%s/madx/%s", argv[1], Reference);
   }
   cout << "--------------------------------------------" << endl;
 
@@ -215,11 +220,11 @@ int main (int argc, char *argv[])
       err += ELSAimport_getvcorrs(ELSAvcorrs, vcorrs, t.get(i));
       if (err != 0) return 1;
       cout << "* "<<t.label(i)<<": "<<vcorrs.size()<<" correctors and "
-	   <<bpmorbit.size()<<" BPMs read"<<endl<<"  from "<<spurenFolder << endl;
+	   <<bpmorbit.size()<<" BPMs read"<<endl<<"  from "<<file.spuren() << endl;
     }
     //diff=true: read and subtract reference orbit & corrector data
     if (diff) {
-      if (difference(ReferenceFolder, t.get(i), bpmorbit, vcorrs, elsa) != 0) return 1;
+      if (difference(file.ref(), t.get(i), bpmorbit, vcorrs, elsa) != 0) return 1;
     }
 
     // interpolate orbit, calculate field distribution & spectrum
@@ -230,41 +235,33 @@ int main (int argc, char *argv[])
     // generate output files
     if (allout) {
       //BPM data
-      snprintf(filename, 1024, "%s/bpms%s%s.dat", outputFolder, t.tag(i).c_str(), difftag);
-      bpms_out(bpmorbit, filename);
+      bpms_out(bpmorbit, file.out("bpms", t.tag(i)));
       //corrector data
-      snprintf(filename, 1024, "%s/vcorrs%s%s.dat", outputFolder, t.tag(i).c_str(), difftag);
-      corrs_out(vcorrs, filename);
+      corrs_out(vcorrs, file.out("vcorrs", t.tag(i)));
       //orbit data (interpolated BPMs)
-      snprintf(filename, 1024, "%s/orbit%s%s.dat", outputFolder, t.tag(i).c_str(), difftag);
-      orbit_out(orbit, filename);
+      orbit_out(orbit, file.out("orbit", t.tag(i)));
       //field data
-      snprintf(filename, 1024, "%s/fields%s%s.dat", outputFolder, t.tag(i).c_str(), difftag);
-      fields_out(B, n_samp, filename);
+      fields_out(B, n_samp, file.out("fields", t.tag(i)));
       //evaluated field data
-      snprintf(filename, 1024, "%s/eval%s%s.dat", outputFolder, t.tag(i).c_str(), difftag);
-      eval_out(bx, bz, fmax_x, fmax_z, n_samp, circumference, filename);
+      eval_out(bx, bz, fmax_x, fmax_z, n_samp, circumference, file.out("eval", t.tag(i)));
     }
 
     //export spectrum files for polarization-calculation
-    snprintf(filename, 1024, "%s/horizontal%s%s.spectrum", outputFolder, t.tag(i).c_str(), difftag);
-    exportfile(bx, fmax_x, metadata, "horizontal", filename);
-    snprintf(filename, 1024, "%s/vertical%s%s.spectrum", outputFolder, t.tag(i).c_str(), difftag);
-    exportfile(bz, fmax_z, metadata, "vertical", filename);
-    snprintf(filename, 1024, "%s/longitudinal%s%s.spectrum", outputFolder, t.tag(i).c_str(), difftag);
-    exportfile(bs, fmax_s-1, metadata, "longitudinal", filename); // empty spectrum (fmax_s-1)
+    exportfile(bx, fmax_x, metadata, "horizontal", file.spec("horizontal", t.tag(i)));
+    exportfile(bz, fmax_z, metadata, "vertical", file.spec("vertical", t.tag(i)));
+    // empty spectrum (fmax_s-1)
+    exportfile(bs, fmax_s-1, metadata, "longitudinal", file.spec("longitudinal", t.tag(i)));
+
     //harmcorr data
     if (diff) {
-      snprintf(filename, 1024, "%s/harmcorr%s%s.dat", outputFolder, t.tag(i).c_str(), difftag);
-      harmcorr(hc, fmax_hc, vcorrs, quads, orbit, dipols, circumference, n_samp, filename);
-      snprintf(filename, 1024, "%s/harmcorr%s%s.spectrum", outputFolder, t.tag(i).c_str(), difftag);
-      exportfile(hc, fmax_hc, metadata, "harmcorr", filename);
+      harmcorr(hc, fmax_hc, vcorrs, quads, orbit, dipols, circumference, n_samp, file.out("harmcorr", t.tag(i)));
+      exportfile(hc, fmax_hc, metadata, "harmcorr", file.spec("harmcorr", t.tag(i)));
     }
 
     cout << "--------------------------------------------" << endl;
   }
   
-  cout << "Finished. (Run "<<outputFolder<<"/Bsupply"<<difftag<<".gp for plots)" << endl << endl;
+  cout << "Finished. (Run "<<file.path()<<"/inout/Bsupply"<<difftag<<".gp for plots)" << endl << endl;
   delete[] B;
 
   return 0;

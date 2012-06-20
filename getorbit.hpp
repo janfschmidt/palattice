@@ -1,22 +1,12 @@
 #ifndef __POLSIM__GETORBIT_HPP_
 #define __POLSIM__GETORBIT_HPP_
 
-/*
-#ifdef __cplusplus
-extern "C" {
-#endif 
-*/
 
 int getorbit (orbitvec &orbit , double circumference, orbitvec &bpmorbit, int n_samp);
 
-int orbit_out(orbitvec &orbit, char *filename);
+int orbit_out(orbitvec &orbit, const char *filename);
 
 
-/*
-#ifdef __cplusplus
-}
-#endif 
-*/
 
 #endif
 

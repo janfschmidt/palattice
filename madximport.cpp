@@ -17,7 +17,7 @@ using namespace std;
 
 
 
-int madximport(char *filename, orbitvec &bpmorbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs)
+int madximport(const char *filename, orbitvec &bpmorbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs)
 {
   string tmp, name;
   double s, l, angle, k1l, k2l, vkick; // madx column variables
@@ -94,7 +94,7 @@ int madximport(char *filename, orbitvec &bpmorbit, magnetvec &dipols, magnetvec 
 
 
 /* import magnet misalignments from madx an change field accordingly */
-int misalignments(char *filename, magnetvec &dipols)
+int misalignments(const char *filename, magnetvec &dipols)
 {
   string tmp;
   unsigned int j,d=0;

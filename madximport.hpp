@@ -1,9 +1,9 @@
 #ifndef __POLSIM__MADXIMPORT_HPP_
 #define __POLSIM__MADXIMPORT_HPP_
 
-int madximport(char *filename, orbitvec &bpmorbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs);
+int madximport(const char *filename, orbitvec &bpmorbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs);
 
-int misalignments(char *filename, magnetvec &dipols);
+int misalignments(const char *filename, magnetvec &dipols);
 
 #endif
 

@@ -8,7 +8,7 @@ int fft (SPECTRUM *bx, double *BX, int n_samp, int fmax, double circumference);
 
 double eval(SPECTRUM *bx, int f_max, double t);
 
-int eval_out(SPECTRUM *bx, SPECTRUM *bz, int fmax_x, int fmax_z, int n_samp, double circumference, char *filename);
+int eval_out(SPECTRUM *bx, SPECTRUM *bz, int fmax_x, int fmax_z, int n_samp, double circumference, const char *filename);
 
 
 #endif

@@ -18,7 +18,7 @@ using namespace std;
 #define VCPOS_WARNDIFF 0.05  //warning for larger VC pos.diff. in MadX & ELSA-Spuren
 
 /* read ELSA data */
-int ELSAimport(BPM *ELSAbpms, CORR *ELSAvcorrs, char *spurenFolder)
+int ELSAimport(BPM *ELSAbpms, CORR *ELSAvcorrs, const char *spurenFolder)
 {
   
   ELSAimport_bpms(ELSAbpms, spurenFolder);
@@ -30,7 +30,7 @@ int ELSAimport(BPM *ELSAbpms, CORR *ELSAvcorrs, char *spurenFolder)
 
 
 /* Write quad- & sext-strengths */
-int ELSAimport_magnetstrengths(magnetvec &quads, magnetvec &sexts, char *spurenFolder)
+int ELSAimport_magnetstrengths(magnetvec &quads, magnetvec &sexts, const char *spurenFolder)
 {
   int i, n;
   char filename[1024];
@@ -88,7 +88,7 @@ int ELSAimport_magnetstrengths(magnetvec &quads, magnetvec &sexts, char *spurenF
 
 
 /* Write BPM data from files to bpms */
-int ELSAimport_bpms(BPM *ELSAbpms, char *spurenFolder)
+int ELSAimport_bpms(BPM *ELSAbpms, const char *spurenFolder)
 {
   int i;
   char filename[1024];
@@ -154,7 +154,7 @@ int ELSAimport_getbpmorbit(BPM *ELSAbpms, orbitvec &bpmorbit, unsigned int t)
 
 
 /* Write corrector data from files to ELSAvcorrs */
-int ELSAimport_vcorrs(CORR *ELSAvcorrs, char *spurenFolder)
+int ELSAimport_vcorrs(CORR *ELSAvcorrs, const char *spurenFolder)
 {
   int i, j, tmp;
   char filename[1024];
@@ -264,7 +264,7 @@ int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, unsigned int t)
 
 
 /* create output file with BPM data */
-int bpms_out(orbitvec bpmorbit, char *filename)
+int bpms_out(orbitvec bpmorbit, const char *filename)
 {
  unsigned int i=0;
  int w=10;
@@ -272,7 +272,7 @@ int bpms_out(orbitvec bpmorbit, char *filename)
  
  file.open(filename, ios::out);
  if (!file.is_open()) {
-   cout << "ERROR: ELSAimport.cpp: Cannot open " << filename << "." << endl;
+   cout << "ERROR: bpms.out(): Cannot open " << filename << "." << endl;
    return 1;
  }
  
@@ -291,7 +291,7 @@ int bpms_out(orbitvec bpmorbit, char *filename)
 
 
 /* create output file with corrector data */
-int corrs_out(magnetvec vcorrs, char *filename)
+int corrs_out(magnetvec vcorrs, const char *filename)
 {
  unsigned int i=0;
  int w=14;
@@ -299,7 +299,7 @@ int corrs_out(magnetvec vcorrs, char *filename)
  
  file.open(filename, ios::out);
  if (!file.is_open()) {
-   cout << "ERROR: ELSAimport.cpp: Cannot open " << filename << "." << endl;
+   cout << "ERROR: corrs_out(): Cannot open " << filename << "." << endl;
    return 1;
  }
  

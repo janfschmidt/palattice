@@ -13,10 +13,10 @@ using namespace std;
 
 
 /* constructor with entries for project, mode & spuren */
-METADATA::METADATA(char *path, bool elsa, bool diff, char *spuren, char *Reference)
+METADATA::METADATA(string path, bool elsa, bool diff, char *spuren, char *Reference)
 {
   METADATA::add("created at", timestamp());
-  METADATA::add("Project path", path);
+  METADATA::add("Project path", path.c_str());
 
   if (elsa) {
     if (diff) {
@@ -41,7 +41,7 @@ METADATA::METADATA(char *path, bool elsa, bool diff, char *spuren, char *Referen
 
 
 /* add metadata from madx-outputfile. returns number of read values */
-int METADATA::madximport(char *madxLabels, char *madxfile)
+int METADATA::madximport(char *madxLabels, const char *madxfile)
 {
   unsigned int i, n=0;
   unsigned int newStart;
@@ -52,6 +52,7 @@ int METADATA::madximport(char *madxLabels, char *madxfile)
 
   madx.open(madxfile, ios::in);
   if (!madx.is_open()) {
+    cout << "ERROR: metadata.madximport(): Cannot open " << madxfile << endl;
     return -1;
   }
 

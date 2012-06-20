@@ -13,9 +13,9 @@ private:
 
 public:
   METADATA() {METADATA::add("created at", timestamp());}
-  METADATA(char *path, bool elsa, bool diff, char *spuren, char *Ref_spuren);
+  METADATA(string path, bool elsa, bool diff, char *spuren, char *Ref_spuren);
   ~METADATA() {}
-  int madximport(char *madxLabels, char *madxfile);
+  int madximport(char *madxLabels, const char *madxfile);
   void add(string inLabel, string inEntry);
   int size() const;
   string getLabel(int i) const;
