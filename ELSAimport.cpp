@@ -238,8 +238,8 @@ int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, unsigned int t)
     //...check by name
     snprintf(name, 20, "\"KV%02i\"", i+1);
     if (vcorrs[j].name != name) {
-      cout << "ERROR: ELSAimport.cpp: Unexpected corrector name" << endl;
-      cout << "Maybe Mad-X lattice does not fit to ELSA-Spuren." << endl;
+      cout << "ERROR: ELSAimport.cpp: Unexpected corrector name. Mad-X lattice does not fit to ELSA." << endl;
+      cout << "       Mad-X: " <<vcorrs[j].name<< " -- expected: " <<name<< endl;
       return 2;
     }
     //...check by position
