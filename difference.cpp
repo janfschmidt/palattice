@@ -21,10 +21,11 @@ int difference(char *ReferenceFolder, unsigned int t, orbitvec &bpmorbit, magnet
 
   unsigned int i;
   orbitvec Ref_bpmorbit;
-  magnetvec Ref_vcorrs = vcorrs; // take names,positions,lengths from vcorrs (pos will be checked again in getvcorrs()
+  magnetvec Ref_vcorrs;
 
   //read reference
   if (elsa) {
+    Ref_vcorrs  = vcorrs; // take names,positions,lengths from vcorrs (pos will be checked again in getvcorrs()
     ELSAimport_getbpmorbit(Ref_ELSAbpms, Ref_bpmorbit, t);
     ELSAimport_getvcorrs(Ref_ELSAvcorrs, Ref_vcorrs, t);
     cout << "* "<<t<<" ms: ";
