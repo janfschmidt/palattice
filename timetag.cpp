@@ -20,7 +20,8 @@ TIMETAG::TIMETAG(char *tagfile)
 
   file.open(tagfile, ios::in);
   if (!file.is_open()) {
-    //!!!!! return -1;
+    cout << "ERROR: timetag.cpp: Cannot open " << tagfile << endl;
+    return;
   }
 
   while(!file.eof()) {
@@ -57,7 +58,8 @@ void TIMETAG::set(char *tagfile)
 
   file.open(tagfile, ios::in);
   if (!file.is_open()) {
-    //!!!!! return -1;
+    cout << "ERROR: timetag.cpp: Cannot open " << tagfile << endl;
+    return;
   }
 
   file >> tmp;
