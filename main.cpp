@@ -58,7 +58,7 @@ int main (int argc, char *argv[])
   orbitvec bpmorbit;            // orbit at discrete positions (e.g. BPMs) for a specific time in elsa-cycle
   orbitvec orbit;               // orbit interpolated from bpmorbit with n_samp sampling points
   FIELD *B = new FIELD[n_samp]; // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
-  char difftag[6] = "";
+  //char difftag[6] = "";
   int err;
 
   int opt, warnflg=0, conflictflg=0;          //for getopt()
@@ -152,17 +152,17 @@ int main (int argc, char *argv[])
 
   //initialize filenames
   FILENAMES file(argv[1], elsa, diff, spuren, Reference);
-  cout << "Pfad: "<<file.path() << endl;
+  cout << "Pfad: "<<file.path.c_str() << endl;
 
 
   //metadata for spectrum files
-  METADATA metadata(file.path(), elsa, diff, spuren, Reference);
+  METADATA metadata(file.path.c_str(), elsa, diff, spuren, Reference);
   char madxLabels[100];
   snprintf(madxLabels, 100, "TITLE,LENGTH,ORIGIN,PARTICLE");
-  metadata.madximport(madxLabels, file.import());
+  metadata.madximport(madxLabels, file.import.c_str());
   circumference = strtod(metadata.getbyLabel("LENGTH").c_str(), NULL);
   if (circumference == 0) {
-    cout << "ERROR: metadata: cannot read accelerator circumference from "<< file.import() << endl;
+    cout << "ERROR: metadata: cannot read accelerator circumference from "<< file.import.c_str() << endl;
     return 1;
   }
 
@@ -179,22 +179,22 @@ int main (int argc, char *argv[])
 
 
   // MAD-X: read particle orbit and lattice (magnet positions & strengths)
-  madximport(file.import(), bpmorbit, dipols, quads, sexts, vcorrs);
+  madximport(file.import.c_str(), bpmorbit, dipols, quads, sexts, vcorrs);
   //snprintf(importFile, 1024, "%s/madx/dipols.ealign", argv[1]); // will be replaced by filename-class
-  misalignments(file.misalign_dip(), dipols);
+  misalignments(file.misalign_dip.c_str(), dipols);
 
   // elsa=true: quad-&sext-strengths, BPM- & corrector-data from ELSA "Spuren"
   if (elsa) {
-    ELSAimport_magnetstrengths(quads, sexts, file.spuren());
-    ELSAimport(ELSAbpms, ELSAvcorrs, file.spuren());
+    if( ELSAimport_magnetstrengths(quads, sexts, file.spuren.c_str()) ) return 1;
+    ELSAimport(ELSAbpms, ELSAvcorrs, file.spuren.c_str());
     cout << "* "<<dipols.size()<<" dipoles, "<<quads.size()<<" quadrupoles, "
-	 <<sexts.size()<<" sextupoles, "<<vcorrs.size()<<" correctors read"<<endl<<"  from "<<file.import() << endl;
+	 <<sexts.size()<<" sextupoles, "<<vcorrs.size()<<" correctors read"<<endl<<"  from "<<file.import.c_str() << endl;
     //if (diff) snprintf(ReferenceFolder, 1024, "%s/ELSA-Spuren/%s", argv[1], Reference);
   }
   else {
     cout << "* "<<dipols.size()<<" dipoles, "<<quads.size()<<" quadrupoles, "
 	 <<sexts.size()<<" sextupoles, "<<vcorrs.size()<<" correctors and "
-	 <<bpmorbit.size()<<" BPMs read"<<endl<<"  from "<<file.import() << endl;
+	 <<bpmorbit.size()<<" BPMs read"<<endl<<"  from "<<file.import.c_str() << endl;
     //if (diff) snprintf(ReferenceFolder, 1024, "%s/madx/%s", argv[1], Reference);
   }
   cout << "--------------------------------------------" << endl;
@@ -220,11 +220,11 @@ int main (int argc, char *argv[])
       err += ELSAimport_getvcorrs(ELSAvcorrs, vcorrs, t.get(i));
       if (err != 0) return 1;
       cout << "* "<<t.label(i)<<": "<<vcorrs.size()<<" correctors and "
-	   <<bpmorbit.size()<<" BPMs read"<<endl<<"  from "<<file.spuren() << endl;
+	   <<bpmorbit.size()<<" BPMs read"<<endl<<"  from "<<file.spuren.c_str() << endl;
     }
     //diff=true: read and subtract reference orbit & corrector data
     if (diff) {
-      if (difference(file.ref(), t.get(i), bpmorbit, vcorrs, elsa) != 0) return 1;
+      if (difference(file.ref.c_str(), t.get(i), bpmorbit, vcorrs, elsa) != 0) return 1;
     }
 
     // interpolate orbit, calculate field distribution & spectrum
@@ -235,33 +235,33 @@ int main (int argc, char *argv[])
     // generate output files
     if (allout) {
       //BPM data
-      bpms_out(bpmorbit, file.out("bpms", t.tag(i)));
+      bpms_out(bpmorbit, file.out("bpms", t.tag(i)).c_str());
       //corrector data
-      corrs_out(vcorrs, file.out("vcorrs", t.tag(i)));
+      corrs_out(vcorrs, file.out("vcorrs", t.tag(i)).c_str());
       //orbit data (interpolated BPMs)
-      orbit_out(orbit, file.out("orbit", t.tag(i)));
+      orbit_out(orbit, file.out("orbit", t.tag(i)).c_str());
       //field data
-      fields_out(B, n_samp, file.out("fields", t.tag(i)));
+      fields_out(B, n_samp, file.out("fields", t.tag(i)).c_str());
       //evaluated field data
-      eval_out(bx, bz, fmax_x, fmax_z, n_samp, circumference, file.out("eval", t.tag(i)));
+      eval_out(bx, bz, fmax_x, fmax_z, n_samp, circumference, file.out("eval", t.tag(i)).c_str());
     }
 
     //export spectrum files for polarization-calculation
-    exportfile(bx, fmax_x, metadata, "horizontal", file.spec("horizontal", t.tag(i)));
-    exportfile(bz, fmax_z, metadata, "vertical", file.spec("vertical", t.tag(i)));
+    exportfile(bx, fmax_x, metadata, "horizontal", file.spec("horizontal", t.tag(i)).c_str());
+    exportfile(bz, fmax_z, metadata, "vertical", file.spec("vertical", t.tag(i)).c_str());
     // empty spectrum (fmax_s-1)
-    exportfile(bs, fmax_s-1, metadata, "longitudinal", file.spec("longitudinal", t.tag(i)));
+    exportfile(bs, fmax_s-1, metadata, "longitudinal", file.spec("longitudinal", t.tag(i)).c_str());
 
     //harmcorr data
     if (diff) {
-      harmcorr(hc, fmax_hc, vcorrs, quads, orbit, dipols, circumference, n_samp, file.out("harmcorr", t.tag(i)));
-      exportfile(hc, fmax_hc, metadata, "harmcorr", file.spec("harmcorr", t.tag(i)));
+      harmcorr(hc, fmax_hc, vcorrs, quads, orbit, dipols, circumference, n_samp, file.out("harmcorr", t.tag(i)).c_str());
+      exportfile(hc, fmax_hc, metadata, "harmcorr", file.spec("harmcorr", t.tag(i)).c_str());
     }
 
     cout << "--------------------------------------------" << endl;
   }
   
-  cout << "Finished. (Run "<<file.path()<<"/inout/Bsupply"<<difftag<<".gp for plots)" << endl << endl;
+  cout << "Finished. (Run "<<file.path.c_str()<<"/inout/Bsupply"<<file.difftag.c_str()<<".gp for plots)" << endl << endl;
   delete[] B;
 
   return 0;
