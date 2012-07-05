@@ -1,5 +1,5 @@
 /* difference-mode for harmcorr analysis */
-/* 16.04.2012 - J. Schmidt */
+/* 26.06.2012 - J. Schmidt */
 
 #include <stdio.h>
 #include <cstring>
@@ -16,7 +16,7 @@
 using namespace std;
 
 // read and subtract reference orbit & corrector data
-int difference(const char *ReferenceFolder, unsigned int t, orbitvec &bpmorbit, magnetvec &vcorrs, bool elsa)
+int difference(const char *ReferenceFolder, unsigned int t, orbitvec &bpmorbit, magnetvec &vcorrs, BPM *Ref_ELSAbpms, CORR *Ref_ELSAvcorrs, bool elsa)
 {
 
   unsigned int i;
@@ -25,9 +25,7 @@ int difference(const char *ReferenceFolder, unsigned int t, orbitvec &bpmorbit, 
 
   //read reference
   if (elsa) {
-    BPM Ref_ELSAbpms[NBPMS];
-    CORR Ref_ELSAvcorrs[NVCORRS];
-    ELSAimport(Ref_ELSAbpms, Ref_ELSAvcorrs, ReferenceFolder); 
+    Ref_vcorrs  = vcorrs; // take names,positions,lengths from vcorrs (pos will be checked again in getvcorrs()
     ELSAimport_getbpmorbit(Ref_ELSAbpms, Ref_bpmorbit, t);
     ELSAimport_getvcorrs(Ref_ELSAvcorrs, Ref_vcorrs, t);
     cout << "* "<<t<<" ms: ";

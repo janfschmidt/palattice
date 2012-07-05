@@ -1,7 +1,7 @@
 /* Calculation of the magnetic spectrum (horizontal, vertical) of a periodic accelerator  *
  * Based on MadX output data and (optional for ELSA) on measured orbit and corrector data *
  * Used as input for Simulations of polarization by solving Thomas-BMT equation           *
- * 19.06.2012 - J.Schmidt                                                                 *
+ * 05.07.2012 - J.Schmidt                                                                 *
  */
 
 #include <stdio.h>
@@ -51,6 +51,8 @@ int main (int argc, char *argv[])
   double circumference=0;
   BPM ELSAbpms[NBPMS];         // ELSAbpms[0]=BPM01, ELSAbpms[31]=BPM32
   CORR ELSAvcorrs[NVCORRS];    // ELSAvcorrs[0]=VC01, ELSAvcorrs[31]=VC32
+  BPM Ref_ELSAbpms[NBPMS];
+  CORR Ref_ELSAvcorrs[NVCORRS];
   magnetvec dipols;            // use vector class for magnets and orbit; .name shows right labels
   magnetvec quads;
   magnetvec sexts;
@@ -180,22 +182,21 @@ int main (int argc, char *argv[])
 
   // MAD-X: read particle orbit and lattice (magnet positions & strengths)
   madximport(file.import.c_str(), bpmorbit, dipols, quads, sexts, vcorrs);
-  //snprintf(importFile, 1024, "%s/madx/dipols.ealign", argv[1]); // will be replaced by filename-class
   misalignments(file.misalign_dip.c_str(), dipols);
 
   // elsa=true: quad-&sext-strengths, BPM- & corrector-data from ELSA "Spuren"
   if (elsa) {
-    if( ELSAimport_magnetstrengths(quads, sexts, file.spuren.c_str()) ) return 1;
-    ELSAimport(ELSAbpms, ELSAvcorrs, file.spuren.c_str());
     cout << "* "<<dipols.size()<<" dipoles, "<<quads.size()<<" quadrupoles, "
 	 <<sexts.size()<<" sextupoles, "<<vcorrs.size()<<" correctors read"<<endl<<"  from "<<file.import.c_str() << endl;
-    //if (diff) snprintf(ReferenceFolder, 1024, "%s/ELSA-Spuren/%s", argv[1], Reference);
+    if (ELSAimport_magnetstrengths(quads, sexts, file.spuren.c_str()) != 0)
+      return 1;
+    ELSAimport(ELSAbpms, ELSAvcorrs, file.spuren.c_str());
+    if (diff) ELSAimport(Ref_ELSAbpms, Ref_ELSAvcorrs, file.ref.c_str());
   }
   else {
     cout << "* "<<dipols.size()<<" dipoles, "<<quads.size()<<" quadrupoles, "
 	 <<sexts.size()<<" sextupoles, "<<vcorrs.size()<<" correctors and "
 	 <<bpmorbit.size()<<" BPMs read"<<endl<<"  from "<<file.import.c_str() << endl;
-    //if (diff) snprintf(ReferenceFolder, 1024, "%s/madx/%s", argv[1], Reference);
   }
   cout << "--------------------------------------------" << endl;
 
@@ -224,7 +225,8 @@ int main (int argc, char *argv[])
     }
     //diff=true: read and subtract reference orbit & corrector data
     if (diff) {
-      if (difference(file.ref.c_str(), t.get(i), bpmorbit, vcorrs, elsa) != 0) return 1;
+	if (difference(file.ref.c_str(), t.get(i), bpmorbit, vcorrs, Ref_ELSAbpms, Ref_ELSAvcorrs, elsa) != 0)
+	  return 1;
     }
 
     // interpolate orbit, calculate field distribution & spectrum
