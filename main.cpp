@@ -42,11 +42,6 @@ int main (int argc, char *argv[])
   bool allout = false;          // true: additional output files (orbit, field, bpms, ...)
   char spuren[20] = "dummy";
   char Reference[50] = "dummy";
-  //char filename[1024];
-  //char importFile[1024];
-  //char spurenFolder[1024];
-  //char ReferenceFolder[1024];
-  //char outputFolder[1024];
   string tmp;
   double circumference=0;
   BPM ELSAbpms[NBPMS];         // ELSAbpms[0]=BPM01, ELSAbpms[31]=BPM32
@@ -60,7 +55,6 @@ int main (int argc, char *argv[])
   orbitvec bpmorbit;            // orbit at discrete positions (e.g. BPMs) for a specific time in elsa-cycle
   orbitvec orbit;               // orbit interpolated from bpmorbit with n_samp sampling points
   FIELD *B = new FIELD[n_samp]; // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
-  //char difftag[6] = "";
   int err=0;
 
   int opt, warnflg=0, conflictflg=0;          //for getopt()
@@ -83,14 +77,12 @@ int main (int argc, char *argv[])
       return 1;
     }
   }
-  //snprintf(importFile, 1024, "%s/madx/madx.twiss", argv[1]);
-  //snprintf(outputFolder, 1024, "%s/inout", argv[1]);
+
   while ((opt = getopt(argc, argv, ":e:t:f:d:m:ah")) != -1) {
     switch(opt) {
     case 'e':
       elsa = true;
       strncpy(spuren, optarg, 20);
-      //snprintf(spurenFolder, 1024, "%s/ELSA-Spuren/%s", argv[1], spuren);
       break;
     case 't':
       conflictflg++; warnflg++;
@@ -106,7 +98,6 @@ int main (int argc, char *argv[])
       break;
     case 'd':
       diff = true;
-      //strncpy(difftag, "_diff", 6);
       strncpy(Reference, optarg, 50);
       break;
     case 'a':
@@ -158,7 +149,7 @@ int main (int argc, char *argv[])
 
 
   //metadata for spectrum files
-  METADATA metadata(file.path.c_str(), elsa, diff, spuren, Reference);
+  METADATA metadata(file.path, elsa, diff, spuren, Reference);
   char madxLabels[100];
   snprintf(madxLabels, 100, "TITLE,LENGTH,ORIGIN,PARTICLE");
   metadata.madximport(madxLabels, file.import.c_str());
