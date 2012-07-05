@@ -61,7 +61,7 @@ int main (int argc, char *argv[])
   orbitvec orbit;               // orbit interpolated from bpmorbit with n_samp sampling points
   FIELD *B = new FIELD[n_samp]; // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
   //char difftag[6] = "";
-  int err;
+  int err=0;
 
   int opt, warnflg=0, conflictflg=0;          //for getopt()
   extern char *optarg;
