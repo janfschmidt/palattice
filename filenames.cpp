@@ -1,11 +1,11 @@
 /* Manage filenames for Bsupply input/output */
-/* 05.07.2012 - J. Schmidt */
+/* 21.11.2012 - J. Schmidt */
 
 #include <string>
 #include "filenames.hpp"
 
 //constructor
-FILENAMES::FILENAMES(string pathIn, bool elsa, bool diff, string spurenIn, string refIn)
+FILENAMES::FILENAMES(string pathIn, bool elsa, bool diff, bool sgt_access, string spurenIn, string refIn)
 {
   //======default filenames (private)=====
   file_import = "/madx/madx.twiss";
@@ -25,7 +25,10 @@ FILENAMES::FILENAMES(string pathIn, bool elsa, bool diff, string spurenIn, strin
   path = pathIn;  //project-path
   import = path + file_import;
   misalign_dip = path + file_misalign_dip;
-  spuren = path+"/ELSA-Spuren/"+spurenIn;
+  if (sgt_access)
+    spuren = "/sgt/elsa/data/bpm/"+spurenIn;
+  else
+    spuren = path+"/ELSA-Spuren/"+spurenIn;
   if (elsa)
     ref = path+"/ELSA-Spuren/"+refIn;
   else

@@ -1,7 +1,7 @@
 /* Calculation of the magnetic spectrum (horizontal, vertical) of a periodic accelerator  *
  * Based on MadX output data and (optional for ELSA) on measured orbit and corrector data *
  * Used as input for Simulations of polarization by solving Thomas-BMT equation           *
- * 05.07.2012 - J.Schmidt                                                                 *
+ * 21.11.2012 - J.Schmidt                                                                 *
  */
 
 #include <stdio.h>
@@ -30,8 +30,12 @@ using namespace std;
 
 int main (int argc, char *argv[])
 {
+  //-----------------------------
+  unsigned int n_samp = 16440; // number of sampling points along ring for magn. field strengths
+  bool sgt_access=false;       //special option for elsa-mode:
+                               //if 1, spuren are read from /sgt/elsa/data/bpm/ instead of [project]/ELSA-Spuren/
+  //-----------------------------
   unsigned int i;
-  unsigned int n_samp = 16440;   // number of sampling points along ring for magn. field strengths
   unsigned int fmax_x = 6;      // max Frequency used for magnetic field spectrum (in revolution harmonics)
   unsigned int fmax_z = 6;
   unsigned int fmax_s = 0;
@@ -144,7 +148,7 @@ int main (int argc, char *argv[])
   
 
   //initialize filenames
-  FILENAMES file(argv[1], elsa, diff, spuren, Reference);
+  FILENAMES file(argv[1], elsa, diff, sgt_access, spuren, Reference);
   cout << "Pfad: "<<file.path.c_str() << endl;
 
 
