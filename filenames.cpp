@@ -30,7 +30,10 @@ FILENAMES::FILENAMES(string pathIn, bool elsa, bool diff, bool sgt_access, strin
   else
     spuren = path+"/ELSA-Spuren/"+spurenIn;
   if (elsa)
-    ref = path+"/ELSA-Spuren/"+refIn;
+    if (sgt_access)
+      ref = "/sgt/elsa/data/bpm/"+refIn;
+    else
+      ref = path+"/ELSA-Spuren/"+refIn;
   else
     ref = path+"/madx/"+refIn;
   
