@@ -183,9 +183,10 @@ int ELSAimport_vcorrs(CORR *ELSAvcorrs, const char *spurenFolder)
       continue;
     }
     //read Headline
-    file >> str >> str;
+    getline(file, str);
     //read t[ms] from first line to detect "Schleppfehler"
     file >> tmpA.ms >> tmpA.kick;
+    getline(file, str); //additional columns
     for (j=0; j<tmpA.ms; j++) {
       tmpB.ms = j;
       tmpB.kick=0.0;
@@ -195,6 +196,7 @@ int ELSAimport_vcorrs(CORR *ELSAvcorrs, const char *spurenFolder)
     //now continue normally
     while (!file.eof()) {
       file >> tmpB.ms >> tmpB.kick;
+      getline(file, str); //additional columns
       for(j=tmpA.ms+1; j<tmpB.ms; j++) {
 	tmpC.ms = j;
 	//linear interpolation of kicks
