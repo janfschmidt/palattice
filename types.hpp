@@ -48,7 +48,7 @@ public:
   double end;
   double length;
   double strength;
-  double dpsi;   //rotation around s
+  double dpsi;   //alignment error: rotation around s
 
   MAGNET() : start(0), end(0), length(0), strength(0), dpsi(0) {}
 };
@@ -59,8 +59,9 @@ public:
   string name;
   double x;
   double z;
+  double spinphase;
 
-  FIELD() : pos(0), x(0), z(0) {}
+  FIELD() : pos(0), x(0), z(0), spinphase(0) {}
 };
 
 class ORBIT {
