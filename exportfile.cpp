@@ -50,7 +50,7 @@ int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, string tag, const char
 
   /* write table with spectrum data */
   file << resetiosflags(ios::left);
-  if (tag=="harmcorr")
+  if (tag=="harmcorr" || tag=="resonances")
     file <<"#"<<setw(w+1)<<"Freq[rev.harm.]"<<setw(w)<<"Amp[mrad]"<<setw(w)<<"Phase[deg]" << endl;
   else
     file <<"#"<<setw(w+1)<<"Freq[Hz]"<<setw(w)<<"Amp[1/m]"<<setw(w)<<"Phase[deg]" << endl; 
@@ -59,7 +59,7 @@ int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, string tag, const char
     if (tag=="harmcorr")
       file <<setw(2+w)<< i;
     else
-      file <<setw(2+w)<< bx[i].omega/(2*M_PI);
+      file <<setw(2+w)<< bx[i].freq;
     file <<setw(w)<< bx[i].amp;
     file <<resetiosflags(ios::scientific)<<setiosflags(ios::fixed)<<setprecision(1);
     file <<setw(w)  << bx[i].phase * 360/(2*M_PI) << endl;

@@ -28,6 +28,7 @@ public:
   int adddip(MAGNET dip, double Bx);
   int addother(MAGNET magnet, double Bx);
   int closering();
+  unsigned int size() const;
   void clear();
  
 };

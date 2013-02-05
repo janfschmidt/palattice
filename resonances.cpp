@@ -58,6 +58,7 @@ int RESONANCES::addother(MAGNET magnet, double Bx)
 }
 
 
+
 int RESONANCES::closering()
 {
   if (theta[theta.size()-1] != 360) {
@@ -72,6 +73,17 @@ int RESONANCES::closering()
 
   return 0;
 }
+
+
+
+unsigned int RESONANCES::size() const
+{
+  if (theta.size() == kick.size())
+    return theta.size();
+  else
+    return 0;
+}
+
 
 
 void RESONANCES::clear()

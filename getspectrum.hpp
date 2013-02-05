@@ -1,10 +1,11 @@
 #ifndef __POLSIM__GETSPECTRUM_HPP_
 #define __POLSIM__GETSPECTRUM_HPP_
 
+#include "resonances.hpp"
 
-int getspectrum (SPECTRUM *bx, SPECTRUM *bz, FIELD *B, int n_samp, int fmax_x, int fmax_z, double circumference);
+int getspectrum (SPECTRUM *bx, SPECTRUM *bz, SPECTRUM *res, FIELD *B, int n_samp, int fmax_x, int fmax_z, int fmax_res, double circumference, RESONANCES &Res);
 
-int fft (SPECTRUM *bx, double *BX, int n_samp, int fmax, double circumference);
+int fft (SPECTRUM *bx, double *BX, int n_samp, int fmax, double dfreq);
 
 double eval(SPECTRUM *bx, int f_max, double t);
 

@@ -75,11 +75,11 @@ public:
 
 class SPECTRUM {
 public:
-  double omega;
+  double freq;
   double amp;
   double phase;
 
-  SPECTRUM() : omega(0), amp(0), phase(0) {}
+  SPECTRUM() : freq(0), amp(0), phase(0) {}
 };
 
 

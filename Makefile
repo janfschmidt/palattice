@@ -12,7 +12,7 @@ getorbit.o: getorbit.cpp constants.hpp types.hpp
 	g++ $(cflags) -c getorbit.cpp
 getfields.o: getfields.cpp constants.hpp types.hpp resonances.hpp
 	g++ $(cflags) -c getfields.cpp
-getspectrum.o: getspectrum.cpp constants.hpp types.hpp
+getspectrum.o: getspectrum.cpp constants.hpp types.hpp resonances.hpp
 	g++ $(cflags) -c getspectrum.cpp
 exportfile.o: exportfile.cpp constants.hpp types.hpp metadata.hpp
 	g++ $(cflags) -c exportfile.cpp

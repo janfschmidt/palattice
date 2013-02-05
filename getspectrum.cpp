@@ -12,6 +12,7 @@
 #include <gsl/gsl_fft_complex.h>
 #include "constants.hpp"
 #include "types.hpp"
+#include "resonances.hpp"
 #include "getspectrum.hpp"
 
 #define REAL(z,i) ((z)[2*(i)])
@@ -19,25 +20,37 @@
 
 using namespace std;
 
-int getspectrum (SPECTRUM *bx, SPECTRUM *bz, FIELD *B, int n_samp, int fmax_x, int fmax_z, double circumference)
+int getspectrum (SPECTRUM *bx, SPECTRUM *bz, SPECTRUM *res, FIELD *B, int n_samp, int fmax_x, int fmax_z, int fmax_res, double circumference, RESONANCES &Res)
 {
 
   int i;
+  int n_res = Res.size();
   double *BX = new double[2*n_samp];
   double *BZ = new double[2*n_samp];
+  double *RES = new double[2*n_res];
+  double dfreq;
 
-  for (i=0; i<n_samp; i++) { /* set real parts */
+  // set real parts
+  for (i=0; i<n_samp; i++) {
     REAL(BX,i) = B[i].x;
     IMAG(BX,i) = 0;
     REAL(BZ,i) = B[i].z;
     IMAG(BZ,i) = 0;
   }
+  for (i=0; i<n_res; i++) {
+    REAL(RES,i) = Res.getkick(i);
+    IMAG(RES,i) = 0;
+  }
 
-  fft(bx, BX, n_samp, fmax_x, circumference);
-  fft(bz, BZ, n_samp, fmax_z, circumference);
+  dfreq = SPEED_OF_LIGHT/circumference;
+  fft(bx, BX, n_samp, fmax_x, dfreq);
+  fft(bz, BZ, n_samp, fmax_z, dfreq);
+  dfreq = 1.0;   //1.0/360;
+  fft(res, RES, n_res, fmax_res, dfreq);
 
   delete[] BX;
   delete[] BZ;
+  delete[] RES;
 
   return 0;
 }
@@ -46,7 +59,7 @@ int getspectrum (SPECTRUM *bx, SPECTRUM *bz, FIELD *B, int n_samp, int fmax_x, i
 
 
 /* creates magnetic spectrum bx of field BX by GSL complex FFT */
-int fft (SPECTRUM *bx, double *BX, int n_samp, int fmax, double circumference)
+int fft (SPECTRUM *bx, double *BX, int n_samp, int fmax, double dfreq)
 {
 
   int i;
@@ -57,11 +70,11 @@ int fft (SPECTRUM *bx, double *BX, int n_samp, int fmax, double circumference)
   gsl_fft_complex_forward (BX, 1, n_samp, wavetable, workspace);       /* transform BX */
 
   /*  write amplitude & phase to SPECTRUM */
-  bx[0].omega = 0.0;
+  bx[0].freq = 0.0;
   bx[0].amp = sqrt( pow(REAL(BX,0),2) + pow(IMAG(BX,0),2) ) * 1.0/n_samp;
   bx[0].phase = 0.0;
   for (i=1; i<=fmax; i++) {
-    bx[i].omega = i*2*M_PI*SPEED_OF_LIGHT/circumference;
+    bx[i].freq = i*dfreq;
     bx[i].amp = sqrt( pow(REAL(BX,i),2) + pow(IMAG(BX,i),2) ) * 2.0/n_samp;
     bx[i].phase = atan( IMAG(BX,i) / REAL(BX,i) );
     if (bx[i].amp<MIN_AMPLITUDE) {                                     /* arbitrary phase for amp=0: set phase=0 */
@@ -91,7 +104,7 @@ double eval(SPECTRUM *bx, int fmax, double t)
   int f;
 
   for (f=0; f<=fmax; f++) {
-    value += bx[f].amp*cos(bx[f].omega*t + bx[f].phase);
+    value += bx[f].amp*cos(bx[f].freq*t + bx[f].phase);
   }
 
   return value;

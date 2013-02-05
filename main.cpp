@@ -41,6 +41,7 @@ int main (int argc, char *argv[])
   unsigned int fmax_z = 6;
   unsigned int fmax_s = 0;
   unsigned int fmax_hc = 12;    // harmcorr spectrum fmax = #dipoles/2 (is set to dipols.size()/2 below)
+  unsigned int fmax_res = 0;
   TIMETAG t(530);               // moment(s) of elsa-cycle (ms)
   bool elsa = false;            // true: orbit, correctors, k & m read from /sgt/elsa/bpm/...
   bool diff = false;            // true: "harmcorr mode", calculate difference of two "Spuren"...
@@ -88,6 +89,7 @@ int main (int argc, char *argv[])
     switch(opt) {
     case 'r':
       dtheta = atof(optarg);
+      fmax_res = int(360/dtheta / 2);
       break;
     case 'e':
       elsa = true;
@@ -202,14 +204,16 @@ int main (int argc, char *argv[])
   cout << "--------------------------------------------" << endl;
 
 
+  // resonance strengths
+  RESONANCES Res(dtheta, dipols.size());
+
  // magnetic spectrum (amplitudes & phases) up to fmax
-  fmax_hc = dipols.size() / 2;
+  fmax_hc = int(dipols.size() / 2);
   SPECTRUM bx[fmax_x+1];
   SPECTRUM bz[fmax_z+1];
   SPECTRUM bs[fmax_s+1];
   SPECTRUM hc[fmax_hc+1]; //harmcorr
-  // resonance strengths
-  RESONANCES Res(dtheta, dipols.size());
+  SPECTRUM res[fmax_res+1];
 
   
 
@@ -237,7 +241,7 @@ int main (int argc, char *argv[])
     // interpolate orbit, calculate field distribution & spectrum
     getorbit(orbit, circumference, bpmorbit, n_samp);
     getfields(B, circumference, orbit, dipols, quads, sexts, vcorrs, Res);
-    getspectrum(bx, bz, B, n_samp, fmax_x, fmax_z, circumference);
+    getspectrum(bx, bz, res, B, n_samp, fmax_x, fmax_z, fmax_res, circumference, Res);
 
     
     // generate output files
@@ -267,6 +271,7 @@ int main (int argc, char *argv[])
     }
     if (Res.on) {
       Res.out(file.out("phaseadvance", t.tag(i)).c_str());
+      exportfile(res, fmax_res, metadata, "resonances", file.spec("resonances", t.tag(i)).c_str());
     }
 
     cout << "--------------------------------------------" << endl;
