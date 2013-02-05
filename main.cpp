@@ -25,13 +25,14 @@
 #include "difference.hpp"
 #include "timetag.hpp"
 #include "filenames.hpp"
+#include "resonances.hpp"
 
 using namespace std;
 
 int main (int argc, char *argv[])
 {
   //-----------------------------
-  unsigned int n_samp = 16440; // number of sampling points along ring for magn. field strengths
+  unsigned int n_samp = 1644; // number of sampling points along ring for magn. field strengths
   bool sgt_access=false;       //special option for elsa-mode:
                                //if 1, spuren are read from /sgt/elsa/data/bpm/ instead of [project]/ELSA-Spuren/
   //-----------------------------
@@ -48,6 +49,7 @@ int main (int argc, char *argv[])
   char Reference[50] = "dummy";
   string tmp;
   double circumference=0;
+  double dtheta = 0;           // spin phaseadvance stepwidth (option -r)
   BPM ELSAbpms[NBPMS];         // ELSAbpms[0]=BPM01, ELSAbpms[31]=BPM32
   CORR ELSAvcorrs[NVCORRS];    // ELSAvcorrs[0]=VC01, ELSAvcorrs[31]=VC32
   BPM Ref_ELSAbpms[NBPMS];
@@ -82,8 +84,11 @@ int main (int argc, char *argv[])
     }
   }
 
-  while ((opt = getopt(argc, argv, ":e:t:f:d:m:ah")) != -1) {
+  while ((opt = getopt(argc, argv, ":r:e:t:f:d:m:ah")) != -1) {
     switch(opt) {
+    case 'r':
+      dtheta = atof(optarg);
+      break;
     case 'e':
       elsa = true;
       strncpy(spuren, optarg, 20);
@@ -110,6 +115,7 @@ int main (int argc, char *argv[])
     case 'h':
       cout << endl << "Bsupply HELP:" << endl;
       cout << "* First argument is project path." << endl;
+      cout << "* -r [dtheta] estimate resonance strengths, stepwidth [dtheta]°" << endl;
       cout << "* -e [spuren] enables ELSA-mode, Spuren as argument (path: [project]/ELSA-Spuren/) " << endl;
       cout << "* -f [fmax] sets maximum frequency for B-Field spectrum output" << endl;
       cout << "* -t [time] sets time of ELSA cycle to evaluate BPMs and correctors (in ms)" << endl;
@@ -202,7 +208,10 @@ int main (int argc, char *argv[])
   SPECTRUM bz[fmax_z+1];
   SPECTRUM bs[fmax_s+1];
   SPECTRUM hc[fmax_hc+1]; //harmcorr
- 
+  // resonance strengths
+  RESONANCES Res(dtheta, dipols.size());
+
+  
 
   for(i=0; i<t.size(); i++) {
     if (elsa) {
@@ -224,10 +233,12 @@ int main (int argc, char *argv[])
 	  return 1;
     }
 
+
     // interpolate orbit, calculate field distribution & spectrum
     getorbit(orbit, circumference, bpmorbit, n_samp);
-    getfields(B, circumference, orbit, dipols, quads, sexts, vcorrs);
+    getfields(B, circumference, orbit, dipols, quads, sexts, vcorrs, Res);
     getspectrum(bx, bz, B, n_samp, fmax_x, fmax_z, circumference);
+
     
     // generate output files
     if (allout) {
@@ -253,6 +264,9 @@ int main (int argc, char *argv[])
     if (diff) {
       harmcorr(hc, fmax_hc, vcorrs, quads, orbit, dipols, circumference, n_samp, file.out("harmcorr", t.tag(i)).c_str());
       exportfile(hc, fmax_hc, metadata, "harmcorr", file.spec("harmcorr", t.tag(i)).c_str());
+    }
+    if (Res.on) {
+      Res.out(file.out("phaseadvance", t.tag(i)).c_str());
     }
 
     cout << "--------------------------------------------" << endl;

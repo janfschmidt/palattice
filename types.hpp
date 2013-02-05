@@ -59,9 +59,9 @@ public:
   string name;
   double x;
   double z;
-  double spinphase;
+  double theta; //spin phaseadvance in degree
 
-  FIELD() : pos(0), x(0), z(0), spinphase(0) {}
+  FIELD() : pos(0), x(0), z(0), theta(0) {}
 };
 
 class ORBIT {
@@ -88,6 +88,7 @@ public:
 /* typedefs */
 typedef vector<MAGNET> magnetvec;
 typedef vector<ORBIT> orbitvec;
+typedef vector<FIELD> fieldvec;
 
 
 
