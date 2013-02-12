@@ -125,7 +125,7 @@ int harmcorr(SPECTRUM *hc, unsigned int fmax_hc, magnetvec vcorrs, magnetvec qua
      }
      while(quads[k].start < dipols[i].start && k < nq) {
        length = quads[k].end - quads[k].start;
-       HCquad[2*i] += quads[k].strength * orbit[int(quads[k].start/sample+0.5)].z * length * 1000; // mrad
+       HCquad[2*i] += quads[k].strength * orbit[int(quads[k].end/sample)].z * length * 1000; // mrad
        k++;
      }
  }
@@ -137,7 +137,7 @@ int harmcorr(SPECTRUM *hc, unsigned int fmax_hc, magnetvec vcorrs, magnetvec qua
  }
  while (k<nq) {
    length = quads[k].end - quads[k].start;
-   HCquad[0] += quads[k].strength * orbit[int(quads[k].start/sample+0.5)].z * length * 1000; // mrad
+   HCquad[0] += quads[k].strength * orbit[int(quads[k].end/sample)].z * length * 1000; // mrad
    k++;
  }
 
@@ -146,7 +146,7 @@ int harmcorr(SPECTRUM *hc, unsigned int fmax_hc, magnetvec vcorrs, magnetvec qua
  }
 
  harmcorr_out(HCvcorr, HCquad, HCsum, nd, filename);
- fft(hc, HCsum, nd, fmax_hc, circumference);
+ fft(hc, HCsum, nd, nd, fmax_hc, circumference);
 
  delete[] HCvcorr;
  delete[] HCquad;

@@ -43,10 +43,10 @@ int getspectrum (SPECTRUM *bx, SPECTRUM *bz, SPECTRUM *res, FIELD *B, int n_samp
   }
 
   dfreq = SPEED_OF_LIGHT/circumference;
-  fft(bx, BX, n_samp, fmax_x, dfreq);
-  fft(bz, BZ, n_samp, fmax_z, dfreq);
+  fft(bx, BX, n_samp, n_samp, fmax_x, dfreq);
+  fft(bz, BZ, n_samp, n_samp, fmax_z, dfreq);
   dfreq = 1.0;   //1.0/360;
-  fft(res, RES, n_res, fmax_res, dfreq);
+  fft(res, RES, n_res, Res.ndipols(), fmax_res, dfreq); //normalize on # dipoles for correct kicks in-between
 
   delete[] BX;
   delete[] BZ;
@@ -59,7 +59,7 @@ int getspectrum (SPECTRUM *bx, SPECTRUM *bz, SPECTRUM *res, FIELD *B, int n_samp
 
 
 /* creates magnetic spectrum bx of field BX by GSL complex FFT */
-int fft (SPECTRUM *bx, double *BX, int n_samp, int fmax, double dfreq)
+int fft (SPECTRUM *bx, double *BX, int n_samp, int norm, int fmax, double dfreq)
 {
 
   int i;
@@ -71,11 +71,11 @@ int fft (SPECTRUM *bx, double *BX, int n_samp, int fmax, double dfreq)
 
   /*  write amplitude & phase to SPECTRUM */
   bx[0].freq = 0.0;
-  bx[0].amp = sqrt( pow(REAL(BX,0),2) + pow(IMAG(BX,0),2) ) * 1.0/n_samp;
+  bx[0].amp = sqrt( pow(REAL(BX,0),2) + pow(IMAG(BX,0),2) ) * 1.0/norm;
   bx[0].phase = 0.0;
   for (i=1; i<=fmax; i++) {
     bx[i].freq = i*dfreq;
-    bx[i].amp = sqrt( pow(REAL(BX,i),2) + pow(IMAG(BX,i),2) ) * 2.0/n_samp;
+    bx[i].amp = sqrt( pow(REAL(BX,i),2) + pow(IMAG(BX,i),2) ) * 2.0/norm;
     bx[i].phase = atan( IMAG(BX,i) / REAL(BX,i) );
     if (bx[i].amp<MIN_AMPLITUDE) {                                     /* arbitrary phase for amp=0: set phase=0 */
       bx[i].phase = 0.0;

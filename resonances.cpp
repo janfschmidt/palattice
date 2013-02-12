@@ -11,7 +11,7 @@
 
 
 RESONANCES::RESONANCES(double thetastep, unsigned int n_dip)
-: dtheta(thetastep), n(360/(n_dip*dtheta))
+  : dtheta(thetastep), n(360/(n_dip*dtheta)), ndip(n_dip)
 {
   if(thetastep == 0.0) {
     on = false;
