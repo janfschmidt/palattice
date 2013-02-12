@@ -29,8 +29,13 @@ int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, string tag, const char
   // add fmax to metadata
   snprintf(tmp, 10, "%d", fmax);
   metadata.add("max. frequency", tmp);
+  // add phase-warning for harmcorr
+  if (tag=="harmcorr" || tag=="resonances") {
+    metadata.add("WARNING:", "Phase NOT equal harmcorr in ELSA-CCS! (sign in cos)");
+  }
 
-  /* set column width for metadata  */
+
+  // set column width for metadata
   int metaw = columnwidth(metadata);
 
   
@@ -40,7 +45,7 @@ int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, string tag, const char
     return 1;
   }
   
-  /* write metadata */ 
+  // write metadata
   for (i=0; i<metadata.size(); i++) {
     file << setiosflags(ios::left);
     file <<setw(2)<<"#";
@@ -48,7 +53,7 @@ int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, string tag, const char
   }
   file << endl;
 
-  /* write table with spectrum data */
+  // write table with spectrum data
   file << resetiosflags(ios::left);
   if (tag=="harmcorr" || tag=="resonances")
     file <<"#"<<setw(w+1)<<"Freq[rev.harm.]"<<setw(w)<<"Amp[mrad]"<<setw(w)<<"Phase[deg]" << endl;
