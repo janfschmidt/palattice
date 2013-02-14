@@ -4,9 +4,9 @@
 #include "resonances.hpp"
 #include "types.hpp"
 
-int getfields (FIELD *B, double circumference, orbitvec &orbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs, RESONANCES &Res);
+int getfields (FIELDMAP &B, double circumference, orbitvec &orbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs, RESONANCES &Res);
 
-int fields_out(FIELD *B, int n_samp, const char *filename);
+int fields_out(FIELDMAP &B, const char *filename);
 
 #endif
 

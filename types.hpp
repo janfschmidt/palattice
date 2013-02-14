@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "constants.hpp"
+#include "fieldmap.hpp"
 
 using namespace std;
 
@@ -51,17 +52,6 @@ public:
   double dpsi;   //alignment error: rotation around s
 
   MAGNET() : start(0), end(0), length(0), strength(0), dpsi(0) {}
-};
-
-class FIELD {
-public:
-  double pos;
-  string name;
-  double x;
-  double z;
-  double theta; //spin phaseadvance in degree
-
-  FIELD() : pos(0), x(0), z(0), theta(0) {}
 };
 
 class ORBIT {

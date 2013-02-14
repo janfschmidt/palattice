@@ -13,6 +13,7 @@
 #include "constants.hpp"
 #include "types.hpp"
 #include "resonances.hpp"
+#include "fieldmap.hpp"
 #include "getspectrum.hpp"
 
 #define REAL(z,i) ((z)[2*(i)])
@@ -20,21 +21,21 @@
 
 using namespace std;
 
-int getspectrum (SPECTRUM *bx, SPECTRUM *bz, SPECTRUM *res, FIELD *B, int n_samp, int fmax_x, int fmax_z, int fmax_res, double circumference, RESONANCES &Res)
+int getspectrum (SPECTRUM *bx, SPECTRUM *bz, SPECTRUM *res, FIELDMAP &B, int fmax_x, int fmax_z, int fmax_res, double circumference, RESONANCES &Res)
 {
 
-  int i;
-  int n_res = Res.size();
-  double *BX = new double[2*n_samp];
-  double *BZ = new double[2*n_samp];
+  unsigned int i;
+  unsigned int n_res = Res.size();
+  double *BX = new double[2*B.n_samp];
+  double *BZ = new double[2*B.n_samp];
   double *RES = new double[2*n_res];
   double dfreq;
 
   // set real parts
-  for (i=0; i<n_samp; i++) {
-    REAL(BX,i) = B[i].x;
+  for (i=0; i<B.n_samp; i++) {
+    REAL(BX,i) = B.x(i);
     IMAG(BX,i) = 0;
-    REAL(BZ,i) = B[i].z;
+    REAL(BZ,i) = B.z(i);
     IMAG(BZ,i) = 0;
   }
   for (i=0; i<n_res; i++) {
@@ -43,8 +44,8 @@ int getspectrum (SPECTRUM *bx, SPECTRUM *bz, SPECTRUM *res, FIELD *B, int n_samp
   }
 
   dfreq = SPEED_OF_LIGHT/circumference;
-  fft(bx, BX, n_samp, n_samp, fmax_x, dfreq);
-  fft(bz, BZ, n_samp, n_samp, fmax_z, dfreq);
+  fft(bx, BX, B.n_samp, B.n_samp, fmax_x, dfreq);
+  fft(bz, BZ, B.n_samp, B.n_samp, fmax_z, dfreq);
   dfreq = 1.0;   //1.0/360;
   fft(res, RES, n_res, Res.ndipols(), fmax_res, dfreq); //normalize on # dipoles for correct kicks in-between
 

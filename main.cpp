@@ -15,6 +15,7 @@
 #include <sstream>
 #include "constants.hpp"
 #include "types.hpp"
+#include "fieldmap.hpp"
 #include "getorbit.hpp"
 #include "getfields.hpp"
 #include "getspectrum.hpp"
@@ -61,14 +62,13 @@ int main (int argc, char *argv[])
   magnetvec vcorrs;
   orbitvec bpmorbit;            // orbit at discrete positions (e.g. BPMs) for a specific time in elsa-cycle
   orbitvec orbit;               // orbit interpolated from bpmorbit with n_samp sampling points
-  FIELD *B = new FIELD[n_samp]; // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
+  FIELDMAP B(n_samp);           // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
   int err=0;
 
   int opt, warnflg=0, conflictflg=0;          //for getopt()
   extern char *optarg;
   extern int optopt, optind;
  
-
 
   // read input arguments
   optind=2;
@@ -117,7 +117,7 @@ int main (int argc, char *argv[])
     case 'h':
       cout << endl << "Bsupply HELP:" << endl;
       cout << "* First argument is project path." << endl;
-      cout << "* -r [dtheta] estimate resonance strengths, stepwidth [dtheta]°" << endl;
+      cout << "* -r [dtheta] estimates resonance strengths, stepwidth [dtheta]°" << endl;
       cout << "* -e [spuren] enables ELSA-mode, Spuren as argument (path: [project]/ELSA-Spuren/) " << endl;
       cout << "* -f [fmax] sets maximum frequency for B-Field spectrum output" << endl;
       cout << "* -t [time] sets time of ELSA cycle to evaluate BPMs and correctors (in ms)" << endl;
@@ -204,6 +204,7 @@ int main (int argc, char *argv[])
   cout << "--------------------------------------------" << endl;
 
 
+
   // resonance strengths
   RESONANCES Res(dtheta, dipols.size());
 
@@ -241,7 +242,7 @@ int main (int argc, char *argv[])
     // interpolate orbit, calculate field distribution & spectrum
     getorbit(orbit, circumference, bpmorbit, n_samp);
     getfields(B, circumference, orbit, dipols, quads, sexts, vcorrs, Res);
-    getspectrum(bx, bz, res, B, n_samp, fmax_x, fmax_z, fmax_res, circumference, Res);
+    getspectrum(bx, bz, res, B, fmax_x, fmax_z, fmax_res, circumference, Res);
 
     
     // generate output files
@@ -253,7 +254,7 @@ int main (int argc, char *argv[])
       //orbit data (interpolated BPMs)
       orbit_out(orbit, file.out("orbit", t.tag(i)).c_str());
       //field data
-      fields_out(B, n_samp, file.out("fields", t.tag(i)).c_str());
+      fields_out(B, file.out("fields", t.tag(i)).c_str());
       //evaluated field data
       eval_out(bx, bz, fmax_x, fmax_z, n_samp, circumference, file.out("eval", t.tag(i)).c_str());
     }
@@ -278,7 +279,6 @@ int main (int argc, char *argv[])
   }
   
   cout << "Finished. (Run "<<file.path.c_str()<<"/inout/Bsupply"<<file.difftag.c_str()<<".gp for plots)" << endl << endl;
-  delete[] B;
 
   return 0;
 }

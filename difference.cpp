@@ -12,6 +12,7 @@
 #include "ELSAimport.hpp"
 #include "madximport.hpp"
 #include "getspectrum.hpp"
+#include "fieldmap.hpp"
 
 using namespace std;
 
