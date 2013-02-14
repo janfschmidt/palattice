@@ -116,7 +116,7 @@ int getfields (FIELDMAP &B, double circumference, orbitvec &orbit, magnetvec &di
 
 
 /* create output file with field data */
-int fields_out(FIELDMAP &B, const char *filename)
+int fields_out(FIELDMAP B, const char *filename)
 {
  unsigned int i=0;
  int w=14;
