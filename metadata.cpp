@@ -98,11 +98,11 @@ void METADATA::add(string inLabel, string inEntry)
 
 
 /* get number of entries. (-1) if not consistent */
-int METADATA::size() const
+unsigned int METADATA::size() const
 {
-  int equalSize;
+  unsigned int equalSize;
   if ((equalSize=label.size()) != entry.size()) {
-    return -1;
+    return 1;
   }
 
   return equalSize;

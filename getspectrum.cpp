@@ -14,6 +14,7 @@
 #include "types.hpp"
 #include "resonances.hpp"
 #include "fieldmap.hpp"
+#include "spectrum.hpp"
 #include "getspectrum.hpp"
 
 #define REAL(z,i) ((z)[2*(i)])
@@ -21,7 +22,7 @@
 
 using namespace std;
 
-int getspectrum (SPECTRUM *bx, SPECTRUM *bz, SPECTRUM *res, FIELDMAP &B, int fmax_x, int fmax_z, int fmax_res, double circumference, RESONANCES &Res)
+int getspectrum (SPECTRUM &bx, SPECTRUM &bz, SPECTRUM &res, FIELDMAP &B, double circumference, RESONANCES &Res)
 {
 
   unsigned int i;
@@ -44,10 +45,10 @@ int getspectrum (SPECTRUM *bx, SPECTRUM *bz, SPECTRUM *res, FIELDMAP &B, int fma
   }
 
   dfreq = SPEED_OF_LIGHT/circumference;
-  fft(bx, BX, B.n_samp, B.n_samp, fmax_x, dfreq);
-  fft(bz, BZ, B.n_samp, B.n_samp, fmax_z, dfreq);
+  fft(bx, BX, B.n_samp, B.n_samp, dfreq);
+  fft(bz, BZ, B.n_samp, B.n_samp, dfreq);
   dfreq = 1.0;   //1.0/360;
-  fft(res, RES, n_res, Res.ndipols(), fmax_res, dfreq); //normalize on # dipoles for correct kicks in-between
+  fft(res, RES, n_res, Res.ndipols(), dfreq); //normalize on # dipoles for correct kicks in-between
 
   delete[] BX;
   delete[] BZ;
@@ -60,10 +61,11 @@ int getspectrum (SPECTRUM *bx, SPECTRUM *bz, SPECTRUM *res, FIELDMAP &B, int fma
 
 
 /* creates magnetic spectrum bx of field BX by GSL complex FFT */
-int fft (SPECTRUM *bx, double *BX, int n_samp, int norm, int fmax, double dfreq)
+int fft (SPECTRUM &bx, double *BX, int n_samp, int norm, double dfreq)
 {
 
-  int i;
+  unsigned int i;
+  FREQCOMP btmp;
   gsl_fft_complex_wavetable * wavetable;
   gsl_fft_complex_workspace * workspace;
   wavetable = gsl_fft_complex_wavetable_alloc (n_samp);
@@ -71,22 +73,24 @@ int fft (SPECTRUM *bx, double *BX, int n_samp, int norm, int fmax, double dfreq)
   gsl_fft_complex_forward (BX, 1, n_samp, wavetable, workspace);       /* transform BX */
 
   /*  write amplitude & phase to SPECTRUM */
-  bx[0].freq = 0.0;
-  bx[0].amp = sqrt( pow(REAL(BX,0),2) + pow(IMAG(BX,0),2) ) * 1.0/norm;
-  bx[0].phase = 0.0;
-  for (i=1; i<=fmax; i++) {
-    bx[i].freq = i*dfreq;
-    bx[i].amp = sqrt( pow(REAL(BX,i),2) + pow(IMAG(BX,i),2) ) * 2.0/norm;
-    bx[i].phase = atan( IMAG(BX,i) / REAL(BX,i) );
-    if (bx[i].amp<MIN_AMPLITUDE) {                                     /* arbitrary phase for amp=0: set phase=0 */
-      bx[i].phase = 0.0;
+  btmp.freq = 0.0;
+  btmp.amp = sqrt( pow(REAL(BX,0),2) + pow(IMAG(BX,0),2) ) * 1.0/norm;
+  btmp.phase = 0.0;
+  bx.set(0, btmp);
+  for (i=1; i<=bx.fmax; i++) {
+    btmp.freq = i*dfreq;
+    btmp.amp = sqrt( pow(REAL(BX,i),2) + pow(IMAG(BX,i),2) ) * 2.0/norm;
+    btmp.phase = atan( IMAG(BX,i) / REAL(BX,i) );
+    if (btmp.amp<MIN_AMPLITUDE) {                                     /* arbitrary phase for amp=0: set phase=0 */
+      btmp.phase = 0.0;
     }
     else if (REAL(BX,i)<0.0 || (REAL(BX,i)==0.0 && IMAG(BX,i)<0.0)) {  /* adjust phase to [0,2pi] degree */
-      bx[i].phase += M_PI;
+      btmp.phase += M_PI;
     }
     else if (REAL(BX,i)>0.0 && IMAG(BX,i)<=0.0) {
-      bx[i].phase += 2*M_PI;
+      btmp.phase += 2*M_PI;
     }
+    bx.set(i, btmp);
   }
 
   gsl_fft_complex_wavetable_free (wavetable);
@@ -99,13 +103,13 @@ int fft (SPECTRUM *bx, double *BX, int n_samp, int norm, int fmax, double dfreq)
 
 
 /* returns cos-evaluation of magnetic field BX at time t by using spectrum bx */
-double eval(SPECTRUM *bx, int fmax, double t)
+double eval(SPECTRUM bx, double t)
 {
   double value=0.0;
-  int f;
+  unsigned int f;
 
-  for (f=0; f<=fmax; f++) {
-    value += bx[f].amp*cos(bx[f].freq*t + bx[f].phase);
+  for (f=0; f<=bx.fmax; f++) {
+    value += bx.amp(f)*cos(bx.freq(f)*t + bx.phase(f));
   }
 
   return value;
@@ -116,7 +120,7 @@ double eval(SPECTRUM *bx, int fmax, double t)
 
 
 /* create output file with evaluated field data */
-int eval_out(SPECTRUM *bx, SPECTRUM *bz, int fmax_x, int fmax_z, int n_samp, double circumference, const char *filename)
+int eval_out(SPECTRUM bx, SPECTRUM bz, int n_samp, double circumference, const char *filename)
 {
  int i;
  int w=12;
@@ -133,7 +137,7 @@ int eval_out(SPECTRUM *bx, SPECTRUM *bz, int fmax_x, int fmax_z, int n_samp, dou
  file <<"# "<<setw(w)<< "s [m]" <<setw(w)<< "t [s]" <<setw(w)<< "Bx [1/m]" <<setw(w)<< "Bz [1/m]" <<setw(w)<< "Bs [1/m]" << endl;
  for (i=0; i<n_samp; i++) {
    file <<setiosflags(ios::scientific)<<showpoint<<setprecision(4);
-   file <<setw(w+2)<< i*delta_s <<setw(w)<< i*delta_t <<setw(w)<< eval(bx, fmax_x, i*delta_t) <<setw(w)<< eval(bz, fmax_z, i*delta_t) <<setw(w)<< 0.0 << endl;
+   file <<setw(w+2)<< i*delta_s <<setw(w)<< i*delta_t <<setw(w)<< eval(bx, i*delta_t) <<setw(w)<< eval(bz, i*delta_t) <<setw(w)<< 0.0 << endl;
  }
  file.close();
  cout << "* Wrote " << filename  << endl;

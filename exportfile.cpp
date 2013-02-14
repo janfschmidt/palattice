@@ -12,14 +12,15 @@
 #include "constants.hpp"
 #include "exportfile.hpp"
 #include "metadata.hpp"
+#include "spectrum.hpp"
 
 using namespace std;
 
 
 
-int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, string tag, const char *filename)
+int exportfile(SPECTRUM bx, METADATA metadata, string tag, const char *filename)
 {
-  int i;
+  unsigned int i;
   fstream file;
   const int w = 15;     /* column width in spectrum data  */
   char tmp[10];
@@ -27,7 +28,7 @@ int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, string tag, const char
   // add tag to metadata
   metadata.add("Field Component", tag);
   // add fmax to metadata
-  snprintf(tmp, 10, "%d", fmax);
+  snprintf(tmp, 10, "%d", bx.fmax);
   metadata.add("max. frequency", tmp);
   // add phase-warning for harmcorr
   if (tag=="harmcorr" || tag=="resonances") {
@@ -59,15 +60,15 @@ int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, string tag, const char
     file <<"#"<<setw(w+1)<<"Freq[rev.harm.]"<<setw(w)<<"Amp[mrad]"<<setw(w)<<"Phase[deg]" << endl;
   else
     file <<"#"<<setw(w+1)<<"Freq[Hz]"<<setw(w)<<"Amp[1/m]"<<setw(w)<<"Phase[deg]" << endl; 
-  for (i=0; i<=fmax; i++) {
+  for (i=0; i<=bx.fmax; i++) {
     file <<resetiosflags(ios::fixed)<<setiosflags(ios::scientific)<<showpoint<<setprecision(6);
     if (tag=="harmcorr")
       file <<setw(2+w)<< i;
     else
-      file <<setw(2+w)<< bx[i].freq;
-    file <<setw(w)<< bx[i].amp;
+      file <<setw(2+w)<< bx.freq(i);
+    file <<setw(w)<< bx.amp(i);
     file <<resetiosflags(ios::scientific)<<setiosflags(ios::fixed)<<setprecision(1);
-    file <<setw(w)  << bx[i].phase * 360/(2*M_PI) << endl;
+    file <<setw(w)  << bx.phase(i) * 360/(2*M_PI) << endl;
   }
 
   file.close();
@@ -82,7 +83,7 @@ int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, string tag, const char
 /* set column width to maximum label-length + 2 */
 int columnwidth(METADATA metadata)
 {
-  int i;
+ unsigned  int i;
   unsigned int width=0;
 
   for (i=0; i<metadata.size(); i++) {

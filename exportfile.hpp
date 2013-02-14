@@ -2,8 +2,9 @@
 #define __POLSIM__EXPORTFILE_HPP_
 
 #include "metadata.hpp"
+#include "spectrum.hpp"
 
-int exportfile(SPECTRUM *bx, int fmax, METADATA metadata, string tag, const char *filename);
+int exportfile(SPECTRUM bx, METADATA metadata, string tag, const char *filename);
 
 int columnwidth(METADATA metadata);
 

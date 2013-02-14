@@ -17,7 +17,7 @@ public:
   ~METADATA() {}
   int madximport(char *madxLabels, const char *madxfile);
   void add(string inLabel, string inEntry);
-  int size() const;
+  unsigned int size() const;
   string getLabel(int i) const;
   string getEntry(int i) const;
   string getbyLabel(string inLabel) const;

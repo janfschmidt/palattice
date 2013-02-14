@@ -13,6 +13,7 @@
 #include "madximport.hpp"
 #include "getspectrum.hpp"
 #include "fieldmap.hpp"
+#include "spectrum.hpp"
 
 using namespace std;
 
@@ -102,7 +103,7 @@ int harmcorr_out(double *HCvcorr, double *HCquad, double *HCsum, unsigned int nd
 
 //calculates difference-corrector data (->harmcorr) as a function of spin-phaseadvance
 //and does fft for harmcorr-spectrum hc
-int harmcorr(SPECTRUM *hc, unsigned int fmax_hc, magnetvec vcorrs, magnetvec quads, orbitvec orbit, magnetvec dipols, double circumference, int n_samp, const char *filename)
+int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, orbitvec orbit, magnetvec dipols, double circumference, int n_samp, const char *filename)
 {
  unsigned int i=0,j=0,k=0;
  unsigned int nd = dipols.size();
@@ -147,7 +148,7 @@ int harmcorr(SPECTRUM *hc, unsigned int fmax_hc, magnetvec vcorrs, magnetvec qua
  }
 
  harmcorr_out(HCvcorr, HCquad, HCsum, nd, filename);
- fft(hc, HCsum, nd, nd, fmax_hc, circumference);
+ fft(hc, HCsum, nd, nd, circumference);
 
  delete[] HCvcorr;
  delete[] HCquad;

@@ -63,22 +63,12 @@ public:
   ORBIT() : pos(0), x(0), z(0) {}
 };
 
-class SPECTRUM {
-public:
-  double freq;
-  double amp;
-  double phase;
-
-  SPECTRUM() : freq(0), amp(0), phase(0) {}
-};
-
 
 
 
 /* typedefs */
 typedef vector<MAGNET> magnetvec;
 typedef vector<ORBIT> orbitvec;
-typedef vector<FIELD> fieldvec;
 
 
 

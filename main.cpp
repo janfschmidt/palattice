@@ -16,6 +16,7 @@
 #include "constants.hpp"
 #include "types.hpp"
 #include "fieldmap.hpp"
+#include "spectrum.hpp"
 #include "getorbit.hpp"
 #include "getfields.hpp"
 #include "getspectrum.hpp"
@@ -210,11 +211,11 @@ int main (int argc, char *argv[])
 
  // magnetic spectrum (amplitudes & phases) up to fmax
   fmax_hc = int(dipols.size() / 2);
-  SPECTRUM bx[fmax_x+1];
-  SPECTRUM bz[fmax_z+1];
-  SPECTRUM bs[fmax_s+1];
-  SPECTRUM hc[fmax_hc+1]; //harmcorr
-  SPECTRUM res[fmax_res+1];
+  SPECTRUM bx(fmax_x);
+  SPECTRUM bz(fmax_z);
+  SPECTRUM bs(fmax_s);
+  SPECTRUM hc(fmax_hc); //harmcorr
+  SPECTRUM res(fmax_res);
 
   
 
@@ -242,7 +243,7 @@ int main (int argc, char *argv[])
     // interpolate orbit, calculate field distribution & spectrum
     getorbit(orbit, circumference, bpmorbit, n_samp);
     getfields(B, circumference, orbit, dipols, quads, sexts, vcorrs, Res);
-    getspectrum(bx, bz, res, B, fmax_x, fmax_z, fmax_res, circumference, Res);
+    getspectrum(bx, bz, res, B, circumference, Res);
 
     
     // generate output files
@@ -256,23 +257,23 @@ int main (int argc, char *argv[])
       //field data
       fields_out(B, file.out("fields", t.tag(i)).c_str());
       //evaluated field data
-      eval_out(bx, bz, fmax_x, fmax_z, n_samp, circumference, file.out("eval", t.tag(i)).c_str());
+      eval_out(bx, bz, n_samp, circumference, file.out("eval", t.tag(i)).c_str());
     }
 
     //export spectrum files for polarization-calculation
-    exportfile(bx, fmax_x, metadata, "horizontal", file.spec("horizontal", t.tag(i)).c_str());
-    exportfile(bz, fmax_z, metadata, "vertical", file.spec("vertical", t.tag(i)).c_str());
+    exportfile(bx, metadata, "horizontal", file.spec("horizontal", t.tag(i)).c_str());
+    exportfile(bz, metadata, "vertical", file.spec("vertical", t.tag(i)).c_str());
     // empty spectrum (fmax_s-1)
-    exportfile(bs, fmax_s-1, metadata, "longitudinal", file.spec("longitudinal", t.tag(i)).c_str());
+    exportfile(bs, metadata, "longitudinal", file.spec("longitudinal", t.tag(i)).c_str());
 
     //harmcorr data
     if (diff) {
-      harmcorr(hc, fmax_hc, vcorrs, quads, orbit, dipols, circumference, n_samp, file.out("harmcorr", t.tag(i)).c_str());
-      exportfile(hc, fmax_hc, metadata, "harmcorr", file.spec("harmcorr", t.tag(i)).c_str());
+      harmcorr(hc, vcorrs, quads, orbit, dipols, circumference, n_samp, file.out("harmcorr", t.tag(i)).c_str());
+      exportfile(hc, metadata, "harmcorr", file.spec("harmcorr", t.tag(i)).c_str());
     }
     if (Res.on) {
       Res.out(file.out("phaseadvance", t.tag(i)).c_str());
-      exportfile(res, fmax_res, metadata, "resonances", file.spec("resonances", t.tag(i)).c_str());
+      exportfile(res, metadata, "resonances", file.spec("resonances", t.tag(i)).c_str());
     }
 
     cout << "--------------------------------------------" << endl;
