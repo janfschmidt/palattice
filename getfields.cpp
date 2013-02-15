@@ -16,12 +16,14 @@
 #include "constants.hpp"
 #include "types.hpp"
 #include "fieldmap.hpp"
+#include "orbit.hpp"
+
 
 using namespace std;
 
 /* create magn. field with n_samp points along ring */
 /* UNIT: [B] = 1/m (factor gamma*m*c/e for [B]=T) */
-int getfields (FIELDMAP &B, double circumference, orbitvec &orbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs, RESONANCES &Res)
+int getfields (FIELDMAP &B, double circumference, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs, RESONANCES &Res)
 {
   
  unsigned int i;
@@ -49,7 +51,7 @@ int getfields (FIELDMAP &B, double circumference, orbitvec &orbit, magnetvec &di
    /* quadrupoles */
    else if (q<quads.size() && Btmp.pos >= quads[q].start && Btmp.pos <= quads[q].end) {
      Btmp.name = quads[q].name;
-     Btmp.x = quads[q].strength * orbit[i].z;
+     Btmp.x = quads[q].strength * orbit.z(i);
      Btmp.z = 0; // neglect
      Btmp.theta = d * phase_perdip;
      B.set(i, Btmp);
@@ -58,7 +60,7 @@ int getfields (FIELDMAP &B, double circumference, orbitvec &orbit, magnetvec &di
    /* sextupoles */
    else if (s<sexts.size() && Btmp.pos >= sexts[s].start && Btmp.pos <= sexts[s].end) {
      Btmp.name = sexts[s].name;
-     Btmp.x = 0.5 * sexts[s].strength * orbit[i].x * orbit[i].z;
+     Btmp.x = 0.5 * sexts[s].strength * orbit.x(i) * orbit.z(i);
      Btmp.z = 0; // neglect
      Btmp.theta = d * phase_perdip;
      B.set(i, Btmp);

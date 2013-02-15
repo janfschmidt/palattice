@@ -35,6 +35,7 @@ public:
   double theta(unsigned int i) const {return B[i].theta;}
   unsigned int size() const {return n_samp*turns;}
   int set(unsigned int i, FIELD tmp);
+  //int out(const char *filename) const;
 
 };
 

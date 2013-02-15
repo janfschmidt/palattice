@@ -13,13 +13,14 @@
 #include <vector>
 #include "constants.hpp"
 #include "types.hpp"
+#include "orbit.hpp"
 
 
 /* interpolate orbit with n_samp points from bpmorbit */
-int getorbit (orbitvec &orbit, double circumference, orbitvec &bpmorbit, int n_samp)
+int getorbit (ORBIT &orbit, double circumference, ORBIT &bpmorbit, unsigned int n_samp)
 {
-  int i;
-  int n_bpm = bpmorbit.size();
+  unsigned int i;
+  unsigned int n_bpm = bpmorbit.size();
   double interval_samp = circumference/n_samp;              /* sampling interval in meter */
   const gsl_interp_type *type = gsl_interp_akima_periodic;  /* type of interpolation used (see GSL manual) */
   gsl_error_handler_t *old_error_handler;
@@ -31,23 +32,23 @@ int getorbit (orbitvec &orbit, double circumference, orbitvec &bpmorbit, int n_s
 
   double tmp_pos[n_bpm+2], tmp_x[n_bpm+2], tmp_z[n_bpm+2];
 
-  struct ORBIT otmp;
+  struct ORBITCOMP otmp;
 
   orbit.clear(); //delete old orbit (from previous t)
 
   // add initial entry to avoid extrapolation (Frank)
-  tmp_pos[0] = bpmorbit[n_bpm-1].pos-circumference;
-  tmp_x[0] = bpmorbit[n_bpm-1].x;
-  tmp_z[0] = bpmorbit[n_bpm-1].z;
+  tmp_pos[0] = bpmorbit.pos(n_bpm-1) - circumference;
+  tmp_x[0] = bpmorbit.x(n_bpm-1);
+  tmp_z[0] = bpmorbit.z(n_bpm-1);
   for (i=0; i<n_bpm; i++) {
-    tmp_pos[i+1] = bpmorbit[i].pos;
-    tmp_x[i+1] = bpmorbit[i].x;
-    tmp_z[i+1] = bpmorbit[i].z;
+    tmp_pos[i+1] = bpmorbit.pos(i);
+    tmp_x[i+1] = bpmorbit.x(i);
+    tmp_z[i+1] = bpmorbit.z(i);
   }
   // copy first orbit entry for interpolation with periodic boundary condition
-  tmp_pos[n_bpm+1] = bpmorbit[0].pos+circumference; 
-  tmp_x[n_bpm+1] = bpmorbit[0].x;
-  tmp_z[n_bpm+1] = bpmorbit[0].z;
+  tmp_pos[n_bpm+1] = bpmorbit.pos(0) + circumference; 
+  tmp_x[n_bpm+1] = bpmorbit.x(0);
+  tmp_z[n_bpm+1] = bpmorbit.z(0);
   
   old_error_handler = gsl_set_error_handler_off();
   gsl_spline_init (spline_x, tmp_pos, tmp_x, n_bpm+2); // horizontal (x)
@@ -86,7 +87,7 @@ int getorbit (orbitvec &orbit, double circumference, orbitvec &bpmorbit, int n_s
 
 
 /* create output file with orbit data */
-int orbit_out(orbitvec &orbit, const char *filename)
+int orbit_out(ORBIT &orbit, const char *filename)
 {
  int i=0;
  int w=10;
@@ -102,7 +103,7 @@ int orbit_out(orbitvec &orbit, const char *filename)
 file <<setw(w)<< "s [m]" <<setw(w)<< "x [mm]" <<setw(w)<< "z [mm]" << endl;
  for (i=0; i<n_samp; i++) {
    file <<setiosflags(ios::fixed)<<showpoint<<setprecision(3);
-   file <<setw(w)<< orbit[i].pos <<setw(w)<< orbit[i].x*1000 <<setw(w)<< orbit[i].z*1000 << endl;
+   file <<setw(w)<< orbit.pos(i) <<setw(w)<< orbit.x(i)*1000 <<setw(w)<< orbit.z(i)*1000 << endl;
  }
  file.close();
  cout << "* Wrote " << filename  << endl;

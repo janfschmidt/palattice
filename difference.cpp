@@ -14,15 +14,16 @@
 #include "getspectrum.hpp"
 #include "fieldmap.hpp"
 #include "spectrum.hpp"
+#include "orbit.hpp"
 
 using namespace std;
 
 // read and subtract reference orbit & corrector data
-int difference(const char *ReferenceFolder, unsigned int t, orbitvec &bpmorbit, magnetvec &vcorrs, BPM *Ref_ELSAbpms, CORR *Ref_ELSAvcorrs, bool elsa)
+int difference(const char *ReferenceFolder, unsigned int t, ORBIT &bpmorbit, magnetvec &vcorrs, BPM *Ref_ELSAbpms, CORR *Ref_ELSAvcorrs, bool elsa)
 {
 
   unsigned int i;
-  orbitvec Ref_bpmorbit;
+  ORBIT Ref_bpmorbit;
   magnetvec Ref_vcorrs;
 
   //read reference
@@ -45,16 +46,11 @@ int difference(const char *ReferenceFolder, unsigned int t, orbitvec &bpmorbit, 
     cout << "ERROR: difference.cpp: Unequal number of BPMs to subtract."<< endl;
     return 1;
   }
-  for (i=0; i<bpmorbit.size(); i++) {
-    if (bpmorbit[i].pos==Ref_bpmorbit[i].pos) {
-      bpmorbit[i].x -= Ref_bpmorbit[i].x;
-      bpmorbit[i].z -= Ref_bpmorbit[i].z;
+  i = bpmorbit.diff(Ref_bpmorbit);
+  if (i != 0) {
+    cout << "ERROR: difference.cpp: Unequal positions of "<<i<<". BPM for subtraction."<< endl;
+    return 1;
     }
-    else {
-      cout << "ERROR: difference.cpp: Unequal positions of "<<i+1<<". BPM for subtraction."<< endl;
-      return 1;
-    }
-  }
 
   //subtract corrector strengths
   if (vcorrs.size() != Ref_vcorrs.size()) {
@@ -103,7 +99,7 @@ int harmcorr_out(double *HCvcorr, double *HCquad, double *HCsum, unsigned int nd
 
 //calculates difference-corrector data (->harmcorr) as a function of spin-phaseadvance
 //and does fft for harmcorr-spectrum hc
-int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, orbitvec orbit, magnetvec dipols, double circumference, int n_samp, const char *filename)
+int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, ORBIT orbit, magnetvec dipols, double circumference, int n_samp, const char *filename)
 {
  unsigned int i=0,j=0,k=0;
  unsigned int nd = dipols.size();
@@ -127,7 +123,7 @@ int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, orbitvec orbit, ma
      }
      while(quads[k].start < dipols[i].start && k < nq) {
        length = quads[k].end - quads[k].start;
-       HCquad[2*i] += quads[k].strength * orbit[int(quads[k].end/sample)].z * length * 1000; // mrad
+       HCquad[2*i] += quads[k].strength * orbit.z(int(quads[k].end/sample)) * length * 1000; // mrad
        k++;
      }
  }
@@ -139,7 +135,7 @@ int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, orbitvec orbit, ma
  }
  while (k<nq) {
    length = quads[k].end - quads[k].start;
-   HCquad[0] += quads[k].strength * orbit[int(quads[k].end/sample)].z * length * 1000; // mrad
+   HCquad[0] += quads[k].strength * orbit.z(int(quads[k].end/sample)) * length * 1000; // mrad
    k++;
  }
 

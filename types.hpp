@@ -54,21 +54,10 @@ public:
   MAGNET() : start(0), end(0), length(0), strength(0), dpsi(0) {}
 };
 
-class ORBIT {
-public:
-  double pos;
-  double x;
-  double z;
-
-  ORBIT() : pos(0), x(0), z(0) {}
-};
-
-
 
 
 /* typedefs */
 typedef vector<MAGNET> magnetvec;
-typedef vector<ORBIT> orbitvec;
 
 
 

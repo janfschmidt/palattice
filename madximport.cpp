@@ -12,19 +12,21 @@
 #include <vector>
 #include "types.hpp"
 #include "constants.hpp"
+#include "orbit.hpp"
+
 
 using namespace std;
 
 
 
-int madximport(const char *filename, orbitvec &bpmorbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs)
+int madximport(const char *filename, ORBIT &bpmorbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs)
 {
   string tmp, name;
   double s, l, angle, k1l, k2l, vkick; // madx column variables
   string x, y;
   fstream madx;
   MAGNET mtmp;
-  ORBIT otmp;
+  ORBITCOMP otmp;
 
 
   madx.open(filename, ios::in);

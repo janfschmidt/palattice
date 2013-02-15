@@ -31,6 +31,7 @@ public:
   double phase(unsigned int i) const {return b[i].phase;}
   unsigned int size() const {return (fmax+1)*turns;}      // +1 explained by (**)
   int set(unsigned int i, FREQCOMP tmp);
+  //int evalout(const char *filename) const;
 
 };
 

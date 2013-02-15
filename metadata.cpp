@@ -109,7 +109,7 @@ unsigned int METADATA::size() const
 }
 
 /* get i-th value */
-string METADATA::getLabel(int i) const
+string METADATA::getLabel(unsigned int i) const
 {
   string tmpLabel="no valid label";
   if (i < METADATA::size())
@@ -118,7 +118,7 @@ string METADATA::getLabel(int i) const
   return tmpLabel;
 }
 
-string METADATA::getEntry(int i) const
+string METADATA::getEntry(unsigned int i) const
 {
   string tmpEntry="no valid entry";
   if (i < METADATA::size())

@@ -2,9 +2,9 @@
 #define __POLSIM__GETORBIT_HPP_
 
 
-int getorbit (orbitvec &orbit , double circumference, orbitvec &bpmorbit, int n_samp);
+int getorbit (ORBIT &orbit , double circumference, ORBIT &bpmorbit, unsigned int n_samp);
 
-int orbit_out(orbitvec &orbit, const char *filename);
+int orbit_out(ORBIT &orbit, const char *filename);
 
 
 

@@ -15,6 +15,7 @@
 #include <sstream>
 #include "constants.hpp"
 #include "types.hpp"
+#include "orbit.hpp"
 #include "fieldmap.hpp"
 #include "spectrum.hpp"
 #include "getorbit.hpp"
@@ -61,8 +62,8 @@ int main (int argc, char *argv[])
   magnetvec quads;
   magnetvec sexts;
   magnetvec vcorrs;
-  orbitvec bpmorbit;            // orbit at discrete positions (e.g. BPMs) for a specific time in elsa-cycle
-  orbitvec orbit;               // orbit interpolated from bpmorbit with n_samp sampling points
+  ORBIT bpmorbit;            // orbit at discrete positions (e.g. BPMs) for a specific time in elsa-cycle
+  ORBIT orbit;               // orbit interpolated from bpmorbit with n_samp sampling points
   FIELDMAP B(n_samp);           // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
   int err=0;
 

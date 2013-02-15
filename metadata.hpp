@@ -18,8 +18,8 @@ public:
   int madximport(char *madxLabels, const char *madxfile);
   void add(string inLabel, string inEntry);
   unsigned int size() const;
-  string getLabel(int i) const;
-  string getEntry(int i) const;
+  string getLabel(unsigned int i) const;
+  string getEntry(unsigned int i) const;
   string getbyLabel(string inLabel) const;
   void setbyLabel(string inLabel, string inEntry);
 

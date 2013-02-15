@@ -12,6 +12,7 @@
 #include "constants.hpp"
 #include "types.hpp"
 #include "ELSAimport.hpp"
+#include "orbit.hpp"
 
 using namespace std;
 
@@ -129,10 +130,10 @@ int ELSAimport_bpms(BPM *ELSAbpms, const char *spurenFolder)
 
 
 /* write BPM data for time t to bpmorbit */
-int ELSAimport_getbpmorbit(BPM *ELSAbpms, orbitvec &bpmorbit, unsigned int t)
+int ELSAimport_getbpmorbit(BPM *ELSAbpms, ORBIT &bpmorbit, unsigned int t)
 {
   int i;
-  ORBIT otmp;
+  ORBITCOMP otmp;
 
   bpmorbit.clear(); //delete old-BPM-data (from madx or previous t)
   
@@ -266,7 +267,7 @@ int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, unsigned int t)
 
 
 /* create output file with BPM data */
-int bpms_out(orbitvec bpmorbit, const char *filename)
+int bpms_out(ORBIT bpmorbit, const char *filename)
 {
  unsigned int i=0;
  int w=10;
@@ -281,7 +282,7 @@ int bpms_out(orbitvec bpmorbit, const char *filename)
  file <<setw(w)<< "s [m]" <<setw(w)<< "x [mm]" <<setw(w)<< "z [mm]" << endl;
  for (i=0; i<bpmorbit.size(); i++) {
    file <<setiosflags(ios::fixed)<<showpoint<<setprecision(3);
-   file <<setw(w)<< bpmorbit[i].pos <<setw(w)<< bpmorbit[i].x*1000 <<setw(w)<< bpmorbit[i].z*1000 << endl;
+   file <<setw(w)<< bpmorbit.pos(i) <<setw(w)<< bpmorbit.x(i)*1000 <<setw(w)<< bpmorbit.z(i)*1000 << endl;
  }
  file.close();
  cout << "* Wrote " << filename  << endl;
