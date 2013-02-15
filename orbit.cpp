@@ -20,7 +20,9 @@ unsigned int ORBIT::diff(ORBIT Ref)
       Orb[i].x -= Ref.x(i);
       Orb[i].z -= Ref.z(i);
     }
-    else return i+1;
+    else {
+      return i+1;
+    }
   }
   
   return 0;

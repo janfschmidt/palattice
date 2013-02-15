@@ -14,7 +14,7 @@ public:
   double x;
   double z;
 
-  ORBITCOMP() : pos(0), x(0), z(0) {}
+  ORBITCOMP() : pos(0), turn(0), x(0), z(0) {}
 };
 
 
