@@ -52,7 +52,7 @@ int RESONANCES::addother(MAGNET magnet, double Bx)
 {
   //cout <<"kicksize "<< kick.size() << endl;
   //------Welche Fehler abfangen ??--------
-  kick[kick.size()-1] += 1000 * Bx * magnet.length;
+  kick.back() += 1000 * Bx * magnet.length;
 
   return 0;
 }
@@ -66,7 +66,7 @@ int RESONANCES::closering()
     return 1;
   }
   else {
-    kick[0] += kick[kick.size()-1];  //add kick(360°) to kick(0°)
+    kick[0] += kick.back();  //add kick(360°) to kick(0°)
     kick.erase(kick.end()-1);
     theta.erase(theta.end()-1);
   }

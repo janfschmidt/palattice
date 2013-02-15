@@ -22,7 +22,7 @@ public:
   RESONANCES(double thetastep, unsigned int n_dip);
   ~RESONANCES() {}
   double gettheta(unsigned int i) const {return theta[i];}
-  double lasttheta() const {return theta[theta.size()-1];}
+  double lasttheta() const {return theta.back();}
   double getkick(unsigned int i) const {return kick[i];}
   unsigned int ndipols() const {return ndip;}
   int out(const char *filename) const;
