@@ -13,6 +13,7 @@
 #include "types.hpp"
 #include "constants.hpp"
 #include "orbit.hpp"
+#include "filenames.hpp"
 
 
 using namespace std;
@@ -122,3 +123,59 @@ int misalignments(const char *filename, magnetvec &dipols)
 
   return 0;
 }
+
+
+/* import single particle trajectories from madx tracking data */
+int trajectoryimport(const FILENAMES files, ORBIT &trajectory, unsigned int particle)
+{
+  unsigned int obs=1;
+  string tmp="init";
+  unsigned int turn; // madx column variables
+  double x, y, s;
+  fstream madx;
+  ORBITCOMP otmp;
+
+  //for chosen particle read data from all observation points
+  //-----------------------------------------------------------------------------------------------------
+  //obs0001 is a special case: it corresponds to s=0.0m (START marker in MAD-X), but counts the turns different:
+  //turn=0, s=0.0 are the initial conditions (beginning of turn 1)
+  //turn=1, s=0.0 is the beginning of turn 2 or END of turn 1.
+  //So the data of obs0001 is used with s=0.0 but one turn later than written in MAD-X to fit our notation
+  //-----------------------------------------------------------------------------------------------------
+  madx.open(files.tracking(obs,particle).c_str(), ios::in);
+  while ( madx.is_open() ) {
+    
+    //go to end of "header" / first data line
+    while (tmp != "$") {
+      madx >> tmp;
+      if (madx.eof()) {
+	cout << "ERROR: madximport.cpp: Wrong data format in " << files.tracking(obs,particle) << endl;
+	return 1;
+      }
+    }
+    getline(madx, tmp);
+
+    //read trajectory data
+    while (!madx.eof()) {
+      madx >> tmp >> turn >> x >> tmp >> y >> tmp >> tmp >> tmp >> s;
+      getline(madx, tmp);
+      if (madx.eof()) break;
+      
+      otmp.pos = s;
+      if (obs==1) otmp.turn = turn+1; //see comment above
+      else otmp.turn = turn;
+      otmp.x = x;
+      otmp.z = y;
+      trajectory.push_back(otmp);
+    }
+
+    madx.close();
+    obs++;
+    madx.open(files.tracking(obs,particle).c_str(), ios::in);
+  }
+
+  
+
+  return 0;
+}
+   

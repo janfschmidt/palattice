@@ -45,6 +45,7 @@ int main (int argc, char *argv[])
   unsigned int fmax_s = 0;
   unsigned int fmax_hc = 12;    // harmcorr spectrum fmax = #dipoles/2 (is set to dipols.size()/2 below)
   unsigned int fmax_res = 0;
+  unsigned int particle = 1;    // particle counter (for individual fields based on multi-particle tracking)
   TIMETAG t(530);               // moment(s) of elsa-cycle (ms)
   bool elsa = false;            // true: orbit, correctors, k & m read from /sgt/elsa/bpm/...
   bool diff = false;            // true: "harmcorr mode", calculate difference of two "Spuren"...
@@ -64,6 +65,7 @@ int main (int argc, char *argv[])
   magnetvec vcorrs;
   ORBIT bpmorbit;            // orbit at discrete positions (e.g. BPMs) for a specific time in elsa-cycle
   ORBIT orbit;               // orbit interpolated from bpmorbit with n_samp sampling points
+  ORBIT trajectory;          // orbit of single particle (based on tracking)
   FIELDMAP B(n_samp);           // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
   int err=0;
 
@@ -188,6 +190,7 @@ int main (int argc, char *argv[])
   // MAD-X: read particle orbit and lattice (magnet positions & strengths)
   madximport(file.import.c_str(), bpmorbit, dipols, quads, sexts, vcorrs);
   misalignments(file.misalign_dip.c_str(), dipols);
+  trajectoryimport(file, trajectory, particle);
 
   // elsa=true: quad-&sext-strengths, BPM- & corrector-data from ELSA "Spuren"
   if (elsa) {
@@ -202,6 +205,9 @@ int main (int argc, char *argv[])
     cout << "* "<<dipols.size()<<" dipoles, "<<quads.size()<<" quadrupoles, "
 	 <<sexts.size()<<" sextupoles, "<<vcorrs.size()<<" correctors and "
 	 <<bpmorbit.size()<<" BPMs read"<<endl<<"  from "<<file.import.c_str() << endl;
+    cout << "* turns: "<<bpmorbit.getturns()<< ", BPMs: "<<bpmorbit.getbpms()<<endl;
+    cout << "* trajectory of particle "<<particle<<" read at "<<trajectory.getbpms()
+	 <<" observation points for "<<trajectory.getturns()<<" turns"<<endl;
   }
   cout << "--------------------------------------------" << endl;
 
@@ -250,11 +256,12 @@ int main (int argc, char *argv[])
     // generate output files
     if (allout) {
       //BPM data
-      bpms_out(bpmorbit, file.out("bpms", t.tag(i)).c_str());
+      bpmorbit.out(file.out("bpms", t.tag(i)).c_str());
+      trajectory.out(file.out("trajectory", t.tag(i)).c_str());
       //corrector data
       corrs_out(vcorrs, file.out("vcorrs", t.tag(i)).c_str());
       //orbit data (interpolated BPMs)
-      orbit_out(orbit, file.out("orbit", t.tag(i)).c_str());
+      orbit.out(file.out("orbit", t.tag(i)).c_str());
       //field data
       fields_out(B, file.out("fields", t.tag(i)).c_str());
       //evaluated field data
@@ -273,7 +280,7 @@ int main (int argc, char *argv[])
       exportfile(hc, metadata, "harmcorr", file.spec("harmcorr", t.tag(i)).c_str());
     }
     if (Res.on) {
-      Res.out(file.out("phaseadvance", t.tag(i)).c_str());
+      if (allout) Res.out(file.out("phaseadvance", t.tag(i)).c_str());
       exportfile(res, metadata, "resonances", file.spec("resonances", t.tag(i)).c_str());
     }
 

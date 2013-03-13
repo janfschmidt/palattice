@@ -266,32 +266,6 @@ int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, unsigned int t)
 
 
 
-/* create output file with BPM data */
-int bpms_out(ORBIT bpmorbit, const char *filename)
-{
- unsigned int i=0;
- int w=10;
- fstream file;
- 
- file.open(filename, ios::out);
- if (!file.is_open()) {
-   cout << "ERROR: bpms.out(): Cannot open " << filename << "." << endl;
-   return 1;
- }
- 
- file <<setw(w)<< "s [m]" <<setw(w)<< "x [mm]" <<setw(w)<< "z [mm]" << endl;
- for (i=0; i<bpmorbit.size(); i++) {
-   file <<setiosflags(ios::fixed)<<showpoint<<setprecision(3);
-   file <<setw(w)<< bpmorbit.pos(i) <<setw(w)<< bpmorbit.x(i)*1000 <<setw(w)<< bpmorbit.z(i)*1000 << endl;
- }
- file.close();
- cout << "* Wrote " << filename  << endl;
-
- return 0;
-}
-
-
-
 
 /* create output file with corrector data */
 int corrs_out(magnetvec vcorrs, const char *filename)

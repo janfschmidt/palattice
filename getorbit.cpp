@@ -84,29 +84,3 @@ int getorbit (ORBIT &orbit, double circumference, ORBIT &bpmorbit, unsigned int 
   return 0;
 }
 
-
-
-/* create output file with orbit data */
-int orbit_out(ORBIT &orbit, const char *filename)
-{
- int i=0;
- int w=10;
- int n_samp = orbit.size();
- fstream file;
-
- file.open(filename, ios::out);
- if (!file.is_open()) {
-   cout << "ERROR: Cannot open " << filename << "." << endl;
-   return 1;
- }
-
-file <<setw(w)<< "s [m]" <<setw(w)<< "x [mm]" <<setw(w)<< "z [mm]" << endl;
- for (i=0; i<n_samp; i++) {
-   file <<setiosflags(ios::fixed)<<showpoint<<setprecision(3);
-   file <<setw(w)<< orbit.pos(i) <<setw(w)<< orbit.x(i)*1000 <<setw(w)<< orbit.z(i)*1000 << endl;
- }
- file.close();
- cout << "* Wrote " << filename  << endl;
-
- return 0;
-}

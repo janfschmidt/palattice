@@ -2,7 +2,9 @@
 /* 21.11.2012 - J. Schmidt */
 
 #include <string>
+#include <stdio.h>
 #include "filenames.hpp"
+
 
 //constructor
 FILENAMES::FILENAMES(string pathIn, bool elsa, bool diff, bool sgt_access, string spurenIn, string refIn)
@@ -39,3 +41,13 @@ FILENAMES::FILENAMES(string pathIn, bool elsa, bool diff, bool sgt_access, strin
   
 }
 
+
+string FILENAMES::tracking(unsigned int obs, unsigned int p) const
+{
+  char tmp[512];
+  string out;
+  sprintf(tmp, "%s/madx/madx.obs%04d.p%04d", path.c_str(), obs, p);
+  out = tmp;
+
+  return out;
+}

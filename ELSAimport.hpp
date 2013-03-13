@@ -15,8 +15,6 @@ int ELSAimport_getbpmorbit(BPM *ELSAbpms, ORBIT &bpmorbit, unsigned int t);
 
 int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, unsigned int t);
 
-int bpms_out(ORBIT bpmorbit, const char *filename);
-
 int corrs_out(magnetvec vcorrs, const char *filename);
 
 #endif

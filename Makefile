@@ -16,7 +16,7 @@ getspectrum.o: getspectrum.cpp constants.hpp types.hpp resonances.hpp fieldmap.h
 	g++ $(cflags) -c getspectrum.cpp
 exportfile.o: exportfile.cpp constants.hpp types.hpp metadata.hpp spectrum.hpp
 	g++ $(cflags) -c exportfile.cpp
-madximport.o: madximport.cpp constants.hpp types.hpp orbit.hpp
+madximport.o: madximport.cpp constants.hpp types.hpp orbit.hpp filenames.hpp
 	g++ $(cflags) -c madximport.cpp
 ELSAimport.o: ELSAimport.cpp constants.hpp types.hpp orbit.hpp
 	g++ $(cflags) -c ELSAimport.cpp
@@ -34,7 +34,7 @@ fieldmap.o: fieldmap.cpp fieldmap.hpp types.hpp
 	g++ $(cflags) -c fieldmap.cpp
 spectrum.o: spectrum.cpp spectrum.hpp
 	g++ $(cflags) -c spectrum.cpp
-orbit.o: orbit.cpp orbit.hpp
+orbit.o: orbit.cpp orbit.hpp types.hpp
 	g++ $(cflags) -c orbit.cpp
 
 
