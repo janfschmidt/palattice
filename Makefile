@@ -3,13 +3,11 @@ cflags = -Wall -g -O0 #last 2 for valgrind
 all: Bsupply strom2kick new_strom2kick
 .PHONY: all
 
-Bsupply: main.o getorbit.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o difference.o timetag.o filenames.o resonances.o fieldmap.o spectrum.o orbit.o
-	g++ $(cflags) -o Bsupply main.o getorbit.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o difference.o timetag.o filenames.o resonances.o fieldmap.o spectrum.o orbit.o -lgsl -lgslcblas -lm
+Bsupply: main.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o difference.o timetag.o filenames.o resonances.o fieldmap.o spectrum.o orbit.o
+	g++ $(cflags) -o Bsupply main.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o difference.o timetag.o filenames.o resonances.o fieldmap.o spectrum.o orbit.o -lgsl -lgslcblas -lm
 
-main.o: main.cpp constants.hpp types.hpp orbit.hpp fieldmap.hpp spectrum.hpp getorbit.hpp getfields.hpp exportfile.hpp madximport.hpp metadata.hpp difference.hpp timetag.hpp filenames.hpp resonances.hpp
+main.o: main.cpp constants.hpp types.hpp orbit.hpp fieldmap.hpp spectrum.hpp getfields.hpp exportfile.hpp madximport.hpp metadata.hpp difference.hpp timetag.hpp filenames.hpp resonances.hpp
 	g++ $(cflags) -c main.cpp
-getorbit.o: getorbit.cpp constants.hpp types.hpp orbit.hpp
-	g++ $(cflags) -c getorbit.cpp
 getfields.o: getfields.cpp constants.hpp types.hpp resonances.hpp fieldmap.hpp orbit.hpp
 	g++ $(cflags) -c getfields.cpp
 getspectrum.o: getspectrum.cpp constants.hpp types.hpp resonances.hpp fieldmap.hpp spectrum.hpp
@@ -46,4 +44,4 @@ new_strom2kick: new_strom2kick.c
 
 
 clean: 
-	rm Bsupply main.o getorbit.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o difference.o timetag.o filenames.o resonances.o fieldmap.o spectrum.o orbit.o strom2kick new_strom2kick
+	rm Bsupply main.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o difference.o timetag.o filenames.o resonances.o fieldmap.o spectrum.o orbit.o strom2kick new_strom2kick

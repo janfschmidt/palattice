@@ -18,7 +18,7 @@
 #include "orbit.hpp"
 #include "fieldmap.hpp"
 #include "spectrum.hpp"
-#include "getorbit.hpp"
+//#include "getorbit.hpp"
 #include "getfields.hpp"
 #include "getspectrum.hpp"
 #include "exportfile.hpp"
@@ -204,8 +204,7 @@ int main (int argc, char *argv[])
   else {
     cout << "* "<<dipols.size()<<" dipoles, "<<quads.size()<<" quadrupoles, "
 	 <<sexts.size()<<" sextupoles, "<<vcorrs.size()<<" correctors and "
-	 <<bpmorbit.size()<<" BPMs read"<<endl<<"  from "<<file.import.c_str() << endl;
-    cout << "* turns: "<<bpmorbit.getturns()<< ", BPMs: "<<bpmorbit.getbpms()<<endl;
+	 <<bpmorbit.getbpms()<<" BPMs read"<<endl<<"  from "<<file.import.c_str() << endl;
     cout << "* trajectory of particle "<<particle<<" read at "<<trajectory.getbpms()
 	 <<" observation points for "<<trajectory.getturns()<<" turns"<<endl;
   }
@@ -248,7 +247,7 @@ int main (int argc, char *argv[])
 
 
     // interpolate orbit, calculate field distribution & spectrum
-    getorbit(orbit, circumference, bpmorbit, n_samp);
+    bpmorbit.interpol(orbit, n_samp);
     getfields(B, circumference, orbit, dipols, quads, sexts, vcorrs, Res);
     getspectrum(bx, bz, res, B, circumference, Res);
 

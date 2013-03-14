@@ -37,10 +37,6 @@ public:
   unsigned int getbpms() const {return bpms;}
   void push_back(ORBITCOMP tmp);
   void clear() {Orb.clear();}
-  // virtual double pos() const =0;
-  // virtual double turn() const =0;
-  // virtual double x() const =0;
-  // virtual double z() const =0;
   virtual int out(const char *filename) const =0;
 };
 
@@ -58,6 +54,7 @@ public:
   double z(unsigned int i) const {return Orb[i].z;}
   int out(const char *filename) const;
   int diff(CLOSEDORBIT Ref);
+  int interpol(CLOSEDORBIT &interpOrbit, unsigned int n_samp) const;
 };
 
 
