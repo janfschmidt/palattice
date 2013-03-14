@@ -63,9 +63,9 @@ int main (int argc, char *argv[])
   magnetvec quads;
   magnetvec sexts;
   magnetvec vcorrs;
-  ORBIT bpmorbit;            // orbit at discrete positions (e.g. BPMs) for a specific time in elsa-cycle
-  ORBIT orbit;               // orbit interpolated from bpmorbit with n_samp sampling points
-  ORBIT trajectory;          // orbit of single particle (based on tracking)
+  CLOSEDORBIT bpmorbit;            // orbit at discrete positions (e.g. BPMs) for a specific time in elsa-cycle
+  CLOSEDORBIT orbit;               // orbit interpolated from bpmorbit with n_samp sampling points
+  TRAJECTORY trajectory;          // orbit of single particle (based on tracking)
   FIELDMAP B(n_samp);           // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
   int err=0;
 

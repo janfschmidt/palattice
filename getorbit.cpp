@@ -17,7 +17,7 @@
 
 
 /* interpolate orbit with n_samp points from bpmorbit */
-int getorbit (ORBIT &orbit, double circumference, ORBIT &bpmorbit, unsigned int n_samp)
+int getorbit (CLOSEDORBIT &orbit, double circumference, CLOSEDORBIT &bpmorbit, unsigned int n_samp)
 {
   unsigned int i;
   unsigned int n_bpm = bpmorbit.size();

@@ -19,11 +19,11 @@
 using namespace std;
 
 // read and subtract reference orbit & corrector data
-int difference(const char *ReferenceFolder, unsigned int t, ORBIT &bpmorbit, magnetvec &vcorrs, BPM *Ref_ELSAbpms, CORR *Ref_ELSAvcorrs, bool elsa)
+int difference(const char *ReferenceFolder, unsigned int t, CLOSEDORBIT &bpmorbit, magnetvec &vcorrs, BPM *Ref_ELSAbpms, CORR *Ref_ELSAvcorrs, bool elsa)
 {
 
   unsigned int i;
-  ORBIT Ref_bpmorbit;
+  CLOSEDORBIT Ref_bpmorbit;
   magnetvec Ref_vcorrs;
 
   //read reference
@@ -99,7 +99,7 @@ int harmcorr_out(double *HCvcorr, double *HCquad, double *HCsum, unsigned int nd
 
 //calculates difference-corrector data (->harmcorr) as a function of spin-phaseadvance
 //and does fft for harmcorr-spectrum hc
-int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, ORBIT orbit, magnetvec dipols, double circumference, int n_samp, const char *filename)
+int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, CLOSEDORBIT orbit, magnetvec dipols, double circumference, int n_samp, const char *filename)
 {
  unsigned int i=0,j=0,k=0;
  unsigned int nd = dipols.size();

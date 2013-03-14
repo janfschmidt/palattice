@@ -130,7 +130,7 @@ int ELSAimport_bpms(BPM *ELSAbpms, const char *spurenFolder)
 
 
 /* write BPM data for time t to bpmorbit */
-int ELSAimport_getbpmorbit(BPM *ELSAbpms, ORBIT &bpmorbit, unsigned int t)
+int ELSAimport_getbpmorbit(BPM *ELSAbpms, CLOSEDORBIT &bpmorbit, unsigned int t)
 {
   int i;
   ORBITCOMP otmp;

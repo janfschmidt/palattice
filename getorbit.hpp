@@ -2,7 +2,7 @@
 #define __POLSIM__GETORBIT_HPP_
 
 
-int getorbit (ORBIT &orbit , double circumference, ORBIT &bpmorbit, unsigned int n_samp);
+int getorbit (CLOSEDORBIT &orbit , double circumference, CLOSEDORBIT &bpmorbit, unsigned int n_samp);
 
 
 

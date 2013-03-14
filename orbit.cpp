@@ -11,7 +11,7 @@ using namespace std;
 
 
 // (observation point & turn) -> (array index)
-unsigned int ORBIT::orbitindex(unsigned int obs, unsigned int t) const
+unsigned int TRAJECTORY::Orbindex(unsigned int obs, unsigned int t) const
 {
   if (obs==1)
     return (t-1);  //obs0001 with one more turn (see trajectoryimport() for details)
@@ -35,7 +35,7 @@ void ORBIT::push_back(ORBITCOMP tmp)
 
 //subtract Ref orbit from this orbit.
 //if pos or turn are unequal the number of the element with error is returned
-unsigned int ORBIT::diff(ORBIT Ref)
+int CLOSEDORBIT::diff(CLOSEDORBIT Ref)
 {
   unsigned int i;
   for (i=0; i<this->size(); i++) {
@@ -53,8 +53,32 @@ unsigned int ORBIT::diff(ORBIT Ref)
 
 
 
+
 //output file
-int ORBIT::out(const char *filename) const
+int CLOSEDORBIT::out(const char *filename) const
+{
+  unsigned int i;
+  int w=10;
+  fstream file;
+  
+  file.open(filename, ios::out);
+  if (!file.is_open()) {
+    cout << "ERROR: CLOSEDORBIT::out(): Cannot open " << filename << "." << endl;
+    return 1;
+  }
+  
+  file <<setw(w)<< "s [m]" <<setw(w)<< "x [mm]" <<setw(w)<< "z [mm]" << endl;
+  for (i=0; i<this->size(); i++) {
+      file <<setiosflags(ios::fixed)<<showpoint<<setprecision(3);
+      file <<setw(w)<< pos(i) <<setw(w)<<  x(i)*1000 <<setw(w)<< z(i)*1000 << endl;
+  }
+  file.close();
+  cout << "* Wrote " << filename  << endl;
+  
+  return 0;
+}
+
+int TRAJECTORY::out(const char *filename) const
 {
   unsigned int t,obs;
   int w=10;
@@ -62,7 +86,7 @@ int ORBIT::out(const char *filename) const
   
   file.open(filename, ios::out);
   if (!file.is_open()) {
-    cout << "ERROR: ORBIT::out(): Cannot open " << filename << "." << endl;
+    cout << "ERROR: TRAJECTORY::out(): Cannot open " << filename << "." << endl;
     return 1;
   }
   

@@ -19,39 +19,67 @@ public:
 
 
 
-
+//abstract base class
 class ORBIT {
 
-private:
+protected:
   vector<ORBITCOMP> Orb;    
-  unsigned int turns; //number of turns
-  unsigned int bpms;  //number of samples per turn
-  unsigned int orbitindex(unsigned int obs, unsigned int t) const;
+  unsigned int turns;                        //number of turns
+  unsigned int bpms;                         //number of samples per turn
   const double circumference;
-  bool CO; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 public:
-  ORBIT() : turns(1), bpms(0) circumference(164.4) CO(false) {}  //circumference einlesen; s_tot als Funktion für interp?
+ //circumference einlesen; s_tot als Funktion für interp?
+  ORBIT() : turns(1), bpms(0), circumference(164.4) {}
   ~ORBIT() {}
-  double pos(unsigned int i) const {return Orb[i].pos;}
-  double pos(unsigned int obs, unsigned int t) const {return Orb[this->orbitindex(obs,t)].pos;}
-  double turn(unsigned int i) const {return Orb[i].turn;}
-  double turn(unsigned int obs, unsigned int t) const {return Orb[this->orbitindex(obs,t)].turn;}
-  double x(unsigned int i) const {return Orb[i].x;}
-  double x(unsigned int obs, unsigned int t) const {return Orb[this->orbitindex(obs,t)].x;}
-  double z(unsigned int i) const {return Orb[i].z;}
-  double z(unsigned int obs, unsigned int t) const {return Orb[this->orbitindex(obs,t)].z;}
   unsigned int size() const {return Orb.size();}
   unsigned int getturns() const {return turns;}
   unsigned int getbpms() const {return bpms;}
   void push_back(ORBITCOMP tmp);
   void clear() {Orb.clear();}
-  unsigned int diff(ORBIT Ref);
-  int out(const char *filename) const;
- 
-  
- 
+  // virtual double pos() const =0;
+  // virtual double turn() const =0;
+  // virtual double x() const =0;
+  // virtual double z() const =0;
+  virtual int out(const char *filename) const =0;
 };
+
+
+
+
+class CLOSEDORBIT: public ORBIT {
+
+public:
+  CLOSEDORBIT() {}
+  ~CLOSEDORBIT() {}
+  double pos(unsigned int i) const {return Orb[i].pos;}
+  double turn(unsigned int i) const {return Orb[i].turn;}
+  double x(unsigned int i) const {return Orb[i].x;}
+  double z(unsigned int i) const {return Orb[i].z;}
+  int out(const char *filename) const;
+  int diff(CLOSEDORBIT Ref);
+};
+
+
+
+
+class TRAJECTORY: public ORBIT {
+
+protected:
+  unsigned int Orbindex(unsigned int obs, unsigned int t) const;
+
+public:
+  TRAJECTORY() {}
+  ~TRAJECTORY() {}
+  double pos(unsigned int obs, unsigned int t) const {return Orb[this->Orbindex(obs,t)].pos;}
+  double turn(unsigned int obs, unsigned int t) const {return Orb[this->Orbindex(obs,t)].turn;}
+  double x(unsigned int obs, unsigned int t) const {return Orb[this->Orbindex(obs,t)].x;}
+  double z(unsigned int obs, unsigned int t) const {return Orb[this->Orbindex(obs,t)].z;}
+  int out(const char *filename) const;
+};
+
+
+
 
 #endif
 

@@ -20,7 +20,7 @@ using namespace std;
 
 
 
-int madximport(const char *filename, ORBIT &bpmorbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs)
+int madximport(const char *filename, CLOSEDORBIT &bpmorbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs)
 {
   string tmp, name;
   double s, l, angle, k1l, k2l, vkick; // madx column variables
@@ -126,7 +126,7 @@ int misalignments(const char *filename, magnetvec &dipols)
 
 
 /* import single particle trajectories from madx tracking data */
-int trajectoryimport(const FILENAMES files, ORBIT &trajectory, unsigned int particle)
+int trajectoryimport(const FILENAMES files, TRAJECTORY &trajectory, unsigned int particle)
 {
   unsigned int obs=1;
   string tmp="init";
