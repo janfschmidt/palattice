@@ -83,6 +83,31 @@ int CLOSEDORBIT::diff(CLOSEDORBIT Ref)
 
 
 
+//add a CLOSEDORBIT to a TRAJECTORY to get absolute x & z,
+//if madx trajectory data is relative to closed orbit
+int TRAJECTORY::add_closedorbit(CLOSEDORBIT co)
+{
+  unsigned int i;
+
+  if (circumference != co.circumference) {
+    cout << "ERROR: TRAJECTORY::add_closedorbit(): trajectory circumference is "<<circumference
+	 << " m and closedorbit circumference is "<<co.circumference<< " m." <<endl;
+    cout << " So I guess it is not the same accelerator and therefore adding the orbits is not recommended." << endl;
+    return 1;
+  }
+
+  interp_update();
+
+  for (i=0; i<size(); i++) {
+    Orb[i].x += co.interp_x(Orb[i].pos);
+    Orb[i].z += co.interp_z(Orb[i].pos);
+  }
+
+  return 0;
+}
+
+
+
 
 
 // --------------------------------- output files ---------------------------------------------------

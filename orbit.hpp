@@ -28,7 +28,6 @@ protected:
   vector<ORBITCOMP> Orb;    
   unsigned int n_turns;                       //number of turns
   unsigned int n_bpms;                        //number of samples per turn
-  const double circumference;
   gsl_interp_accel *acc_x;                    //gsl interpolation
   gsl_interp_accel *acc_z;
   gsl_spline *spline_x;
@@ -36,8 +35,8 @@ protected:
   bool interp_flag;
 
 public:
- //circumference einlesen!!!!!!!!!!!!!!!!!!!!!!!!
-  ORBIT() : n_turns(1), n_bpms(0), circumference(164.4), interp_flag(false) {}
+  const double circumference;   //circumference einlesen!!!!!!!!!!!!!!!!!!!!!!!!
+  ORBIT() : n_turns(1), n_bpms(0), interp_flag(false), circumference(164.4) {}
   ~ORBIT() {}
   unsigned int size() const {return Orb.size();}
   unsigned int turns() const {return n_turns;}
@@ -92,6 +91,7 @@ public:
   double pos_tot(unsigned int obs, unsigned int t) const {return (turn(obs,t)-1)*circumference+pos(obs,t);}
   double pos_max() const {return pos_tot(1, n_turns+1);}
   int out(const char *filename) const;
+  int add_closedorbit(CLOSEDORBIT co);
 };
 
 
