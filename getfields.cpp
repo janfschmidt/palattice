@@ -23,13 +23,13 @@ using namespace std;
 
 /* create magn. field with n_samp points along ring */
 /* UNIT: [B] = 1/m (factor gamma*m*c/e for [B]=T) */
-int getfields (FIELDMAP &B, double circumference, CLOSEDORBIT bpmorbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs, RESONANCES &Res)
+int getfields (FIELDMAP &B, CLOSEDORBIT bpmorbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs, RESONANCES &Res)
 {
   
  unsigned int i;
  unsigned int d=0, q=0, s=0, v=0;
  bool dSwitch=false,  qSwitch=false, sSwitch=false, vSwitch=false;
- double interval_samp = circumference/B.n_samp; // sampling interval of magn. field values along ring in meter
+ double interval_samp = bpmorbit.circumference/B.n_samp; // sampling interval of magn. field values along ring in meter
  double phase_perdip = 360 / dipols.size();   //spin-phaseadvance per dipole
  //-> phase_perdip variabel machen mit dipollänge/gesamtbogenlänge? ... 
  FIELD Btmp;

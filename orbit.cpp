@@ -132,8 +132,10 @@ int ORBIT::interp_out(double stepwidth, const char *filename)
   
   file <<setw(w)<< "s [m]" <<setw(w)<< "x [mm]" <<setw(w)<< "z [mm]" << endl;
   file <<setiosflags(ios::fixed)<<showpoint<<setprecision(3);
-  for (s=0.0; s<=pos_max(); s+=stepwidth) {
+  if (pos_max() > 0) {
+    for (s=0.0; s<=pos_max(); s+=stepwidth) {
       file <<setw(w)<< s <<setw(w)<< interp_x(s)*1000 <<setw(w)<< interp_z(s)*1000 << endl;
+    }
   }
   file.close();
   cout << "* Wrote " << filename  << endl;
@@ -188,11 +190,13 @@ int TRAJECTORY::out(const char *filename) const
     }
   }
   // add end of last turn (=begin of next, see trajectoryimport() for details)
-  obs=1;
-  file <<setiosflags(ios::fixed)<<noshowpoint<<setprecision(0);
-  file <<setw(w)<< turn(obs,t);
-  file <<setiosflags(ios::fixed)<<showpoint<<setprecision(3);
-  file <<setw(w)<< pos(obs,t) <<setw(w)<< pos_tot(obs,t) <<setw(w)<<  x(obs,t)*1000 <<setw(w)<< z(obs,t)*1000 << endl;
+  if (n_bpms>0) {
+    obs=1;
+    file <<setiosflags(ios::fixed)<<noshowpoint<<setprecision(0);
+    file <<setw(w)<< turn(obs,t);
+    file <<setiosflags(ios::fixed)<<showpoint<<setprecision(3);
+    file <<setw(w)<< pos(obs,t) <<setw(w)<< pos_tot(obs,t) <<setw(w)<<  x(obs,t)*1000 <<setw(w)<< z(obs,t)*1000 << endl;
+  }
 
   file.close();
   cout << "* Wrote " << filename  << endl;

@@ -46,6 +46,7 @@ int main (int argc, char *argv[])
   unsigned int fmax_res = 0;
   unsigned int particle = 1;    // particle counter (for individual fields based on multi-particle tracking)
   TIMETAG t(530);               // moment(s) of elsa-cycle (ms)
+  bool ptc = false;             // true: single particle trajectory imported from madx ptc_track results
   bool elsa = false;            // true: orbit, correctors, k & m read from /sgt/elsa/bpm/...
   bool diff = false;            // true: "harmcorr mode", calculate difference of two "Spuren"...
   bool allout = false;          // true: additional output files (orbit, field, bpms, ...)
@@ -88,8 +89,11 @@ int main (int argc, char *argv[])
     }
   }
 
-  while ((opt = getopt(argc, argv, ":r:e:t:f:d:m:ah")) != -1) {
+  while ((opt = getopt(argc, argv, ":pr:e:t:f:d:m:ah")) != -1) {
     switch(opt) {
+    case 'p':
+      ptc = true;
+      break;
     case 'r':
       dtheta = atof(optarg);
       fmax_res = int(360/dtheta / 2);
@@ -120,6 +124,7 @@ int main (int argc, char *argv[])
     case 'h':
       cout << endl << "Bsupply HELP:" << endl;
       cout << "* First argument is project path." << endl;
+      cout << "* -p enables import of single particle trajectory from madx ptc_track." << endl;
       cout << "* -r [dtheta] estimates resonance strengths, stepwidth [dtheta]°" << endl;
       cout << "* -e [spuren] enables ELSA-mode, Spuren as argument (path: [project]/ELSA-Spuren/) " << endl;
       cout << "* -f [fmax] sets maximum frequency for B-Field spectrum output" << endl;
@@ -189,7 +194,7 @@ int main (int argc, char *argv[])
   // MAD-X: read particle orbit and lattice (magnet positions & strengths)
   madximport(file.import.c_str(), bpmorbit, dipols, quads, sexts, vcorrs);
   misalignments(file.misalign_dip.c_str(), dipols);
-  trajectoryimport(file, trajectory, particle);
+  if (ptc) trajectoryimport(file, trajectory, particle);
 
   // elsa=true: quad-&sext-strengths, BPM- & corrector-data from ELSA "Spuren"
   if (elsa) {
@@ -204,9 +209,9 @@ int main (int argc, char *argv[])
     cout << "* "<<dipols.size()<<" dipoles, "<<quads.size()<<" quadrupoles, "
 	 <<sexts.size()<<" sextupoles, "<<vcorrs.size()<<" correctors and "
 	 <<bpmorbit.bpms()<<" BPMs read"<<endl<<"  from "<<file.import.c_str() << endl;
-    cout << "* trajectory of particle "<<particle<<" read at "<<trajectory.bpms()
-	 <<" observation points for "<<trajectory.turns()<<" turns"<<endl;
   }
+  if (ptc) cout << "* trajectory of particle "<<particle<<" read at "<<trajectory.bpms()
+		<<" observation points for "<<trajectory.turns()<<" turns"<<endl;
   cout << "--------------------------------------------" << endl;
 
 
@@ -246,7 +251,8 @@ int main (int argc, char *argv[])
 
 
     // calculate field distribution & spectrum
-    getfields(B, circumference, bpmorbit, dipols, quads, sexts, vcorrs, Res);
+    trajectory.add_closedorbit(bpmorbit);
+    getfields(B, bpmorbit, dipols, quads, sexts, vcorrs, Res);
     getspectrum(bx, bz, res, B, circumference, Res);
 
     
