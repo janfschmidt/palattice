@@ -99,7 +99,7 @@ int harmcorr_out(double *HCvcorr, double *HCquad, double *HCsum, unsigned int nd
 
 //calculates difference-corrector data (->harmcorr) as a function of spin-phaseadvance
 //and does fft for harmcorr-spectrum hc
-int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, CLOSEDORBIT orbit, magnetvec dipols, double circumference, int n_samp, const char *filename)
+int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, CLOSEDORBIT orbit, magnetvec dipols, double circumference, const char *filename)
 {
  unsigned int i=0,j=0,k=0;
  unsigned int nd = dipols.size();
@@ -109,7 +109,6 @@ int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, CLOSEDORBIT orbit,
  double *HCquad = new double[2*nd];
  double *HCsum = new double[2*nd];
  double length;
- double sample = circumference/n_samp;
 
  memset(HCvcorr, 0, 2*nd*sizeof(double));
  memset(HCquad, 0, 2*nd*sizeof(double));
@@ -123,7 +122,7 @@ int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, CLOSEDORBIT orbit,
      }
      while(quads[k].start < dipols[i].start && k < nq) {
        length = quads[k].end - quads[k].start;
-       HCquad[2*i] += quads[k].strength * orbit.z(int(quads[k].end/sample)) * length * 1000; // mrad
+       HCquad[2*i] += quads[k].strength * orbit.interp_z(quads[k].end) * length * 1000; // mrad
        k++;
      }
  }
@@ -135,7 +134,7 @@ int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, CLOSEDORBIT orbit,
  }
  while (k<nq) {
    length = quads[k].end - quads[k].start;
-   HCquad[0] += quads[k].strength * orbit.z(int(quads[k].end/sample)) * length * 1000; // mrad
+   HCquad[0] += quads[k].strength * orbit.interp_z(quads[k].end) * length * 1000; // mrad
    k++;
  }
 

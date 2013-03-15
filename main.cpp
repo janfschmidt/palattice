@@ -18,7 +18,6 @@
 #include "orbit.hpp"
 #include "fieldmap.hpp"
 #include "spectrum.hpp"
-//#include "getorbit.hpp"
 #include "getfields.hpp"
 #include "getspectrum.hpp"
 #include "exportfile.hpp"
@@ -64,7 +63,7 @@ int main (int argc, char *argv[])
   magnetvec sexts;
   magnetvec vcorrs;
   CLOSEDORBIT bpmorbit;            // orbit at discrete positions (e.g. BPMs) for a specific time in elsa-cycle
-  CLOSEDORBIT orbit;               // orbit interpolated from bpmorbit with n_samp sampling points
+  //  CLOSEDORBIT orbit;               // orbit interpolated from bpmorbit with n_samp sampling points
   TRAJECTORY trajectory;          // orbit of single particle (based on tracking)
   FIELDMAP B(n_samp);           // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
   int err=0;
@@ -204,9 +203,9 @@ int main (int argc, char *argv[])
   else {
     cout << "* "<<dipols.size()<<" dipoles, "<<quads.size()<<" quadrupoles, "
 	 <<sexts.size()<<" sextupoles, "<<vcorrs.size()<<" correctors and "
-	 <<bpmorbit.getbpms()<<" BPMs read"<<endl<<"  from "<<file.import.c_str() << endl;
-    cout << "* trajectory of particle "<<particle<<" read at "<<trajectory.getbpms()
-	 <<" observation points for "<<trajectory.getturns()<<" turns"<<endl;
+	 <<bpmorbit.bpms()<<" BPMs read"<<endl<<"  from "<<file.import.c_str() << endl;
+    cout << "* trajectory of particle "<<particle<<" read at "<<trajectory.bpms()
+	 <<" observation points for "<<trajectory.turns()<<" turns"<<endl;
   }
   cout << "--------------------------------------------" << endl;
 
@@ -247,8 +246,8 @@ int main (int argc, char *argv[])
 
 
     // interpolate orbit, calculate field distribution & spectrum
-    bpmorbit.interpol(orbit, n_samp);
-    getfields(B, circumference, orbit, dipols, quads, sexts, vcorrs, Res);
+    //bpmorbit.interpol(orbit, n_samp);
+    getfields(B, circumference, bpmorbit, dipols, quads, sexts, vcorrs, Res);
     getspectrum(bx, bz, res, B, circumference, Res);
 
     
@@ -260,7 +259,7 @@ int main (int argc, char *argv[])
       //corrector data
       corrs_out(vcorrs, file.out("vcorrs", t.tag(i)).c_str());
       //orbit data (interpolated BPMs)
-      orbit.out(file.out("orbit", t.tag(i)).c_str());
+      //orbit.out(file.out("orbit", t.tag(i)).c_str());
       //field data
       fields_out(B, file.out("fields", t.tag(i)).c_str());
       //evaluated field data
@@ -275,7 +274,7 @@ int main (int argc, char *argv[])
 
     //harmcorr data
     if (diff) {
-      harmcorr(hc, vcorrs, quads, orbit, dipols, circumference, n_samp, file.out("harmcorr", t.tag(i)).c_str());
+      harmcorr(hc, vcorrs, quads, bpmorbit, dipols, circumference, file.out("harmcorr", t.tag(i)).c_str());
       exportfile(hc, metadata, "harmcorr", file.spec("harmcorr", t.tag(i)).c_str());
     }
     if (Res.on) {

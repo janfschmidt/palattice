@@ -23,7 +23,7 @@ using namespace std;
 
 /* create magn. field with n_samp points along ring */
 /* UNIT: [B] = 1/m (factor gamma*m*c/e for [B]=T) */
-int getfields (FIELDMAP &B, double circumference, CLOSEDORBIT &orbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs, RESONANCES &Res)
+int getfields (FIELDMAP &B, double circumference, CLOSEDORBIT bpmorbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs, RESONANCES &Res)
 {
   
  unsigned int i;
@@ -51,7 +51,7 @@ int getfields (FIELDMAP &B, double circumference, CLOSEDORBIT &orbit, magnetvec 
    /* quadrupoles */
    else if (q<quads.size() && Btmp.pos >= quads[q].start && Btmp.pos <= quads[q].end) {
      Btmp.name = quads[q].name;
-     Btmp.x = quads[q].strength * orbit.z(i);
+     Btmp.x = quads[q].strength * bpmorbit.interp_z(Btmp.pos);
      Btmp.z = 0; // neglect
      Btmp.theta = d * phase_perdip;
      B.set(i, Btmp);
@@ -60,7 +60,7 @@ int getfields (FIELDMAP &B, double circumference, CLOSEDORBIT &orbit, magnetvec 
    /* sextupoles */
    else if (s<sexts.size() && Btmp.pos >= sexts[s].start && Btmp.pos <= sexts[s].end) {
      Btmp.name = sexts[s].name;
-     Btmp.x = 0.5 * sexts[s].strength * orbit.x(i) * orbit.z(i);
+     Btmp.x = 0.5 * sexts[s].strength * bpmorbit.interp_x(Btmp.pos) * bpmorbit.interp_z(Btmp.pos);
      Btmp.z = 0; // neglect
      Btmp.theta = d * phase_perdip;
      B.set(i, Btmp);

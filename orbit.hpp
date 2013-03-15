@@ -2,6 +2,8 @@
 #define __BSUPPLY__ORBIT_HPP_
 
 #include <vector>
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_spline.h>
 #include "types.hpp"
 
 using namespace std;
@@ -24,17 +26,17 @@ class ORBIT {
 
 protected:
   vector<ORBITCOMP> Orb;    
-  unsigned int turns;                        //number of turns
-  unsigned int bpms;                         //number of samples per turn
+  unsigned int n_turns;                        //number of turns
+  unsigned int n_bpms;                         //number of samples per turn
   const double circumference;
 
 public:
  //circumference einlesen; s_tot als Funktion für interp?
-  ORBIT() : turns(1), bpms(0), circumference(164.4) {}
+  ORBIT() : n_turns(1), n_bpms(0), circumference(164.4) {}
   ~ORBIT() {}
   unsigned int size() const {return Orb.size();}
-  unsigned int getturns() const {return turns;}
-  unsigned int getbpms() const {return bpms;}
+  unsigned int turns() const {return n_turns;}
+  unsigned int bpms() const {return n_bpms;}
   void push_back(ORBITCOMP tmp);
   void clear() {Orb.clear();}
   virtual int out(const char *filename) const =0;
@@ -45,16 +47,25 @@ public:
 
 class CLOSEDORBIT: public ORBIT {
 
+protected:
+  gsl_interp_accel *acc_x;  //gsl interpolation
+  gsl_interp_accel *acc_z;
+  gsl_spline *spline_x;
+  gsl_spline *spline_z;
+  bool interp_flag;
+  void interp_init();
+
 public:
-  CLOSEDORBIT() {}
-  ~CLOSEDORBIT() {}
+  CLOSEDORBIT() : interp_flag(false) {}
+  ~CLOSEDORBIT();
   double pos(unsigned int i) const {return Orb[i].pos;}
   double turn(unsigned int i) const {return Orb[i].turn;}
   double x(unsigned int i) const {return Orb[i].x;}
   double z(unsigned int i) const {return Orb[i].z;}
   int out(const char *filename) const;
   int diff(CLOSEDORBIT Ref);
-  int interpol(CLOSEDORBIT &interpOrbit, unsigned int n_samp) const;
+  double interp_x(double any_pos);
+  double interp_z(double any_pos);
 };
 
 
