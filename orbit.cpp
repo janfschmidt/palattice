@@ -28,6 +28,28 @@ CLOSEDORBIT::~CLOSEDORBIT()
 
 
 // (observation point & turn) -> (array index)
+unsigned int CLOSEDORBIT::Orbindex(unsigned int obs, unsigned int t) const
+{
+  //Catch calls for data out of range
+  if (t > 1) {
+    cout << "ERROR: CLOSEDORBIT::Orbindex(): turn > 1 not allowed for CLOSEDORBIT." << endl;
+    return 0; // !! in this case the initial value orbit is given
+  }
+  if (obs > n_bpms) {
+    cout << "ERROR: CLOSEDORBIT::Orbindex(): Orbit for obs "<<obs<<" not known, only "
+	 <<n_bpms<<" obs are imported from madx." << endl;
+    return 0; // !! in this case the initial value orbit is given
+  }
+  if (t==0 || obs==0) {
+    cout << "ERROR: CLOSEDORBIT::Orbindex(): Orbit turn and obs must be > 0." << endl;
+    return 0; // !! in this case the initial value orbit is given
+  }
+
+    return obs-1;
+}
+
+
+// (observation point & turn) -> (array index)
 unsigned int TRAJECTORY::Orbindex(unsigned int obs, unsigned int t) const
 {
   //Catch calls for data out of range
@@ -67,7 +89,7 @@ void ORBIT::push_back(ORBITCOMP tmp)
 int CLOSEDORBIT::diff(CLOSEDORBIT Ref)
 {
   unsigned int i;
-  for (i=0; i<size(); i++) {
+  for (i=1; i<=size(); i++) {
     if (pos(i) == Ref.pos(i) && turn(i) == Ref.turn(i)) {
       Orb[i].x -= Ref.x(i);
       Orb[i].z -= Ref.z(i);
@@ -159,7 +181,7 @@ int CLOSEDORBIT::out(const char *filename) const
   
   file <<setw(w)<< "s [m]" <<setw(w)<< "x [mm]" <<setw(w)<< "z [mm]" << endl;
   file <<setiosflags(ios::fixed)<<showpoint<<setprecision(3);
-  for (i=0; i<size(); i++) {
+  for (i=1; i<=size(); i++) {
       file <<setw(w)<< pos(i) <<setw(w)<<  x(i)*1000 <<setw(w)<< z(i)*1000 << endl;
   }
   file.close();
@@ -211,7 +233,7 @@ int TRAJECTORY::out(const char *filename) const
 
 // --------------------------------- interpolation ---------------------------------------------------
 
-// initialize interpolation of closedorbit (spline_x & spline_z)
+// initialize periodic interpolation of closedorbit (spline_x & spline_z)
 void CLOSEDORBIT::interp_init()
 {
   if (interp_flag) {
@@ -232,19 +254,18 @@ void CLOSEDORBIT::interp_init()
 
   
   // add initial entry to avoid extrapolation (Frank)
-  tmp_pos[0] = pos(n_bpms-1) - circumference;
-  tmp_x[0] = x(n_bpms-1);
-  tmp_z[0] = z(n_bpms-1);
-  for (i=0; i<n_bpms; i++) {
-    tmp_pos[i+1] = pos(i);
-    tmp_x[i+1] = x(i);
-    tmp_z[i+1] = z(i);
+  tmp_pos[0] = pos(n_bpms) - circumference;
+  tmp_x[0] = x(n_bpms);
+  tmp_z[0] = z(n_bpms);
+  for (i=1; i<=n_bpms; i++) {
+    tmp_pos[i] = pos(i);
+    tmp_x[i] = x(i);
+    tmp_z[i] = z(i);
   }
   // copy first orbit entry for interpolation with periodic boundary condition
   tmp_pos[n_bpms+1] = pos_max(); 
-  tmp_x[n_bpms+1] = x(0);
-  tmp_z[n_bpms+1] = z(0);
-  // set pos_max to pos of last (largest) data point
+  tmp_x[n_bpms+1] = x(1);
+  tmp_z[n_bpms+1] = z(1);
   
   //interpolation
   old_error_handler = gsl_set_error_handler_off();

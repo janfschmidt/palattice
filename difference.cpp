@@ -39,7 +39,7 @@ int difference(const char *ReferenceFolder, unsigned int t, CLOSEDORBIT &bpmorbi
     cout << "* ";
   }
   cout <<Ref_vcorrs.size()<<" correctors and "
-       <<Ref_bpmorbit.size()<<" BPMs read"<<endl<<"  from "<< ReferenceFolder << endl;
+       <<Ref_bpmorbit.bpms()<<" BPMs read"<<endl<<"  from "<< ReferenceFolder << endl;
 
   //subtract orbit
   if (bpmorbit.size() != Ref_bpmorbit.size()) {

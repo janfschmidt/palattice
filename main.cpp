@@ -241,7 +241,7 @@ int main (int argc, char *argv[])
       err += ELSAimport_getvcorrs(ELSAvcorrs, vcorrs, t.get(i));
       if (err != 0) return 1;
       cout << "* "<<t.label(i)<<": "<<vcorrs.size()<<" correctors and "
-	   <<bpmorbit.size()<<" BPMs read"<<endl<<"  from "<<file.spuren.c_str() << endl;
+	   <<bpmorbit.bpms()<<" BPMs read"<<endl<<"  from "<<file.spuren.c_str() << endl;
     }
     //diff=true: read and subtract reference orbit & corrector data
     if (diff) {
@@ -265,7 +265,7 @@ int main (int argc, char *argv[])
       corrs_out(vcorrs, file.out("vcorrs", t.tag(i)).c_str());
       //orbit data (interpolated BPMs)
       bpmorbit.interp_out(0.1, file.out("interp_bpms", t.tag(i)).c_str());
-      trajectory.interp_out(0.1, file.out("interp_trajectory", t.tag(i)).c_str());
+      trajectory.interp_out(1.0, file.out("interp_trajectory", t.tag(i)).c_str());
       //field data
       fields_out(B, file.out("fields", t.tag(i)).c_str());
       //evaluated field data
