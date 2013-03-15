@@ -245,8 +245,7 @@ int main (int argc, char *argv[])
     }
 
 
-    // interpolate orbit, calculate field distribution & spectrum
-    //bpmorbit.interpol(orbit, n_samp);
+    // calculate field distribution & spectrum
     getfields(B, circumference, bpmorbit, dipols, quads, sexts, vcorrs, Res);
     getspectrum(bx, bz, res, B, circumference, Res);
 
@@ -259,7 +258,8 @@ int main (int argc, char *argv[])
       //corrector data
       corrs_out(vcorrs, file.out("vcorrs", t.tag(i)).c_str());
       //orbit data (interpolated BPMs)
-      //orbit.out(file.out("orbit", t.tag(i)).c_str());
+      bpmorbit.interp_out(0.1, file.out("interp_bpms", t.tag(i)).c_str());
+      trajectory.interp_out(0.1, file.out("interp_trajectory", t.tag(i)).c_str());
       //field data
       fields_out(B, file.out("fields", t.tag(i)).c_str());
       //evaluated field data
@@ -284,7 +284,7 @@ int main (int argc, char *argv[])
 
     cout << "--------------------------------------------" << endl;
   }
-  
+
   cout << "Finished. (Run "<<file.path.c_str()<<"/inout/Bsupply"<<file.difftag.c_str()<<".gp for plots)" << endl << endl;
 
   return 0;
