@@ -158,6 +158,8 @@ void CLOSEDORBIT::interp_init()
   tmp_pos[n_bpms+1] = this->pos(0) + circumference; 
   tmp_x[n_bpms+1] = this->x(0);
   tmp_z[n_bpms+1] = this->z(0);
+  // set pos_max to pos of last (largest) data point
+  pos_maxvalue = tmp_pos[n_bpms+1];
   
   //interpolation
   old_error_handler = gsl_set_error_handler_off();
@@ -179,6 +181,10 @@ double CLOSEDORBIT::interp_x(double any_pos)
     cout << "initialise interpolation..." << endl;
     this->interp_init();
   }
+  if (any_pos > pos_maxvalue) {
+    cout << "ERROR: CLOSEDORBIT::interp_x(): pos=" <<any_pos<< " m is to large for interpolation." <<endl;
+    return 0.;
+  }
 
   tmp = gsl_spline_eval (spline_x, any_pos, acc_x);
 
@@ -197,6 +203,10 @@ double CLOSEDORBIT::interp_z(double any_pos)
   if (!interp_flag) {
     cout << "initialise interpolation..." << endl;
     this->interp_init();
+  }
+  if (any_pos > pos_maxvalue) {
+    cout << "ERROR: CLOSEDORBIT::interp_z(): pos=" <<any_pos<< " m is to large for interpolation." <<endl;
+    return 0.;
   }
 
   tmp = gsl_spline_eval (spline_z, any_pos, acc_z);

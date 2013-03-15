@@ -28,15 +28,17 @@ protected:
   vector<ORBITCOMP> Orb;    
   unsigned int n_turns;                        //number of turns
   unsigned int n_bpms;                         //number of samples per turn
+  double pos_maxvalue;                        //maximum pos (s in m) accessible by interpolation
   const double circumference;
 
 public:
  //circumference einlesen; s_tot als Funktion für interp?
-  ORBIT() : n_turns(1), n_bpms(0), circumference(164.4) {}
+  ORBIT() : n_turns(1), n_bpms(0), pos_maxvalue(0), circumference(164.4) {}
   ~ORBIT() {}
   unsigned int size() const {return Orb.size();}
   unsigned int turns() const {return n_turns;}
   unsigned int bpms() const {return n_bpms;}
+  double pos_max() const {return pos_maxvalue;}
   void push_back(ORBITCOMP tmp);
   void clear() {Orb.clear();}
   virtual int out(const char *filename) const =0;
@@ -64,7 +66,7 @@ public:
   double z(unsigned int i) const {return Orb[i].z;}
   int out(const char *filename) const;
   int diff(CLOSEDORBIT Ref);
-  double interp_x(double any_pos);
+  double interp_x(double any_pos);        // get orbit at any position (s in m) between 0 and pos_max()
   double interp_z(double any_pos);
 };
 
