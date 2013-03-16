@@ -27,13 +27,20 @@ int getspectrum (SPECTRUM &bx, SPECTRUM &bz, SPECTRUM &res, FIELDMAP &B, RESONAN
 
   unsigned int i;
   unsigned int n_res = Res.size();
-  double *BX = new double[2*B.n_samp];
-  double *BZ = new double[2*B.n_samp];
+  double *BX = new double[2*B.size()];
+  double *BZ = new double[2*B.size()];
   double *RES = new double[2*n_res];
   double dfreq;
 
+  if (Res.n_turns != B.n_turns) {
+    cout << "ERROR: getspectrum(): FIELDMAP and RESONANCES have different number of turns ("
+	<<B.n_turns<<", "<<Res.n_turns<<")." << endl;
+   return 1;
+  }
+
+
   // set real parts
-  for (i=0; i<B.n_samp; i++) {
+  for (i=0; i<B.size(); i++) {
     REAL(BX,i) = B.x(i);
     IMAG(BX,i) = 0;
     REAL(BZ,i) = B.z(i);
@@ -44,11 +51,11 @@ int getspectrum (SPECTRUM &bx, SPECTRUM &bz, SPECTRUM &res, FIELDMAP &B, RESONAN
     IMAG(RES,i) = 0;
   }
 
-  dfreq = SPEED_OF_LIGHT/B.circumference;
-  fft(bx, BX, B.n_samp, B.n_samp, dfreq);
-  fft(bz, BZ, B.n_samp, B.n_samp, dfreq);
-  dfreq = 1.0;   //1.0/360;
-  fft(res, RES, n_res, Res.ndipols(), dfreq); //normalize on # dipoles for correct kicks in-between
+  dfreq = SPEED_OF_LIGHT/B.circumference/B.n_turns;
+  fft(bx, BX, B.size(), B.size(), dfreq);
+  fft(bz, BZ, B.size(), B.size(), dfreq);
+  dfreq = 1.0/Res.n_turns;   //1.0/360;
+  fft(res, RES, n_res, Res.ndipols()*Res.n_turns, dfreq); //normalize on # dipoles for correct kicks in-between
 
   delete[] BX;
   delete[] BZ;

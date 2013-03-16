@@ -31,8 +31,10 @@ FIELDMAP::FIELDMAP(const FIELDMAP &other)
 
 
 
-int FIELDMAP::set(unsigned int i, FIELD tmp)
+int FIELDMAP::set(unsigned int samp, unsigned int t, FIELD tmp)
 {
+  unsigned int i = samp + (t-1)*n_samp;
+
   B[i].pos = tmp.pos;
   B[i].turn = tmp.turn;
   B[i].name = tmp.name;

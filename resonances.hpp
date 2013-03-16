@@ -9,17 +9,18 @@ using namespace std;
 class RESONANCES {
 
 private:
-  vector<double> theta;    // in degree [0,360]
+  vector<double> theta;    // in degree [0,n_turns*360]
   vector<double> kick;     // in mrad
   const double dtheta;     // stepwidth phaseadvance
   const unsigned int n;    // sample points per dipole
-  const unsigned int ndip; // number of dipoles
+  const unsigned int ndip; // number of dipoles (per turn)
 
 public:
   bool on;
+  const unsigned int n_turns;
 
-  RESONANCES() :  dtheta(0), n(0), ndip(0), on(false) {}
-  RESONANCES(double thetastep, unsigned int n_dip);
+  RESONANCES() :  dtheta(0), n(0), ndip(0), on(false), n_turns(1) {}
+  RESONANCES(double thetastep, unsigned int n_dip, unsigned int turns);
   ~RESONANCES() {}
   double gettheta(unsigned int i) const {return theta[i];}
   double lasttheta() const {return theta.back();}
@@ -30,6 +31,7 @@ public:
   int addother(MAGNET magnet, double Bx);
   int closering();
   unsigned int size() const;
+  double theta_max() const {return 360*n_turns;}
   void clear();
  
 };

@@ -38,7 +38,7 @@ public:
   double theta(unsigned int i) const {return B[i].theta;}
   unsigned int size() const {return n_samp*n_turns;}
   double pos_tot(unsigned int i) const {return pos(i) + (turn(i)-1)*circumference;}
-  int set(unsigned int i, FIELD tmp);
+  int set(unsigned int samp, unsigned int t, FIELD tmp);
   //int out(const char *filename) const;
 
 };

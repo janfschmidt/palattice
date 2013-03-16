@@ -58,8 +58,7 @@ int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, m
        Btmp.name = dipols[d].name;
        Btmp.x = - dipols[d].strength * sin(dipols[d].dpsi);
        Btmp.z = + dipols[d].strength * cos(dipols[d].dpsi);
-       Btmp.theta = phase_perdip * (d + (Btmp.pos-dipols[d].start)/dipols[d].length); //linear in dipole
-       B.set(i, Btmp);
+       Btmp.theta = phase_perdip * (d + (Btmp.pos-dipols[d].start)/dipols[d].length) + (t-1)*360; //linear in dipole
        dSwitch=true;
      }
      /* quadrupoles */
@@ -67,8 +66,7 @@ int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, m
        Btmp.name = quads[q].name;
        Btmp.x = quads[q].strength * orbit.interp_z(Btmp.pos);
        Btmp.z = 0; // neglect
-       Btmp.theta = d * phase_perdip;
-       B.set(i, Btmp);
+       Btmp.theta = d * phase_perdip + (t-1)*360;
        qSwitch=true;
      }
      /* sextupoles */
@@ -76,8 +74,7 @@ int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, m
        Btmp.name = sexts[s].name;
        Btmp.x = 0.5 * sexts[s].strength * orbit.interp_x(Btmp.pos) * orbit.interp_z(Btmp.pos);
        Btmp.z = 0; // neglect
-       Btmp.theta = d * phase_perdip;
-       B.set(i, Btmp);
+       Btmp.theta = d * phase_perdip + (t-1)*360;
        sSwitch=true;
      }
      /* vertical correctors */
@@ -85,8 +82,7 @@ int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, m
        Btmp.name = vcorrs[v].name;
        Btmp.x = vcorrs[v].strength;
        Btmp.z = 0;
-       Btmp.theta = d * phase_perdip;
-       B.set(i, Btmp);
+       Btmp.theta = d * phase_perdip + (t-1)*360;
        vSwitch=true;
      }
      /* --add more magnet types here-- */
@@ -117,11 +113,10 @@ int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, m
        Btmp.name = "\"DRIFT\"";
        Btmp.x = 0;
        Btmp.z = 0;
-       Btmp.theta = d * phase_perdip;
-       B.set(i, Btmp);
+       Btmp.theta = d * phase_perdip + (t-1)*360;
      }
+     B.set(i, t, Btmp);
    }
-   
  }
 
  if (Res.on) {Res.closering();}

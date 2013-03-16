@@ -66,7 +66,6 @@ int main (int argc, char *argv[])
   CLOSEDORBIT bpmorbit;            // orbit at discrete positions (e.g. BPMs) for a specific time in elsa-cycle
   TRAJECTORY trajectory;          // orbit of single particle (based on tracking)
   ORBIT *orbit;
-  FIELDMAP B(n_samp);           // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
   int err=0;
 
   int opt, warnflg=0, conflictflg=0;          //for getopt()
@@ -96,7 +95,6 @@ int main (int argc, char *argv[])
       break;
     case 'r':
       dtheta = atof(optarg);
-      fmax_res = int(360/dtheta / 2);
       break;
     case 'e':
       elsa = true;
@@ -216,11 +214,18 @@ int main (int argc, char *argv[])
 
 
 
+  // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
+  FIELDMAP B(n_samp, trajectory.turns());
+
   // resonance strengths
-  RESONANCES Res(dtheta, dipols.size());
+  RESONANCES Res(dtheta, dipols.size(), trajectory.turns());
 
  // magnetic spectrum (amplitudes & phases) up to fmax
+  fmax_x *= trajectory.turns();
+  fmax_z *= trajectory.turns();
+  fmax_s *= trajectory.turns();
   fmax_hc = int(dipols.size() / 2);
+  fmax_res = int(Res.theta_max()/dtheta / 2);
   SPECTRUM bx(fmax_x);
   SPECTRUM bz(fmax_z);
   SPECTRUM bs(fmax_s);

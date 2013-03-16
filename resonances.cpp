@@ -10,8 +10,8 @@
 #include "resonances.hpp"
 
 
-RESONANCES::RESONANCES(double thetastep, unsigned int n_dip)
-  : dtheta(thetastep), n(360/(n_dip*dtheta)), ndip(n_dip)
+RESONANCES::RESONANCES(double thetastep, unsigned int n_dip, unsigned int turns)
+  : dtheta(thetastep), n(360/(n_dip*dtheta)), ndip(n_dip), n_turns(turns)
 {
   if(thetastep == 0.0) {
     on = false;
@@ -61,12 +61,12 @@ int RESONANCES::addother(MAGNET magnet, double Bx)
 
 int RESONANCES::closering()
 {
-  if (theta[theta.size()-1] != 360) {
-    cout << "ERROR: resonances.cpp: Phaseadvance theta no closed solution (360°)" << endl;
+  if (theta.back() != theta_max()) {
+    cout << "ERROR: resonances.cpp: Phaseadvance theta no closed solution ("<<theta_max()<<"°)" << endl;
     return 1;
   }
   else {
-    kick[0] += kick.back();  //add kick(360°) to kick(0°)
+    kick[0] += kick.back();  //add kick(360°) to kick(0°) (or equivalent for n_turns>1)
     kick.erase(kick.end()-1);
     theta.erase(theta.end()-1);
   }
