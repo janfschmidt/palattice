@@ -23,88 +23,103 @@ using namespace std;
 
 /* create magn. field with n_samp points along ring */
 /* UNIT: [B] = 1/m (factor gamma*m*c/e for [B]=T) */
-int getfields (FIELDMAP &B, CLOSEDORBIT bpmorbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs, RESONANCES &Res)
+int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs, RESONANCES &Res)
 {
   
- unsigned int i;
+ unsigned int i, t;
  unsigned int d=0, q=0, s=0, v=0;
  bool dSwitch=false,  qSwitch=false, sSwitch=false, vSwitch=false;
- double interval_samp = bpmorbit.circumference/B.n_samp; // sampling interval of magn. field values along ring in meter
+ double interval_samp = B.circumference/B.n_samp; // sampling interval of magn. field values along ring in meter
  double phase_perdip = 360 / dipols.size();   //spin-phaseadvance per dipole
  //-> phase_perdip variabel machen mit dipollänge/gesamtbogenlänge? ... 
  FIELD Btmp;
 
+ if (B.circumference != orbit.circumference) {
+   cout << "ERROR: getfields(): FIELDMAP and ORBIT have different circumferences ("
+	<<B.circumference<<", "<<orbit.circumference<<")." << endl;
+   return 1;
+ }
+ if (B.n_turns != orbit.turns()) {
+   cout << "ERROR: getfields(): FIELDMAP and ORBIT have different number of turns ("
+	<<B.n_turns<<", "<<orbit.turns()<<")." << endl;
+   return 1;
+ }
+
  Res.clear(); //delete data from previous t
 
- for (i=0; i<B.n_samp; i++) {
-   Btmp.pos = i*interval_samp;
-
-   /* dipoles */
-   if (d<dipols.size() && Btmp.pos >= dipols[d].start && Btmp.pos <= dipols[d].end) {
-     Btmp.name = dipols[d].name;
-     Btmp.x = - dipols[d].strength * sin(dipols[d].dpsi);
-     Btmp.z = + dipols[d].strength * cos(dipols[d].dpsi);
-     Btmp.theta = phase_perdip * (d + (Btmp.pos-dipols[d].start)/dipols[d].length); //linear in dipole
-     B.set(i, Btmp);
-     dSwitch=true;
-   }
-   /* quadrupoles */
-   else if (q<quads.size() && Btmp.pos >= quads[q].start && Btmp.pos <= quads[q].end) {
-     Btmp.name = quads[q].name;
-     Btmp.x = quads[q].strength * bpmorbit.interp_z(Btmp.pos);
-     Btmp.z = 0; // neglect
-     Btmp.theta = d * phase_perdip;
-     B.set(i, Btmp);
-     qSwitch=true;
-   }
-   /* sextupoles */
-   else if (s<sexts.size() && Btmp.pos >= sexts[s].start && Btmp.pos <= sexts[s].end) {
-     Btmp.name = sexts[s].name;
-     Btmp.x = 0.5 * sexts[s].strength * bpmorbit.interp_x(Btmp.pos) * bpmorbit.interp_z(Btmp.pos);
-     Btmp.z = 0; // neglect
-     Btmp.theta = d * phase_perdip;
-     B.set(i, Btmp);
-     sSwitch=true;
-   }
-   /* vertical correctors */
-   else if (v<vcorrs.size() && Btmp.pos >= vcorrs[v].start && Btmp.pos <= vcorrs[v].end) {
-     Btmp.name = vcorrs[v].name;
-     Btmp.x = vcorrs[v].strength;
-     Btmp.z = 0;
-     Btmp.theta = d * phase_perdip;
-     B.set(i, Btmp);
-     vSwitch=true;
-   }
-   /* --add more magnet types here-- */
-   // drift
-   // & increase magnet-index if end of a magnet was reached
-   // & add previous magnet to Res
-   else {
-     if (dSwitch) {        
-       if (Res.on) {Res.adddip(dipols[d], B.x(i-1));}
-       d++;
-       dSwitch=false;
+ for(t=1; t<=B.n_turns; t++) {
+   d=0; q=0; s=0; v=0;
+   for (i=0; i<B.n_samp; i++) {
+     Btmp.pos = i*interval_samp;
+     Btmp.turn = t;
+     
+     /* dipoles */
+     if (d<dipols.size() && Btmp.pos >= dipols[d].start && Btmp.pos <= dipols[d].end) {
+       Btmp.name = dipols[d].name;
+       Btmp.x = - dipols[d].strength * sin(dipols[d].dpsi);
+       Btmp.z = + dipols[d].strength * cos(dipols[d].dpsi);
+       Btmp.theta = phase_perdip * (d + (Btmp.pos-dipols[d].start)/dipols[d].length); //linear in dipole
+       B.set(i, Btmp);
+       dSwitch=true;
      }
-     else if (qSwitch) {
-       if (Res.on) {Res.addother(quads[q], B.x(i-1));}
-       q++;
-       qSwitch=false;
+     /* quadrupoles */
+     else if (q<quads.size() && Btmp.pos >= quads[q].start && Btmp.pos <= quads[q].end) {
+       Btmp.name = quads[q].name;
+       Btmp.x = quads[q].strength * orbit.interp_z(Btmp.pos);
+       Btmp.z = 0; // neglect
+       Btmp.theta = d * phase_perdip;
+       B.set(i, Btmp);
+       qSwitch=true;
      }
-     else if (sSwitch) {
-       if (Res.on) {Res.addother(sexts[s], B.x(i-1));}
-       s++;
-       sSwitch=false;
+     /* sextupoles */
+     else if (s<sexts.size() && Btmp.pos >= sexts[s].start && Btmp.pos <= sexts[s].end) {
+       Btmp.name = sexts[s].name;
+       Btmp.x = 0.5 * sexts[s].strength * orbit.interp_x(Btmp.pos) * orbit.interp_z(Btmp.pos);
+       Btmp.z = 0; // neglect
+       Btmp.theta = d * phase_perdip;
+       B.set(i, Btmp);
+       sSwitch=true;
      }
-     else if (vSwitch) {
-       if (Res.on) {Res.addother(vcorrs[v], B.x(i-1));}
-       v++;
-       vSwitch=false;
+     /* vertical correctors */
+     else if (v<vcorrs.size() && Btmp.pos >= vcorrs[v].start && Btmp.pos <= vcorrs[v].end) {
+       Btmp.name = vcorrs[v].name;
+       Btmp.x = vcorrs[v].strength;
+       Btmp.z = 0;
+       Btmp.theta = d * phase_perdip;
+       B.set(i, Btmp);
+       vSwitch=true;
      }
-     Btmp.name = "\"DRIFT\"";
-     Btmp.x = 0;
-     Btmp.z = 0;
-     Btmp.theta = d * phase_perdip;
-     B.set(i, Btmp);
+     /* --add more magnet types here-- */
+     // drift
+     // & increase magnet-index if end of a magnet was reached
+     // & add previous magnet to Res
+     else {
+       if (dSwitch) {        
+	 if (Res.on) {Res.adddip(dipols[d], B.x(i-1));}
+	 d++;
+	 dSwitch=false;
+       }
+       else if (qSwitch) {
+	 if (Res.on) {Res.addother(quads[q], B.x(i-1));}
+	 q++;
+	 qSwitch=false;
+       }
+       else if (sSwitch) {
+	 if (Res.on) {Res.addother(sexts[s], B.x(i-1));}
+	 s++;
+	 sSwitch=false;
+       }
+       else if (vSwitch) {
+	 if (Res.on) {Res.addother(vcorrs[v], B.x(i-1));}
+	 v++;
+	 vSwitch=false;
+       }
+       Btmp.name = "\"DRIFT\"";
+       Btmp.x = 0;
+       Btmp.z = 0;
+       Btmp.theta = d * phase_perdip;
+       B.set(i, Btmp);
+     }
    }
    
  }
@@ -131,10 +146,12 @@ int fields_out(FIELDMAP B, const char *filename)
    return 1;
  }
 
- file <<setw(w)<< "s [m]" <<setw(w)<< "t [s]" <<setw(w)<< "phase [deg]" <<setw(w)<< "name" <<setw(w)<< "Bx [1/m]" <<setw(w)<< "Bz [1/m]" <<setw(w)<< "Bs [1/m]" << endl;
- for (i=0; i<B.n_samp; i++) {
+ file <<setw(w)<< "turn" <<setw(w)<< "s [m]" <<setw(w)<< "s_tot [m]" <<setw(w)<< "t [s]" <<setw(w)<< "phase [deg]" <<setw(w)<< "name" <<setw(w)<< "Bx [1/m]" <<setw(w)<< "Bz [1/m]" <<setw(w)<< "Bs [1/m]" << endl;
+ for (i=0; i<B.size(); i++) {
+   file <<setiosflags(ios::fixed)<<noshowpoint<<setprecision(0);
+   file <<setw(w)<< B.turn(i);
    file <<setiosflags(ios::scientific)<<showpoint<<setprecision(4);
-   file <<setw(w)<< B.pos(i) <<setw(w)<< B.pos(i)/c <<setw(w)<< B.theta(i) <<setw(w)<< B.name(i) <<setw(w)<< B.x(i) <<setw(w)<< B.z(i) <<setw(w)<< 0.0 << endl;
+   file <<setw(w)<< B.pos(i) <<setw(w)<< B.pos_tot(i) <<setw(w)<< B.pos_tot(i)/c <<setw(w)<< B.theta(i) <<setw(w)<< B.name(i) <<setw(w)<< B.x(i) <<setw(w)<< B.z(i) <<setw(w)<< 0.0 << endl;
  }
  file.close();
  cout << "* Wrote " << filename  << endl;

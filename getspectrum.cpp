@@ -22,7 +22,7 @@
 
 using namespace std;
 
-int getspectrum (SPECTRUM &bx, SPECTRUM &bz, SPECTRUM &res, FIELDMAP &B, double circumference, RESONANCES &Res)
+int getspectrum (SPECTRUM &bx, SPECTRUM &bz, SPECTRUM &res, FIELDMAP &B, RESONANCES &Res)
 {
 
   unsigned int i;
@@ -44,7 +44,7 @@ int getspectrum (SPECTRUM &bx, SPECTRUM &bz, SPECTRUM &res, FIELDMAP &B, double 
     IMAG(RES,i) = 0;
   }
 
-  dfreq = SPEED_OF_LIGHT/circumference;
+  dfreq = SPEED_OF_LIGHT/B.circumference;
   fft(bx, BX, B.n_samp, B.n_samp, dfreq);
   fft(bz, BZ, B.n_samp, B.n_samp, dfreq);
   dfreq = 1.0;   //1.0/360;

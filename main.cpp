@@ -64,8 +64,8 @@ int main (int argc, char *argv[])
   magnetvec sexts;
   magnetvec vcorrs;
   CLOSEDORBIT bpmorbit;            // orbit at discrete positions (e.g. BPMs) for a specific time in elsa-cycle
-  //  CLOSEDORBIT orbit;               // orbit interpolated from bpmorbit with n_samp sampling points
   TRAJECTORY trajectory;          // orbit of single particle (based on tracking)
+  ORBIT *orbit;
   FIELDMAP B(n_samp);           // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
   int err=0;
 
@@ -251,9 +251,15 @@ int main (int argc, char *argv[])
 
 
     // calculate field distribution & spectrum
-    trajectory.add_closedorbit(bpmorbit);
-    getfields(B, bpmorbit, dipols, quads, sexts, vcorrs, Res);
-    getspectrum(bx, bz, res, B, circumference, Res);
+    if (ptc) {
+      trajectory.add_closedorbit(bpmorbit);
+      orbit = &trajectory;
+    }
+    else {
+      orbit = &bpmorbit;
+    }
+    getfields(B, *orbit, dipols, quads, sexts, vcorrs, Res);
+    getspectrum(bx, bz, res, B, Res);
 
     
     // generate output files

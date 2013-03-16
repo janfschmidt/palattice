@@ -4,7 +4,7 @@
 #include "resonances.hpp"
 #include "spectrum.hpp"
 
-int getspectrum (SPECTRUM &bx, SPECTRUM &bz, SPECTRUM &res, FIELDMAP &B, double circumference, RESONANCES &Res);
+int getspectrum (SPECTRUM &bx, SPECTRUM &bz, SPECTRUM &res, FIELDMAP &B, RESONANCES &Res);
 
 int fft (SPECTRUM &bx, double *BX, int n_samp, int norm, double dfreq);
 
