@@ -32,6 +32,7 @@ int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, m
  double interval_samp = B.circumference/B.n_samp; // sampling interval of magn. field values along ring in meter
  double phase_perdip = 360 / dipols.size();   //spin-phaseadvance per dipole
  //-> phase_perdip variabel machen mit dipollänge/gesamtbogenlänge? ... 
+ double pos_tot;
  FIELD Btmp;
 
  if (B.circumference != orbit.circumference) {
@@ -52,6 +53,7 @@ int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, m
    for (i=0; i<B.n_samp; i++) {
      Btmp.pos = i*interval_samp;
      Btmp.turn = t;
+     pos_tot = Btmp.pos + (Btmp.turn-1)*B.circumference; //equivalent to FIELDMAP::pos_tot()
      
      /* dipoles */
      if (d<dipols.size() && Btmp.pos >= dipols[d].start && Btmp.pos <= dipols[d].end) {
@@ -64,7 +66,7 @@ int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, m
      /* quadrupoles */
      else if (q<quads.size() && Btmp.pos >= quads[q].start && Btmp.pos <= quads[q].end) {
        Btmp.name = quads[q].name;
-       Btmp.x = quads[q].strength * orbit.interp_z(Btmp.pos);
+       Btmp.x = quads[q].strength * orbit.interp_z(pos_tot);
        Btmp.z = 0; // neglect
        Btmp.theta = d * phase_perdip + (t-1)*360;
        qSwitch=true;
@@ -72,7 +74,7 @@ int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, m
      /* sextupoles */
      else if (s<sexts.size() && Btmp.pos >= sexts[s].start && Btmp.pos <= sexts[s].end) {
        Btmp.name = sexts[s].name;
-       Btmp.x = 0.5 * sexts[s].strength * orbit.interp_x(Btmp.pos) * orbit.interp_z(Btmp.pos);
+       Btmp.x = 0.5 * sexts[s].strength * orbit.interp_x(pos_tot) * orbit.interp_z(pos_tot);
        Btmp.z = 0; // neglect
        Btmp.theta = d * phase_perdip + (t-1)*360;
        sSwitch=true;
@@ -91,22 +93,22 @@ int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, m
      // & add previous magnet to Res
      else {
        if (dSwitch) {        
-	 if (Res.on) {Res.adddip(dipols[d], B.x(i-1));}
+	 if (Res.on) {Res.adddip(dipols[d], B.x(i-1,t));}
 	 d++;
 	 dSwitch=false;
        }
        else if (qSwitch) {
-	 if (Res.on) {Res.addother(quads[q], B.x(i-1));}
+	 if (Res.on) {Res.addother(quads[q], B.x(i-1,t));}
 	 q++;
 	 qSwitch=false;
        }
        else if (sSwitch) {
-	 if (Res.on) {Res.addother(sexts[s], B.x(i-1));}
+	 if (Res.on) {Res.addother(sexts[s], B.x(i-1,t));}
 	 s++;
 	 sSwitch=false;
        }
        else if (vSwitch) {
-	 if (Res.on) {Res.addother(vcorrs[v], B.x(i-1));}
+	 if (Res.on) {Res.addother(vcorrs[v], B.x(i-1,t));}
 	 v++;
 	 vSwitch=false;
        }

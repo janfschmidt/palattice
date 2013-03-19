@@ -34,7 +34,7 @@ using namespace std;
 int main (int argc, char *argv[])
 {
   //-----------------------------
-  unsigned int n_samp = 1644; // number of sampling points along ring for magn. field strengths
+  unsigned int n_samp = 16440; // number of sampling points along ring for magn. field strengths
   bool sgt_access=false;       //special option for elsa-mode:
                                //if 1, spuren are read from /sgt/elsa/data/bpm/ instead of [project]/ELSA-Spuren/
   //-----------------------------
@@ -278,7 +278,7 @@ int main (int argc, char *argv[])
       bpmorbit.interp_out(0.1, file.out("interp_bpms", t.tag(i)).c_str());
       trajectory.interp_out(1.0, file.out("interp_trajectory", t.tag(i)).c_str());
       //field data
-      fields_out(B, file.out("fields", t.tag(i)).c_str());
+      //fields_out(B, file.out("fields", t.tag(i)).c_str());
       //evaluated field data
       eval_out(bx, bz, n_samp, circumference, file.out("eval", t.tag(i)).c_str());
     }
