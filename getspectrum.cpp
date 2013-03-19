@@ -127,9 +127,9 @@ double eval(SPECTRUM bx, double t)
 
 
 /* create output file with evaluated field data */
-int eval_out(SPECTRUM bx, SPECTRUM bz, int n_samp, double circumference, const char *filename)
+int eval_out(SPECTRUM bx, SPECTRUM bz, unsigned int size, double circumference, const char *filename)
 {
- int i;
+ unsigned int i;
  int w=12;
  double delta_s = circumference/n_samp;
  double delta_t = delta_s/SPEED_OF_LIGHT;
@@ -142,7 +142,7 @@ int eval_out(SPECTRUM bx, SPECTRUM bz, int n_samp, double circumference, const c
  }
  
  file <<"# "<<setw(w)<< "s [m]" <<setw(w)<< "t [s]" <<setw(w)<< "Bx [1/m]" <<setw(w)<< "Bz [1/m]" <<setw(w)<< "Bs [1/m]" << endl;
- for (i=0; i<n_samp; i++) {
+ for (i=0; i<size; i++) {
    file <<setiosflags(ios::scientific)<<showpoint<<setprecision(4);
    file <<setw(w+2)<< i*delta_s <<setw(w)<< i*delta_t <<setw(w)<< eval(bx, i*delta_t) <<setw(w)<< eval(bz, i*delta_t) <<setw(w)<< 0.0 << endl;
  }

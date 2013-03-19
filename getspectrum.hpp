@@ -10,7 +10,7 @@ int fft (SPECTRUM &bx, double *BX, int n_samp, int norm, double dfreq);
 
 double eval(SPECTRUM bx, double t);
 
-int eval_out(SPECTRUM bx, SPECTRUM bz, int n_samp, double circumference, const char *filename);
+int eval_out(SPECTRUM bx, SPECTRUM bz, unsigned int size, double circumference, const char *filename);
 
 
 #endif

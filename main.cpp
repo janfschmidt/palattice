@@ -263,8 +263,11 @@ int main (int argc, char *argv[])
     else {
       orbit = &bpmorbit;
     }
+    cout << "Calculate field distribution..." << endl;
     getfields(B, *orbit, dipols, quads, sexts, vcorrs, Res);
+    cout << "Calculate spectra (FFT)..." << endl;
     getspectrum(bx, bz, res, B, Res);
+    cout << "--------------------------------------------" << endl;
 
     
     // generate output files
@@ -280,7 +283,7 @@ int main (int argc, char *argv[])
       //field data
       //fields_out(B, file.out("fields", t.tag(i)).c_str());
       //evaluated field data
-      eval_out(bx, bz, n_samp, circumference, file.out("eval", t.tag(i)).c_str());
+      //eval_out(bx, bz, B.size(), circumference, file.out("eval", t.tag(i)).c_str());
     }
 
     //export spectrum files for polarization-calculation
@@ -295,7 +298,7 @@ int main (int argc, char *argv[])
       exportfile(hc, metadata, "harmcorr", file.spec("harmcorr", t.tag(i)).c_str());
     }
     if (Res.on) {
-      if (allout) Res.out(file.out("phaseadvance", t.tag(i)).c_str());
+      //if (allout) Res.out(file.out("phaseadvance", t.tag(i)).c_str());
       exportfile(res, metadata, "resonances", file.spec("resonances", t.tag(i)).c_str());
     }
 

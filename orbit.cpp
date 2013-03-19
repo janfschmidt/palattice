@@ -240,6 +240,7 @@ void CLOSEDORBIT::interp_init()
     cout << "ERROR: CLOSEDORBIT::interp_init: Interpolation initialisation called twice. Skip." << endl;
     return;
   }
+  //cout << "Initialise Orbit Interpolation..." << endl;
 
   unsigned int i;
   const gsl_interp_type *type = gsl_interp_akima_periodic;  // type of interpolation used (see GSL manual)
@@ -286,6 +287,7 @@ void TRAJECTORY::interp_init()
     cout << "ERROR: TRAJECTORY::interp_init: Interpolation initialisation called twice. Skip." << endl;
     return;
   }
+  //cout << "Initialise Orbit Interpolation..." << endl;
   
   unsigned int t, obs, i=0;
   unsigned int n = size();
