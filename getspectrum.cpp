@@ -131,7 +131,7 @@ int eval_out(SPECTRUM bx, SPECTRUM bz, unsigned int size, double circumference, 
 {
  unsigned int i;
  int w=12;
- double delta_s = circumference/n_samp;
+ double delta_s = bx.turns*circumference/size;
  double delta_t = delta_s/SPEED_OF_LIGHT;
  fstream file;
 
