@@ -92,7 +92,7 @@ public:
   double pos_tot(unsigned int obs, unsigned int t) const {return (turn(obs,t)-1)*circumference+pos(obs,t);}
   double pos_max() const {if(n_bpms>0) return pos_tot(1, n_turns+1); else return 0.;}
   int out(const char *filename) const;
-  int add_closedorbit(CLOSEDORBIT co);
+  int add_closedorbit(CLOSEDORBIT &co);
 };
 
 

@@ -4,7 +4,7 @@
 #include "metadata.hpp"
 #include "spectrum.hpp"
 
-int exportfile(SPECTRUM bx, METADATA metadata, string tag, const char *filename);
+int exportfile(SPECTRUM &bx, METADATA metadata, string tag, const char *filename);
 
 int columnwidth(METADATA metadata);
 

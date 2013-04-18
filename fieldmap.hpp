@@ -28,7 +28,7 @@ public:
   const unsigned int n_turns;  //number of turns in ring
   const double circumference;   //circumference einlesen!!!!!!!!!!!!!!!!!!!!!!!!
   
-  FIELDMAP(unsigned int n=1644, unsigned int t=1) : n_samp(n), n_turns(t), circumference(164.4) {B = new FIELD[this->size()];}
+  FIELDMAP(unsigned int n=1644, unsigned int t=1) : n_samp(n), n_turns(t), circumference(164.4) {B = new FIELD[size()];}
   ~FIELDMAP() {delete[] B;}
   FIELDMAP(const FIELDMAP &other);
   double pos(unsigned int samp, unsigned int t=1) const {return B[Fieldindex(samp,t)].pos;}

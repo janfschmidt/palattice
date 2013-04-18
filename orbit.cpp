@@ -107,7 +107,7 @@ int CLOSEDORBIT::diff(CLOSEDORBIT Ref)
 
 //add a CLOSEDORBIT to a TRAJECTORY to get absolute x & z,
 //if madx trajectory data is relative to closed orbit
-int TRAJECTORY::add_closedorbit(CLOSEDORBIT co)
+int TRAJECTORY::add_closedorbit(CLOSEDORBIT &co)
 {
   unsigned int i;
 

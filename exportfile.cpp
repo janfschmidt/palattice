@@ -18,7 +18,7 @@ using namespace std;
 
 
 
-int exportfile(SPECTRUM bx, METADATA metadata, string tag, const char *filename)
+int exportfile(SPECTRUM &bx, METADATA metadata, string tag, const char *filename)
 {
   unsigned int i;
   fstream file;
