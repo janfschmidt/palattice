@@ -38,7 +38,7 @@ int main (int argc, char *argv[])
   bool sgt_access=false;       //special option for elsa-mode:
                                //if 1, spuren are read from /sgt/elsa/data/bpm/ instead of [project]/ELSA-Spuren/
   //-----------------------------
-  unsigned int i;
+  unsigned int i, ftmp;
   unsigned int fmax_x = 6;      // max Frequency used for magnetic field spectrum (in revolution harmonics)
   unsigned int fmax_z = 6;
   unsigned int fmax_s = 0;
@@ -52,7 +52,6 @@ int main (int argc, char *argv[])
   bool allout = false;          // true: additional output files (orbit, field, bpms, ...)
   char spuren[20] = "dummy";
   char Reference[50] = "dummy";
-  string tmp;
   double circumference=0;
   double dtheta = 0;           // spin phaseadvance stepwidth (option -r)
   BPM ELSAbpms[NBPMS];         // ELSAbpms[0]=BPM01, ELSAbpms[31]=BPM32
@@ -88,7 +87,7 @@ int main (int argc, char *argv[])
     }
   }
 
-  while ((opt = getopt(argc, argv, ":pr:e:t:f:d:m:ah")) != -1) {
+  while ((opt = getopt(argc, argv, ":pr:e:t:f:F:d:m:ah")) != -1) {
     switch(opt) {
     case 'p':
       ptc = true;
@@ -112,6 +111,9 @@ int main (int argc, char *argv[])
       fmax_x = atoi(optarg);
       fmax_z = atoi(optarg);
       break;
+    case 'F':
+      fmax_res = atoi(optarg);
+      break;
     case 'd':
       diff = true;
       strncpy(Reference, optarg, 50);
@@ -125,7 +127,8 @@ int main (int argc, char *argv[])
       cout << "* -p enables import of single particle trajectory from madx ptc_track." << endl;
       cout << "* -r [dtheta] estimates resonance strengths, stepwidth [dtheta]°" << endl;
       cout << "* -e [spuren] enables ELSA-mode, Spuren as argument (path: [project]/ELSA-Spuren/) " << endl;
-      cout << "* -f [fmax] sets maximum frequency for B-Field spectrum output" << endl;
+      cout << "* -f [fmax] sets maximum frequency for B-Field spectrum output (in rev. harmonics)" << endl;
+      cout << "* -F [fmax] sets maximum frequency for resonance-spectrum (-r) output (in rev. harmonics)" << endl;
       cout << "* -t [time] sets time of ELSA cycle to evaluate BPMs and correctors (in ms)" << endl;
       cout << "* -m [tagfile] multiple times of ELSA cycle evaluated. Times listed in [tagfile]" << endl;
       cout << "* -a enables all output files (orbit, fields, correctors, ...)" << endl;
@@ -159,6 +162,12 @@ int main (int argc, char *argv[])
     cout << "================================================================================" << endl;
     t.set(0); // reset to single time to disable multi-mode
   }
+ if (fmax_res!=0 && dtheta==0) {
+    cout << endl;
+    cout << "================================================================================" << endl;
+    cout << "WARNING: option -F is only used for resonance spectrum (-r). Use -h for help." << endl;
+    cout << "================================================================================" << endl;
+ }
   
 
   //initialize filenames
@@ -225,7 +234,9 @@ int main (int argc, char *argv[])
   fmax_z *= trajectory.turns();
   fmax_s *= trajectory.turns();
   fmax_hc = int(dipols.size() / 2);
-  fmax_res = int(Res.theta_max()/dtheta / 2);
+  ftmp = int(Res.theta_max()/dtheta / 2);
+  if (fmax_res==0 || fmax_res>ftmp)  fmax_res = ftmp; //if not set by option -F (or to large): set to maximum
+  else fmax_res *= trajectory.turns();
   SPECTRUM bx(fmax_x);
   SPECTRUM bz(fmax_z);
   SPECTRUM bs(fmax_s);
