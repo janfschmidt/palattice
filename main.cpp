@@ -53,6 +53,7 @@ int main (int argc, char *argv[])
   char spuren[20] = "dummy";
   char Reference[50] = "dummy";
   double circumference=0;
+  double ampcut=0;          // minimum amplitude for resonance spectrum (option -c)
   double dtheta = 0;           // spin phaseadvance stepwidth (option -r)
   BPM ELSAbpms[NBPMS];         // ELSAbpms[0]=BPM01, ELSAbpms[31]=BPM32
   CORR ELSAvcorrs[NVCORRS];    // ELSAvcorrs[0]=VC01, ELSAvcorrs[31]=VC32
@@ -87,7 +88,7 @@ int main (int argc, char *argv[])
     }
   }
 
-  while ((opt = getopt(argc, argv, ":pr:e:t:f:F:d:m:ah")) != -1) {
+  while ((opt = getopt(argc, argv, ":pr:e:t:f:F:c:d:m:ah")) != -1) {
     switch(opt) {
     case 'p':
       ptc = true;
@@ -114,6 +115,9 @@ int main (int argc, char *argv[])
     case 'F':
       fmax_res = atoi(optarg);
       break;
+    case 'c':
+      ampcut = atof(optarg);
+      break;
     case 'd':
       diff = true;
       strncpy(Reference, optarg, 50);
@@ -129,6 +133,7 @@ int main (int argc, char *argv[])
       cout << "* -e [spuren] enables ELSA-mode, Spuren as argument (path: [project]/ELSA-Spuren/) " << endl;
       cout << "* -f [fmax] sets maximum frequency for B-Field spectrum output (in rev. harmonics)" << endl;
       cout << "* -F [fmax] sets maximum frequency for resonance-spectrum (-r) output (in rev. harmonics)" << endl;
+      cout << "* -c [minamp] sets minimum amplitude for resonance-spectrum (-r), others are cut" << endl;
       cout << "* -t [time] sets time of ELSA cycle to evaluate BPMs and correctors (in ms)" << endl;
       cout << "* -m [tagfile] multiple times of ELSA cycle evaluated. Times listed in [tagfile]" << endl;
       cout << "* -a enables all output files (orbit, fields, correctors, ...)" << endl;
@@ -162,11 +167,11 @@ int main (int argc, char *argv[])
     cout << "================================================================================" << endl;
     t.set(0); // reset to single time to disable multi-mode
   }
- if (fmax_res!=0 && dtheta==0) {
+  if ((fmax_res+ampcut)!=0 && dtheta==0) {
     cout << endl;
-    cout << "================================================================================" << endl;
-    cout << "WARNING: option -F is only used for resonance spectrum (-r). Use -h for help." << endl;
-    cout << "================================================================================" << endl;
+    cout << "=======================================================================================" << endl;
+    cout << "WARNING: options -F and -c are only used for resonance spectrum (-r). Use -h for help." << endl;
+    cout << "=======================================================================================" << endl;
  }
   
 
@@ -230,18 +235,14 @@ int main (int argc, char *argv[])
   RESONANCES Res(dtheta, dipols.size(), trajectory.turns());
 
  // magnetic spectrum (amplitudes & phases) up to fmax
-  fmax_x *= trajectory.turns();
-  fmax_z *= trajectory.turns();
-  fmax_s *= trajectory.turns();
   fmax_hc = int(dipols.size() / 2);
   ftmp = int(Res.theta_max()/dtheta / 2);
   if (fmax_res==0 || fmax_res>ftmp)  fmax_res = ftmp; //if not set by option -F (or to large): set to maximum
-  else fmax_res *= trajectory.turns();
-  SPECTRUM bx(fmax_x);
-  SPECTRUM bz(fmax_z);
-  SPECTRUM bs(fmax_s);
-  SPECTRUM hc(fmax_hc); //harmcorr
-  SPECTRUM res(fmax_res);
+  SPECTRUM bx(fmax_x, trajectory.turns());
+  SPECTRUM bz(fmax_z, trajectory.turns());
+  SPECTRUM bs(fmax_s, trajectory.turns());
+  SPECTRUM hc(fmax_hc, trajectory.turns()); //harmcorr
+  SPECTRUM res(fmax_res, trajectory.turns(), ampcut);
 
   
 

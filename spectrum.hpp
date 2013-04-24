@@ -17,20 +17,22 @@ public:
 class SPECTRUM {
 
 private:
-  FREQCOMP *b;
+  vector<FREQCOMP> b;
 
 public:
-  const unsigned int fmax;   //maximum frequency (fmax is highest included frequency (**))
+  const unsigned int fmax_rev;   //maximum frequency in rev. harmonics (fmax is highest INCLUDED frequency (**))
   const unsigned int turns;  //number of turns in ring
+  const double ampcut; //amlitudes below this are ignored
 
-  SPECTRUM(unsigned int f=0, unsigned int t=1) : fmax(f), turns(t) {b = new FREQCOMP[this->size()];}
-  ~SPECTRUM() {delete[] b;}
-  SPECTRUM(const SPECTRUM &other);
+  SPECTRUM(unsigned int f=0, unsigned int t=1, double a=0) : fmax_rev(f), turns(t), ampcut(a) {}
+  ~SPECTRUM() {}
+  //SPECTRUM(const SPECTRUM &other);
   double freq(unsigned int i) const {return b[i].freq;}
   double amp(unsigned int i) const {return b[i].amp;}
   double phase(unsigned int i) const {return b[i].phase;}
-  unsigned int size() const {return (fmax+1)*turns;}      // +1 explained by (**)
-  int set(unsigned int i, FREQCOMP tmp);
+  unsigned int size() const {return b.size();}         //actual filled values
+  unsigned int fmax() const {return fmax_rev*turns;}   //expected/set maximum
+  void push_back(FREQCOMP tmp);
   //int evalout(const char *filename) const;
 
 };

@@ -23,13 +23,18 @@ int exportfile(SPECTRUM &bx, METADATA metadata, string tag, const char *filename
   unsigned int i;
   fstream file;
   const int w = 15;     /* column width in spectrum data  */
-  char tmp[10];
+  char tmp[30];
 
   // add tag to metadata
   metadata.add("Field Component", tag);
   // add fmax to metadata
-  snprintf(tmp, 10, "%d", bx.fmax);
+  snprintf(tmp, 30, "%d", bx.fmax());
   metadata.add("max. frequency", tmp);
+  // add ampcut to metadata
+  if (bx.ampcut > 0) {
+    snprintf(tmp, 30, "%lf (%d cutted)", bx.ampcut, bx.fmax()+1-bx.size());
+    metadata.add("cutted Amp <", tmp);
+  }
   // add phase-warning for harmcorr
   if (tag=="harmcorr" || tag=="resonances") {
     metadata.add("WARNING:", "Phase NOT equal harmcorr in ELSA-CCS! (sign in cos)");
@@ -60,7 +65,7 @@ int exportfile(SPECTRUM &bx, METADATA metadata, string tag, const char *filename
     file <<"#"<<setw(w+1)<<"Freq[rev.harm.]"<<setw(w)<<"Amp[mrad]"<<setw(w)<<"Phase[deg]" << endl;
   else
     file <<"#"<<setw(w+1)<<"Freq[Hz]"<<setw(w)<<"Amp[1/m]"<<setw(w)<<"Phase[deg]" << endl; 
-  for (i=0; i<=bx.fmax; i++) {
+  for (i=0; i<bx.size(); i++) {
     file <<resetiosflags(ios::fixed)<<setiosflags(ios::scientific)<<showpoint<<setprecision(6);
     if (tag=="harmcorr")
       file <<setw(2+w)<< i;

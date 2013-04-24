@@ -83,8 +83,8 @@ int fft (SPECTRUM &bx, double *BX, int n_samp, int norm, double dfreq)
   btmp.freq = 0.0;
   btmp.amp = sqrt( pow(REAL(BX,0),2) + pow(IMAG(BX,0),2) ) * 1.0/norm;
   btmp.phase = 0.0;
-  bx.set(0, btmp);
-  for (i=1; i<=bx.fmax; i++) {
+  bx.push_back(btmp);
+  for (i=1; i<=bx.fmax(); i++) {
     btmp.freq = i*dfreq;
     btmp.amp = sqrt( pow(REAL(BX,i),2) + pow(IMAG(BX,i),2) ) * 2.0/norm;
     btmp.phase = atan( IMAG(BX,i) / REAL(BX,i) );
@@ -97,7 +97,7 @@ int fft (SPECTRUM &bx, double *BX, int n_samp, int norm, double dfreq)
     else if (REAL(BX,i)>0.0 && IMAG(BX,i)<=0.0) {
       btmp.phase += 2*M_PI;
     }
-    bx.set(i, btmp);
+    bx.push_back(btmp);
   }
 
   gsl_fft_complex_wavetable_free (wavetable);
@@ -115,7 +115,7 @@ double eval(SPECTRUM bx, double t)
   double value=0.0;
   unsigned int f;
 
-  for (f=0; f<=bx.fmax; f++) {
+  for (f=0; f<=bx.size(); f++) {
     value += bx.amp(f)*cos(bx.freq(f)*t + bx.phase(f));
   }
 
