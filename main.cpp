@@ -34,7 +34,7 @@ using namespace std;
 int main (int argc, char *argv[])
 {
   //-----------------------------
-  unsigned int n_samp = 16440; // number of sampling points along ring for magn. field strengths
+  unsigned int n_samp = 1644; // number of sampling points along ring for magn. field strengths
   bool sgt_access=false;       //special option for elsa-mode:
                                //if 1, spuren are read from /sgt/elsa/data/bpm/ instead of [project]/ELSA-Spuren/
   //-----------------------------
@@ -53,7 +53,9 @@ int main (int argc, char *argv[])
   char spuren[20] = "dummy";
   char Reference[50] = "dummy";
   double circumference=0;
-  double ampcut=0;          // minimum amplitude for resonance spectrum (option -c)
+  double ampcut_x = 1e-6;     // minimum amplitudes for magnetic field spectra
+  double ampcut_z = 1e-6;
+  double ampcut_res=0;          // minimum amplitude for resonance spectrum (option -c)
   double dtheta = 0;           // spin phaseadvance stepwidth (option -r)
   BPM ELSAbpms[NBPMS];         // ELSAbpms[0]=BPM01, ELSAbpms[31]=BPM32
   CORR ELSAvcorrs[NVCORRS];    // ELSAvcorrs[0]=VC01, ELSAvcorrs[31]=VC32
@@ -116,7 +118,7 @@ int main (int argc, char *argv[])
       fmax_res = atoi(optarg);
       break;
     case 'c':
-      ampcut = atof(optarg);
+      ampcut_res = atof(optarg);
       break;
     case 'd':
       diff = true;
@@ -167,7 +169,7 @@ int main (int argc, char *argv[])
     cout << "================================================================================" << endl;
     t.set(0); // reset to single time to disable multi-mode
   }
-  if ((fmax_res+ampcut)!=0 && dtheta==0) {
+  if ((fmax_res+ampcut_res)!=0 && dtheta==0) {
     cout << endl;
     cout << "=======================================================================================" << endl;
     cout << "WARNING: options -F and -c are only used for resonance spectrum (-r). Use -h for help." << endl;
@@ -238,11 +240,11 @@ int main (int argc, char *argv[])
   fmax_hc = int(dipols.size() / 2);
   ftmp = int(Res.theta_max()/dtheta / 2);
   if (fmax_res==0 || fmax_res>ftmp)  fmax_res = ftmp; //if not set by option -F (or to large): set to maximum
-  SPECTRUM bx(fmax_x, trajectory.turns());
-  SPECTRUM bz(fmax_z, trajectory.turns());
+  SPECTRUM bx(fmax_x, trajectory.turns(), ampcut_x);
+  SPECTRUM bz(fmax_z, trajectory.turns(), ampcut_z);
   SPECTRUM bs(fmax_s, trajectory.turns());
   SPECTRUM hc(fmax_hc, trajectory.turns()); //harmcorr
-  SPECTRUM res(fmax_res, trajectory.turns(), ampcut);
+  SPECTRUM res(fmax_res, trajectory.turns(), ampcut_res);
 
   
 
@@ -293,7 +295,7 @@ int main (int argc, char *argv[])
       bpmorbit.interp_out(0.1, file.out("interp_bpms", t.tag(i)).c_str());
       trajectory.interp_out(1.0, file.out("interp_trajectory", t.tag(i)).c_str());
       //field data
-      //fields_out(B, file.out("fields", t.tag(i)).c_str());
+      fields_out(B, file.out("fields", t.tag(i)).c_str());
       //evaluated field data
       //eval_out(bx, bz, B.size(), circumference, file.out("eval", t.tag(i)).c_str());
     }

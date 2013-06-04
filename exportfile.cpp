@@ -32,7 +32,7 @@ int exportfile(SPECTRUM &bx, METADATA metadata, string tag, const char *filename
   metadata.add("max. frequency", tmp);
   // add ampcut to metadata
   if (bx.ampcut > 0) {
-    snprintf(tmp, 30, "%lf (%d cutted)", bx.ampcut, bx.fmax()+1-bx.size());
+    snprintf(tmp, 30, "%.2e (%d cutted)", bx.ampcut, bx.fmax()+1-bx.size());
     metadata.add("cutted Amp <", tmp);
   }
   // add phase-warning for harmcorr
