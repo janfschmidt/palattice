@@ -54,8 +54,10 @@ int getspectrum (SPECTRUM &bx, SPECTRUM &bz, SPECTRUM &res, FIELDMAP &B, RESONAN
   dfreq = SPEED_OF_LIGHT/B.circumference/B.n_turns;
   fft(bx, BX, B.size(), B.size(), dfreq);
   fft(bz, BZ, B.size(), B.size(), dfreq);
-  dfreq = 1.0/Res.n_turns;   //1.0/360;
-  fft(res, RES, n_res, Res.ndipols()*Res.n_turns, dfreq); //normalize on # dipoles for correct kicks in-between
+  if (Res.on) {
+    dfreq = 1.0/Res.n_turns;   //1.0/360;
+    fft(res, RES, n_res, Res.ndipols()*Res.n_turns, dfreq); //normalize on # dipoles for correct kicks in-between
+  }
 
   delete[] BX;
   delete[] BZ;
@@ -79,7 +81,7 @@ int fft (SPECTRUM &bx, double *BX, int n_samp, int norm, double dfreq)
   workspace = gsl_fft_complex_workspace_alloc (n_samp);
   gsl_fft_complex_forward (BX, 1, n_samp, wavetable, workspace);       /* transform BX */
 
-  /*  write amplitude & phase to SPECTRUM */
+  //  write amplitude & phase to SPECTRUM
   btmp.freq = 0.0;
   btmp.amp = sqrt( pow(REAL(BX,0),2) + pow(IMAG(BX,0),2) ) * 1.0/norm;
   btmp.phase = 0.0;
@@ -106,48 +108,3 @@ int fft (SPECTRUM &bx, double *BX, int n_samp, int norm, double dfreq)
   return 0;
 }
 
-
-
-
-/* returns cos-evaluation of magnetic field BX at time t by using spectrum bx */
-double eval(SPECTRUM bx, double t)
-{
-  double value=0.0;
-  unsigned int f;
-
-  for (f=0; f<=bx.size(); f++) {
-    value += bx.amp(f)*cos(bx.freq(f)*t + bx.phase(f));
-  }
-
-  return value;
-}
-
-
-
-
-
-/* create output file with evaluated field data */
-int eval_out(SPECTRUM bx, SPECTRUM bz, unsigned int size, double circumference, const char *filename)
-{
- unsigned int i;
- int w=12;
- double delta_s = bx.turns*circumference/size;
- double delta_t = delta_s/SPEED_OF_LIGHT;
- fstream file;
-
- file.open(filename, ios::out);
- if (!file.is_open()) {
-   cout << "ERROR: Cannot open " << filename << "." << endl;
-   return 1;
- }
- 
- file <<"# "<<setw(w)<< "s [m]" <<setw(w)<< "t [s]" <<setw(w)<< "Bx [1/m]" <<setw(w)<< "Bz [1/m]" <<setw(w)<< "Bs [1/m]" << endl;
- for (i=0; i<size; i++) {
-   file <<setiosflags(ios::scientific)<<showpoint<<setprecision(4);
-   file <<setw(w+2)<< i*delta_s <<setw(w)<< i*delta_t <<setw(w)<< eval(bx, i*delta_t) <<setw(w)<< eval(bz, i*delta_t) <<setw(w)<< 0.0 << endl;
- }
- file.close();
- cout << "* Wrote " << filename  << endl;
-
- return 0;
-}

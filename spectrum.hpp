@@ -33,7 +33,8 @@ public:
   unsigned int size() const {return b.size();}         //actual filled values
   unsigned int fmax() const {return fmax_rev*turns;}   //expected/set maximum
   void push_back(FREQCOMP tmp);
-  //int evalout(const char *filename) const;
+  double eval(double t) const;
+  int eval_out(double stepwidth, double max, const char *filename) const;
 
 };
 

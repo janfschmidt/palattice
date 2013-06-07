@@ -56,7 +56,7 @@ int main (int argc, char *argv[])
   double ampcut_x = 1e-6;     // minimum amplitudes for magnetic field spectra
   double ampcut_z = 1e-6;
   double ampcut_res=0;          // minimum amplitude for resonance spectrum (option -c)
-  double dtheta = 0;           // spin phaseadvance stepwidth (option -r)
+  double dtheta = -1;           // spin phaseadvance stepwidth (option -r)
   BPM ELSAbpms[NBPMS];         // ELSAbpms[0]=BPM01, ELSAbpms[31]=BPM32
   CORR ELSAvcorrs[NVCORRS];    // ELSAvcorrs[0]=VC01, ELSAvcorrs[31]=VC32
   BPM Ref_ELSAbpms[NBPMS];
@@ -90,7 +90,7 @@ int main (int argc, char *argv[])
     }
   }
 
-  while ((opt = getopt(argc, argv, ":pr:e:t:f:F:c:d:m:ah")) != -1) {
+  while ((opt = getopt(argc, argv, ":pr:e:t:f:F:c:C:d:m:ah")) != -1) {
     switch(opt) {
     case 'p':
       ptc = true;
@@ -118,6 +118,10 @@ int main (int argc, char *argv[])
       fmax_res = atoi(optarg);
       break;
     case 'c':
+      ampcut_x = atof(optarg);
+      ampcut_z = atof(optarg);
+      break;
+    case 'C':
       ampcut_res = atof(optarg);
       break;
     case 'd':
@@ -133,9 +137,10 @@ int main (int argc, char *argv[])
       cout << "* -p enables import of single particle trajectory from madx ptc_track." << endl;
       cout << "* -r [dtheta] estimates resonance strengths, stepwidth [dtheta]°" << endl;
       cout << "* -e [spuren] enables ELSA-mode, Spuren as argument (path: [project]/ELSA-Spuren/) " << endl;
-      cout << "* -f [fmax] sets maximum frequency for B-Field spectrum output (in rev. harmonics)" << endl;
+      cout << "* -f [fmax] sets maximum frequency for B-Field spectrum (in rev. harmonics)" << endl;
       cout << "* -F [fmax] sets maximum frequency for resonance-spectrum (-r) output (in rev. harmonics)" << endl;
-      cout << "* -c [minamp] sets minimum amplitude for resonance-spectrum (-r), others are cut" << endl;
+      cout << "* -c [minamp] sets minimum amplitude for B-Field spectrum, others are cutted" << endl;
+      cout << "* -C [minamp] sets minimum amplitude for resonance-spectrum (-r), others are cutted" << endl;
       cout << "* -t [time] sets time of ELSA cycle to evaluate BPMs and correctors (in ms)" << endl;
       cout << "* -m [tagfile] multiple times of ELSA cycle evaluated. Times listed in [tagfile]" << endl;
       cout << "* -a enables all output files (orbit, fields, correctors, ...)" << endl;
@@ -169,10 +174,10 @@ int main (int argc, char *argv[])
     cout << "================================================================================" << endl;
     t.set(0); // reset to single time to disable multi-mode
   }
-  if ((fmax_res+ampcut_res)!=0 && dtheta==0) {
+  if ((fmax_res+ampcut_res)!=0 && dtheta==-1) {
     cout << endl;
     cout << "=======================================================================================" << endl;
-    cout << "WARNING: options -F and -c are only used for resonance spectrum (-r). Use -h for help." << endl;
+    cout << "WARNING: options -F and -C are only used for resonance spectrum (-r). Use -h for help." << endl;
     cout << "=======================================================================================" << endl;
  }
   
@@ -238,7 +243,7 @@ int main (int argc, char *argv[])
 
  // magnetic spectrum (amplitudes & phases) up to fmax
   fmax_hc = int(dipols.size() / 2);
-  ftmp = int(Res.theta_max()/dtheta / 2);
+  ftmp = int(abs(360/dtheta / 2.0));
   if (fmax_res==0 || fmax_res>ftmp)  fmax_res = ftmp; //if not set by option -F (or to large): set to maximum
   SPECTRUM bx(fmax_x, trajectory.turns(), ampcut_x);
   SPECTRUM bz(fmax_z, trajectory.turns(), ampcut_z);
@@ -295,9 +300,10 @@ int main (int argc, char *argv[])
       bpmorbit.interp_out(0.1, file.out("interp_bpms", t.tag(i)).c_str());
       trajectory.interp_out(1.0, file.out("interp_trajectory", t.tag(i)).c_str());
       //field data
-      fields_out(B, file.out("fields", t.tag(i)).c_str());
+      B.out(file.out("fields", t.tag(i)).c_str());
       //evaluated field data
-      //eval_out(bx, bz, B.size(), circumference, file.out("eval", t.tag(i)).c_str());
+      bx.eval_out(1.0, B.circumference, file.out("eval_x", t.tag(i)).c_str());
+      bz.eval_out(1.0, B.circumference, file.out("eval_z", t.tag(i)).c_str());
     }
 
     //export spectrum files for polarization-calculation

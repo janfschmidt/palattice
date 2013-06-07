@@ -19,7 +19,7 @@ public:
   bool on;
   const unsigned int n_turns;
 
-  RESONANCES() :  dtheta(0), n(0), ndip(0), on(false), n_turns(1) {}
+  RESONANCES() :  dtheta(-1), n(0), ndip(0), on(false), n_turns(1) {}
   RESONANCES(double thetastep, unsigned int n_dip, unsigned int turns);
   ~RESONANCES() {}
   double gettheta(unsigned int i) const {return theta[i];}

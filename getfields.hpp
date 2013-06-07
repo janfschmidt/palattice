@@ -6,8 +6,6 @@
 
 int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs, RESONANCES &Res);
 
-int fields_out(FIELDMAP B, const char *filename);
-
 #endif
 
 /*__POLSIM__GETFIELDS_HPP_*/

@@ -13,7 +13,7 @@
 RESONANCES::RESONANCES(double thetastep, unsigned int n_dip, unsigned int turns)
   : dtheta(thetastep), n(360/(n_dip*dtheta)), ndip(n_dip), n_turns(turns)
 {
-  if(thetastep == 0.0) {
+  if(thetastep == -1.0) {
     on = false;
   }
   else {

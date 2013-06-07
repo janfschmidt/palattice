@@ -33,7 +33,11 @@ int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, m
  double phase_perdip = 360 / dipols.size();   //spin-phaseadvance per dipole
  //-> phase_perdip variabel machen mit dipollänge/gesamtbogenlänge? ... 
  double pos_tot;
- FIELD Btmp;
+ 
+ //tmp. FIELDMAP elements:
+ double pos, x, z, theta;
+ string name;
+
 
  if (B.circumference != orbit.circumference) {
    cout << "ERROR: getfields(): FIELDMAP and ORBIT have different circumferences ("
@@ -51,40 +55,39 @@ int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, m
  for(t=1; t<=B.n_turns; t++) {
    d=0; q=0; s=0; v=0;
    for (i=0; i<B.n_samp; i++) {
-     Btmp.pos = i*interval_samp;
-     Btmp.turn = t;
-     pos_tot = Btmp.pos + (Btmp.turn-1)*B.circumference; //equivalent to FIELDMAP::pos_tot()
+     pos = i*interval_samp;
+     pos_tot = pos + (t-1)*B.circumference; //equivalent to FIELDMAP::pos_tot()
      
      /* dipoles */
-     if (d<dipols.size() && Btmp.pos >= dipols[d].start && Btmp.pos <= dipols[d].end) {
-       Btmp.name = dipols[d].name;
-       Btmp.x = - dipols[d].strength * sin(dipols[d].dpsi);
-       Btmp.z = + dipols[d].strength * cos(dipols[d].dpsi);
-       Btmp.theta = phase_perdip * (d + (Btmp.pos-dipols[d].start)/dipols[d].length) + (t-1)*360; //linear in dipole
+     if (d<dipols.size() && pos >= dipols[d].start && pos <= dipols[d].end) {
+       name = dipols[d].name;
+       x = - dipols[d].strength * sin(dipols[d].dpsi);
+       z = + dipols[d].strength * cos(dipols[d].dpsi);
+       theta = phase_perdip * (d + (pos-dipols[d].start)/dipols[d].length); //+ (t-1)*360; //linear in dipole
        dSwitch=true;
      }
      /* quadrupoles */
-     else if (q<quads.size() && Btmp.pos >= quads[q].start && Btmp.pos <= quads[q].end) {
-       Btmp.name = quads[q].name;
-       Btmp.x = quads[q].strength * orbit.interp_z(pos_tot);
-       Btmp.z = 0; // neglect
-       Btmp.theta = d * phase_perdip + (t-1)*360;
+     else if (q<quads.size() && pos >= quads[q].start && pos <= quads[q].end) {
+       name = quads[q].name;
+       x = quads[q].strength * orbit.interp_z(pos_tot);
+       z = 0; // neglect
+       theta = d * phase_perdip; //+ (t-1)*360;
        qSwitch=true;
      }
      /* sextupoles */
-     else if (s<sexts.size() && Btmp.pos >= sexts[s].start && Btmp.pos <= sexts[s].end) {
-       Btmp.name = sexts[s].name;
-       Btmp.x = 0.5 * sexts[s].strength * orbit.interp_x(pos_tot) * orbit.interp_z(pos_tot);
-       Btmp.z = 0; // neglect
-       Btmp.theta = d * phase_perdip + (t-1)*360;
+     else if (s<sexts.size() && pos >= sexts[s].start && pos <= sexts[s].end) {
+       name = sexts[s].name;
+       x = 0.5 * sexts[s].strength * orbit.interp_x(pos_tot) * orbit.interp_z(pos_tot);
+       z = 0; // neglect
+       theta = d * phase_perdip; //+ (t-1)*360;
        sSwitch=true;
      }
      /* vertical correctors */
-     else if (v<vcorrs.size() && Btmp.pos >= vcorrs[v].start && Btmp.pos <= vcorrs[v].end) {
-       Btmp.name = vcorrs[v].name;
-       Btmp.x = vcorrs[v].strength;
-       Btmp.z = 0;
-       Btmp.theta = d * phase_perdip + (t-1)*360;
+     else if (v<vcorrs.size() && pos >= vcorrs[v].start && pos <= vcorrs[v].end) {
+       name = vcorrs[v].name;
+       x = vcorrs[v].strength;
+       z = 0;
+       theta = d * phase_perdip; //+ (t-1)*360;
        vSwitch=true;
      }
      /* --add more magnet types here-- */
@@ -112,12 +115,12 @@ int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, m
 	 v++;
 	 vSwitch=false;
        }
-       Btmp.name = "\"DRIFT\"";
-       Btmp.x = 0;
-       Btmp.z = 0;
-       Btmp.theta = d * phase_perdip + (t-1)*360;
+       name = "\"DRIFT\"";
+       x = 0;
+       z = 0;
+       theta = d * phase_perdip; //+ (t-1)*360;
      }
-     B.set(i, t, Btmp);
+     B.set(i, t, pos, x, z, theta, name);
    }
  }
 
@@ -129,29 +132,4 @@ int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, m
 
 
 
-/* create output file with field data */
-int fields_out(FIELDMAP B, const char *filename)
-{
- unsigned int i=0;
- int w=14;
- fstream file;
- double c = 299792458;
 
- file.open(filename, ios::out);
- if (!file.is_open()) {
-   cout << "ERROR: Cannot open " << filename << "." << endl;
-   return 1;
- }
-
- file <<setw(w)<< "turn" <<setw(w)<< "s [m]" <<setw(w)<< "s_tot [m]" <<setw(w)<< "t [s]" <<setw(w)<< "phase [deg]" <<setw(w)<< "name" <<setw(w)<< "Bx [1/m]" <<setw(w)<< "Bz [1/m]" <<setw(w)<< "Bs [1/m]" << endl;
- for (i=0; i<B.size(); i++) {
-   file <<setiosflags(ios::fixed)<<noshowpoint<<setprecision(0);
-   file <<setw(w)<< B.turn(i);
-   file <<setiosflags(ios::scientific)<<showpoint<<setprecision(4);
-   file <<setw(w)<< B.pos(i) <<setw(w)<< B.pos_tot(i) <<setw(w)<< B.pos_tot(i)/c <<setw(w)<< B.theta(i) <<setw(w)<< B.name(i) <<setw(w)<< B.x(i) <<setw(w)<< B.z(i) <<setw(w)<< 0.0 << endl;
- }
- file.close();
- cout << "* Wrote " << filename  << endl;
-
- return 0;
-}
