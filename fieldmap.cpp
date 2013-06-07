@@ -79,10 +79,25 @@ int FIELDMAP::set(unsigned int samp, unsigned int t, double pos, double x, doubl
     Grid[samp].pos = pos;
     Grid[samp].theta = theta;
   }
-  else { //!!!!!!!!!!!!!!!!!! hier läuft er rein!!!!!!!!!!!!!!
-    if (Grid[samp].name != name) { cout << "ERROR: ..." << endl; return 1;} 
-    if (Grid[samp].pos != pos) { cout << "ERROR: ..." << endl; return 1;} 
-    if (Grid[samp].theta != theta) { cout << "ERROR: ..." << endl; return 1;} 
+  else {
+    if (Grid[samp].name != name) {
+      cout << "ERROR: FIELDMAP::set():" << endl;
+      cout << "inconsistent lattice: element name changes with turn ("
+	   <<Grid[samp].name<< " -> " <<name<< ")" << endl;
+      return 1;
+    } 
+    if (Grid[samp].pos != pos) {
+      cout << "ERROR: FIELDMAP::set():" << endl;
+      cout << "inconsistent lattice: element position changes with turn ("
+	   <<Grid[samp].pos<< " -> " <<pos<< ")" << endl;
+      return 1;
+    } 
+    if (Grid[samp].theta != theta) {
+      cout << "ERROR: FIELDMAP::set():" << endl;
+      cout << "inconsistent lattice: element phaseadvance (theta) changes with turn ("
+	   <<Grid[samp].theta<< " -> " <<theta<< ")" << endl;
+      return 1;
+    } 
   }
 
   unsigned int i = Fieldindex(samp,t);
