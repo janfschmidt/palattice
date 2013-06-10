@@ -288,7 +288,7 @@ int main (int argc, char *argv[])
     getspectrum(bx, bz, res, B, Res);
     cout << "--------------------------------------------" << endl;
 
-    
+
     // generate output files
     if (allout) {
       //BPM data
@@ -302,8 +302,8 @@ int main (int argc, char *argv[])
       //field data
       B.out(file.out("fields", t.tag(i)).c_str());
       //evaluated field data
-      bx.eval_out(1.0, B.circumference, file.out("eval_x", t.tag(i)).c_str());
-      bz.eval_out(1.0, B.circumference, file.out("eval_z", t.tag(i)).c_str());
+      bx.eval_out(0.1, B.circumference, file.out("eval_x", t.tag(i)).c_str());
+      bz.eval_out(0.1, B.circumference, file.out("eval_z", t.tag(i)).c_str());
     }
 
     //export spectrum files for polarization-calculation

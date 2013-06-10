@@ -77,7 +77,7 @@ int exportfile(SPECTRUM &bx, METADATA metadata, string tag, const char *filename
   }
 
   file.close();
-  cout << "* Wrote " << filename  << endl;
+  cout << "* Wrote [" <<setw(8)<< bx.size()<< " frequency components] "<< filename  << endl;
 
   return 0;
 }
