@@ -62,7 +62,11 @@ int RESONANCES::addother(MAGNET magnet, double Bx)
 int RESONANCES::closering()
 {
   if (theta.back() != theta_max()) {
-    cout << "ERROR: resonances.cpp: Phaseadvance theta no closed solution ("<<theta_max()<<"°)" << endl;
+    cout << "===============================================================================" << endl;
+    cout << "ERROR: resonances.cpp: Phaseadvance theta no closed solution ("<<theta.back()<<"°)" << endl;
+    cout << "                       resonance-strength calculation switched off!" << endl;
+    cout << "===============================================================================" << endl;
+    on = false;
     return 1;
   }
   else {
