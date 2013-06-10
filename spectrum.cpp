@@ -43,7 +43,7 @@ double SPECTRUM::eval(double t) const
   unsigned int f;
 
   for (f=0; f<size(); f++) {
-    value += amp(f)*cos(freq(f)*t + phase(f));
+    value += amp(f)*cos(2*M_PI*freq(f)*t + phase(f));
   }
 
   return value;
