@@ -90,8 +90,11 @@ int main (int argc, char *argv[])
     }
   }
 
-  while ((opt = getopt(argc, argv, ":pr:e:t:f:F:c:C:d:m:ah")) != -1) {
+  while ((opt = getopt(argc, argv, ":n:pr:e:t:f:F:c:C:d:m:ah")) != -1) {
     switch(opt) {
+    case 'n':
+      n_samp = atoi(optarg);
+      break;
     case 'p':
       ptc = true;
       break;
@@ -134,6 +137,7 @@ int main (int argc, char *argv[])
     case 'h':
       cout << endl << "Bsupply HELP:" << endl;
       cout << "* First argument is project path." << endl;
+      cout << "* -n [n_samp] sets number of sampling points (per rev.) for field calculation." << endl;
       cout << "* -p enables import of single particle trajectory from madx ptc_track." << endl;
       cout << "* -r [dtheta] estimates resonance strengths, stepwidth [dtheta]°" << endl;
       cout << "* -e [spuren] enables ELSA-mode, Spuren as argument (path: [project]/ELSA-Spuren/) " << endl;

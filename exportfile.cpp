@@ -22,7 +22,7 @@ int exportfile(SPECTRUM &bx, METADATA metadata, string tag, const char *filename
 {
   unsigned int i;
   fstream file;
-  const int w = 15;     /* column width in spectrum data  */
+  const int w = 14;     /* column width in spectrum data  */
   char tmp[30];
 
   // add tag to metadata
@@ -62,16 +62,16 @@ int exportfile(SPECTRUM &bx, METADATA metadata, string tag, const char *filename
   // write table with spectrum data
   file << resetiosflags(ios::left);
   if (tag=="harmcorr" || tag=="resonances")
-    file <<"#"<<setw(w+1)<<"Freq[rev.harm.]"<<setw(w)<<"Amp[mrad]"<<setw(w)<<"Phase[deg]" << endl;
+    file <<"#"<<setw(w+2)<<"Freq[rev.harm.]"<<setw(w)<<"Amp[mrad]"<<setw(w)<<"Phase[deg]" << endl;
   else
-    file <<"#"<<setw(w+1)<<"Freq[Hz]"<<setw(w)<<"Amp[1/m]"<<setw(w)<<"Phase[deg]" << endl; 
+    file <<"#"<<setw(w+2)<<"Freq[Hz]"<<setw(w)<<"Amp[1/m]"<<setw(w)<<"Phase[deg]" << endl; 
   for (i=0; i<bx.size(); i++) {
-    file <<resetiosflags(ios::fixed)<<setiosflags(ios::scientific)<<showpoint<<setprecision(6);
+    file <<resetiosflags(ios::fixed)<<setiosflags(ios::scientific)<<showpoint<<setprecision(8);
     if (tag=="harmcorr")
-      file <<setw(2+w)<< i;
+      file <<setw(3+w)<< i;
     else
-      file <<setw(2+w)<< bx.freq(i);
-    file <<setw(w)<< bx.amp(i);
+      file <<setw(3+w)<< bx.freq(i);
+    file <<setprecision(6)<<setw(w)<< bx.amp(i);
     file <<resetiosflags(ios::scientific)<<setiosflags(ios::fixed)<<setprecision(1);
     file <<setw(w)  << bx.phase(i) * 360/(2*M_PI) << endl;
   }
