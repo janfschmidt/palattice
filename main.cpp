@@ -193,14 +193,16 @@ int main (int argc, char *argv[])
 
   //metadata for spectrum files
   METADATA metadata(file.path, elsa, diff, spuren, Reference);
-  char madxLabels[100];
-  snprintf(madxLabels, 100, "TITLE,LENGTH,ORIGIN,PARTICLE");
-  metadata.madximport(madxLabels, file.import.c_str());
+  char tmp[100];
+  snprintf(tmp, 100, "TITLE,LENGTH,ORIGIN,PARTICLE");
+  metadata.madximport(tmp, file.import.c_str());
   circumference = strtod(metadata.getbyLabel("LENGTH").c_str(), NULL);
   if (circumference == 0) {
     cout << "ERROR: metadata: cannot read accelerator circumference from "<< file.import.c_str() << endl;
     return 1;
   }
+  snprintf(tmp, 100, "%d points per turn", n_samp);
+  metadata.add("Field sampling", tmp);
 
   
   // output
