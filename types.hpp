@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 #include "constants.hpp"
-#include "fieldmap.hpp"
 
 using namespace std;
 

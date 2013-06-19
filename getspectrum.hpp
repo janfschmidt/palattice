@@ -3,6 +3,7 @@
 
 #include "resonances.hpp"
 #include "spectrum.hpp"
+#include "fieldmap.hpp"
 
 int getspectrum (SPECTRUM &bx, SPECTRUM &bz, SPECTRUM &res, FIELDMAP &B, RESONANCES &Res);
 

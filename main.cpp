@@ -310,6 +310,8 @@ int main (int argc, char *argv[])
       //evaluated field data
       bx.eval_out(0.1, B.circumference, file.out("eval_x", t.tag(i)).c_str());
       bz.eval_out(0.1, B.circumference, file.out("eval_z", t.tag(i)).c_str());
+      //check dipole lengths
+      B.magnetlengths(dipols, file.out("dipolelengths", t.tag(i)).c_str());
     }
 
     //export spectrum files for polarization-calculation

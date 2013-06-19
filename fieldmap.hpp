@@ -1,6 +1,9 @@
 #ifndef __BSUPPLY__FIELDMAP_HPP_
 #define __BSUPPLY__FIELDMAP_HPP_
 
+#include "types.hpp"
+
+
 using namespace std;
 
 class FIELD {
@@ -49,6 +52,7 @@ public:
   unsigned int size() const {return n_samp*n_turns;}
   double pos_tot(unsigned int i) const {return pos(i) + (turn(i)-1)*circumference;}
   int set(unsigned int samp, unsigned int t, double pos, double x, double z, double theta, string name);
+  int magnetlengths(magnetvec &dipols, const char *filename) const;
   int out(const char *filename) const;
 
 };
