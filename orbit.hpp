@@ -51,7 +51,7 @@ public:
 
   virtual double pos_max() const =0;           //maximum pos (s in m) accessible by interpolation
   void push_back(ORBITCOMP tmp);
-  void clear() {Orb.clear();}
+  void clear() {Orb.clear(); n_turns=1; n_bpms=0;}
   double interp_x(double any_pos);             // get orbit at any position (s in m) between 0 and pos_max()
   double interp_z(double any_pos);
   void interp_update();                        // deletes previous interpolation to consider data changes
