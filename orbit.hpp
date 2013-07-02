@@ -38,7 +38,7 @@ protected:
 public:
   const double circumference;   //circumference einlesen!!!!!!!!!!!!!!!!!!!!!!!!
   ORBIT() : n_turns(1), n_bpms(0), interp_flag(false), circumference(164.4) {}
-  ~ORBIT() {}
+  ~ORBIT();
   unsigned int size() const {return Orb.size();}
   unsigned int turns() const {return n_turns;}
   unsigned int bpms() const {return n_bpms;}
@@ -58,6 +58,8 @@ public:
   int interp_out(double stepwidth, const char *filename);
   virtual int out(const char *filename) const =0;
   virtual void interp_init() =0;
+
+  void debug_interp_flag() {cout << "interp_flag=" << interp_flag << endl;}
 };
 
 
@@ -71,7 +73,6 @@ protected:
 
 public:
   CLOSEDORBIT() {}
-  ~CLOSEDORBIT();
   double pos_max() const {return pos(1) + circumference;}
   int out(const char *filename) const;
   int diff(CLOSEDORBIT Ref);
@@ -88,7 +89,6 @@ protected:
 
 public:
   TRAJECTORY() {}
-  ~TRAJECTORY() {}
   double pos_tot(unsigned int obs, unsigned int t) const {return (turn(obs,t)-1)*circumference+pos(obs,t);}
   double pos_max() const {if(n_bpms>0) return pos_tot(1, n_turns+1); else return 0.;}
   int out(const char *filename) const;

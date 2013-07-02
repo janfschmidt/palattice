@@ -15,7 +15,7 @@ using namespace std;
 
 
 
-CLOSEDORBIT::~CLOSEDORBIT()
+ORBIT::~ORBIT()
 {
   if (interp_flag) {
     gsl_spline_free (spline_x);
@@ -89,13 +89,19 @@ void ORBIT::push_back(ORBITCOMP tmp)
 int CLOSEDORBIT::diff(CLOSEDORBIT Ref)
 {
   unsigned int i;
+  if (size() != Ref.size()) {
+    cout << "ERROR: CLOSEDORBIT::diff(): unequal number of BPMs to subtract." << endl
+	 <<size()<<" entries in Orbit and " <<Ref.size()<<" entries in Referenzorbit." << endl;
+    return -1;
+  }
+
   for (i=1; i<=size(); i++) {
     if (pos(i) == Ref.pos(i) && turn(i) == Ref.turn(i)) {
-      Orb[i].x -= Ref.x(i);
-      Orb[i].z -= Ref.z(i);
+      Orb[i-1].x -= Ref.x(i);
+      Orb[i-1].z -= Ref.z(i);
     }
     else {
-      return i+1;
+      return i;
     }
   }
   

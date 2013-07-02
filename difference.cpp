@@ -22,7 +22,8 @@ using namespace std;
 int difference(const char *ReferenceFolder, unsigned int t, CLOSEDORBIT &bpmorbit, magnetvec &vcorrs, BPM *Ref_ELSAbpms, CORR *Ref_ELSAvcorrs, bool elsa)
 {
 
-  unsigned int i;
+  unsigned int i = 0;
+  int err;
   CLOSEDORBIT Ref_bpmorbit;
   magnetvec Ref_vcorrs;
 
@@ -42,12 +43,9 @@ int difference(const char *ReferenceFolder, unsigned int t, CLOSEDORBIT &bpmorbi
        <<Ref_bpmorbit.bpms()<<" BPMs read"<<endl<<"  from "<< ReferenceFolder << endl;
 
   //subtract orbit
-  if (bpmorbit.size() != Ref_bpmorbit.size()) {
-    cout << "ERROR: difference.cpp: Unequal number of BPMs to subtract."<< endl;
-    return 1;
-  }
-  i = bpmorbit.diff(Ref_bpmorbit);
-  if (i != 0) {
+  err = bpmorbit.diff(Ref_bpmorbit);
+  if (err < 0) return 1;
+  else if (err > 0) {
     cout << "ERROR: difference.cpp: Unequal positions of "<<i<<". BPM for subtraction."<< endl;
     return 1;
     }
@@ -99,20 +97,22 @@ int harmcorr_out(double *HCvcorr, double *HCquad, double *HCsum, unsigned int nd
 
 //calculates difference-corrector data (->harmcorr) as a function of spin-phaseadvance
 //and does fft for harmcorr-spectrum hc
-int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, CLOSEDORBIT orbit, magnetvec dipols, double circumference, const char *filename)
+int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, CLOSEDORBIT &orbit, magnetvec dipols, double circumference, const char *filename)
 {
  unsigned int i=0,j=0,k=0;
  unsigned int nd = dipols.size();
  unsigned int nc = vcorrs.size();
  unsigned int nq = quads.size();
- double *HCvcorr = new double[2*nd];
- double *HCquad = new double[2*nd];
- double *HCsum = new double[2*nd];
+ double *HCvcorr = new double[2*nd](); //() -> initialize to zero
+ double *HCquad = new double[2*nd]();
+ double *HCsum = new double[2*nd]();
  double length;
 
+ /*
  memset(HCvcorr, 0, 2*nd*sizeof(double));
  memset(HCquad, 0, 2*nd*sizeof(double));
  memset(HCsum, 0, 2*nd*sizeof(double));
+ */
 
  for (i=0; i<nd; i++) {
      while(vcorrs[j].start < dipols[i].start && j < nc) {
