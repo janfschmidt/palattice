@@ -3,12 +3,16 @@
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
  */
 
+#include <iostream>
+#include <cmath>
 #include "interpolate.hpp"
+
+using namespace std;
 
 
 // constructor
-Interpolate::Interpolate(double *xIn, double *fIn, gsl_interp_type *t=gsl_interp_akima, double periodIn)
-  : x(xIn), fIn(f), type(t), period(periodIn), ready(false)
+Interpolate::Interpolate(vector<double> *xIn, vector<double> *fIn, const gsl_interp_type *t, double periodIn)
+  : x(xIn), f(fIn), type(t), period(periodIn), ready(false)
 {
 
 }
@@ -55,7 +59,7 @@ void Interpolate::init()
     if (period == 0.) {
       cout << "WARNING: Interpolate::init(): period of function should be set for periodic interpolation type "
 	   << getType() << ". Assume last data point x=" << x->back() << " as period." << endl;
-      cout << "--- period can be set with Interpolate::setType() or class constructor." << endl;
+      cout << "--- period can be set with class constructor." << endl;
       period = x->back();
     }
     else if (period < x->back()) {
@@ -117,16 +121,17 @@ double Interpolate::interp(double xIn)
 
 
 //set type of interpolation
-void Interpolate::setType(gsl_interp_type *t)
-{
-  type = t;
-  reset();
-}
+// void Interpolate::setType(const gsl_interp_type *t, double periodIn)
+// {
+//   type = t;
+//   period = periodIn;
+//   reset();
+// }
 
 
 
 //get length of x and f(x)
-unsigned int size() const
+unsigned int Interpolate::size() const
 {
   unsigned int s = x->size();
 
