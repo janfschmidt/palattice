@@ -31,7 +31,7 @@ public:
 
   void init();
   double interp(double x);
-  void reset() {ready = false;}
+  void reset();
 
   //void setType(const gsl_interp_type *t, double periodIn=0.);
   const char * getType() const {return gsl_spline_name(spline);}

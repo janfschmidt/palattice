@@ -42,11 +42,6 @@ void Interpolate::init()
   unsigned int n = size();
   gsl_error_handler_t *old_error_handler;
 
-  // periodic boundary conditions
-  if (type == gsl_interp_akima_periodic || type == gsl_interp_cspline_periodic) {
-    n += 2;
-  } // (end periodic boundary conditions)
-
   acc = gsl_interp_accel_alloc ();
   spline = gsl_spline_alloc (type, n);
 
@@ -56,37 +51,51 @@ void Interpolate::init()
   // periodic boundary conditions
   if (type == gsl_interp_akima_periodic || type == gsl_interp_cspline_periodic) {
 
+    double range = x->back() - x->front();
+
     if (period == 0.) {
       cout << "WARNING: Interpolate::init(): period of function should be set for periodic interpolation type "
 	   << getType() << ". Assume last data point x=" << x->back() << " as period." << endl;
       cout << "--- period can be set with class constructor." << endl;
       period = x->back();
     }
-    else if (period < x->back()) {
-      cout << "WARNING: Interpolate::init(): period of function should be >= last data point x=" << x->back()
-	   << ". Assume last data point as period." << endl;
-      period = x->back();
+
+    if (range > period) {
+	cout << "WARNING: Interpolate::init(): period of function should be >= data range (" << range
+	     << "). Assume range as period." << endl;
+	period = range;
     }
-
-    double *xTmp = new double[n];
-    double *fTmp = new double[n];
-
-    xTmp[0] = x->back() - period;   // add initial entry to avoid extrapolation
-    fTmp[0] = f->back();
-    std::copy(x->begin(), x->end(), &xTmp[1]);
-    std::copy(f->begin(), f->end(), &fTmp[1]);
-    xTmp[n-1] = period + x->front(); // add final entry for periodic boundary condition
-    fTmp[n-1] = f->front();
-
-    gsl_spline_init (spline, xTmp, fTmp, n);
-
-    delete[] xTmp;
-    delete[] fTmp;
-
+    
+    else if (range < period) {
+      // add datapoint (based on period) to ensure periodic boundaries
+      n += 1;
+      double *xTmp = new double[n];
+      double *fTmp = new double[n];
+      
+      //xTmp[0] = x->back() - period;  // add datapoint BEFORE range
+      //fTmp[0] = f->back();
+      std::copy(x->begin(), x->end(), xTmp);
+      std::copy(f->begin(), f->end(), fTmp);
+      xTmp[n-1] = period + xTmp[0];   // add datapoint AFTER range
+      fTmp[n-1] = fTmp[0];
+      
+      //debug output:
+      // for (unsigned int i=0; i<n; i++) {
+      //   cout << xTmp[i] << "\t" << fTmp[i] << endl;
+      // }
+      // cout << "-----------------------" << endl;
+      
+      gsl_spline_init (spline, xTmp, fTmp, n);
+      
+      delete[] xTmp;
+      delete[] fTmp;
+    }
   } // (end periodic boundary conditions)
 
-
-  gsl_spline_init (spline, &(x->at(0)), &(f->at(0)), n);
+  
+  else {
+    gsl_spline_init (spline, &(x->at(0)), &(f->at(0)), n);
+  }
   
   gsl_set_error_handler(old_error_handler); // ??
   
@@ -118,6 +127,18 @@ double Interpolate::interp(double xIn)
     return tmp;
 }
 
+
+
+void Interpolate::reset()
+{
+if (ready) {
+    gsl_spline_free (spline);
+    gsl_interp_accel_free (acc);
+    ready = false;
+  }
+ else
+   cout << "WARNING: Interpolate::reset(): nothing to reset." << endl;
+}
 
 
 //set type of interpolation
