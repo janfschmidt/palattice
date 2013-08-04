@@ -40,18 +40,16 @@ void Interpolate::init()
   }
 
   unsigned int n = size();
-  gsl_error_handler_t *old_error_handler;
-
-  acc = gsl_interp_accel_alloc ();
-  spline = gsl_spline_alloc (type, n);
-
-  old_error_handler = gsl_set_error_handler_off(); // ??
+  double *xTmp;
+  double *fTmp;
+  bool cleanup = false;
   
 
   // periodic boundary conditions
   if (type == gsl_interp_akima_periodic || type == gsl_interp_cspline_periodic) {
 
     double range = x->back() - x->front();
+    cout << "range: " << range << endl;
 
     if (period == 0.) {
       cout << "WARNING: Interpolate::init(): period of function should be set for periodic interpolation type "
@@ -69,8 +67,9 @@ void Interpolate::init()
     else if (range < period) {
       // add datapoint (based on period) to ensure periodic boundaries
       n += 1;
-      double *xTmp = new double[n];
-      double *fTmp = new double[n];
+      xTmp = new double[n];
+      fTmp = new double[n];
+      cleanup = true;
       
       //xTmp[0] = x->back() - period;  // add datapoint BEFORE range
       //fTmp[0] = f->back();
@@ -78,28 +77,25 @@ void Interpolate::init()
       std::copy(f->begin(), f->end(), fTmp);
       xTmp[n-1] = period + xTmp[0];   // add datapoint AFTER range
       fTmp[n-1] = fTmp[0];
-      
-      //debug output:
-      // for (unsigned int i=0; i<n; i++) {
-      //   cout << xTmp[i] << "\t" << fTmp[i] << endl;
-      // }
-      // cout << "-----------------------" << endl;
-      
-      gsl_spline_init (spline, xTmp, fTmp, n);
-      
-      delete[] xTmp;
-      delete[] fTmp;
     }
   } // (end periodic boundary conditions)
 
-  
-  else {
-    gsl_spline_init (spline, &(x->at(0)), &(f->at(0)), n);
+  else { // non periodic type
+    xTmp = &(x->at(0)); 
+    fTmp = &(f->at(0));
   }
-  
-  gsl_set_error_handler(old_error_handler); // ??
-  
+
+
+  // initialize interpolation
+  acc = gsl_interp_accel_alloc ();
+  spline = gsl_spline_alloc (type, n);
+  gsl_spline_init (spline, xTmp, fTmp, n);
   ready = true;
+
+  if (cleanup) {
+    delete[] xTmp;
+    delete[] fTmp;
+  }
 }
 
 
@@ -140,14 +136,6 @@ if (ready) {
    cout << "WARNING: Interpolate::reset(): nothing to reset." << endl;
 }
 
-
-//set type of interpolation
-// void Interpolate::setType(const gsl_interp_type *t, double periodIn)
-// {
-//   type = t;
-//   period = periodIn;
-//   reset();
-// }
 
 
 
