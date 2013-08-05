@@ -27,6 +27,7 @@ private:
 
 public:
   Interpolate(vector<double> *xIn, vector<double> *fIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
+  Interpolate(const Interpolate &other);
   ~Interpolate();
 
   void init();

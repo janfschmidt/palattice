@@ -18,6 +18,14 @@ Interpolate::Interpolate(vector<double> *xIn, vector<double> *fIn, const gsl_int
 }
 
 
+// copy constructor
+Interpolate::Interpolate(const Interpolate &other)
+  : x(other.x), f(other.f), type(other.type), period(other.period), ready(false)
+{
+  // by setting ready=false spline and acc are initialized again before beeing used
+}
+
+
 
 // destructor
 Interpolate::~Interpolate()
@@ -35,7 +43,12 @@ Interpolate::~Interpolate()
 void Interpolate::init()
 {
   if (ready) {
-    cout << "ERROR: Interpolate::init: Interpolation initialisation called twice. Skip." << endl;
+    cout << "ERROR: Interpolate::init(): Interpolation initialisation called twice. Skip." << endl;
+    return;
+  }
+
+  if (x == NULL || f == NULL) {
+    cout << "ERROR: Interpolate::init(): Pointer to data does not exist. Interpolation not possible." << endl;
     return;
   }
 
