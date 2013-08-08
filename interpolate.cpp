@@ -11,10 +11,31 @@ using namespace std;
 
 
 // constructor
+// ! user must provide appropriate x and f(x): !
+// !  - x[i] corresponding to f(x)[i]          !
+// !  - sorted by x, increasing                !
+Interpolate::Interpolate(const gsl_interp_type *t, double periodIn)
+  : type(t), period(periodIn), ready(false)
+{
+  if (type == gsl_interp_akima_periodic || type == gsl_interp_cspline_periodic)
+    periodic = true;
+  else
+    periodic = false;
+
+  if ( period!=0. && !periodic )
+    cout << "WARNING: Interpolate::Interpolate(): period not used for non-periodic interpolation type." << endl;
+}
+
 Interpolate::Interpolate(vector<double> xIn, vector<double> fIn, const gsl_interp_type *t, double periodIn)
   : x(xIn), f(fIn), type(t), period(periodIn), ready(false)
 {
+  if (type == gsl_interp_akima_periodic || type == gsl_interp_cspline_periodic)
+    periodic = true;
+  else
+    periodic = false;
 
+  if ( period!=0. && !periodic )
+    cout << "WARNING: Interpolate::Interpolate(): period not used for non-periodic interpolation type." << endl;
 }
 
 
@@ -54,10 +75,9 @@ void Interpolate::init()
   
 
   // periodic boundary conditions
-  if (type == gsl_interp_akima_periodic || type == gsl_interp_cspline_periodic) {
+  if (periodic) {
 
-    double range = x.back() - x.front();
-    cout << "range: " << range << endl;
+    double range = dataRange();
 
     if (period == 0.) {
       cout << "WARNING: Interpolate::init(): period of function should be set for periodic interpolation type "
@@ -79,7 +99,7 @@ void Interpolate::init()
       fTmp = new double[n];
       cleanup = true;
       
-      //xTmp[0] = x.back() - period;  // add datapoint BEFORE range
+      //xTmp[0] = x.back() - period;  // add datapoint BEFORE range (!interpMin/Max functions affected!)
       //fTmp[0] = f.back();
       std::copy(x.begin(), x.end(), xTmp);
       std::copy(f.begin(), f.end(), fTmp);
@@ -147,10 +167,11 @@ void Interpolate::reset()
 
 
 // change of data and Interpolation reset
-void Interpolate::reset(vector<double> xIn, vector<double> fIn)
+void Interpolate::reset(vector<double> xIn, vector<double> fIn, double periodIn)
 {
   x = xIn;
   f = fIn;
+  if (periodIn != 0.) period = periodIn;
 
   if (ready) {
     gsl_spline_free (spline);
@@ -158,6 +179,8 @@ void Interpolate::reset(vector<double> xIn, vector<double> fIn)
     ready = false;
   }
 
+  if ( period!=0. && !periodic )
+    cout << "WARNING: Interpolate::Interpolate(): period not used for non-periodic interpolation type." << endl;
 }
 
 
@@ -175,4 +198,29 @@ unsigned int Interpolate::size() const
   }
   else
     return s;
+}
+
+
+
+// lower limit for interpolation
+double Interpolate::interpMin() const
+{
+  return dataMin(); //compare with Interpolate::init()
+}
+
+// upper limit for interpolation
+double Interpolate::interpMax() const
+{
+  if (periodic)
+    return period + dataMin(); //compare with Interpolate::init()
+  else
+    return dataMax();
+}
+
+double Interpolate::interpRange() const
+{
+  if (periodic)
+    return period;
+  else
+    return dataRange();
 }
