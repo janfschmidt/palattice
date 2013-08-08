@@ -11,7 +11,7 @@ using namespace std;
 
 
 // constructor
-Interpolate::Interpolate(vector<double> *xIn, vector<double> *fIn, const gsl_interp_type *t, double periodIn)
+Interpolate::Interpolate(vector<double> xIn, vector<double> fIn, const gsl_interp_type *t, double periodIn)
   : x(xIn), f(fIn), type(t), period(periodIn), ready(false)
 {
 
@@ -47,11 +47,6 @@ void Interpolate::init()
     return;
   }
 
-  if (x == NULL || f == NULL) {
-    cout << "ERROR: Interpolate::init(): Pointer to data does not exist. Interpolation not possible." << endl;
-    return;
-  }
-
   unsigned int n = size();
   double *xTmp;
   double *fTmp;
@@ -61,14 +56,14 @@ void Interpolate::init()
   // periodic boundary conditions
   if (type == gsl_interp_akima_periodic || type == gsl_interp_cspline_periodic) {
 
-    double range = x->back() - x->front();
+    double range = x.back() - x.front();
     cout << "range: " << range << endl;
 
     if (period == 0.) {
       cout << "WARNING: Interpolate::init(): period of function should be set for periodic interpolation type "
-	   << getType() << ". Assume last data point x=" << x->back() << " as period." << endl;
+	   << getType() << ". Assume last data point x=" << x.back() << " as period." << endl;
       cout << "--- period can be set with class constructor." << endl;
-      period = x->back();
+      period = x.back();
     }
 
     if (range > period) {
@@ -84,18 +79,18 @@ void Interpolate::init()
       fTmp = new double[n];
       cleanup = true;
       
-      //xTmp[0] = x->back() - period;  // add datapoint BEFORE range
-      //fTmp[0] = f->back();
-      std::copy(x->begin(), x->end(), xTmp);
-      std::copy(f->begin(), f->end(), fTmp);
+      //xTmp[0] = x.back() - period;  // add datapoint BEFORE range
+      //fTmp[0] = f.back();
+      std::copy(x.begin(), x.end(), xTmp);
+      std::copy(f.begin(), f.end(), fTmp);
       xTmp[n-1] = period + xTmp[0];   // add datapoint AFTER range
       fTmp[n-1] = fTmp[0];
     }
   } // (end periodic boundary conditions)
 
   else { // non periodic type
-    xTmp = &(x->at(0)); 
-    fTmp = &(f->at(0));
+    xTmp = &(x[0]); 
+    fTmp = &(f[0]);
   }
 
 
@@ -121,7 +116,7 @@ double Interpolate::interp(double xIn)
     init();
   }
 
-  // if (xIn > x->back()) {
+  // if (xIn > x.back()) {
   //   cout << "ERROR: Interpolate::interp(): x=" <<xIn<< " is to large for interpolation." <<endl;
   //   return 0.;
   // }
@@ -140,13 +135,29 @@ double Interpolate::interp(double xIn)
 
 void Interpolate::reset()
 {
-if (ready) {
+  if (ready) {
     gsl_spline_free (spline);
     gsl_interp_accel_free (acc);
     ready = false;
   }
- else
-   cout << "WARNING: Interpolate::reset(): nothing to reset." << endl;
+  else
+    cout << "WARNING: Interpolate::reset(): nothing to reset." << endl;
+}
+
+
+
+// change of data and Interpolation reset
+void Interpolate::reset(vector<double> xIn, vector<double> fIn)
+{
+  x = xIn;
+  f = fIn;
+
+  if (ready) {
+    gsl_spline_free (spline);
+    gsl_interp_accel_free (acc);
+    ready = false;
+  }
+
 }
 
 
@@ -155,10 +166,10 @@ if (ready) {
 //get length of x and f(x)
 unsigned int Interpolate::size() const
 {
-  unsigned int s = x->size();
+  unsigned int s = x.size();
 
-  if(s != f->size()) {
-    cout << "ERROR: Interpolate::size(): unequal size of x (" << s << ") and f(x) (" << f->size()
+  if(s != f.size()) {
+    cout << "ERROR: Interpolate::size(): unequal size of x (" << s << ") and f(x) (" << f.size()
          << ")." << endl;
     return 0;
   }
