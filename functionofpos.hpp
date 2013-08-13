@@ -1,6 +1,10 @@
 /* === "Function of Position" Classes ===
  * contain any value(pos) for an accelerator ring, e.g. orbit- or field-data.
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
+ *
+ * ! first "turn"   = 1  !
+ * ! first "sample" = 0  !
+ *
  */
 
 #ifndef __FUNCTIONOFPOS_HPP_
@@ -20,8 +24,8 @@ protected:
   vector<double> &value;
 
   const double circ;                          //circumference of accelerator
-  unsigned int n_turns;                       //number of turns
-  unsigned int n_samples;                     //number of samples per turn
+  unsigned int n_turns;                       //number of turns (initialized as 1)
+  unsigned int n_samples;                     //number of samples per turn (initialized as zero)
 
 
 private:
@@ -54,10 +58,13 @@ public:
   // these functions modify data
   void set(double valueIn, unsigned int i, unsigned int turn=1);  //modify value by index or by index(1turn) and turn
   void set(double valueIn, double pos, unsigned int turn=1);      //modify value by pos or by pos(1turn) and turn
-  void push_back(double valueIn, double pos, unsigned int turn=1);//add value&pos or value&pos(1turn)&turn
   void clear();
 
-  void out(char *filename) const;  //output to file
+  // output to file
+  void out(char *filename) const;
+
+  // test for existence of data
+  bool exists(double pos, unsigned int turn=1) const;
 };
 
 
@@ -66,9 +73,9 @@ public:
 // exceptions
 class eNoData : public std::exception {
 public:
-  const unsigned int index;
+  const unsigend int index;
 
-  eNoData(unsigned int indexIn) : index(indexIn) {};
+  eNoData(unsigned int In) : index(In) {};
 };
 
 

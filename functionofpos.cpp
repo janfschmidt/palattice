@@ -4,6 +4,7 @@
  */
 
 
+#include <cmath>
 #include "functionofpos.hpp"
 
 using namespace std;
@@ -52,20 +53,20 @@ unsigned int FunctionOfPos::index(double pos, unsigned int turn) const
 // Turn
 unsigned int FunctionOfPos::turn(unsigned int i) const
 {
-  return (i%samples()) + 1;
+  return (i/samples()) + 1;
 }
 
 unsigned int FunctionOfPos::turn(double posIn) const
 {
-  return (posIn%circ) + 1;
+  return int(posIn/circ) + 1;
 }
 
 
 
-// calculate Sample (e.g. "which BPM?")
+// calculate Sample
 unsigned int FunctionOfPos::sample(unsigned int i) const
 {
-  return i - (samples() * (getTurn(i)-1));
+  return i%samples();
 }
 
 
@@ -73,7 +74,7 @@ unsigned int FunctionOfPos::sample(unsigned int i) const
 // calculate pos within turn
 double FunctionOfPos::posInTurn(double pos) const
 {
-  return pos - ((pos%circ) * circ);
+  return fmod(pos,circ);
 }
 
 
@@ -85,6 +86,9 @@ double FunctionOfPos::posTotal(double posInTurn, unsigned int turn) const
 }
 
 
+
+
+//-------- these functions depend on data. thus they can fail (program exit) -----------------------
 
 // get sample ("index modulo turn") by pos, IF IT EXISTS
 unsigned int FunctionOfPos::getSample(double posIn) const
@@ -142,7 +146,7 @@ double FunctionOfPos::get(double pos, unsigned int turn) const
 
 
 // modify value
-void set(double valueIn, unsigned int i, unsigned int turn)
+void FunctionOfPos::set(double valueIn, unsigned int i, unsigned int turn)
 {
   try {
     unsigned int tmpIndex = index(i,turn);
@@ -157,26 +161,79 @@ void set(double valueIn, unsigned int i, unsigned int turn)
   value[tmpIndex] = valueIn;
 }
 
-void set(double valueIn, double posIn, unsigned int turn)
+void FunctionOfPos::set(double valueIn, double posIn, unsigned int turn)
 {
+  // add new turn(s)
+  unsigned int newTurn = turn(posTotal(posIn,turn));
+  if (newTurn > turns()) {
+    for (unsigned int t=turns(); t<newTurn; t++) {
+      for (unsigned int i=0; i<samples(); i++) {
+	pos.push_back( pos[i]+t*circ );
+	value.push_back(0.0);
+      }
+      n_turns++;
+    }
+  }
+  
   try {
     unsigned int tmpIndex = index(posIn,turn);
   }
-  catch (eNoData) {
-    cout << "ERROR: FunctionOfPos:set(): There is no data for pos="
-	 <<posIn<< " and turn=" <<turn<< endl;
-    cout << "Data is not changed. Continue." << endl;
-    return;
+  // ++++++++++++++++++++++++++++++++++++++
+  // if pos does not exist, create new data
+  // ++++++++++++++++++++++++++++++++++++++
+  catch (eNoData &e) {
+    vector<double>::iterator it;
+    double newPosInTurn = posInTurn(posTotal(posIn,turn));
+    unsigned int newSample = sample(e.index);
+    if (newSample == 0 && newPosInTurn > pos[samples()-1]) { // distinguish insert begin/end of turn
+      newSample = samples();
+    }
+    // add sample point in each turn
+    for (unsigned int t=turns(); t>0; t--) {
+      it = pos.begin() + (t-1)*samples() + newSample;
+      pos.insert(it, newPosInTurn+(t-1)*circ);
+      value.insert(it, 0.0);
+    }
+    n_samples++;
+    // call this function again to set value
+    set(valueIn,posIn,turn);
   }
 
+  // +++++++++++++++++++++++++++++++++++++
+  //if pos does exist, modify value
+  // ++++++++++++++++++++++++++++++++++++++
   value[tmpIndex] = valueIn; 
 }
 
 
 
-void FunctionOfPos::push_back(double valueIn, double posIn, unsigned int turn)
+void FunctionOfPos::clear()
 {
+  n_turns = 1;
+  n_samples = 0;
+  pos.clear();
+  value.clear();
+}
 
-  pos.push_back(posIn);
-  value.push_back(valueIn);
+
+
+// output to file
+void FunctionOfPos::out(char *filename) const
+{
+  cout << "Bauen Sie dies ein!" << endl;
+}
+
+
+
+// test for existence of data
+bool FunctionOfPos::exists(double pos, unsigned int turn=1) const
+{
+  try {
+    index(pos,turn);
+  }
+  catch (eNoData) {
+    return false;
+  }
+
+  return true;
 }
