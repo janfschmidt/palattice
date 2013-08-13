@@ -10,7 +10,7 @@
 #ifndef __FUNCTIONOFPOS_HPP_
 #define __FUNCTIONOFPOS_HPP_
 
-#inlcude <exception>
+#include <exception>
 #include <stdexcept>
 #include "interpolate.hpp"
 
@@ -29,13 +29,13 @@ protected:
 
 
 private:
-  FunctionOfPos(vector<double> *posIn); //...
+  //FunctionOfPos(vector<double> *posIn); //...
   unsigned int index(unsigned int i, unsigned int turn) const; //get index for pos[] & value[] from index(1turn) and turn
   unsigned int index(double pos, unsigned int turn) const; //get index for pos[] & value[] from pos(1turn) and turn. returns -1 if there is no data for given pos
 
 
 public:
-  FunctionOfPos(gsl_interp_type *t=gsl_interp_akima, double periodIn=0., double circIn=164.4);
+  FunctionOfPos(const gsl_interp_type *t=gsl_interp_akima, double periodIn=0., double circIn=164.4);
   ~FunctionOfPos() {}
 
   unsigned int turns() const {return n_turns;}
@@ -73,7 +73,7 @@ public:
 // exceptions
 class eNoData : public std::exception {
 public:
-  const unsigend int index;
+  const unsigned int index;
 
   eNoData(unsigned int In) : index(In) {};
 };
