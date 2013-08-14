@@ -52,19 +52,21 @@ public:
   //-------- these functions depend on data. thus they can fail (program exit) -----------------------
   unsigned int getSample(double pos) const;                  //get sample ("index modulo turn") by pos, IF IT EXISTS
   double getPos(unsigned int i, unsigned int turn=1) const;  //get pos-DATA by index or by index(1turn) and turn
+  double getPosInTurn(unsigned int i, unsigned int turn=1) const;
   double get(unsigned int i, unsigned int turn=1) const;     //get value-DATA by index or by index(1turn) and turn
-  double get(double pos, unsigned int turn=1) const;         //get value-DATA by pos or by pos(1turn) and turn
+
+  // >>> to get value by position use interp(double pos) (inherited from Interpolate) <<<
 
   // these functions modify data
-  void set(double valueIn, unsigned int i, unsigned int turn=1);  //modify value by index or by index(1turn) and turn
-  void set(double valueIn, double pos, unsigned int turn=1);      //modify value by pos or by pos(1turn) and turn
+  void modify(double valueIn, unsigned int i, unsigned int turn=1); //modify value by index or by index(1turn) and turn
+  void set(double valueIn, double pos, unsigned int turn=1);        //set (existing or new) value by pos or by pos(1turn) and turn
   void clear();
-
-  // output to file
-  void out(char *filename) const;
 
   // test for existence of data
   bool exists(double pos, unsigned int turn=1) const;
+
+  // output to file
+  void out(char *filename) const;
 };
 
 
@@ -77,6 +79,15 @@ public:
 
   eNoData(unsigned int In) : index(In) {};
 };
+
+// class eOutOfRange : public std::out_of_range {
+// public:
+//   const unsigned int index;
+//   const unsigned int turn;
+
+//   eOutOfRange(unsigend int indexIn, unsigned int turnIn) : index(indexIn), turn(tunrIn) {};
+//   string msg() {return "Index "+index+", turn "+turn+" is out of range";}
+// };
 
 
 

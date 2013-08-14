@@ -160,8 +160,8 @@ void Interpolate::reset()
     gsl_interp_accel_free (acc);
     ready = false;
   }
-  else
-    cout << "WARNING: Interpolate::reset(): nothing to reset." << endl;
+  // else
+  //   cout << "INFO: Interpolate::reset(): nothing to reset." << endl;
 }
 
 
