@@ -1,4 +1,4 @@
-/* === "Function of Position" Classes ===
+/* === "Function of Position" Class ===
  * contain any value(pos) for an accelerator ring, e.g. orbit- or field-data.
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
  *
@@ -15,13 +15,13 @@
 #include "interpolate.hpp"
 
 
-
-class FunctionOfPos : public Interpolate<double> {
+template <class T=double>
+class FunctionOfPos : public Interpolate<T> {
 
 protected:
-  // "data" (stored in Interpolate members)
+  // "data" (stored in Interpolate members, rename for this context)
   vector<double> &pos;                        //position: absolute, increasing with turn
-  vector<double> &value;
+  vector<T> &value;
 
   const double circ;                          //circumference of accelerator
   unsigned int n_turns;                       //number of turns (initialized as 1)
@@ -29,7 +29,6 @@ protected:
 
 
 private:
-  //FunctionOfPos(vector<double> *posIn); //...
   unsigned int index(unsigned int i, unsigned int turn) const; //get index for pos[] & value[] from index(1turn) and turn
   unsigned int index(double pos, unsigned int turn) const; //get index for pos[] & value[] from pos(1turn) and turn. returns -1 if there is no data for given pos
 
@@ -53,13 +52,13 @@ public:
   unsigned int getSample(double pos) const;                  //get sample ("index modulo turn") by pos, IF IT EXISTS
   double getPos(unsigned int i, unsigned int turn=1) const;  //get pos-DATA by index or by index(1turn) and turn
   double getPosInTurn(unsigned int i, unsigned int turn=1) const;
-  double get(unsigned int i, unsigned int turn=1) const;     //get value-DATA by index or by index(1turn) and turn
+  T get(unsigned int i, unsigned int turn=1) const;     //get value-DATA by index or by index(1turn) and turn
 
   // >>> to get value by position use interp(double pos) (inherited from Interpolate) <<<
 
   // these functions modify data
-  void modify(double valueIn, unsigned int i, unsigned int turn=1); //modify value by index or by index(1turn) and turn
-  void set(double valueIn, double pos, unsigned int turn=1);        //set (existing or new) value by pos or by pos(1turn) and turn
+  void modify(T valueIn, unsigned int i, unsigned int turn=1); //modify value by index or by index(1turn) and turn
+  void set(T valueIn, double pos, unsigned int turn=1);        //set (existing or new) value by pos or by pos(1turn) and turn
   void clear();
 
   // test for existence of data
@@ -80,16 +79,10 @@ public:
   eNoData(unsigned int In) : index(In) {};
 };
 
-// class eOutOfRange : public std::out_of_range {
-// public:
-//   const unsigned int index;
-//   const unsigned int turn;
-
-//   eOutOfRange(unsigend int indexIn, unsigned int turnIn) : index(indexIn), turn(tunrIn) {};
-//   string msg() {return "Index "+index+", turn "+turn+" is out of range";}
-// };
 
 
+
+#include "functionofpos.hxx"
 
 #endif
 /*__FUNCTIONOFPOS_HPP_*/

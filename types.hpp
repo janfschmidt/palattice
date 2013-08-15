@@ -3,26 +3,43 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 #include "constants.hpp"
 
 using namespace std;
 
 
 // transversal accelerator coordinates (2D)
-struct AccPair {
+class AccPair {
+public:
   double x;
   double z;
-
+  
   AccPair() : x(0), z(0) {}
+  
+  // overload << for output
+  friend ostream &operator<<(ostream &out, const AccPair &A)
+  {
+    out << A.x << "\t" << A.z;
+    return out;
+  }
 };
 
 // accelerator coordinates (3D)
-struct AccTripel {
+class AccTripel {
+public:
   double x;
   double z;
   double s;
 
   AccTripel() : x(0), z(0), s(0) {}
+
+  // overload << for output
+  friend ostream &operator<<(ostream &out, const AccTripel &A)
+  {
+    out << A.x << "\t" << A.z << "\t" << A.s;
+    return out;
+  }
 };
 
 

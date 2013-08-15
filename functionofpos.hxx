@@ -1,6 +1,10 @@
-/* === "Function of Position" Classes ===
+/* === "Function of Position" Class ===
  * contain any value(pos) for an accelerator ring, e.g. orbit- or field-data.
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
+ *
+ * ! first "turn"   = 1  !
+ * ! first "sample" = 0  !
+ *
  */
 
 
@@ -9,21 +13,22 @@
 #include <sstream>
 #include <fstream>
 #include <iomanip>
-#include "functionofpos.hpp"
 
 using namespace std;
 
 
 // constructor
-FunctionOfPos::FunctionOfPos(const gsl_interp_type *t, double periodIn, double circIn)
-: Interpolate(t,periodIn), pos(x), value(f), circ(circIn), n_turns(1), n_samples(0)
+template <class T>
+FunctionOfPos<T>::FunctionOfPos(const gsl_interp_type *t, double periodIn, double circIn)
+  : Interpolate<T>::Interpolate(t,periodIn), pos(this->x), value(this->f), circ(circIn), n_turns(1), n_samples(0)
 {
 }
 
 
 
 //get index for pos[] & value[] from index(1turn) and turn
-unsigned int FunctionOfPos::index(unsigned int i, unsigned int turnIn) const
+template <class T>
+unsigned int FunctionOfPos<T>::index(unsigned int i, unsigned int turnIn) const
 {
   stringstream msg;
   if (i >= size()) {
@@ -45,7 +50,8 @@ unsigned int FunctionOfPos::index(unsigned int i, unsigned int turnIn) const
 
 
 //get index for pos[] & value[] from pos(1turn) and turn
-unsigned int FunctionOfPos::index(double posIn, unsigned int turnIn) const
+template <class T>
+unsigned int FunctionOfPos<T>::index(double posIn, unsigned int turnIn) const
 {
   unsigned int j;
   double tmpPos = posTotal(posIn,turnIn);
@@ -63,12 +69,14 @@ unsigned int FunctionOfPos::index(double posIn, unsigned int turnIn) const
 
 
 // Turn
-unsigned int FunctionOfPos::turn(unsigned int i) const
+template <class T>
+unsigned int FunctionOfPos<T>::turn(unsigned int i) const
 {
   return (i/samples()) + 1;
 }
 
-unsigned int FunctionOfPos::turn(double posIn) const
+template <class T>
+unsigned int FunctionOfPos<T>::turn(double posIn) const
 {
   return int(posIn/circ) + 1;
 }
@@ -76,7 +84,8 @@ unsigned int FunctionOfPos::turn(double posIn) const
 
 
 // calculate Sample
-unsigned int FunctionOfPos::sample(unsigned int i) const
+template <class T>
+unsigned int FunctionOfPos<T>::sample(unsigned int i) const
 {
   if (i==0) return 0;     // avoid floating point exception
   else return i%samples();
@@ -85,7 +94,8 @@ unsigned int FunctionOfPos::sample(unsigned int i) const
 
 
 // calculate pos within turn
-double FunctionOfPos::posInTurn(double pos) const
+template <class T>
+double FunctionOfPos<T>::posInTurn(double pos) const
 {
   return fmod(pos,circ);
 }
@@ -93,7 +103,8 @@ double FunctionOfPos::posInTurn(double pos) const
 
 
 // calculate "absolute pos" from "pos within turn" and turn
-double FunctionOfPos::posTotal(double posInTurn, unsigned int turnIn) const
+template <class T>
+double FunctionOfPos<T>::posTotal(double posInTurn, unsigned int turnIn) const
 {
   return  posInTurn + circ*(turnIn-1);
 }
@@ -104,7 +115,8 @@ double FunctionOfPos::posTotal(double posInTurn, unsigned int turnIn) const
 //-------- these functions depend on data. thus they can fail (program exit) -----------------------
 
 // get sample ("index modulo turn") by pos, IF IT EXISTS
-unsigned int FunctionOfPos::getSample(double posIn) const
+template <class T>
+unsigned int FunctionOfPos<T>::getSample(double posIn) const
 {
   unsigned int i;
 
@@ -122,7 +134,8 @@ unsigned int FunctionOfPos::getSample(double posIn) const
 
 
 // get position
-double FunctionOfPos::getPos(unsigned int i, unsigned int turnIn) const
+template <class T>
+double FunctionOfPos<T>::getPos(unsigned int i, unsigned int turnIn) const
 {
   try {
     return pos[index(i,turnIn)];
@@ -133,7 +146,8 @@ double FunctionOfPos::getPos(unsigned int i, unsigned int turnIn) const
   }
 }
 
-double FunctionOfPos::getPosInTurn(unsigned int i, unsigned int turnIn) const
+template <class T>
+double FunctionOfPos<T>::getPosInTurn(unsigned int i, unsigned int turnIn) const
 {
   return posInTurn( getPos(i,turnIn) );
 }
@@ -141,7 +155,8 @@ double FunctionOfPos::getPosInTurn(unsigned int i, unsigned int turnIn) const
 
 
 // get Value
-double FunctionOfPos::get(unsigned int i, unsigned int turnIn) const
+template <class T>
+T FunctionOfPos<T>::get(unsigned int i, unsigned int turnIn) const
 {
   try {
     return value[index(i,turnIn)];
@@ -155,12 +170,13 @@ double FunctionOfPos::get(unsigned int i, unsigned int turnIn) const
 
 
 // modify value at given index
-void FunctionOfPos::modify(double valueIn, unsigned int i, unsigned int turnIn)
+template <class T>
+void FunctionOfPos<T>::modify(T valueIn, unsigned int i, unsigned int turnIn)
 {
   try {
     unsigned int tmpIndex = index(i,turnIn);
     value[tmpIndex] = valueIn;
-    reset(); //reset interpolation
+    this->reset(); //reset interpolation
   }
   catch (out_of_range &e) {
     cout << "ERROR: FunctionOfPos:modify(): " << e.what() << endl;
@@ -174,8 +190,10 @@ void FunctionOfPos::modify(double valueIn, unsigned int i, unsigned int turnIn)
 
 
 // set value at given position. 
-void FunctionOfPos::set(double valueIn, double posIn, unsigned int turnIn)
+template <class T>
+void FunctionOfPos<T>::set(T valueIn, double posIn, unsigned int turnIn)
 {
+  T empty = T();
   // add new turn(s)
   double newPos = posTotal(posIn,turnIn);
   unsigned int newTurn = turn(newPos);
@@ -183,7 +201,7 @@ void FunctionOfPos::set(double valueIn, double posIn, unsigned int turnIn)
     for (unsigned int t=turns(); t<newTurn; t++) {
       for (unsigned int i=0; i<samples(); i++) {
 	pos.push_back( pos[i]+t*circ );
-	value.push_back(0.0);
+	value.push_back(empty);
       }
       n_turns++;
     }
@@ -195,13 +213,14 @@ void FunctionOfPos::set(double valueIn, double posIn, unsigned int turnIn)
     //if pos does exist, modify value
     // ++++++++++++++++++++++++++++++++++++++
     value[tmpIndex] = valueIn;
-    reset(); //reset interpolation
+    this->reset(); //reset interpolation
   }
   // ++++++++++++++++++++++++++++++++++++++
   // if pos does not exist, create new data
   // ++++++++++++++++++++++++++++++++++++++
   catch (eNoData &e) {
-    vector<double>::iterator it_pos, it_value;
+    vector<double>::iterator it_pos;
+    typename vector<T>::iterator it_value;
     unsigned int newIndex;
     double newPosInTurn = posInTurn(posTotal(posIn,turnIn));
     unsigned int newSample = sample(e.index);
@@ -218,7 +237,7 @@ void FunctionOfPos::set(double valueIn, double posIn, unsigned int turnIn)
       it_pos = pos.begin() + newIndex;
       it_value = value.begin() + newIndex;
       pos.insert(it_pos, newPosInTurn+(t-1)*circ);
-      value.insert(it_value, 0.0);
+      value.insert(it_value, empty);
     }
     n_samples++;
     // call this function again to set value
@@ -229,19 +248,21 @@ void FunctionOfPos::set(double valueIn, double posIn, unsigned int turnIn)
 
 
 
-void FunctionOfPos::clear()
+template <class T>
+void FunctionOfPos<T>::clear()
 {
   n_turns = 1;
   n_samples = 0;
   pos.clear();
   value.clear();
-  reset(); //reset interpolation
+  this->reset(); //reset interpolation
 }
 
 
 
 // output to file
-void FunctionOfPos::out(char *filename) const
+template <class T>
+void FunctionOfPos<T>::out(char *filename) const
 {
   fstream file;
   const int w = 14;
@@ -269,7 +290,8 @@ void FunctionOfPos::out(char *filename) const
 
 
 // test for existence of data
-bool FunctionOfPos::exists(double pos, unsigned int turnIn) const
+template <class T>
+bool FunctionOfPos<T>::exists(double pos, unsigned int turnIn) const
 {
   try {
     index(pos,turnIn);
