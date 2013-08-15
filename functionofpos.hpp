@@ -16,7 +16,7 @@
 
 
 
-class FunctionOfPos : public Interpolate {
+class FunctionOfPos : public Interpolate<double> {
 
 protected:
   // "data" (stored in Interpolate members)

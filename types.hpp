@@ -7,6 +7,26 @@
 
 using namespace std;
 
+
+// transversal accelerator coordinates (2D)
+struct AccPair {
+  double x;
+  double z;
+
+  AccPair() : x(0), z(0) {}
+};
+
+// accelerator coordinates (3D)
+struct AccTripel {
+  double x;
+  double z;
+  double s;
+
+  AccTripel() : x(0), z(0), s(0) {}
+};
+
+
+
 /* classes */
 class BPM_MS {
 public:
