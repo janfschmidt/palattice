@@ -130,10 +130,10 @@ int ELSAimport_bpms(BPM *ELSAbpms, const char *spurenFolder)
 
 
 /* write BPM data for time t to bpmorbit */
-int ELSAimport_getbpmorbit(BPM *ELSAbpms, CLOSEDORBIT &bpmorbit, unsigned int t)
+int ELSAimport_getbpmorbit(BPM *ELSAbpms, FunctionOfPos<AccPair> &bpmorbit, unsigned int t)
 {
   int i;
-  ORBITCOMP otmp;
+  AccPair otmp;
 
   bpmorbit.clear(); //delete old-BPM-data (from madx or previous t)
   
@@ -142,10 +142,9 @@ int ELSAimport_getbpmorbit(BPM *ELSAbpms, CLOSEDORBIT &bpmorbit, unsigned int t)
       printf("ERROR: ELSAimport.cpp: No ELSA BPM%02d data available for %d ms.\n", i+1, t);
       return 1;
     }
-    otmp.pos = ELSAbpms[i].pos;
     otmp.x = ELSAbpms[i].time[t].x / 1000; // unit mm -> m
     otmp.z = ELSAbpms[i].time[t].z / 1000;
-    bpmorbit.push_back(otmp);
+    bpmorbit.set(otmp, ELSAbpms[i].pos);
   }
   
   return 0;

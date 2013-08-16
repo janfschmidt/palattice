@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iomanip>
 #include <vector>
+#include <exception>
 #include "types.hpp"
 #include "constants.hpp"
 #include "ELSAimport.hpp"
@@ -19,12 +20,11 @@
 using namespace std;
 
 // read and subtract reference orbit & corrector data
-int difference(const char *ReferenceFolder, unsigned int t, CLOSEDORBIT &bpmorbit, magnetvec &vcorrs, BPM *Ref_ELSAbpms, CORR *Ref_ELSAvcorrs, bool elsa)
+int difference(const char *ReferenceFolder, unsigned int t, FunctionOfPos<AccPair> &bpmorbit, magnetvec &vcorrs, BPM *Ref_ELSAbpms, CORR *Ref_ELSAvcorrs, bool elsa)
 {
 
   unsigned int i = 0;
-  int err;
-  CLOSEDORBIT Ref_bpmorbit;
+  FunctionOfPos<AccPair> Ref_bpmorbit(164.4, gsl_interp_akima_periodic, 164.4);
   magnetvec Ref_vcorrs;
 
   //read reference
@@ -40,15 +40,17 @@ int difference(const char *ReferenceFolder, unsigned int t, CLOSEDORBIT &bpmorbi
     cout << "* ";
   }
   cout <<Ref_vcorrs.size()<<" correctors and "
-       <<Ref_bpmorbit.bpms()<<" BPMs read"<<endl<<"  from "<< ReferenceFolder << endl;
+       <<Ref_bpmorbit.samples()<<" BPMs read"<<endl<<"  from "<< ReferenceFolder << endl;
 
   //subtract orbit
-  err = bpmorbit.diff(Ref_bpmorbit);
-  if (err < 0) return 1;
-  else if (err > 0) {
-    cout << "ERROR: difference.cpp: Unequal positions of "<<i<<". BPM for subtraction."<< endl;
+  try {
+    bpmorbit -= (Ref_bpmorbit);
+  }
+  catch (exception &e){
+    cout << "ERROR: difference(): " << e.what() << endl;
+    cout << "  Unequal positions of "<<i<<". BPM for subtraction."<< endl;
     return 1;
-    }
+  }
 
   //subtract corrector strengths
   if (vcorrs.size() != Ref_vcorrs.size()) {
@@ -97,7 +99,7 @@ int harmcorr_out(double *HCvcorr, double *HCquad, double *HCsum, unsigned int nd
 
 //calculates difference-corrector data (->harmcorr) as a function of spin-phaseadvance
 //and does fft for harmcorr-spectrum hc
-int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, CLOSEDORBIT &orbit, magnetvec dipols, double circumference, const char *filename)
+int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, FunctionOfPos<AccPair> &orbit, magnetvec dipols, double circumference, const char *filename)
 {
  unsigned int i=0,j=0,k=0;
  unsigned int nd = dipols.size();
@@ -122,7 +124,7 @@ int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, CLOSEDORBIT &orbit
      }
      while(quads[k].start < dipols[i].start && k < nq) {
        length = quads[k].end - quads[k].start;
-       HCquad[2*i] += quads[k].strength * orbit.interp_z(quads[k].end) * length * 1000; // mrad
+       HCquad[2*i] += quads[k].strength * orbit.interp(quads[k].end).z * length * 1000; // mrad
        k++;
      }
  }
@@ -134,7 +136,7 @@ int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, CLOSEDORBIT &orbit
  }
  while (k<nq) {
    length = quads[k].end - quads[k].start;
-   HCquad[0] += quads[k].strength * orbit.interp_z(quads[k].end) * length * 1000; // mrad
+   HCquad[0] += quads[k].strength * orbit.interp(quads[k].end).z * length * 1000; // mrad
    k++;
  }
 

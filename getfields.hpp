@@ -3,8 +3,9 @@
 
 #include "resonances.hpp"
 #include "types.hpp"
+#include "functionofpos.hpp"
 
-int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs, RESONANCES &Res);
+int getfields (FIELDMAP &B, FunctionOfPos<AccPair> &orbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs, RESONANCES &Res);
 
 #endif
 

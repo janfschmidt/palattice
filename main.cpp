@@ -1,3 +1,4 @@
+
 /* Calculation of the magnetic spectrum (horizontal, vertical) of a periodic accelerator  *
  * Based on MadX output data and (optional for ELSA) on measured orbit and corrector data *
  * Used as input for Simulations of polarization by solving Thomas-BMT equation           *
@@ -28,6 +29,7 @@
 #include "timetag.hpp"
 #include "filenames.hpp"
 #include "resonances.hpp"
+#include "functionofpos.hpp"
 
 using namespace std;
 
@@ -65,9 +67,13 @@ int main (int argc, char *argv[])
   magnetvec quads;
   magnetvec sexts;
   magnetvec vcorrs;
-  CLOSEDORBIT bpmorbit;            // orbit at discrete positions (e.g. BPMs) for a specific time in elsa-cycle
-  TRAJECTORY trajectory;          // orbit of single particle (based on tracking)
-  ORBIT *orbit;
+  //CLOSEDORBIT bpmorbit;            // orbit at discrete positions (e.g. BPMs) for a specific time in elsa-cycle
+  //TRAJECTORY trajectory;          // orbit of single particle (based on tracking)
+  //ORBIT *orbit;
+  FunctionOfPos<AccPair> bpmorbit(164.4, gsl_interp_akima_periodic, 164.4);
+  FunctionOfPos<AccPair> trajectory(164.4);
+  FunctionOfPos<AccPair> *orbit;
+
   int err=0;
 
   int opt, warnflg=0, conflictflg=0;          //for getopt()
@@ -233,9 +239,9 @@ int main (int argc, char *argv[])
   else {
     cout << "* "<<dipols.size()<<" dipoles, "<<quads.size()<<" quadrupoles, "
 	 <<sexts.size()<<" sextupoles, "<<vcorrs.size()<<" correctors and "
-	 <<bpmorbit.bpms()<<" BPMs read"<<endl<<"  from "<<file.import.c_str() << endl;
+	 <<bpmorbit.samples()<<" BPMs read"<<endl<<"  from "<<file.import.c_str() << endl;
   }
-  if (ptc) cout << "* trajectory of particle "<<particle<<" read at "<<trajectory.bpms()
+  if (ptc) cout << "* trajectory of particle "<<particle<<" read at "<<trajectory.samples()
 		<<" observation points for "<<trajectory.turns()<<" turns"<<endl;
   cout << "--------------------------------------------" << endl;
 
@@ -271,7 +277,7 @@ int main (int argc, char *argv[])
       err += ELSAimport_getvcorrs(ELSAvcorrs, vcorrs, t.get(i));
       if (err != 0) return 1;
       cout << "* "<<t.label(i)<<": "<<vcorrs.size()<<" correctors and "
-	   <<bpmorbit.bpms()<<" BPMs read"<<endl<<"  from "<<file.spuren.c_str() << endl;
+	   <<bpmorbit.samples()<<" BPMs read"<<endl<<"  from "<<file.spuren.c_str() << endl;
     }
     //diff=true: read and subtract reference orbit & corrector data
     if (diff) {
@@ -282,7 +288,7 @@ int main (int argc, char *argv[])
 
     // calculate field distribution & spectrum
     if (ptc) {
-      trajectory.add_closedorbit(bpmorbit);
+      trajectory += bpmorbit;
       orbit = &trajectory;
     }
     else {

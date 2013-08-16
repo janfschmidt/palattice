@@ -14,20 +14,21 @@
 #include "constants.hpp"
 #include "orbit.hpp"
 #include "filenames.hpp"
+#include "functionofpos.hpp"
 
 
 using namespace std;
 
 
 
-int madximport(const char *filename, CLOSEDORBIT &bpmorbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs)
+int madximport(const char *filename, FunctionOfPos<AccPair> &bpmorbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs)
 {
   string tmp, name;
   double s, l, angle, k1l, k2l, vkick; // madx column variables
   string x, y;
   fstream madx;
   MAGNET mtmp;
-  ORBITCOMP otmp;
+  AccPair otmp;
 
 
   madx.open(filename, ios::in);
@@ -57,10 +58,9 @@ int madximport(const char *filename, CLOSEDORBIT &bpmorbit, magnetvec &dipols, m
       quads.push_back(mtmp);     // add new entries to quads & bpmorbit
       // BPMs at quads
       if (x!="na" && y!="na" && k1l!=0) { //k1l: no BPM for inactive quad (ELSA: SQ, LQ)
-	otmp.pos = s;
 	otmp.x = strtod(x.c_str(), NULL); // ! double x=0.0 if no valid format in string x
 	otmp.z = strtod(y.c_str(), NULL);
-	bpmorbit.push_back(otmp);
+	bpmorbit.set(otmp, s);
       }
     }
     else if (tmp == "\"SEXTUPOLE\"") {
@@ -73,10 +73,9 @@ int madximport(const char *filename, CLOSEDORBIT &bpmorbit, magnetvec &dipols, m
       sexts.push_back(mtmp);    // add new entries to sexts & bpmorbit      
       // BPMs at sexts
       //if (x!="na" && y!="na") {
-      //otmp.pos = s;
       //otmp.x = strtod(x.c_str(), NULL); // ! double x=0.0 if no valid format in string x
       //otmp.z = strtod(y.c_str(), NULL);
-      //bpmorbit.push_back(otmp);
+      //bpmorbit.set(otmp, s);
       //}
     }
     else if (tmp == "\"VKICKER\"") {
@@ -126,14 +125,14 @@ int misalignments(const char *filename, magnetvec &dipols)
 
 
 /* import single particle trajectories from madx tracking data */
-int trajectoryimport(const FILENAMES files, TRAJECTORY &trajectory, unsigned int particle)
+int trajectoryimport(const FILENAMES files, FunctionOfPos<AccPair> &trajectory, unsigned int particle)
 {
   unsigned int obs=1;
   string tmp="init";
   unsigned int turn; // madx column variables
   double x, y, s;
   fstream madx;
-  ORBITCOMP otmp;
+  AccPair otmp;
 
   //for chosen particle read data from all observation points
   //-----------------------------------------------------------------------------------------------------
@@ -161,12 +160,10 @@ int trajectoryimport(const FILENAMES files, TRAJECTORY &trajectory, unsigned int
       getline(madx, tmp);
       if (madx.eof()) break;
       
-      otmp.pos = s;
-      if (obs==1) otmp.turn = turn+1; //see comment above
-      else otmp.turn = turn;
+      if (obs==1) turn =+ 1; //see comment above
       otmp.x = x;
       otmp.z = y;
-      trajectory.push_back(otmp);
+      trajectory.set(otmp, s, turn);
     }
 
     madx.close();

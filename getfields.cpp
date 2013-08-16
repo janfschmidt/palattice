@@ -17,13 +17,14 @@
 #include "types.hpp"
 #include "fieldmap.hpp"
 #include "orbit.hpp"
+#include "functionofpos.hpp"
 
 
 using namespace std;
 
 /* create magn. field with n_samp points along ring */
 /* UNIT: [B] = 1/m (factor gamma*m*c/e for [B]=T) */
-int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs, RESONANCES &Res)
+int getfields (FIELDMAP &B, FunctionOfPos<AccPair> &orbit, magnetvec &dipols, magnetvec &quads, magnetvec &sexts, magnetvec &vcorrs, RESONANCES &Res)
 {
   
  unsigned int i, t;
@@ -39,13 +40,13 @@ int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, m
  string name;
 
 
- if (B.circumference != orbit.circumference) {
-   cout << "ERROR: getfields(): FIELDMAP and ORBIT have different circumferences ("
-	<<B.circumference<<", "<<orbit.circumference<<")." << endl;
+ if (B.circumference != orbit.circ) {
+   cout << "ERROR: getfields(): FIELDMAP and orbit have different circumferences ("
+	<<B.circumference<<", "<<orbit.circ<<")." << endl;
    return 1;
  }
  if (B.n_turns != orbit.turns()) {
-   cout << "ERROR: getfields(): FIELDMAP and ORBIT have different number of turns ("
+   cout << "ERROR: getfields(): FIELDMAP and orbit have different number of turns ("
 	<<B.n_turns<<", "<<orbit.turns()<<")." << endl;
    return 1;
  }
@@ -56,7 +57,7 @@ int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, m
    d=0; q=0; s=0; v=0;
    for (i=0; i<B.n_samp; i++) {
      pos = i*interval_samp;
-     pos_tot = pos + (t-1)*B.circumference; //equivalent to FIELDMAP::pos_tot()
+     pos_tot = orbit.posTotal(pos, t); // ALT::::: pos + (t-1)*B.circumference; //equivalent to FIELDMAP::pos_tot()
      
      /* dipoles */
      if (d<dipols.size() && pos >= dipols[d].start && pos <= dipols[d].end) {
@@ -69,7 +70,7 @@ int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, m
      /* quadrupoles */
      else if (q<quads.size() && pos >= quads[q].start && pos <= quads[q].end) {
        name = quads[q].name;
-       x = quads[q].strength * orbit.interp_z(pos_tot);
+       x = quads[q].strength * orbit.interp(pos_tot).z;
        z = 0; // neglect
        theta = d * phase_perdip; //+ (t-1)*360;
        qSwitch=true;
@@ -77,7 +78,7 @@ int getfields (FIELDMAP &B, ORBIT &orbit, magnetvec &dipols, magnetvec &quads, m
      /* sextupoles */
      else if (s<sexts.size() && pos >= sexts[s].start && pos <= sexts[s].end) {
        name = sexts[s].name;
-       x = 0.5 * sexts[s].strength * orbit.interp_x(pos_tot) * orbit.interp_z(pos_tot);
+       x = 0.5 * sexts[s].strength * orbit.interp(pos_tot).x * orbit.interp(pos_tot).z;
        z = 0; // neglect
        theta = d * phase_perdip; //+ (t-1)*360;
        sSwitch=true;
