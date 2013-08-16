@@ -6,6 +6,8 @@
  */
 
 #include <iostream>
+#include <fstream>
+#include <iomanip>
 #include <cmath>
 
 using namespace std;
@@ -255,6 +257,40 @@ double Interpolate<T>::interpRange() const
     return period;
   else
     return dataRange();
+}
+
+
+
+// output of interpolated f(x) to file
+template <class T>
+void Interpolate<T>::interp_out(double stepwidth, const char *filename)
+{
+  int w=12;
+  fstream file;
+  
+  if (stepwidth == 0.) {
+    cout << "ERROR: Interpolate<T>::interp_out(): output stepwidth cannot be zero." <<endl;
+    return;
+  }
+  else if (stepwidth < 0.)
+    stepwidth = -stepwidth;
+ 
+  file.open(filename, ios::out);
+  if (!file.is_open()) {
+    cout << "ERROR: ORBIT::interp_out(): Cannot open " << filename << "." << endl;
+    return;
+  }
+  
+  file <<setw(w)<< "x" <<setw(w)<< "f(x)" << endl;
+  file <<setiosflags(ios::fixed)<<showpoint<<setprecision(3);
+  if (interpRange() > 0) {
+    for (double s=interpMin(); s<=interpMax(); s+=stepwidth) {
+      file <<setw(w)<< s <<setw(w)<< this->interp(s)<< endl;
+    }
+  }
+
+  file.close();
+  cout << "* Wrote " << filename  << endl;
 }
 
 

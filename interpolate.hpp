@@ -61,6 +61,8 @@ public:
 
   const char * getType() const {return gsl_spline_name(spline[0]);}
   double getPeriod() const {return period;}
+
+  void interp_out(double stepwidth, const char *filename);
 };
 
 
