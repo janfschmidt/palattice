@@ -308,13 +308,16 @@ bool FunctionOfPos<T>::exists(double pos, unsigned int turnIn) const
 
 
 // test for compatibility with other
+// compatible means:
+//   1. samples at the same positions along ring
+//   2. same number of turns or other has only 1 turn (+= or -= add/sub. this 1 turn to/from each turn)
 template <class T>
 bool FunctionOfPos<T>::compatible(FunctionOfPos<T> &o) const
 {
-  if ( (size()!=o.size()) || (turns()!=o.turns()) || (samples()!=o.samples()) )
+  if ( (samples()!=o.samples()) || (turns()!=o.turns() && o.turns()>1) )
     return false;
 
-  for (unsigned int i=0; i<size(); i++) {
+  for (unsigned int i=0; i<samples(); i++) {
     if (abs(getPos(i) - o.getPos(i)) > TOLERANCE)
       return false;
   }
@@ -330,18 +333,34 @@ template <class T>
 void FunctionOfPos<T>::operator+=(FunctionOfPos<T> &other)
 {
   if (!compatible(other))
-    throw invalid_argument("Addition of FunctionOfPos<T> objects not possible (incompatible size or pos-data).");
+    throw invalid_argument("Addition of FunctionOfPos<T> objects not possible (incompatible # or pos of samples).");
 
-  for (unsigned int i=0; i<size(); i++)
-    value[i] += other.get(i);
+  if (other.turns()==1 && turns()>1) {    // special case: add this 1 turn of other to each turn
+    for (unsigned int i=0; i<size(); i++)
+      value[i] += other.get(sample(i));
+  }
+  else {                                  // "usual case": same number of turns
+    for (unsigned int i=0; i<size(); i++)
+      value[i] += other.get(i);
+  }
+
+  this->reset();  // reset interpolation
 }
 
 template <class T>
 void FunctionOfPos<T>::operator-=(FunctionOfPos<T> &other)
 {
   if (!compatible(other))
-    throw invalid_argument("Subtraction of FunctionOfPos<T> objects not possible (incompatible size or pos-data).");
-
-  for (unsigned int i=0; i<size(); i++)
-    value[i] -= other.get(i);
+    throw invalid_argument("Subtraction of FunctionOfPos<T> objects not possible (incompatible # or pos of samples).");
+  
+  if (other.turns()==1 && turns()>1) {    // special case: subtract this 1 turn of other from each turn
+    for (unsigned int i=0; i<size(); i++)
+      value[i] -= other.get(sample(i));
+  }
+  else {                                  // "usual case": same number of turns
+    for (unsigned int i=0; i<size(); i++)
+      value[i] -= other.get(i);
+  }
+  
+  this->reset();  // reset interpolation
 }
