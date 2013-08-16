@@ -14,6 +14,8 @@
 #include <fstream>
 #include <iomanip>
 
+#define TOLERANCE 1e-12
+
 using namespace std;
 
 
@@ -57,7 +59,7 @@ unsigned int FunctionOfPos<T>::index(double posIn, unsigned int turnIn) const
   double tmpPos = posTotal(posIn,turnIn);
 
   for (j=0; j<size(); j++) {
-    if (pos[j] == tmpPos)
+    if (abs(pos[j] - tmpPos) < TOLERANCE)
       return j;
     else if (pos[j] > tmpPos)
       throw eNoData(j);
@@ -301,4 +303,45 @@ bool FunctionOfPos<T>::exists(double pos, unsigned int turnIn) const
   }
 
   return true;
+}
+
+
+
+// test for compatibility with other
+template <class T>
+bool FunctionOfPos<T>::compatible(FunctionOfPos<T> &o) const
+{
+  if ( (size()!=o.size()) || (turns()!=o.turns()) || (samples()!=o.samples()) )
+    return false;
+
+  for (unsigned int i=0; i<size(); i++) {
+    if (abs(getPos(i) - o.getPos(i)) > TOLERANCE)
+      return false;
+  }
+
+  return true;
+}
+
+
+
+
+// ---------------- operators -------------------------
+template <class T>
+void FunctionOfPos<T>::operator+=(FunctionOfPos<T> &other)
+{
+  if (!compatible(other))
+    throw invalid_argument("Addition of FunctionOfPos<T> objects not possible (incompatible size or pos-data).");
+
+  for (unsigned int i=0; i<size(); i++)
+    value[i] += other.get(i);
+}
+
+template <class T>
+void FunctionOfPos<T>::operator-=(FunctionOfPos<T> &other)
+{
+  if (!compatible(other))
+    throw invalid_argument("Subtraction of FunctionOfPos<T> objects not possible (incompatible size or pos-data).");
+
+  for (unsigned int i=0; i<size(); i++)
+    value[i] -= other.get(i);
 }

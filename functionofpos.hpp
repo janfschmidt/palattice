@@ -61,11 +61,16 @@ public:
   void set(T valueIn, double pos, unsigned int turn=1);        //set (existing or new) value by pos or by pos(1turn) and turn
   void clear();
 
-  // test for existence of data
-  bool exists(double pos, unsigned int turn=1) const;
+  // tests
+  bool exists(double pos, unsigned int turn=1) const; // is there data at pos?
+  bool compatible(FunctionOfPos<T> &other) const;     // can I add/subract with other? (data at same pos?)
 
   // output to file
   void out(char *filename) const;
+
+  // operators
+  void operator+=(FunctionOfPos<T> &other);
+  void operator-=(FunctionOfPos<T> &other);
 };
 
 
