@@ -7,7 +7,6 @@
  *
  */
 
-
 #include <cmath>
 #include <iostream>
 #include <sstream>
@@ -21,8 +20,8 @@ using namespace std;
 
 // constructor
 template <class T>
-FunctionOfPos<T>::FunctionOfPos(const gsl_interp_type *t, double periodIn, double circIn)
-  : Interpolate<T>::Interpolate(t,periodIn), pos(this->x), value(this->f), circ(circIn), n_turns(1), n_samples(0)
+FunctionOfPos<T>::FunctionOfPos(double circIn, const gsl_interp_type *t, double periodIn)
+  : Interpolate<T>::Interpolate(t,periodIn), pos(this->x), value(this->f), n_turns(1), n_samples(0), circ(circIn)
 {
 }
 
@@ -264,7 +263,7 @@ void FunctionOfPos<T>::clear()
 
 // output to file
 template <class T>
-void FunctionOfPos<T>::out(char *filename) const
+void FunctionOfPos<T>::out(const char *filename) const
 {
   fstream file;
   const int w = 14;
@@ -364,3 +363,4 @@ void FunctionOfPos<T>::operator-=(FunctionOfPos<T> &other)
   
   this->reset();  // reset interpolation
 }
+

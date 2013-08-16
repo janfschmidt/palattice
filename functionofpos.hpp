@@ -23,7 +23,6 @@ protected:
   vector<double> &pos;                        //position: absolute, increasing with turn
   vector<T> &value;
 
-  const double circ;                          //circumference of accelerator
   unsigned int n_turns;                       //number of turns (initialized as 1)
   unsigned int n_samples;                     //number of samples per turn (initialized as zero)
 
@@ -34,7 +33,9 @@ private:
 
 
 public:
-  FunctionOfPos(const gsl_interp_type *t=gsl_interp_akima, double periodIn=0., double circIn=164.4);
+  const double circ;                          //circumference of accelerator
+
+  FunctionOfPos(double circIn=164.4, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
   ~FunctionOfPos() {}
 
   unsigned int turns() const {return n_turns;}
@@ -45,7 +46,7 @@ public:
   unsigned int turn(unsigned int i) const;
   unsigned int turn(double pos) const;
   unsigned int sample(unsigned int i) const;
-  double posInTurn(double pos) const;
+  double posInTurn(double posTotal) const;
   double posTotal(double posInTurn, unsigned int turn) const;
 
   //-------- these functions depend on data. thus they can fail (program exit) -----------------------
@@ -66,7 +67,7 @@ public:
   bool compatible(FunctionOfPos<T> &other) const;     // can I add/subract with other? (data at same pos?)
 
   // output to file
-  void out(char *filename) const;
+  void out(const char *filename) const;
 
   // operators
   void operator+=(FunctionOfPos<T> &other);

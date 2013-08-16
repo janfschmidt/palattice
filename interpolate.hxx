@@ -101,18 +101,18 @@ gsl_spline* Interpolate<T>::getSpline(vector<double> f_single)
     }
     
     else if (range < period) {
-      // add datapoint (based on period) to ensure periodic boundaries
-      n += 1;
+      // add datapoint (based on period) to enlarge range
+      n += 2;
       xTmp = new double[n];
       fTmp = new double[n];
       cleanup = true;
       
-      //xTmp[0] = x.back() - period;  // add datapoint BEFORE range (!interpMin/Max functions affected!)
-      //fTmp[0] = f.back();
-      std::copy(x.begin(), x.end(), xTmp);
-      std::copy(f_single.begin(), f_single.end(), fTmp);
-      xTmp[n-1] = period + xTmp[0];   // add datapoint AFTER range
-      fTmp[n-1] = fTmp[0];
+      xTmp[0] = x.back() - period;  // add datapoint BEFORE range (!interpMin/Max functions affected!)
+      fTmp[0] = f_single.back();
+      std::copy(x.begin(), x.end(), xTmp+1);
+      std::copy(f_single.begin(), f_single.end(), fTmp+1);
+      xTmp[n-1] = period + xTmp[1];   // add datapoint AFTER range (!interpMin/Max functions affected!)
+      fTmp[n-1] = fTmp[1];
     }
   } // (end periodic boundary conditions)
 
@@ -237,7 +237,7 @@ unsigned int Interpolate<T>::size() const
 template <class T>
 double Interpolate<T>::interpMin() const
 {
-  return dataMin(); //compare with Interpolate::init()
+  return dataMax() - period; //dataMin(); //compare with Interpolate::init()
 }
 
 // upper limit for interpolation
