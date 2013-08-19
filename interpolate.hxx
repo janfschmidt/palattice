@@ -282,7 +282,7 @@ void Interpolate<T>::interp_out(double stepwidth, const char *filename)
   }
   
   file <<setw(w)<< "x" <<setw(w)<< "f(x)" << endl;
-  file <<setiosflags(ios::fixed)<<showpoint<<setprecision(3);
+  file <<setiosflags(ios::fixed)<<showpoint<<setprecision(6);
   if (interpRange() > 0) {
     for (double s=interpMin(); s<=interpMax(); s+=stepwidth) {
       file <<setw(w)<< s <<setw(w)<< this->interp(s)<< endl;

@@ -310,7 +310,7 @@ int main (int argc, char *argv[])
       corrs_out(vcorrs, file.out("vcorrs", t.tag(i)).c_str());
       //orbit data (interpolated BPMs)
       bpmorbit.interp_out(0.1, file.out("interp_bpms", t.tag(i)).c_str());
-      trajectory.interp_out(1.0, file.out("interp_trajectory", t.tag(i)).c_str());
+      //trajectory.interp_out(1.0, file.out("interp_trajectory", t.tag(i)).c_str());
       //field data
       B.out(file.out("fields", t.tag(i)).c_str());
       //evaluated field data

@@ -279,7 +279,7 @@ void FunctionOfPos<T>::out(const char *filename) const
  
  for (unsigned int i=0; i<size(); i++) {
    file << resetiosflags(ios::scientific) << setiosflags(ios::fixed);
-   file <<setw(w+1)<< posInTurn(i) <<setw(w)<< pos[i];
+   file <<setw(w+1)<< getPosInTurn(i) <<setw(w)<< pos[i];
    file << resetiosflags(ios::fixed) << setiosflags(ios::scientific);
    file <<setw(w)<< value[i] << endl;
  }
