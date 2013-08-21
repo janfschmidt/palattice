@@ -9,6 +9,7 @@
 #include <fstream>
 #include <iomanip>
 #include <cmath>
+#include <sstream>
 
 using namespace std;
 
@@ -142,10 +143,17 @@ template <class T>
 double Interpolate<T>::evalSpline(gsl_spline *s, double xIn)
 {
   double tmp;
-  tmp =  gsl_spline_eval (s, xIn, acc);
-
-if (isnan(tmp)) {
-    cout << "ERROR: Interpolate::interp(): interpolation error at x="<<xIn<< endl;
+  stringstream msg;
+  if ( xIn >= interpMin() && xIn <= interpMax() )
+    tmp =  gsl_spline_eval (s, xIn, acc);
+  else {
+    msg << "Extrapolation instead of Interpolation requested @ x=" <<xIn<< endl;
+    throw range_error(msg.str());
+  }
+  
+  if (isnan(tmp)) {
+    cout << "ERROR: Interpolate::evalSpline(): interpolation error at x="<<xIn<< endl
+	 << "return 0.0 and ";
     return 0.;
   }
   else
@@ -237,7 +245,10 @@ unsigned int Interpolate<T>::size() const
 template <class T>
 double Interpolate<T>::interpMin() const
 {
-  return dataMax() - period; //dataMin(); //compare with Interpolate::init()
+  if (periodic)
+    return dataMax() - period; //dataMin(); //compare with Interpolate::init()
+  else
+    return dataMin();
 }
 
 // upper limit for interpolation

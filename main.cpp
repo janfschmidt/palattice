@@ -71,7 +71,7 @@ int main (int argc, char *argv[])
   //TRAJECTORY trajectory;          // orbit of single particle (based on tracking)
   //ORBIT *orbit;
   FunctionOfPos<AccPair> bpmorbit(164.4, gsl_interp_akima_periodic, 164.4);
-  FunctionOfPos<AccPair> trajectory(164.4);
+  FunctionOfPos<AccPair> trajectory(164.4, gsl_interp_akima);
   FunctionOfPos<AccPair> *orbit;
 
   int err=0;

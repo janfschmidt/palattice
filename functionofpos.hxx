@@ -13,7 +13,7 @@
 #include <fstream>
 #include <iomanip>
 
-#define TOLERANCE 1e-12
+#define ACCURACY 1e-10
 
 using namespace std;
 
@@ -58,7 +58,7 @@ unsigned int FunctionOfPos<T>::index(double posIn, unsigned int turnIn) const
   double tmpPos = posTotal(posIn,turnIn);
 
   for (j=0; j<size(); j++) {
-    if (abs(pos[j] - tmpPos) < TOLERANCE)
+    if (abs(pos[j] - tmpPos) < ACCURACY)
       return j;
     else if (pos[j] > tmpPos)
       throw eNoData(j);
@@ -71,15 +71,15 @@ unsigned int FunctionOfPos<T>::index(double posIn, unsigned int turnIn) const
 
 // Turn
 template <class T>
-unsigned int FunctionOfPos<T>::turn(unsigned int i) const
+unsigned int FunctionOfPos<T>::turn_by_index(unsigned int i) const
 {
-  return (i/samples()) + 1;
+  return int(i/samples() + ACCURACY) + 1; // ensure return of next turn for i=samples
 }
 
 template <class T>
 unsigned int FunctionOfPos<T>::turn(double posIn) const
 {
-  return int(posIn/circ) + 1;
+  return int(posIn/circ + ACCURACY) + 1; // ensure return of next turn for pos=circ
 }
 
 
@@ -98,7 +98,9 @@ unsigned int FunctionOfPos<T>::sample(unsigned int i) const
 template <class T>
 double FunctionOfPos<T>::posInTurn(double pos) const
 {
-  return fmod(pos,circ);
+  double tmp = fmod(pos,circ);
+  if ( abs(tmp-circ) < ACCURACY ) return 0.0; // pos=circ is always returned as pos=0 in next turn
+  else return tmp;
 }
 
 
@@ -195,9 +197,9 @@ template <class T>
 void FunctionOfPos<T>::set(T valueIn, double posIn, unsigned int turnIn)
 {
   T empty = T();
-  // add new turn(s)
   double newPos = posTotal(posIn,turnIn);
   unsigned int newTurn = turn(newPos);
+  // add new turn(s)
   if (newTurn > turns()) {
     for (unsigned int t=turns(); t<newTurn; t++) {
       for (unsigned int i=0; i<samples(); i++) {
@@ -261,6 +263,19 @@ void FunctionOfPos<T>::clear()
 
 
 
+// erase data of last turn, reduces turns by 1
+template <class T>
+void FunctionOfPos<T>::pop_back_turn()
+{
+  for (unsigned int i=0; i<samples(); i++) {
+    pos.pop_back();
+    value.pop_back();
+  }
+  n_turns -= 1;
+}
+
+
+
 // output to file
 template <class T>
 void FunctionOfPos<T>::out(const char *filename) const
@@ -274,12 +289,12 @@ void FunctionOfPos<T>::out(const char *filename) const
    return;
  }
 
- file <<"#"<<setw(w)<<"posInTurn"<<setw(w)<<"pos"<<setw(w)<<"value" << endl;
+ file <<"#"<<setw(w)<<"pos"<<setw(w)<<"posInTurn"<<setw(w)<<"turn"<<setw(w)<<"value" << endl;
  file <<setprecision(3);
  
  for (unsigned int i=0; i<size(); i++) {
    file << resetiosflags(ios::scientific) << setiosflags(ios::fixed);
-   file <<setw(w+1)<< getPosInTurn(i) <<setw(w)<< pos[i];
+   file <<setw(w+1)<< pos[i] <<setw(w)<< getPosInTurn(i) <<setw(w)<< turn_by_index(i);
    file << resetiosflags(ios::fixed) << setiosflags(ios::scientific);
    file <<setw(w)<< value[i] << endl;
  }
@@ -308,18 +323,42 @@ bool FunctionOfPos<T>::exists(double pos, unsigned int turnIn) const
 
 // test for compatibility with other
 // compatible means:
-//   1. samples at the same positions along ring
-//   2. same number of turns or other has only 1 turn (+= or -= add/sub. this 1 turn to/from each turn)
+//   1. circumferences are equal
+//   2. same number of turns or "other" has only 1 turn (+= or -= add/sub. this 1 turn to/from each turn)
 template <class T>
-bool FunctionOfPos<T>::compatible(FunctionOfPos<T> &o) const
+bool FunctionOfPos<T>::compatible(FunctionOfPos<T> &o, bool verbose) const
 {
-  if ( (samples()!=o.samples()) || (turns()!=o.turns() && o.turns()>1) )
+  if ( circ != o.circ) {
+    if (verbose) {
+      cout <<endl<<"=== FunctionOfPos<T> objects are not compatible! ===" << endl;
+      cout << "Circumferences are different ("<<circ <<"/"<<o.circ <<"). So I guess it is not the same accelerator." << endl;
+    }
     return false;
-
-  for (unsigned int i=0; i<samples(); i++) {
-    if (abs(getPos(i) - o.getPos(i)) > TOLERANCE)
-      return false;
   }
+  // if ( samples()!=o.samples() ) {
+  //   if (verbose) {
+  //     cout <<endl<< "=== FunctionOfPos<T> objects are not compatible! ===" << endl;
+  //     cout << "Number of samples is different ("<<samples() <<"/"<<o.samples() <<")." << endl;
+  //   }
+  //   return false;
+  // }
+  if ( turns()!=o.turns() && o.turns()>1 ) { // special case: o.turns=1: use this 1 turn with each turn (e.g. closed orbit)
+    if (verbose) {
+      cout <<endl<< "=== FunctionOfPos<T> objects are not compatible! ===" << endl;
+      cout << "Number of turns is different ("<<turns() <<"/"<<o.turns() <<")." << endl;
+    }
+    return false;
+  }
+
+  // for (unsigned int i=0; i<samples(); i++) {
+  //   if (abs(getPos(i) - o.getPos(i)) > ACCURACY) {
+  //     if (verbose) {
+  // 	cout <<endl<< "=== FunctionOfPos<T> objects are not compatible! ===" << endl;
+  // 	cout << "Positions at sample "<<i<<" are not equal(" << getPos(i) <<"/"<< o.getPos(i) <<")." << endl;
+  //     }
+  //     return false;
+  //   }
+  // }
 
   return true;
 }
@@ -336,11 +375,11 @@ void FunctionOfPos<T>::operator+=(FunctionOfPos<T> &other)
 
   if (other.turns()==1 && turns()>1) {    // special case: add this 1 turn of other to each turn
     for (unsigned int i=0; i<size(); i++)
-      value[i] += other.get(sample(i));
+      value[i] += other.interp( getPosInTurn(i) );
   }
   else {                                  // "usual case": same number of turns
     for (unsigned int i=0; i<size(); i++)
-      value[i] += other.get(i);
+      value[i] += other.interp( getPos(i) );
   }
 
   this->reset();  // reset interpolation
@@ -354,11 +393,11 @@ void FunctionOfPos<T>::operator-=(FunctionOfPos<T> &other)
   
   if (other.turns()==1 && turns()>1) {    // special case: subtract this 1 turn of other from each turn
     for (unsigned int i=0; i<size(); i++)
-      value[i] -= other.get(sample(i));
+      value[i] -= other.get( getPosInTurn(i) );
   }
   else {                                  // "usual case": same number of turns
     for (unsigned int i=0; i<size(); i++)
-      value[i] -= other.get(i);
+      value[i] -= other.get( getPos(i) );
   }
   
   this->reset();  // reset interpolation

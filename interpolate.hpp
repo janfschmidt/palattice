@@ -9,6 +9,7 @@
 #define __INTERPOLATE_HPP_
 
 #include <vector>
+#include <stdexcept>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_spline.h>
 #include "types.hpp"

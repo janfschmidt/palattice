@@ -43,7 +43,7 @@ public:
   unsigned int size() const {return value.size();}
   double posMax() const {return pos.back();}
 
-  unsigned int turn(unsigned int i) const;
+  unsigned int turn_by_index(unsigned int i) const;
   unsigned int turn(double pos) const;
   unsigned int sample(unsigned int i) const;
   double posInTurn(double posTotal) const;
@@ -61,10 +61,11 @@ public:
   void modify(T valueIn, unsigned int i, unsigned int turn=1); //modify value by index or by index(1turn) and turn
   void set(T valueIn, double pos, unsigned int turn=1);        //set (existing or new) value by pos or by pos(1turn) and turn
   void clear();
+  void pop_back_turn(); // erase data of last turn, reduces turns by 1
 
   // tests
   bool exists(double pos, unsigned int turn=1) const; // is there data at pos?
-  bool compatible(FunctionOfPos<T> &other) const;     // can I add/subract with other? (data at same pos?)
+  bool compatible(FunctionOfPos<T> &other, bool verbose=true) const; // can I add/subract with other? (data at same pos?)
 
   // output to file
   void out(const char *filename) const;

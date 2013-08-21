@@ -160,18 +160,20 @@ int trajectoryimport(const FILENAMES files, FunctionOfPos<AccPair> &trajectory, 
       getline(madx, tmp);
       if (madx.eof()) break;
       
-      if (obs==1) turn =+ 1; //see comment above
+      if (obs==1) { //see comment above
+	turn += 1;
+      }
       otmp.x = x;
       otmp.z = y;
       trajectory.set(otmp, s, turn);
     }
-
+    if (obs==1) trajectory.out("debug2.dat");
     madx.close();
     obs++;
     madx.open(files.tracking(obs,particle).c_str(), ios::in);
   }
-
-  
+  trajectory.pop_back_turn();
+  trajectory.out("debugout.dat");
 
   return 0;
 }

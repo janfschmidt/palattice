@@ -8,6 +8,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <stdexcept>
 #include <gsl/gsl_const_mksa.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_spline.h>
@@ -70,16 +71,28 @@ int getfields (FIELDMAP &B, FunctionOfPos<AccPair> &orbit, magnetvec &dipols, ma
      /* quadrupoles */
      else if (q<quads.size() && pos >= quads[q].start && pos <= quads[q].end) {
        name = quads[q].name;
-       x = quads[q].strength * orbit.interp(pos_tot).z;
-       z = 0; // neglect
+       try {
+	 x = quads[q].strength * orbit.interp(pos_tot).z;
+	 z = 0; // neglect
+       }
+       catch (range_error &e) {
+	 cout << "WARNING: " <<e.what()<< "Set to zero and continue." << endl;
+	 x = 0.0;
+       }
        theta = d * phase_perdip; //+ (t-1)*360;
        qSwitch=true;
      }
      /* sextupoles */
      else if (s<sexts.size() && pos >= sexts[s].start && pos <= sexts[s].end) {
        name = sexts[s].name;
-       x = 0.5 * sexts[s].strength * orbit.interp(pos_tot).x * orbit.interp(pos_tot).z;
-       z = 0; // neglect
+       try {
+	 x = 0.5 * sexts[s].strength * orbit.interp(pos_tot).x * orbit.interp(pos_tot).z;
+	 z = 0; // neglect
+       }
+       catch (range_error &e) {
+	 cout << "WARNING: " <<e.what()<< "Set to zero and continue." << endl;
+	 x = 0.0;
+       }
        theta = d * phase_perdip; //+ (t-1)*360;
        sSwitch=true;
      }
