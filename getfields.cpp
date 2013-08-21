@@ -76,7 +76,8 @@ int getfields (FIELDMAP &B, FunctionOfPos<AccPair> &orbit, magnetvec &dipols, ma
 	 z = 0; // neglect
        }
        catch (range_error &e) {
-	 cout << "WARNING: " <<e.what()<< "Set to zero and continue." << endl;
+	 cout << "WARNING: getfields(): "<< name <<" - "<<e.what()
+	      << "Set field to zero at this position and continue." << endl;
 	 x = 0.0;
        }
        theta = d * phase_perdip; //+ (t-1)*360;
@@ -90,7 +91,8 @@ int getfields (FIELDMAP &B, FunctionOfPos<AccPair> &orbit, magnetvec &dipols, ma
 	 z = 0; // neglect
        }
        catch (range_error &e) {
-	 cout << "WARNING: " <<e.what()<< "Set to zero and continue." << endl;
+	 cout << "WARNING: getfields(): "<< name <<" - "<<e.what()
+	      << "Set field to zero at this position and continue." << endl;
 	 x = 0.0;
        }
        theta = d * phase_perdip; //+ (t-1)*360;
