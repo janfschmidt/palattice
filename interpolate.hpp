@@ -73,8 +73,8 @@ template<> void Interpolate<double>::initThis();
 template<> double Interpolate<double>::interpThis(double xIn);
 template<> void Interpolate<AccPair>::initThis();
 template<> AccPair Interpolate<AccPair>::interpThis(double xIn);
-template<> void Interpolate<AccTripel>::initThis();
-template<> AccTripel Interpolate<AccTripel>::interpThis(double xIn);
+template<> void Interpolate<AccTriple>::initThis();
+template<> AccTriple Interpolate<AccTriple>::interpThis(double xIn);
 
 
 #include "interpolate.hxx"

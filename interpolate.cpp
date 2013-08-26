@@ -55,9 +55,9 @@ AccPair Interpolate<AccPair>::interpThis(double xIn)
 
 
 
-//AccTripel
+//AccTriple
 template <>
-void Interpolate<AccTripel>::initThis()
+void Interpolate<AccTriple>::initThis()
 {
   vector<double> tmpX, tmpZ, tmpS;
 
@@ -71,11 +71,11 @@ void Interpolate<AccTripel>::initThis()
   spline.push_back( getSpline(tmpS) ); // s: spline[2]
 }
 
-//AccTripel
+//AccTriple
 template <>
-AccTripel Interpolate<AccTripel>::interpThis(double xIn)
+AccTriple Interpolate<AccTriple>::interpThis(double xIn)
 {
-  AccTripel tmp;
+  AccTriple tmp;
   tmp.x = evalSpline(spline[0], xIn);  // x: spline[0]
   tmp.z = evalSpline(spline[1], xIn);  // z: spline[1]
   tmp.s = evalSpline(spline[2], xIn);  // s: spline[2]

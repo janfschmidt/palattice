@@ -9,7 +9,7 @@
 using namespace std;
 
 
-// ----- accelerator coordinates (2D "Pair" & 3D "Tripel") -----
+// ----- accelerator coordinates (2D "Pair" & 3D "Triple") -----
 
 class AccPair {
 public:
@@ -42,35 +42,35 @@ public:
 };
 
 
-class AccTripel {
+class AccTriple {
 public:
   double x;
   double z;
   double s;
 
-  AccTripel() : x(0), z(0), s(0) {}
+  AccTriple() : x(0), z(0), s(0) {}
 
   // addition and subraction
-  AccTripel operator+(AccTripel second) {
-    AccTripel tmp;
+  AccTriple operator+(AccTriple second) {
+    AccTriple tmp;
     tmp.x = this->x + second.x;
     tmp.z = this->z + second.z;
     tmp.s = this->s + second.s;
     return tmp;
   }
-  AccTripel operator-(AccTripel second) {
-    AccTripel tmp;
+  AccTriple operator-(AccTriple second) {
+    AccTriple tmp;
     tmp.x = this->x - second.x;
     tmp.z = this->z - second.z;
     tmp.s = this->s - second.s;
     return tmp;
   }
-  void operator+=(AccTripel second) {
+  void operator+=(AccTriple second) {
     this->x += second.x;
     this->z += second.z;
     this->s += second.s;
   }
-  void operator-=(AccTripel second) {
+  void operator-=(AccTriple second) {
     this->x -= second.x;
     this->z -= second.z;
     this->s -= second.s;
@@ -83,7 +83,7 @@ inline ostream &operator<<(ostream &out, const AccPair &A)
   out << A.x << "\t" << A.z;
   return out;
 }
-inline ostream &operator<<(ostream &out, const AccTripel &A)
+inline ostream &operator<<(ostream &out, const AccTriple &A)
 {
   out << A.x << "\t" << A.z << "\t" << A.s;
   return out;
