@@ -18,11 +18,25 @@
 using namespace std;
 
 
-// constructor
+// constructor (set circumference[default 164.4] & interpolation)
 template <class T>
 FunctionOfPos<T>::FunctionOfPos(double circIn, const gsl_interp_type *t, double periodIn)
   : Interpolate<T>::Interpolate(t,periodIn), pos(this->x), value(this->f), n_turns(1), n_samples(0), circ(circIn)
 {
+}
+
+// constructor to additionally set positions with given stepwidth for given #turns (increase speed for set())
+template <class T>
+FunctionOfPos<T>::FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, const gsl_interp_type *t, double periodIn)
+  : Interpolate<T>::Interpolate(t,periodIn,samplesIn*turnsIn), pos(this->x), value(this->f), n_turns(turnsIn), n_samples(samplesIn), circ(circIn)
+{
+  //initialize positions
+  double stepwidth = circ/samples();
+  for (unsigned int i=0; i<size(); i++) {
+    T empty = T();
+    pos[i] = sample(i)*stepwidth + (turn_by_index(i)-1)*circ;
+    value[i] =  empty;
+  }
 }
 
 

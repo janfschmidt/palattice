@@ -71,7 +71,7 @@ int main (int argc, char *argv[])
   FunctionOfPos<AccPair> bpmorbit(164.4, gsl_interp_akima_periodic, 164.4);
   FunctionOfPos<AccPair> trajectory(164.4, gsl_interp_akima);
   FunctionOfPos<AccPair> *orbit;
-  Field B(164.4);              // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
+  //Field B(164.4);              // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
 
   int err=0;
 
@@ -247,7 +247,7 @@ int main (int argc, char *argv[])
 
 
   // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
-  //FIELDMAP B(n_samp, trajectory.turns());
+  Field B(164.4, n_samp, trajectory.turns());
 
   // resonance strengths
   RESONANCES Res(dtheta, dipols.size(), trajectory.turns());

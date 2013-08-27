@@ -29,13 +29,14 @@ protected:
 
 private:
   unsigned int index(unsigned int i, unsigned int turn) const; //get index for pos[] & value[] from index(1turn) and turn
-  unsigned int index(double pos, unsigned int turn) const; //get index for pos[] & value[] from pos(1turn) and turn. returns -1 if there is no data for given pos
+  unsigned int index(double pos, unsigned int turn) const; //get index for pos[] & value[] from pos(1turn) and turn
 
 
 public:
   const double circ;                          //circumference of accelerator
 
   FunctionOfPos(double circIn=164.4, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
+  FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
   ~FunctionOfPos() {}
 
   unsigned int turns() const {return n_turns;}
@@ -60,6 +61,7 @@ public:
   // these functions modify data
   void modify(T valueIn, unsigned int i, unsigned int turn=1); //modify value by index or by index(1turn) and turn
   void set(T valueIn, double pos, unsigned int turn=1);        //set (existing or new) value by pos or by pos(1turn) and turn
+  //   !! set() is much slower than modify(). you can initialize positions by samples&turns in constructor & use modify.
   void clear();
   void pop_back_turn(); // erase data of last turn, reduces turns by 1
 

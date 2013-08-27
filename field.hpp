@@ -16,9 +16,11 @@
 class Field : public FunctionOfPos<AccTriple> {
 
 public:
-  // use FunctionOfPos constructor:
+  // use FunctionOfPos constructors:
   Field(double circIn=164.4, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.)
     : FunctionOfPos(circIn, t, periodIn) {}
+  Field(double circIn, double stepwidth, unsigned int turnsIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.)
+    : FunctionOfPos(circIn, stepwidth, turnsIn, t, periodIn) {}
   ~Field() {}
 
   // additional functions for Field:

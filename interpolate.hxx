@@ -19,8 +19,8 @@ using namespace std;
 // !  - x[i] corresponding to f(x)[i]          !
 // !  - sorted by x, increasing                !
 template <class T>
-Interpolate<T>::Interpolate(const gsl_interp_type *t, double periodIn)
-  : type(t), period(periodIn), ready(false)
+Interpolate<T>::Interpolate(const gsl_interp_type *t, double periodIn, unsigned int sizeIn)
+  : x(sizeIn), f(sizeIn), type(t), period(periodIn), ready(false)
 {
   acc = gsl_interp_accel_alloc ();
 

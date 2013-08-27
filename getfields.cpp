@@ -53,7 +53,8 @@ int getfields (Field &B, unsigned int n_samples, FunctionOfPos<AccPair> &orbit, 
 
  Res.clear(); //delete data from previous t
 
- for(t=1; t<=orbit.turns(); t++) {
+ for (t=1; t<=orbit.turns(); t++) {
+   cout << t << endl;
    d=0; q=0; s=0; v=0;
    for (i=0; i<n_samples; i++) {
      pos = i*interval_samp;
@@ -140,7 +141,7 @@ int getfields (Field &B, unsigned int n_samples, FunctionOfPos<AccPair> &orbit, 
        Btmp.s = 0.0;
        //theta = d * phase_perdip; //+ (t-1)*360;
      }
-     B.set(Btmp, pos, t);
+     B.modify(Btmp, i, t);
    }
  }
 

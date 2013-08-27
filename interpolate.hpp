@@ -42,7 +42,7 @@ public:
   // ! user must provide appropriate x and f(x): !
   // !  - x[i] corresponding to f(x)[i]          !
   // !  - sorted by x, increasing                !
-  Interpolate(const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
+  Interpolate(const gsl_interp_type *t=gsl_interp_akima, double periodIn=0., unsigned int sizeIn=0);
   Interpolate(vector<double> xIn, vector<T> fIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
   Interpolate(const Interpolate &other);
   ~Interpolate();
