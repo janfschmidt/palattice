@@ -30,6 +30,7 @@
 #include "filenames.hpp"
 #include "resonances.hpp"
 #include "functionofpos.hpp"
+#include "field.hpp"
 
 using namespace std;
 
@@ -67,12 +68,10 @@ int main (int argc, char *argv[])
   magnetvec quads;
   magnetvec sexts;
   magnetvec vcorrs;
-  //CLOSEDORBIT bpmorbit;            // orbit at discrete positions (e.g. BPMs) for a specific time in elsa-cycle
-  //TRAJECTORY trajectory;          // orbit of single particle (based on tracking)
-  //ORBIT *orbit;
   FunctionOfPos<AccPair> bpmorbit(164.4, gsl_interp_akima_periodic, 164.4);
   FunctionOfPos<AccPair> trajectory(164.4, gsl_interp_akima);
   FunctionOfPos<AccPair> *orbit;
+  Field B(164.4);              // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
 
   int err=0;
 
@@ -248,7 +247,7 @@ int main (int argc, char *argv[])
 
 
   // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
-  FIELDMAP B(n_samp, trajectory.turns());
+  //FIELDMAP B(n_samp, trajectory.turns());
 
   // resonance strengths
   RESONANCES Res(dtheta, dipols.size(), trajectory.turns());
@@ -295,7 +294,7 @@ int main (int argc, char *argv[])
       orbit = &bpmorbit;
     }
     cout << "Calculate field distribution..." << endl;
-    getfields(B, *orbit, dipols, quads, sexts, vcorrs, Res);
+    getfields(B, n_samp, *orbit, dipols, quads, sexts, vcorrs, Res);
     cout << "Calculate spectra (FFT)..." << endl;
     getspectrum(bx, bz, res, B, Res);
     cout << "--------------------------------------------" << endl;
@@ -314,8 +313,8 @@ int main (int argc, char *argv[])
       //field data
       B.out(file.out("fields", t.tag(i)).c_str());
       //evaluated field data
-      bx.eval_out(0.1, B.circumference, file.out("eval_x", t.tag(i)).c_str());
-      bz.eval_out(0.1, B.circumference, file.out("eval_z", t.tag(i)).c_str());
+      bx.eval_out(0.1, B.circ, file.out("eval_x", t.tag(i)).c_str());
+      bz.eval_out(0.1, B.circ, file.out("eval_z", t.tag(i)).c_str());
       //check dipole lengths
       B.magnetlengths(dipols, file.out("dipolelengths", t.tag(i)).c_str());
     }

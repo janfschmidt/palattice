@@ -3,14 +3,14 @@ cflags = -Wall -g -O0 #last 2 for valgrind
 all: Bsupply strom2kick new_strom2kick
 .PHONY: all
 
-Bsupply: main.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o difference.o timetag.o filenames.o resonances.o fieldmap.o spectrum.o orbit.o interpolate.o
-	g++ $(cflags) -o Bsupply main.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o difference.o timetag.o filenames.o resonances.o fieldmap.o spectrum.o orbit.o interpolate.o -lgsl -lgslcblas -lm
+Bsupply: main.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o difference.o timetag.o filenames.o resonances.o fieldmap.o spectrum.o orbit.o interpolate.o field.o
+	g++ $(cflags) -o Bsupply main.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o difference.o timetag.o filenames.o resonances.o fieldmap.o spectrum.o orbit.o interpolate.o field.o -lgsl -lgslcblas -lm
 
-main.o: main.cpp constants.hpp types.hpp orbit.hpp fieldmap.hpp spectrum.hpp getfields.hpp exportfile.hpp madximport.hpp metadata.hpp difference.hpp timetag.hpp filenames.hpp resonances.hpp interpolate.hpp interpolate.hxx functionofpos.hpp functionofpos.hxx
+main.o: main.cpp constants.hpp types.hpp orbit.hpp fieldmap.hpp spectrum.hpp getfields.hpp exportfile.hpp madximport.hpp metadata.hpp difference.hpp timetag.hpp filenames.hpp resonances.hpp interpolate.hpp interpolate.hxx functionofpos.hpp functionofpos.hxx field.hpp
 	g++ $(cflags) -c main.cpp
-getfields.o: getfields.cpp constants.hpp types.hpp resonances.hpp fieldmap.hpp orbit.hpp interpolate.hpp interpolate.hxx functionofpos.hpp functionofpos.hxx
+getfields.o: getfields.cpp constants.hpp types.hpp resonances.hpp fieldmap.hpp orbit.hpp interpolate.hpp interpolate.hxx functionofpos.hpp functionofpos.hxx field.hpp
 	g++ $(cflags) -c getfields.cpp
-getspectrum.o: getspectrum.cpp constants.hpp types.hpp resonances.hpp fieldmap.hpp spectrum.hpp
+getspectrum.o: getspectrum.cpp constants.hpp types.hpp resonances.hpp fieldmap.hpp spectrum.hpp field.hpp
 	g++ $(cflags) -c getspectrum.cpp
 exportfile.o: exportfile.cpp constants.hpp types.hpp metadata.hpp spectrum.hpp
 	g++ $(cflags) -c exportfile.cpp
@@ -36,6 +36,8 @@ orbit.o: orbit.cpp orbit.hpp types.hpp
 	g++ $(cflags) -c orbit.cpp
 interpolate.o: interpolate.cpp interpolate.hpp interpolate.hxx
 	g++ $(cflags) -c interpolate.cpp
+field.o: field.cpp field.hpp functionofpos.hpp functionofpos.hxx types.hpp
+	g++ $(cflags) -c field.cpp
 
 
 
@@ -47,4 +49,4 @@ new_strom2kick: new_strom2kick.c
 
 
 clean: 
-	rm Bsupply main.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o difference.o timetag.o filenames.o resonances.o fieldmap.o spectrum.o orbit.o interpolate.o strom2kick new_strom2kick
+	rm Bsupply main.o getfields.o getspectrum.o exportfile.o madximport.o ELSAimport.o metadata.o difference.o timetag.o filenames.o resonances.o fieldmap.o spectrum.o orbit.o interpolate.o field.o strom2kick new_strom2kick

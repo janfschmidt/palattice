@@ -16,13 +16,16 @@
 #include "fieldmap.hpp"
 #include "spectrum.hpp"
 #include "getspectrum.hpp"
+#include "field.hpp"
 
 #define REAL(z,i) ((z)[2*(i)])
 #define IMAG(z,i) ((z)[2*(i)+1])
 
 using namespace std;
 
-int getspectrum (SPECTRUM &bx, SPECTRUM &bz, SPECTRUM &res, FIELDMAP &B, RESONANCES &Res)
+
+
+int getspectrum (SPECTRUM &bx, SPECTRUM &bz, SPECTRUM &res, Field &B, RESONANCES &Res)
 {
 
   unsigned int i;
@@ -31,19 +34,21 @@ int getspectrum (SPECTRUM &bx, SPECTRUM &bz, SPECTRUM &res, FIELDMAP &B, RESONAN
   double *BZ = new double[2*B.size()];
   double *RES = new double[2*n_res];
   double dfreq;
+  AccTriple tmp;
 
-  if (Res.n_turns != B.n_turns) {
+  if (Res.n_turns != B.turns()) {
     cout << "ERROR: getspectrum(): FIELDMAP and RESONANCES have different number of turns ("
-	<<B.n_turns<<", "<<Res.n_turns<<")." << endl;
+	 <<B.turns()<<", "<<Res.n_turns<<")." << endl;
    return 1;
   }
 
 
   // set real parts
   for (i=0; i<B.size(); i++) {
-    REAL(BX,i) = B.x(i);
+    tmp = B.get(i);
+    REAL(BX,i) = tmp.x;
     IMAG(BX,i) = 0;
-    REAL(BZ,i) = B.z(i);
+    REAL(BZ,i) = tmp.z;
     IMAG(BZ,i) = 0;
   }
   for (i=0; i<n_res; i++) {
@@ -51,7 +56,7 @@ int getspectrum (SPECTRUM &bx, SPECTRUM &bz, SPECTRUM &res, FIELDMAP &B, RESONAN
     IMAG(RES,i) = 0;
   }
 
-  dfreq = SPEED_OF_LIGHT/B.circumference/B.n_turns;
+  dfreq = SPEED_OF_LIGHT/B.circ/B.turns();
   fft(bx, BX, B.size(), B.size(), dfreq);
   fft(bz, BZ, B.size(), B.size(), dfreq);
   if (Res.on) {
