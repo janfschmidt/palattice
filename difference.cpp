@@ -12,8 +12,6 @@
 #include "constants.hpp"
 #include "ELSAimport.hpp"
 #include "madximport.hpp"
-#include "getspectrum.hpp"
-#include "spectrum.hpp"
 
 using namespace std;
 
@@ -95,9 +93,8 @@ int harmcorr_out(double *HCvcorr, double *HCquad, double *HCsum, unsigned int nd
 }
 
 
-//calculates difference-corrector data (->harmcorr) as a function of spin-phaseadvance
-//and does fft for harmcorr-spectrum hc
-int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, FunctionOfPos<AccPair> &orbit, magnetvec dipols, double circumference, const char *filename)
+//calculates integral vcorr, quad and vcorr+quad kicks per dipole interval for harmcorr analysis
+int harmcorr(magnetvec vcorrs, magnetvec quads, FunctionOfPos<AccPair> &orbit, magnetvec dipols, const char *filename)
 {
  unsigned int i=0,j=0,k=0;
  unsigned int nd = dipols.size();
@@ -143,7 +140,6 @@ int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, FunctionOfPos<AccP
  }
 
  harmcorr_out(HCvcorr, HCquad, HCsum, nd, filename);
- fft(hc, HCsum, nd, nd, circumference);
 
  delete[] HCvcorr;
  delete[] HCquad;

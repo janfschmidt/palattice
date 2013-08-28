@@ -323,14 +323,9 @@ int main (int argc, char *argv[])
     exportfile(bs, metadata, "longitudinal", file.spec("longitudinal", t.tag(i)).c_str());
 
     //harmcorr data
-    if (diff) {
-      harmcorr(hc, vcorrs, quads, bpmorbit, dipols, circumference, file.out("harmcorr", t.tag(i)).c_str());
-      exportfile(hc, metadata, "harmcorr", file.spec("harmcorr", t.tag(i)).c_str());
-    }
-    if (Res.on) {
-      //if (allout) Res.out(file.out("phaseadvance", t.tag(i)).c_str());
-      exportfile(res, metadata, "resonances", file.spec("resonances", t.tag(i)).c_str());
-    }
+    if (diff) harmcorr(vcorrs, quads, bpmorbit, dipols, file.out("harmcorr", t.tag(i)).c_str());
+    //resonance strengths (=harmcorr spectrum)
+    if (Res.on) exportfile(res, metadata, "resonances", file.spec("resonances", t.tag(i)).c_str());
 
     cout << "--------------------------------------------" << endl;
   }

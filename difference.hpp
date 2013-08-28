@@ -5,7 +5,7 @@
 
 int difference(const char *ReferenceFolder, unsigned int t, FunctionOfPos<AccPair> &bpmorbit, magnetvec &vcorrs, BPM *Ref_ELSAbpms, CORR *Ref_ELSAvcorrs, bool elsa);
 
-int harmcorr(SPECTRUM &hc, magnetvec vcorrs, magnetvec quads, FunctionOfPos<AccPair> &orbit, magnetvec dipols, double circumference, const char *filename);
+int harmcorr(magnetvec vcorrs, magnetvec quads, FunctionOfPos<AccPair> &orbit, magnetvec dipols, const char *filename);
 
 int harmcorr_out(double *HCvcorr, double *HCquad, double *HCsum, unsigned int nd, const char *filename);
 
