@@ -54,11 +54,10 @@ int getfields (Field &B, unsigned int n_samples, FunctionOfPos<AccPair> &orbit, 
  Res.clear(); //delete data from previous t
 
  for (t=1; t<=orbit.turns(); t++) {
-   cout << t << endl;
    d=0; q=0; s=0; v=0;
    for (i=0; i<n_samples; i++) {
      pos = i*interval_samp;
-     pos_tot = orbit.posTotal(pos, t); // ALT::::: pos + (t-1)*B.circumference; //equivalent to FIELDMAP::pos_tot()
+     pos_tot = orbit.posTotal(pos, t);
      
      /* dipoles */
      if (d<dipols.size() && pos >= dipols[d].start && pos <= dipols[d].end) {

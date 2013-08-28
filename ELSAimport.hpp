@@ -1,7 +1,6 @@
 #ifndef __POLSIM__ELSAIMPORT_HPP_
 #define __POLSIM__ELSAIMPORT_HPP_
 
-#include "orbit.hpp"
 #include "functionofpos.hpp"
 
 int ELSAimport(BPM *ELSAbpms, CORR *ELSAvcorrs, const char *spurenFolder);

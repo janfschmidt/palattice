@@ -13,9 +13,7 @@
 #include "ELSAimport.hpp"
 #include "madximport.hpp"
 #include "getspectrum.hpp"
-#include "fieldmap.hpp"
 #include "spectrum.hpp"
-#include "orbit.hpp"
 
 using namespace std;
 

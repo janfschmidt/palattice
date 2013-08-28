@@ -12,7 +12,6 @@
 #include "constants.hpp"
 #include "types.hpp"
 #include "ELSAimport.hpp"
-#include "orbit.hpp"
 
 using namespace std;
 
