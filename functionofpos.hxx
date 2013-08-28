@@ -407,11 +407,11 @@ void FunctionOfPos<T>::operator-=(FunctionOfPos<T> &other)
   
   if (other.turns()==1 && turns()>1) {    // special case: subtract this 1 turn of other from each turn
     for (unsigned int i=0; i<size(); i++)
-      value[i] -= other.get( getPosInTurn(i) );
+      value[i] -= other.interp( getPosInTurn(i) );
   }
   else {                                  // "usual case": same number of turns
     for (unsigned int i=0; i<size(); i++)
-      value[i] -= other.get( getPos(i) );
+      value[i] -= other.interp( getPos(i) );
   }
   
   this->reset();  // reset interpolation
