@@ -1,7 +1,22 @@
-#ifndef __BSUPPLY__SPECTRUM_HPP_
-#define __BSUPPLY__SPECTRUM_HPP_
+/* === Spectrum Class ===
+ * Frequency spectrum of arbitrary data.
+ * Spectrum is calculated via gsl FFT in class constructor.
+ * Data can be given as vector<double> (and a "length" in pos/time),
+ * as FunctionOfPos<T> for an accelerator (automatic calc. of rev.freq. etc)
+ * or as RESONANCES for resonance-strengths (Bsupply).
+ * by Jan Schmidt <schmidt@physik.uni-bonn.de>
+ */
 
-using namespace std;
+
+#ifndef __MYSPECTRUM_HPP_
+#define __MYSPECTRUM_HPP_
+
+#include <gsl/gsl_fft_complex.h>
+#include <gsl/gsl_const_mksa.h>
+#include "resonances.hpp"
+
+
+enum unit{meter, second, degree};
 
 
 class FREQCOMP {
@@ -14,30 +29,57 @@ public:
 };
 
 
-class SPECTRUM {
 
-private:
+class Spectrum {
+
+protected:
   vector<FREQCOMP> b;
 
-public:
-  const unsigned int fmax_rev;   //maximum frequency in rev. harmonics (fmax is highest INCLUDED frequency (**))
-  const unsigned int turns;  //number of turns in ring
-  const double ampcut; //amlitudes below this are ignored
+  unsigned int fMax_rev;   // maximum frequency in rev. harmonics (fmax is highest INCLUDED frequency (**))
+  double ampcut;           // amlitudes below this are ignored
+  unsigned int turns;      // number of turns in ring
+  double circ;             // accelerator ring circumference
+  int norm;                // normalization for FFT (amp is devided by norm in fft())
 
-  SPECTRUM(unsigned int f=0, unsigned int t=1, double a=0) : fmax_rev(f), turns(t), ampcut(a) {}
-  ~SPECTRUM() {}
-  //SPECTRUM(const SPECTRUM &other);
-  double freq(unsigned int i) const {return b[i].freq;}
-  double amp(unsigned int i) const {return b[i].amp;}
-  double phase(unsigned int i) const {return b[i].phase;}
-  unsigned int size() const {return b.size();}         //actual filled values
-  unsigned int fmax() const {return fmax_rev*turns;}   //expected/set maximum
-  void push_back(FREQCOMP tmp);
-  double eval(double t) const;
-  int eval_out(double stepwidth, double max, const char *filename) const;
+private:
+  unit circUnit;
+  void fft(vector<double> data);
+  double real(unsigned int i, double *halfcomplex, unsigned int n) const;
+  double imag(unsigned int i, double *halfcomplex, unsigned int n) const;
+
+public:
+  Spectrum(unsigned int fmaxrevIn=30, double ampcut=0);
+  Spectrum(RESONANCES &In, unsigned int fmaxrevIn=30, double ampcut=0);
+  Spectrum(vector<double> In, double length, unsigned int fmaxrevIn=30, double ampcut=0, unit u=meter);
+  ~Spectrum() {}
+  //Spectrum(const Spectrum &other);
+  
+  inline FREQCOMP get(unsigned int i) const {return b[i];}
+  inline double freq(unsigned int i) const {return b[i].freq;}
+  inline double amp(unsigned int i) const {return b[i].amp;}
+  inline double phase(unsigned int i) const {return b[i].phase;}
+  inline double getAmpcut() const {return ampcut;}
+
+  inline unsigned int fMax() const {return turns*fMax_rev;}   // expected/set maximum
+  inline unsigned int size() const {return b.size();}         // actual #values (ampcut..)
+  double f_rev() const;                                       // revolution frequency
+  double dFreq() const;                                       // frequency stepwidth
+
+  double eval(double t) const;        // fourier series at time t / s
+
+  void setAmpcut(double ampcutIn);
+  void setFMax_rev(unsigned int fmaxrevIn);
+  void setLength(double length, unit u=meter);
+  void push_back(FREQCOMP tmp);      // add FREQCOMP manually
+  void clear() {b.clear();}
+
+  void out(const char *filename, string metadata="") const;
+  void eval_out(double stepwidth, double max, const char *filename) const;
 
 };
 
-#endif
 
-/*__BSUPPLY__SPECTRUM_HPP_*/
+
+
+#endif
+/*__MYSPECTRUM_HPP_*/

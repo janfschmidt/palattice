@@ -84,7 +84,7 @@ int madximport(const char *filename, FunctionOfPos<AccPair> &bpmorbit, magnetvec
       mtmp.start = s-l;
       mtmp.end = s;
       mtmp.length = l;
-      mtmp.strength = vkick/l;   // 1/R from kick-angle
+      mtmp.strength = sin(vkick)/l;   // 1/R from kick-angle
       vcorrs.push_back(mtmp);    // add new entry to vcorrs
     }
 

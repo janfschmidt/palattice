@@ -12,6 +12,7 @@
 #include <sstream>
 #include <fstream>
 #include <iomanip>
+#include <typeinfo>
 
 #define ACCURACY 1e-10
 
@@ -21,14 +22,14 @@ using namespace std;
 // constructor (set circumference[default 164.4] & interpolation)
 template <class T>
 FunctionOfPos<T>::FunctionOfPos(double circIn, const gsl_interp_type *t, double periodIn)
-  : Interpolate<T>::Interpolate(t,periodIn), pos(this->x), value(this->f), n_turns(1), n_samples(0), circ(circIn)
+  : Interpolate<T>::Interpolate(t,periodIn), pos(this->_x), value(this->f), n_turns(1), n_samples(0), circ(circIn)
 {
 }
 
 // constructor to additionally set positions with given stepwidth for given #turns (increase speed for set())
 template <class T>
 FunctionOfPos<T>::FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, const gsl_interp_type *t, double periodIn)
-  : Interpolate<T>::Interpolate(t,periodIn,samplesIn*turnsIn), pos(this->x), value(this->f), n_turns(turnsIn), n_samples(samplesIn), circ(circIn)
+  : Interpolate<T>::Interpolate(t,periodIn,samplesIn*turnsIn), pos(this->_x), value(this->f), n_turns(turnsIn), n_samples(samplesIn), circ(circIn)
 {
   //initialize positions
   double stepwidth = circ/samples();
@@ -417,3 +418,26 @@ void FunctionOfPos<T>::operator-=(FunctionOfPos<T> &other)
   this->reset();  // reset interpolation
 }
 
+
+
+
+// ----------- defaults for template specialization (functionofpos.cpp)
+
+// construct Spectrum (FFT) from this FunctionOfPos
+// implemented as template specialization in functionofpos.cpp
+template <class T>
+Spectrum FunctionOfPos<T>::getSpectrum(AccAxis axis, unsigned int fmaxrevIn, double ampcutIn) const
+{
+  Spectrum s( this->getVector(axis), this->posMax(), fmaxrevIn, ampcutIn );
+  return s;
+}
+
+
+
+// get all values as double-vector, axis for multidim. data (-> template specialization)
+template <class T>
+vector<double> FunctionOfPos<T>::getVector(AccAxis axis) const
+{
+  cout <<"type is: "<< typeid(T).name() << endl;
+  throw logic_error("FunctionOfPos<T>::getVector(): get vector<double> from vector<T> is not implemented for this data type.");
+}

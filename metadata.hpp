@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include "spectrum.hpp"
 
 using namespace std;
 
@@ -22,6 +23,9 @@ public:
   string getEntry(unsigned int i) const;
   string getbyLabel(string inLabel) const;
   void setbyLabel(string inLabel, string inEntry);
+
+  string get(Spectrum s, string tag="") const;
+  unsigned int columnwidth() const;
 
 private:
   string timestamp() const;

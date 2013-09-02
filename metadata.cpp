@@ -4,9 +4,11 @@
 #include <ctime>
 #include <cstring>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include "metadata.hpp"
 
 using namespace std;
@@ -167,4 +169,59 @@ string METADATA::timestamp() const
   snprintf(timestamp, 20, "%02d.%02d.%4d %02d:%02d:%02d", t->tm_mday, t->tm_mon+1, t->tm_year+1900, t->tm_hour, t->tm_min, t->tm_sec);
 
   return timestamp;
+}
+
+
+
+// formated output of all metadata to be written to a file.
+// Additional metadata for Spectrum spec are added to output.
+string METADATA::get(Spectrum spec, string tag) const
+{
+  METADATA tmpMeta = *this; // Spectrum metadata should not be added permanently
+  char tmp[30];
+
+  // add tag to metadata
+  if (!tag.empty())
+    tmpMeta.add("Field Component", tag);
+  // add fmax to metadata
+  snprintf(tmp, 30, "%d", spec.fMax());
+  tmpMeta.add("max. frequency", tmp);
+  // add ampcut to metadata
+  if (spec.getAmpcut() > 0) {
+    snprintf(tmp, 30, "%.2e (%d cutted)", spec.getAmpcut(), spec.fMax()+1-spec.size());
+    tmpMeta.add("cutted Amp <", tmp);
+  }
+  // add phase-warning for harmcorr
+  if (tag=="harmcorr" || tag=="resonances") {
+    tmpMeta.add("WARNING:", "Phase NOT equal harmcorr in ELSA-CCS! (sign in cos)");
+  }
+
+  unsigned int w = tmpMeta.columnwidth();
+
+  //write metadata to string
+  ostringstream out;
+  for (unsigned int i=0; i<tmpMeta.size(); i++) {
+    out << setiosflags(ios::left);
+    out <<setw(2)<<"#";
+    out <<setw(w)<< tmpMeta.getLabel(i) << tmpMeta.getEntry(i) <<endl;
+  }
+
+  return out.str();
+}
+
+
+
+// set column width to maximum label-length + 2
+unsigned int METADATA::columnwidth() const
+{
+  unsigned  int i;
+  unsigned int width=0;
+
+  for (i=0; i<size(); i++) {
+    if (getLabel(i).length() > width) {
+      width = getLabel(i).length();
+    }
+  }
+
+  return width + 2;
 }

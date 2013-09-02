@@ -13,6 +13,8 @@
 #include <exception>
 #include <stdexcept>
 #include "interpolate.hpp"
+#include "spectrum.hpp"
+
 
 
 template <class T=double>
@@ -20,8 +22,8 @@ class FunctionOfPos : public Interpolate<T> {
 
 protected:
   // "data" (stored in Interpolate members, rename for this context)
-  vector<double> &pos;                        //position: absolute, increasing with turn
-  vector<T> &value;
+  std::vector<double> &pos;                        //position: absolute, increasing with turn
+  std::vector<T> &value;
 
   unsigned int n_turns;                       //number of turns (initialized as 1)
   unsigned int n_samples;                     //number of samples per turn (initialized as zero)
@@ -54,7 +56,8 @@ public:
   unsigned int getSample(double pos) const;                  //get sample ("index modulo turn") by pos, IF IT EXISTS
   double getPos(unsigned int i, unsigned int turn=1) const;  //get pos-DATA by index or by index(1turn) and turn
   double getPosInTurn(unsigned int i, unsigned int turn=1) const;
-  T get(unsigned int i, unsigned int turn=1) const;     //get value-DATA by index or by index(1turn) and turn
+  T get(unsigned int i, unsigned int turn=1) const;          //get value-DATA by index or by index(1turn) and turn
+  vector<double> getVector(AccAxis axis=x) const;            //get vector of values (choose axis for multidim.)
 
   // >>> to get value by position use interp(double pos) (inherited from Interpolate) <<<
 
@@ -75,6 +78,9 @@ public:
   // operators
   void operator+=(FunctionOfPos<T> &other);
   void operator-=(FunctionOfPos<T> &other);
+
+  // construct Spectrum (FFT) from this FunctionOfPos (for 1D values, chosen by axis)
+  Spectrum getSpectrum(AccAxis axis=x, unsigned int fmaxrevIn=30, double ampcut=0.) const;
 };
 
 

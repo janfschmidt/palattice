@@ -1,6 +1,6 @@
 /* === Interpolate Class ===
- * supplies values f(x) for arbitrary x for given arrays f and x. uses gsl interpolation
- * x is double, f can have several types.
+ * supplies values f(_x) for arbitrary _x for given arrays f and _x. uses gsl interpolation
+ * _x is double, f can have several types.
  * for each type the init() function must be implemented, because gsl interpolation needs double data type.
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
  */

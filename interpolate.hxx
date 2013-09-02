@@ -1,6 +1,6 @@
 /* === Interpolate Class ===
- * supplies values f(x) for arbitrary x for given arrays f and x. uses gsl interpolation
- * x is double, f can have several types.
+ * supplies values f(_x) for arbitrary _x for given arrays f and _x. uses gsl interpolation
+ * _x is double, f can have several types.
  * for each type the init() function must be implemented, because gsl interpolation needs double data type.
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
  */
@@ -15,12 +15,12 @@ using namespace std;
 
 
 // constructor
-// ! user must provide appropriate x and f(x): !
-// !  - x[i] corresponding to f(x)[i]          !
-// !  - sorted by x, increasing                !
+// ! user must provide appropriate _x and f(_x): !
+// !  - _x[i] corresponding to f(_x)[i]          !
+// !  - sorted by _x, increasing                !
 template <class T>
 Interpolate<T>::Interpolate(const gsl_interp_type *t, double periodIn, unsigned int sizeIn)
-  : x(sizeIn), f(sizeIn), type(t), period(periodIn), ready(false)
+  : _x(sizeIn), f(sizeIn), type(t), period(periodIn), ready(false)
 {
   acc = gsl_interp_accel_alloc ();
 
@@ -35,7 +35,7 @@ Interpolate<T>::Interpolate(const gsl_interp_type *t, double periodIn, unsigned 
 
 template <class T>
 Interpolate<T>::Interpolate(vector<double> xIn, vector<T> fIn, const gsl_interp_type *t, double periodIn)
-  : x(xIn), f(fIn), type(t), period(periodIn), ready(false)
+  : _x(xIn), f(fIn), type(t), period(periodIn), ready(false)
 {
   acc = gsl_interp_accel_alloc ();
 
@@ -52,7 +52,7 @@ Interpolate<T>::Interpolate(vector<double> xIn, vector<T> fIn, const gsl_interp_
 // copy constructor
 template <class T>
 Interpolate<T>::Interpolate(const Interpolate &other)
-  : x(other.x), f(other.f), type(other.type), period(other.period), ready(false)
+  : _x(other._x), f(other.f), type(other.type), period(other.period), ready(false)
 {
   // by setting ready=false spline and acc are initialized again before beeing used
 }
@@ -90,9 +90,9 @@ gsl_spline* Interpolate<T>::getSpline(vector<double> f_single)
 
     if (period == 0.) {
       cout << "WARNING: Interpolate::init(): period of function should be set for periodic interpolation type "
-	   << getType() << ". Assume last data point x=" << x.back() << " as period." << endl;
+	   << getType() << ". Assume last data point x=" << _x.back() << " as period." << endl;
       cout << "--- period can be set with class constructor." << endl;
-      period = x.back();
+      period = _x.back();
     }
 
     if (range > period) {
@@ -108,9 +108,9 @@ gsl_spline* Interpolate<T>::getSpline(vector<double> f_single)
       fTmp = new double[n];
       cleanup = true;
       
-      xTmp[0] = x.back() - period;  // add datapoint BEFORE range (!interpMin/Max functions affected!)
+      xTmp[0] = _x.back() - period;  // add datapoint BEFORE range (!interpMin/Max functions affected!)
       fTmp[0] = f_single.back();
-      std::copy(x.begin(), x.end(), xTmp+1);
+      std::copy(_x.begin(), _x.end(), xTmp+1);
       std::copy(f_single.begin(), f_single.end(), fTmp+1);
       xTmp[n-1] = period + xTmp[1];   // add datapoint AFTER range (!interpMin/Max functions affected!)
       fTmp[n-1] = fTmp[1];
@@ -118,7 +118,7 @@ gsl_spline* Interpolate<T>::getSpline(vector<double> f_single)
   } // (end periodic boundary conditions)
 
   else { // non periodic type
-    xTmp = &(x[0]); 
+    xTmp = &(_x[0]); 
     fTmp = &(f_single[0]);
   }
 
@@ -211,7 +211,7 @@ void Interpolate<T>::reset()
 template <class T>
 void Interpolate<T>::reset(vector<double> xIn, vector<T> fIn, double periodIn)
 {
-  x = xIn;
+  _x = xIn;
   f = fIn;
   if (periodIn != 0.) period = periodIn;
 
@@ -224,11 +224,11 @@ void Interpolate<T>::reset(vector<double> xIn, vector<T> fIn, double periodIn)
 
 
 
-//get length of x and f(x)
+//get length of _x and f(_x)
 template <class T>
 unsigned int Interpolate<T>::size() const
 {
-  unsigned int s = x.size();
+  unsigned int s = _x.size();
 
   if(s != f.size()) {
     cout << "ERROR: Interpolate::size(): unequal size of x (" << s << ") and f(x) (" << f.size()
@@ -272,7 +272,7 @@ double Interpolate<T>::interpRange() const
 
 
 
-// output of interpolated f(x) to file
+// output of interpolated f(_x) to file
 template <class T>
 void Interpolate<T>::interp_out(double stepwidth, const char *filename)
 {

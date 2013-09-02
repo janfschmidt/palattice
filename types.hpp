@@ -6,7 +6,7 @@
 #include <iostream>
 #include "constants.hpp"
 
-using namespace std;
+
 
 
 // ----- accelerator coordinates (2D "Pair" & 3D "Triple") -----
@@ -16,7 +16,7 @@ public:
   double x;
   double z;
   
-  AccPair() : x(0), z(0) {}
+  AccPair() : x(0.), z(0.) {}
 
   //addition and subraction
   AccPair operator+(AccPair second) {
@@ -42,13 +42,11 @@ public:
 };
 
 
-class AccTriple {
+class AccTriple : public AccPair {
 public:
-  double x;
-  double z;
   double s;
 
-  AccTriple() : x(0), z(0), s(0) {}
+  AccTriple() : s(0.) {x=0.; z=0.;}
 
   // addition and subraction
   AccTriple operator+(AccTriple second) {
@@ -78,17 +76,19 @@ public:
 };
 
 // overload << for output of "Acc" data types
-inline ostream &operator<<(ostream &out, const AccPair &A)
+inline std::ostream &operator<<(std::ostream &out, const AccPair &A)
 {
   out << A.x << "\t" << A.z;
   return out;
 }
-inline ostream &operator<<(ostream &out, const AccTriple &A)
+inline std::ostream &operator<<(std::ostream &out, const AccTriple &A)
 {
   out << A.x << "\t" << A.z << "\t" << A.s;
   return out;
 }
 
+
+enum AccAxis {x,z,s};
 // -------------------------------------------------------------
 
 
@@ -106,7 +106,7 @@ public:
 
 class BPM {
 public:
-  vector<BPM_MS> time;
+  std::vector<BPM_MS> time;
   double pos;
 
   BPM() : pos(0) {}
@@ -122,7 +122,7 @@ public:
 
 class CORR {
 public:
-  vector<CORR_MS> time;
+  std::vector<CORR_MS> time;
   double pos;
 
   CORR() : pos(0) {}
@@ -130,7 +130,7 @@ public:
 
 class MAGNET {
 public:
-  string name;
+  std::string name;
   double start;
   double end;
   double length;
@@ -143,7 +143,7 @@ public:
 
 
 /* typedefs */
-typedef vector<MAGNET> magnetvec;
+typedef std::vector<MAGNET> magnetvec;
 
 
 

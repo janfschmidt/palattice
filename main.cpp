@@ -18,8 +18,8 @@
 #include "types.hpp"
 #include "spectrum.hpp"
 #include "getfields.hpp"
-#include "getspectrum.hpp"
-#include "exportfile.hpp"
+//#include "getspectrum.hpp"
+//#include "exportfile.hpp"
 #include "madximport.hpp"
 #include "ELSAimport.hpp"
 #include "metadata.hpp"
@@ -69,6 +69,7 @@ int main (int argc, char *argv[])
   FunctionOfPos<AccPair> bpmorbit(164.4, gsl_interp_akima_periodic, 164.4);
   FunctionOfPos<AccPair> trajectory(164.4, gsl_interp_akima);
   FunctionOfPos<AccPair> *orbit;
+  Spectrum bx, bz, bs;
 
   int err=0;
 
@@ -253,11 +254,11 @@ int main (int argc, char *argv[])
   fmax_hc = int(dipols.size() / 2);
   ftmp = int(abs(360/dtheta / 2.0));
   if (fmax_res==0 || fmax_res>ftmp)  fmax_res = ftmp; //if not set by option -F (or to large): set to maximum
-  SPECTRUM bx(fmax_x, trajectory.turns(), ampcut_x);
-  SPECTRUM bz(fmax_z, trajectory.turns(), ampcut_z);
-  SPECTRUM bs(fmax_s, trajectory.turns());
-  SPECTRUM hc(fmax_hc, trajectory.turns()); //harmcorr
-  SPECTRUM res(fmax_res, trajectory.turns(), ampcut_res);
+  // SPECTRUM bx(fmax_x, trajectory.turns(), ampcut_x);
+  // SPECTRUM bz(fmax_z, trajectory.turns(), ampcut_z);
+  // SPECTRUM bs(fmax_s, trajectory.turns());
+  // SPECTRUM hc(fmax_hc, trajectory.turns()); //harmcorr
+  // SPECTRUM res(fmax_res, trajectory.turns(), ampcut_res);
 
   
 
@@ -293,7 +294,11 @@ int main (int argc, char *argv[])
     cout << "Calculate field distribution..." << endl;
     getfields(B, n_samp, *orbit, dipols, quads, sexts, vcorrs, Res);
     cout << "Calculate spectra (FFT)..." << endl;
-    getspectrum(bx, bz, res, B, Res);
+    //getspectrum(bx, bz, res, B, Res);
+    bx = B.getSpectrum(x, fmax_x, ampcut_x);
+    bz = B.getSpectrum(z, fmax_z, ampcut_z);
+    bs = B.getSpectrum(s, fmax_s);
+    Spectrum res(Res, fmax_res, ampcut_res);
     cout << "--------------------------------------------" << endl;
 
 
@@ -317,15 +322,20 @@ int main (int argc, char *argv[])
     }
 
     //export spectrum files for polarization-calculation
-    exportfile(bx, metadata, "horizontal", file.spec("horizontal", t.tag(i)).c_str());
-    exportfile(bz, metadata, "vertical", file.spec("vertical", t.tag(i)).c_str());
+    //    exportfile(bx, metadata, "horizontal", file.spec("horizontal", t.tag(i)).c_str());
+    //exportfile(bz, metadata, "vertical", file.spec("vertical", t.tag(i)).c_str());
+    bx.out( file.spec("horizontal", t.tag(i)).c_str(), metadata.get(bx, "horizontal") );
+    bz.out( file.spec("vertical", t.tag(i)).c_str(), metadata.get(bz, "vertical") );
     // empty spectrum (fmax_s-1)
-    exportfile(bs, metadata, "longitudinal", file.spec("longitudinal", t.tag(i)).c_str());
+    //exportfile(bs, metadata, "longitudinal", file.spec("longitudinal", t.tag(i)).c_str());
+    bs.out( file.spec("longitudinal", t.tag(i)).c_str(), metadata.get(bs, "longitudinal") );
 
     //harmcorr data
     if (diff) harmcorr(vcorrs, quads, bpmorbit, dipols, file.out("harmcorr", t.tag(i)).c_str());
     //resonance strengths (=harmcorr spectrum)
-    if (Res.on) exportfile(res, metadata, "resonances", file.spec("resonances", t.tag(i)).c_str());
+    if (Res.on)
+      //exportfile(res, metadata, "resonances", file.spec("resonances", t.tag(i)).c_str());
+      res.out( file.spec("resonances", t.tag(i)).c_str(), metadata.get(bs, "resonances") );
 
     cout << "--------------------------------------------" << endl;
   }

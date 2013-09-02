@@ -1,6 +1,6 @@
 /* === Interpolate Class ===
- * supplies values f(x) for arbitrary x for given arrays f and x. uses gsl interpolation
- * x is double, f can have several types.
+ * supplies values f(_x) for arbitrary _x for given arrays f and _x. uses gsl interpolation
+ * _x is double, f can have several types.
  * for each type the init() function must be implemented, because gsl interpolation needs double data type.
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
  */
@@ -14,14 +14,14 @@
 #include <gsl/gsl_spline.h>
 #include "types.hpp"
 
-using namespace std;
+
 
 template <class T=double>
 class Interpolate {
 
 protected:
-  vector<double> x;      // x data
-  vector<T> f;           // f(x) data
+  std::vector<double> _x;      // _x data
+  std::vector<T> f;           // f(_x) data
 
 private:
   const gsl_interp_type *type;  // type of interpolation used (see GSL manual)
@@ -29,33 +29,33 @@ private:
   double period;
 
   gsl_interp_accel *acc;
-  vector<gsl_spline*> spline;  //several splines for multidimensional data types
+  std::vector<gsl_spline*> spline;  //several splines for multidimensional data types
   bool ready;
 
-  gsl_spline* getSpline(vector<double> f_single);
+  gsl_spline* getSpline(std::vector<double> f_single);
   double evalSpline(gsl_spline *s, double xIn);
   void initThis();
   T interpThis(double xIn);
 
 
 public:
-  // ! user must provide appropriate x and f(x): !
-  // !  - x[i] corresponding to f(x)[i]          !
-  // !  - sorted by x, increasing                !
+  // ! user must provide appropriate _x and f(x): !
+  // !  - _x[i] corresponding to f(_x)[i]          !
+  // !  - sorted by _x, increasing                !
   Interpolate(const gsl_interp_type *t=gsl_interp_akima, double periodIn=0., unsigned int sizeIn=0);
-  Interpolate(vector<double> xIn, vector<T> fIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
+  Interpolate(std::vector<double> xIn, std::vector<T> fIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
   Interpolate(const Interpolate &other);
   ~Interpolate();
 
   void init();
   T interp(double xIn);
-  void reset();                                // new initialization (for child-classes that can change x and f)
-  void reset(vector<double> xIn, vector<T> fIn, double periodIn=0.); // new initialization and new external data
+  void reset();                                // new initialization (for child-classes that can change _x and f)
+  void reset(std::vector<double> xIn, std::vector<T> fIn, double periodIn=0.); // new initialization and new external data
 
   unsigned int size() const;
-  double dataMin() const {return x.front();}            // minimum given x 
-  double dataMax() const {return x.back();}             // maximum given x 
-  double dataRange() const {return x.back()-x.front();}
+  double dataMin() const {return _x.front();}            // minimum given _x 
+  double dataMax() const {return _x.back();}             // maximum given _x 
+  double dataRange() const {return _x.back()-_x.front();}
   double interpMin() const;                             // lower limit for interpolation
   double interpMax() const;                             // upper limit for interpolation
   double interpRange() const;
