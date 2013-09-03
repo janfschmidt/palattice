@@ -63,8 +63,6 @@ int main (int argc, char *argv[])
   magnetvec quads;
   magnetvec sexts;
   magnetvec vcorrs;
-  FunctionOfPos<AccPair> bpmorbit(164.4, gsl_interp_akima_periodic, 164.4);
-  FunctionOfPos<AccPair> trajectory(164.4, gsl_interp_akima);
   FunctionOfPos<AccPair> *orbit;
 
   int err=0;
@@ -203,7 +201,12 @@ int main (int argc, char *argv[])
   snprintf(tmp, 100, "%d points per turn", n_samp);
   metadata.add("Field sampling", tmp);
 
-  
+
+  // initialize orbit
+  FunctionOfPos<AccPair> bpmorbit(circumference, gsl_interp_akima_periodic, circumference);
+  FunctionOfPos<AccPair> trajectory(circumference, gsl_interp_akima);
+
+
   // output
   cout << endl;
   cout << "--------------------------------------------" << endl;
