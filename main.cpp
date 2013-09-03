@@ -244,7 +244,7 @@ int main (int argc, char *argv[])
 
 
   // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
-  Field B(164.4, n_samp, trajectory.turns());
+  Field B(circumference, n_samp, trajectory.turns());
 
   // resonance strengths
   RESONANCES Res(dtheta, dipols.size(), trajectory.turns());
