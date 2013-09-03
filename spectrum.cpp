@@ -30,7 +30,7 @@ Spectrum::Spectrum(unsigned int fmaxrevIn, double ampcutIn)
 
 
 Spectrum::Spectrum(RESONANCES &In, unsigned int fmaxrevIn, double ampcutIn)
-  : fMax_rev(fmaxrevIn), ampcut(ampcutIn), turns(In.n_turns), circ(360), norm(In.ndipols()), circUnit(degree)
+  : fMax_rev(fmaxrevIn), ampcut(ampcutIn), turns(In.n_turns), circ(360), norm(In.ndipols()*In.n_turns), circUnit(degree)
 {
   if (fMax() > In.size()/2.) {
     cout << "WARNING: Spectrum constructor: fmax = " <<fMax_rev<< " is to large." << endl
@@ -42,8 +42,8 @@ Spectrum::Spectrum(RESONANCES &In, unsigned int fmaxrevIn, double ampcutIn)
 }
 
 
-Spectrum::Spectrum(vector<double> In, double length, unsigned int fmaxrevIn, double ampcutIn, unit u)
-   : fMax_rev(fmaxrevIn), ampcut(ampcutIn), turns(1), circ(length), norm(In.size()), circUnit(u)
+Spectrum::Spectrum(vector<double> In, double c, unsigned int t, unsigned int fmaxrevIn, double ampcutIn, unit u)
+   : fMax_rev(fmaxrevIn), ampcut(ampcutIn), turns(t), circ(c), norm(In.size()), circUnit(u)
 {
   if (fMax() > In.size()/2.) {
     cout << "WARNING: Spectrum constructor: fmax = " <<fMax_rev<< " is to large." << endl
@@ -65,6 +65,9 @@ Spectrum::Spectrum(vector<double> In, double length, unsigned int fmaxrevIn, dou
 //void Spectrum::fft(double *data, unsigned int n)
 void Spectrum::fft(vector<double> In)
 {
+  if (fMax() == 0) //no data, no FFT
+    return;
+
   unsigned int i;
   unsigned int n = In.size();
   FREQCOMP btmp;

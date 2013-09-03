@@ -35,15 +35,14 @@ using namespace std;
 int main (int argc, char *argv[])
 {
   //-----------------------------
-  unsigned int n_samp = 1644; // number of sampling points along ring for magn. field strengths
   bool sgt_access=false;       //special option for elsa-mode:
                                //if 1, spuren are read from /sgt/elsa/data/bpm/ instead of [project]/ELSA-Spuren/
   //-----------------------------
+  unsigned int n_samp = 1644; // number of sampling points along ring for magn. field strengths
   unsigned int i, ftmp;
   unsigned int fmax_x = 6;      // max Frequency used for magnetic field spectrum (in revolution harmonics)
   unsigned int fmax_z = 6;
   unsigned int fmax_s = 0;
-  unsigned int fmax_hc = 12;    // harmcorr spectrum fmax = #dipoles/2 (is set to dipols.size()/2 below)
   unsigned int fmax_res = 0;
   unsigned int particle = 1;    // particle counter (for individual fields based on multi-particle tracking)
   TIMETAG t(530);               // moment(s) of elsa-cycle (ms)
@@ -69,7 +68,6 @@ int main (int argc, char *argv[])
   FunctionOfPos<AccPair> bpmorbit(164.4, gsl_interp_akima_periodic, 164.4);
   FunctionOfPos<AccPair> trajectory(164.4, gsl_interp_akima);
   FunctionOfPos<AccPair> *orbit;
-  Spectrum bx, bz, bs;
 
   int err=0;
 
@@ -249,19 +247,13 @@ int main (int argc, char *argv[])
 
   // resonance strengths
   RESONANCES Res(dtheta, dipols.size(), trajectory.turns());
-
- // magnetic spectrum (amplitudes & phases) up to fmax
-  fmax_hc = int(dipols.size() / 2);
+  // check fmax for resonance strengths (if not set by -F (or to large): set to maximum)
   ftmp = int(abs(360/dtheta / 2.0));
-  if (fmax_res==0 || fmax_res>ftmp)  fmax_res = ftmp; //if not set by option -F (or to large): set to maximum
-  // SPECTRUM bx(fmax_x, trajectory.turns(), ampcut_x);
-  // SPECTRUM bz(fmax_z, trajectory.turns(), ampcut_z);
-  // SPECTRUM bs(fmax_s, trajectory.turns());
-  // SPECTRUM hc(fmax_hc, trajectory.turns()); //harmcorr
-  // SPECTRUM res(fmax_res, trajectory.turns(), ampcut_res);
+  if (fmax_res==0 || fmax_res>ftmp)  fmax_res = ftmp;
 
   
 
+  // -----------------------------------------
   for(i=0; i<t.size(); i++) {
     if (elsa) {
       if (t.get(i) < 0) {
@@ -282,7 +274,6 @@ int main (int argc, char *argv[])
 	  return 1;
     }
 
-
     // calculate field distribution & spectrum
     if (ptc) {
       trajectory += bpmorbit;
@@ -294,12 +285,13 @@ int main (int argc, char *argv[])
     cout << "Calculate field distribution..." << endl;
     getfields(B, n_samp, *orbit, dipols, quads, sexts, vcorrs, Res);
     cout << "Calculate spectra (FFT)..." << endl;
-    //getspectrum(bx, bz, res, B, Res);
-    bx = B.getSpectrum(x, fmax_x, ampcut_x);
-    bz = B.getSpectrum(z, fmax_z, ampcut_z);
-    bs = B.getSpectrum(s, fmax_s);
+    Spectrum bx = B.getSpectrum(x, fmax_x, ampcut_x);
+    Spectrum bz = B.getSpectrum(z, fmax_z, ampcut_z);
+    Spectrum bs = B.getSpectrum(s, fmax_s);
     Spectrum res(Res, fmax_res, ampcut_res);
     cout << "--------------------------------------------" << endl;
+    // -----------------------------------------
+
 
 
     // generate output files
@@ -321,21 +313,20 @@ int main (int argc, char *argv[])
       B.magnetlengths(dipols, file.out("dipolelengths", t.tag(i)).c_str());
     }
 
-    //export spectrum files for polarization-calculation
-    //    exportfile(bx, metadata, "horizontal", file.spec("horizontal", t.tag(i)).c_str());
-    //exportfile(bz, metadata, "vertical", file.spec("vertical", t.tag(i)).c_str());
+    //export spectrum files for polarization-calculation (TBMTsolver)
     bx.out( file.spec("horizontal", t.tag(i)).c_str(), metadata.get(bx, "horizontal") );
     bz.out( file.spec("vertical", t.tag(i)).c_str(), metadata.get(bz, "vertical") );
-    // empty spectrum (fmax_s-1)
-    //exportfile(bs, metadata, "longitudinal", file.spec("longitudinal", t.tag(i)).c_str());
     bs.out( file.spec("longitudinal", t.tag(i)).c_str(), metadata.get(bs, "longitudinal") );
 
-    //harmcorr data
-    if (diff) harmcorr(vcorrs, quads, bpmorbit, dipols, file.out("harmcorr", t.tag(i)).c_str());
     //resonance strengths (=harmcorr spectrum)
     if (Res.on)
-      //exportfile(res, metadata, "resonances", file.spec("resonances", t.tag(i)).c_str());
-      res.out( file.spec("resonances", t.tag(i)).c_str(), metadata.get(bs, "resonances") );
+      Res.out(file.out("resonances", t.tag(i)).c_str());
+      res.out( file.spec("resonances", t.tag(i)).c_str(), metadata.get(res, "resonances") );
+
+    //harmcorr data
+    if (diff)
+      harmcorr(vcorrs, quads, bpmorbit, dipols, file.out("harmcorr", t.tag(i)).c_str());
+
 
     cout << "--------------------------------------------" << endl;
   }

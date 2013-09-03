@@ -50,7 +50,7 @@ private:
 public:
   Spectrum(unsigned int fmaxrevIn=30, double ampcut=0);
   Spectrum(RESONANCES &In, unsigned int fmaxrevIn=30, double ampcut=0);
-  Spectrum(vector<double> In, double length, unsigned int fmaxrevIn=30, double ampcut=0, unit u=meter);
+  Spectrum(vector<double> In, double circ, unsigned int turns, unsigned int fmaxrevIn=30, double ampcut=0, unit u=meter);
   ~Spectrum() {}
   //Spectrum(const Spectrum &other);
   

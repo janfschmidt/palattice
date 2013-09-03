@@ -187,10 +187,8 @@ string METADATA::get(Spectrum spec, string tag) const
   snprintf(tmp, 30, "%d", spec.fMax());
   tmpMeta.add("max. frequency", tmp);
   // add ampcut to metadata
-  if (spec.getAmpcut() > 0) {
-    snprintf(tmp, 30, "%.2e (%d cutted)", spec.getAmpcut(), spec.fMax()+1-spec.size());
-    tmpMeta.add("cutted Amp <", tmp);
-  }
+  snprintf(tmp, 30, "%.2e (%d cutted)", spec.getAmpcut(), spec.fMax()+1-spec.size());
+  tmpMeta.add("cutted Amp <", tmp);
   // add phase-warning for harmcorr
   if (tag=="harmcorr" || tag=="resonances") {
     tmpMeta.add("WARNING:", "Phase NOT equal harmcorr in ELSA-CCS! (sign in cos)");

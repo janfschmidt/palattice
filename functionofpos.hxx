@@ -428,7 +428,7 @@ void FunctionOfPos<T>::operator-=(FunctionOfPos<T> &other)
 template <class T>
 Spectrum FunctionOfPos<T>::getSpectrum(AccAxis axis, unsigned int fmaxrevIn, double ampcutIn) const
 {
-  Spectrum s( this->getVector(axis), this->posMax(), fmaxrevIn, ampcutIn );
+  Spectrum s( this->getVector(axis), circ, turns(), fmaxrevIn, ampcutIn );
   return s;
 }
 
