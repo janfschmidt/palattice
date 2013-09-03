@@ -177,7 +177,7 @@ double Spectrum::dFreq() const
   case second:
     return 1/(circ*turns);                             //freq in Hz
   case degree:
-    return 1/turns;                                    // freq in rev. harmonics
+    return 1./turns;                                   // freq in rev. harmonics
   }
   return 0; //to avoid warning
 }
