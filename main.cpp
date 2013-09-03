@@ -18,8 +18,6 @@
 #include "types.hpp"
 #include "spectrum.hpp"
 #include "getfields.hpp"
-//#include "getspectrum.hpp"
-//#include "exportfile.hpp"
 #include "madximport.hpp"
 #include "ELSAimport.hpp"
 #include "metadata.hpp"
@@ -319,9 +317,11 @@ int main (int argc, char *argv[])
     bs.out( file.spec("longitudinal", t.tag(i)).c_str(), metadata.get(bs, "longitudinal") );
 
     //resonance strengths (=harmcorr spectrum)
-    if (Res.on)
-      Res.out(file.out("resonances", t.tag(i)).c_str());
+    if (Res.on) {
       res.out( file.spec("resonances", t.tag(i)).c_str(), metadata.get(res, "resonances") );
+      if (allout)
+	Res.out(file.out("resonances", t.tag(i)).c_str());
+    }
 
     //harmcorr data
     if (diff)

@@ -38,7 +38,7 @@ Spectrum::Spectrum(RESONANCES &In, unsigned int fmaxrevIn, double ampcutIn)
     fMax_rev =  In.size()/2./turns;
   }
 
-  fft(In.getthetaVector());
+  fft(In.getkickVector());
 }
 
 

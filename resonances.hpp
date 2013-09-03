@@ -23,9 +23,9 @@ public:
   RESONANCES(double thetastep, unsigned int n_dip, unsigned int turns);
   ~RESONANCES() {}
   double gettheta(unsigned int i) const {return theta[i];}
-  vector<double> getthetaVector() const {return theta;}
   double lasttheta() const {return theta.back();}
   double getkick(unsigned int i) const {return kick[i];}
+  vector<double> getkickVector() const {return kick;}
   unsigned int ndipols() const {return ndip;}
   int out(const char *filename) const;
   int adddip(MAGNET dip, double Bx);
