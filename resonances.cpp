@@ -34,7 +34,7 @@ int RESONANCES::adddip(MAGNET dip, double Bx)
   //interval_samp as approximation for sampling
   unsigned int i;
   //step in dipole
-  double dkick = 1000 * Bx * dip.length/n;
+  double dkick = 1000 * Bx * dip.length/n; //(assume length as arclength along orbit, see madximport.cpp)
 
   //------Welche Fehler abfangen ??--------
 
