@@ -45,7 +45,7 @@ int madximport(const char *filename, FunctionOfPos<AccPair> &bpmorbit, magnetvec
       mtmp.start = s-l;
       mtmp.end = s;
       mtmp.length = l;
-      mtmp.strength = sin(angle)/l;   // 1/R
+      mtmp.strength = angle/l;   // 1/R (!!! assuming l is arclength (along ref. orbit) !!!)
       dipols.push_back(mtmp);    // add new entry to dipols
     }
     else if (tmp == "\"QUADRUPOLE\"") {
