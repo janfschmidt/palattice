@@ -52,7 +52,7 @@ int main (int argc, char *argv[])
   char Reference[50] = "dummy";
   double circumference=0;
   double ampcut_x = 1e-6;     // minimum amplitudes for magnetic field spectra
-  //ampcut_z makes no sense -> changes spin tune !
+  double ampcut_z = 1e-8;     // be carefull: ampcut_z can change spin tune !
   double ampcut_res=0;          // minimum amplitude for resonance spectrum (option -c)
   double dtheta = -1;           // spin phaseadvance stepwidth (option -r)
   BPM ELSAbpms[NBPMS];         // ELSAbpms[0]=BPM01, ELSAbpms[31]=BPM32
@@ -119,6 +119,7 @@ int main (int argc, char *argv[])
       break;
     case 'c':
       ampcut_x = atof(optarg);
+      ampcut_z = atof(optarg) / 100;
       break;
     case 'C':
       ampcut_res = atof(optarg);
@@ -140,7 +141,7 @@ int main (int argc, char *argv[])
       cout << "* -f [fmax] sets maximum frequency for B-Field spectrum (in rev. harmonics)" << endl;
       cout << "* -F [fmax] sets maximum frequency for resonance-spectrum (-r) output (in rev. harmonics)" << endl;
       cout << "* -c [minamp] sets minimum amplitude for B-Field spectrum, others are cutted" << endl;
-      cout << "*    (vertical.spectrum is never cutted due to influence on spin tune)" << endl;
+      cout << "*    (vertical.spectrum is cutted at [minamp]/100 due to influence on spin tune)" << endl;
       cout << "* -C [minamp] sets minimum amplitude for resonance-spectrum (-r), others are cutted" << endl;
       cout << "* -t [time] sets time of ELSA cycle to evaluate BPMs and correctors (in ms)" << endl;
       cout << "* -m [tagfile] multiple times of ELSA cycle evaluated. Times listed in [tagfile]" << endl;
@@ -289,7 +290,7 @@ int main (int argc, char *argv[])
     getfields(B, n_samp, *orbit, dipols, quads, sexts, vcorrs, Res);
     cout << "Calculate spectra (FFT)..." << endl;
     Spectrum bx = B.getSpectrum(x, fmax_x, ampcut_x);
-    Spectrum bz = B.getSpectrum(z, fmax_z, 0.0);
+    Spectrum bz = B.getSpectrum(z, fmax_z, ampcut_z);
     Spectrum bs = B.getSpectrum(s, fmax_s);
     Spectrum res(Res, fmax_res, ampcut_res);
     cout << "--------------------------------------------" << endl;
