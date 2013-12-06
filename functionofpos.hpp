@@ -64,7 +64,7 @@ public:
   // these functions modify data
   void modify(T valueIn, unsigned int i, unsigned int turn=1); //modify value by index or by index(1turn) and turn
   void set(T valueIn, double pos, unsigned int turn=1);        //set (existing or new) value by pos or by pos(1turn) and turn
-  //   !! set() is much slower than modify(). you can initialize positions by samples&turns in constructor & use modify.
+  //   !! set() is much slower than modify(). you can initialize equidistant positions by samples&turns in constructor & use modify.
   void clear();
   void pop_back_turn(); // erase data of last turn, reduces turns by 1
 
