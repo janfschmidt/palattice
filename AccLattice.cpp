@@ -160,21 +160,21 @@ void AccLattice::set(double pos, const AccElement& obj)
 
   // check for "free space" to insert obj
   if (newBegin < 0.) {
-    msg << objPtr->name << "(beginning at " << newBegin << "m) cannot be inserted --- overlap with lattice begin at 0.0m";
+    msg << objPtr->name << " (" << newBegin <<" - "<< newEnd << "m) cannot be inserted --- overlap with lattice begin at 0.0m";
     throw eNoFreeSpace(msg.str());
   }
   else if (!first_element &&  newBegin < locate(previous,end)) {
-    msg << objPtr->name << "(beginning at " << newBegin << "m) cannot be inserted --- overlap with "
-	<< previous->second->name << "(ending at "<< locate(previous,end) << "m)";
+    msg << objPtr->name << " (" << newBegin <<" - "<< newEnd << "m) cannot be inserted --- overlap with "
+	<< previous->second->name << " ("<< locate(previous,begin) <<" - "<<locate(previous,end) << "m)";
     throw eNoFreeSpace(msg.str());
   }
   else if (newEnd > circumference) {
-    msg << objPtr->name << "(ending at " << newEnd << "m) cannot be inserted --- overlap with lattice end at " << circumference << "m";
+    msg << objPtr->name << " (" << newBegin <<" - "<< newEnd <<  "m) cannot be inserted --- overlap with lattice end at " << circumference << "m";
     throw eNoFreeSpace(msg.str());
   }
   else if (!last_element && newEnd > locate(next,begin)) {
-    msg << objPtr->name << "(ending at " << newEnd << "m) cannot be inserted --- overlap with "
-	<< next->second->name << "(beginning at "<< locate(next,begin) << "m)";
+    msg << objPtr->name << " (" << newBegin <<" - "<< newEnd << "m) cannot be inserted --- overlap with "
+	<< next->second->name << " ("<< locate(next,begin) <<" - " << locate(next,end) << "m)";
     throw eNoFreeSpace(msg.str());
   }
   //if there is free space:
