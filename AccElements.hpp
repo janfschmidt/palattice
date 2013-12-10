@@ -69,8 +69,8 @@ public:
 
 // abstract magnet class
 class Magnet : public AccElement {
-protected:
-  const double strength;
+public:
+  double strength;
 
   Magnet(string _name, double _length, element_type _type, double _strength=0.)
     : AccElement(_name,_length,_type), strength(_strength) {}
@@ -131,7 +131,7 @@ public:
 
   virtual Quadrupole* clone() const {return new Quadrupole(*this);}
 
-  virtual AccTriple B(AccPair orbit) const {AccTriple tmp; tmp.x=strength*orbit.z; tmp.z=strength*orbit.x; return tmp;}
+  virtual AccTriple B(AccPair orbit) const {AccTriple tmp; tmp.x=strength*orbit.z; tmp.z=strength*orbit.x; if(family==D) tmp*=(-1.); return tmp;}
 
 };
 
@@ -144,7 +144,7 @@ public:
 
   virtual Sextupole* clone() const {return new Sextupole(*this);}
 
-  virtual AccTriple B(AccPair orbit) const {AccTriple tmp; tmp.x=strength*orbit.x*orbit.z; tmp.z=0.5*strength*(pow(orbit.x,2)-pow(orbit.z,2)); return tmp;}
+  virtual AccTriple B(AccPair orbit) const {AccTriple tmp; tmp.x=strength*orbit.x*orbit.z; tmp.z=0.5*strength*(pow(orbit.x,2)-pow(orbit.z,2)); if(family==D) tmp*=(-1); return tmp;}
 
 };
 

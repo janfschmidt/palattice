@@ -39,6 +39,27 @@ public:
     this->x -= second.x;
     this->z -= second.z;
   }
+  //multiplication&division
+AccPair operator*(double num) {
+    AccPair tmp;
+    tmp.x = this->x * num;
+    tmp.z = this->z * num;
+    return tmp;
+  }
+  AccPair operator/(double num) {
+    AccPair tmp;
+    tmp.x = this->x / num;
+    tmp.z = this->z / num;
+    return tmp;
+  }
+  void operator*=(double num) {
+    this->x *= num;
+    this->z *= num;
+  }
+  void operator/=(double num) {
+    this->x /= num;
+    this->z /= num;
+  }
 };
 
 
@@ -73,6 +94,32 @@ public:
     this->z -= second.z;
     this->s -= second.s;
   }
+  //multiplication&division
+  AccTriple operator*(double num) {
+    AccTriple tmp;
+    tmp.x = this->x * num;
+    tmp.z = this->z * num;
+    tmp.s = this->s * num;
+    return tmp;
+  }
+  AccTriple operator/(double num) {
+    AccTriple tmp;
+    tmp.x = this->x / num;
+    tmp.z = this->z / num;
+    tmp.s = this->s / num;
+    return tmp;
+  }
+ void operator*=(double num) {
+    this->x *= num;
+    this->z *= num;
+    this->s *= num;
+  }
+  void operator/=(double num) {
+    this->x /= num;
+    this->z /= num;
+    this->s /= num;
+  }
+
 };
 
 // overload << for output of "Acc" data types
