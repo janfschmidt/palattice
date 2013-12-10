@@ -6,11 +6,15 @@
  */
 
 
+#include <cstdlib>
+#include <sstream>
+#include <iostream>
+#include <iomanip>
 #include "AccLattice.hpp"
 
 
-AccLattice::AccLattice(Position _refPos)
-  : refPos(_refPos)
+AccLattice::AccLattice(double _circumference, Anchor _refPos)
+  : refPos(_refPos), circumference(_circumference)
 {
   empty_space = new Drift;
 }
@@ -25,12 +29,11 @@ AccLattice::~AccLattice()
 
 
 
-// get position (in meter) of here=begin/center/end of lattice element "it"
-// works for all Reference Positions (refPos, it->first)
-double AccLattice::locate(const_AccIterator it, Position here) const
+// get here=begin/center/end (in meter) of obj at position pos
+// works for all Reference Anchors (refPos)
+double AccLattice::locate(double pos, const AccElement *obj, Anchor here) const
 {
-  double pos = it->first;        //reference position
-  double l = it->second->length; //element length
+  double l = obj->length;        //element length
 
   if (refPos == center) pos -= l/2;
   else if (refPos == end) pos -= l;
@@ -47,16 +50,34 @@ double AccLattice::locate(const_AccIterator it, Position here) const
   return 0.;
 }
 
-
-
-// test if position pos is inside lattice element "it"
-  bool AccLattice::inside(double pos, const_AccIterator it) const
+// get here=begin/center/end (in meter)  of lattice element "it"
+// works for all Reference Anchors (refPos, it->first)
+double AccLattice::locate(const_AccIterator it, Anchor here) const
 {
-  if (pos >= locate(it,begin) && pos <= locate(it,end))
+  return locate(it->first, it->second, here);
+}
+
+
+
+
+// test if "here" is inside obj at position pos
+bool AccLattice::inside(double pos, const AccElement *obj, double here) const
+{
+  if (here >= locate(pos,obj,begin) && here <= locate(pos,obj,end))
     return true;
   else
     return false;
 }
+
+// test if "here" is inside lattice element "it"
+bool AccLattice::inside(const_AccIterator it, double here) const
+{
+  if (here >= locate(it,begin) && here <= locate(it,end))
+    return true;
+  else
+    return false;
+}
+
 
 
 
@@ -69,13 +90,13 @@ const_AccIterator AccLattice::getIt(double pos) const
   if (candidate_next != elements.begin()) {
     candidate_previous--;
     if (refPos == begin || refPos == center) {
-      if (inside(pos, candidate_previous))
+      if (inside(candidate_previous, pos))
 	return candidate_previous;
     }
   }
 
   if (refPos == end || refPos == center) {
-    if (inside(pos, candidate_next))
+    if (inside(candidate_next, pos))
       return candidate_next;
   }
 
@@ -98,26 +119,102 @@ const AccElement* AccLattice::operator[](double pos) const
 
 
 
-// set element (replace if key (pos) already used)
+// set element (replace if key (pos) already used; check for "free space" to insert element)
 void AccLattice::set(double pos, const AccElement& obj)
 {
-  /*
-  try{
-    getIt(pos);
-    getIt(pos - obj.length/2); // je nach refPos: auch begin/end of obj not within existing element....
-    // .....................
+  bool first_element = false;
+  bool last_element = false;
+  const AccElement *objPtr = &obj;
+  double newBegin = locate(pos, objPtr, begin);
+  double newEnd = locate(pos, objPtr, end);
+  stringstream msg;
+  
+  if (pos < 0.) {
+    cout << "ERROR: AccLattice::set(): Position of Lattice elements must be > 0. " << pos << " is not." <<endl;
+    exit(1);
   }
-  catch (eNoElement &e) { // pos not within an existing element
-    
+
+  // empty map (set first element)
+  if (elements.size() == 0) {
+    elements[pos] = objPtr->clone();
+    cout << objPtr->name << " inserted." << endl;
+    return;
   }
-  */
+
+
+  const_AccIterator next = elements.upper_bound(pos); //"first element whose key goes after pos"
+  const_AccIterator previous = next;
+  if (next == elements.begin())
+    first_element = true;
+  else
+    previous--;
+  if (next == elements.end()) //"past-the-end element"
+    last_element = true;
+
+ 
+  // try deleting possibly existing element at pos
   try{
-    delete elements.at(pos);
+    delete elements.at(pos);    
   }
   catch(std::out_of_range &e){ }
 
-  elements[pos] = obj.clone();
+  // check for "free space" to insert obj
+  if (newBegin < 0.) {
+    msg << objPtr->name << "(beginning at " << newBegin << "m) cannot be inserted --- overlap with lattice begin at 0.0m";
+    throw eNoFreeSpace(msg.str());
+  }
+  else if (!first_element &&  newBegin < locate(previous,end)) {
+    msg << objPtr->name << "(beginning at " << newBegin << "m) cannot be inserted --- overlap with "
+	<< previous->second->name << "(ending at "<< locate(previous,end) << "m)";
+    throw eNoFreeSpace(msg.str());
+  }
+  else if (newEnd > circumference) {
+    msg << objPtr->name << "(ending at " << newEnd << "m) cannot be inserted --- overlap with lattice end at " << circumference << "m";
+    throw eNoFreeSpace(msg.str());
+  }
+  else if (!last_element && newEnd > locate(next,begin)) {
+    msg << objPtr->name << "(ending at " << newEnd << "m) cannot be inserted --- overlap with "
+	<< next->second->name << "(beginning at "<< locate(next,begin) << "m)";
+    throw eNoFreeSpace(msg.str());
+  }
+  //if there is free space:
+  else elements[pos] = objPtr->clone();
+  cout << objPtr->name << " inserted." << endl;
+
 }
 
 
+
+
+string AccLattice::refPos_string() const
+{
+  switch (refPos) {
+  case begin:
+    return "begin";
+  case center:
+    return "center";
+  case end:
+    return "end";
+  }
+  
+  return "Please implement this type in AccLattice::refPos_string()!";
+}
+
+
+// print lattice to stdout
+void AccLattice::print() const
+{
+  const_AccIterator it;
+  AccElement* obj;
+  const int w = 12;
+
+  cout << "# Reference Position: " << refPos_string() << endl;
+  cout <<"#"<< std::setw(w) << "Name" <<std::setw(w)<< "Ref.Pos/m" <<std::setw(w)<< "Begin/m" <<std::setw(w)<< "End/m" << endl;
+
+  for (it=elements.begin(); it!=elements.end(); ++it) {
+    obj = it->second;
+    cout <<std::setw(w+1)<< obj->name <<std::setw(w)<< it->first <<std::setw(w)<< locate(it, begin) <<std::setw(w)<< locate(it, end) << endl;
+  }
+
+}
 

@@ -16,33 +16,34 @@
 
 typedef std::map<double,AccElement*>::iterator AccIterator;
 typedef std::map<double,AccElement*>::const_iterator const_AccIterator;
-enum Position{begin,center,end};
+enum Anchor{begin,center,end};
 
 
 class AccLattice {
 
 protected:
   std::map<double,AccElement*> elements;
-  const Position refPos;
   const Drift* empty_space;
- 
+
+  const_AccIterator getIt(double pos) const;   //get iterator 
 
 public:
-  bool inside(double pos, const_AccIterator it) const;
-  double locate(const_AccIterator it, Position here) const;
-  double locate(const_AccIterator it) const {return locate(it, refPos);}
+  const Anchor refPos;
+  const double circumference;
 
-  AccLattice(Position _refPos=begin);
+  AccLattice(double _circumference, Anchor _refPos=begin);
   ~AccLattice();
 
-  //get const_iterator
-  const_AccIterator getIt(double pos) const;
+  double locate(double pos, const AccElement *obj, Anchor here) const;  // get here=begin/center/end (in meter) of obj at position pos
+  double locate(const_AccIterator it, Anchor here) const;               // get here=begin/center/end (in meter)  of lattice element "it"
+  bool inside(double pos, const AccElement *obj, double here) const;    // test if "here" is inside obj at position pos
+  bool inside(const_AccIterator it, double here) const;                 // test if "here" is inside lattice element "it"
 
-  //get element
-  const AccElement* operator[](double pos) const;
+  const AccElement* operator[](double pos) const;    //get element (any position, Drift returned if not inside any element)
+  void set(double pos, const AccElement &obj);       //set element (throws XXX if no free space for obj)
 
-  //set element
-  void set(double pos, const AccElement& obj);
+  string refPos_string() const;
+  void print() const;                                // print lattice to stdout
 
 };
 
@@ -52,6 +53,13 @@ class eNoElement : public std::exception {
 public:
 
   eNoElement() {}
+};
+
+class eNoFreeSpace : public std::exception {
+public:
+  string msg;
+  eNoFreeSpace(string _msg) throw(): msg(_msg) {}
+  ~eNoFreeSpace() throw() {}
 };
 
 
