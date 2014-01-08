@@ -90,3 +90,96 @@ vector<double> FunctionOfPos<AccTriple>::getVector(AccAxis axis) const
 
   return out;
 }
+
+
+
+// ---------------- Orbit import ---------------------
+//import closed orbit from madx twiss file
+template <>
+void FunctionOfPos<AccPair>::madxClosedOrbit(char *madxTwissFile)
+{
+  // --------------------------------------------------------------------------------
+  // position of orbit-data at END of quadrupole (according to s in madx twiss file).
+  // Corresponds to BPM behind the Quadrupole
+  // --------------------------------------------------------------------------------
+
+  string tmp;
+  double s, k1l; 
+  string x, y;
+
+  fstream madxTwiss;
+  AccPair otmp;
+
+  madxTwiss.open(madxTwissFile, ios::in);
+  if (!madxTwiss.is_open()) {
+    cout << "ERROR: AccLattice::madximport(): Cannot open " << madxTwissFile << endl;
+    exit(1);
+  }
+
+  while (!madxTwiss.eof()) {
+    madxTwiss >> tmp;
+
+    if (tmp == "\"QUADRUPOLE\"") {
+      madxTwiss >> tmp >> s >> x >> y >> tmp >> tmp >> k1l;
+      if (x!="na" && y!="na" && k1l!=0) { //k1l: no BPM for inactive quad (ELSA: SQ, LQ)
+      	otmp.x = strtod(x.c_str(), NULL); // ! double x=0.0 if no valid format in string x
+      	otmp.z = strtod(y.c_str(), NULL);
+      	this->set(otmp, s);
+      }
+    }
+
+  }
+}
+
+//import single particle trajectory from madx tracking "obs" files at each quadrupole
+template <>
+void FunctionOfPos<AccPair>::madxTrajectory(const FILENAMES files, unsigned int particle)
+{
+ unsigned int obs=1;
+  string tmp="init";
+  unsigned int turn; // madx column variables
+  double x, y, s;
+  fstream madx;
+  AccPair otmp;
+
+  //for chosen particle read data from all observation points
+  //-----------------------------------------------------------------------------------------------------
+  //obs0001 is a special case: it corresponds to s=0.0m (START marker in MAD-X), but counts the turns different:
+  //turn=0, s=0.0 are the initial conditions (beginning of turn 1)
+  //turn=1, s=0.0 is the beginning of turn 2 or END of turn 1.
+  //So the data of obs0001 is used with s=0.0 but one turn later than written in MAD-X to fit our notation
+  //-----------------------------------------------------------------------------------------------------
+  madx.open(files.tracking(obs,particle).c_str(), ios::in);
+  while ( madx.is_open() ) {
+    
+    //go to end of "header" / first data line
+    while (tmp != "$") {
+      madx >> tmp;
+      if (madx.eof()) {
+	cout << "ERROR: madximport.cpp: Wrong data format in " << files.tracking(obs,particle) << endl;
+	exit(1);
+      }
+    }
+    getline(madx, tmp);
+
+    //read trajectory data
+    while (!madx.eof()) {
+      madx >> tmp >> turn >> x >> tmp >> y >> tmp >> tmp >> tmp >> s;
+      getline(madx, tmp);
+      if (madx.eof()) break;
+      
+      if (obs==1) { //see comment above
+	turn += 1;
+      }
+      otmp.x = x;
+      otmp.z = y;
+      this->set(otmp, s, turn);
+    }
+
+    madx.close();
+    obs++;
+    madx.open(files.tracking(obs,particle).c_str(), ios::in);
+  }
+  this->pop_back_turn();
+  
+}

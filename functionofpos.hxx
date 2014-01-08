@@ -438,6 +438,30 @@ Spectrum FunctionOfPos<T>::getSpectrum(AccAxis axis, unsigned int fmaxrevIn, dou
 template <class T>
 vector<double> FunctionOfPos<T>::getVector(AccAxis axis) const
 {
-  cout <<"type is: "<< typeid(T).name() << endl;
-  throw logic_error("FunctionOfPos<T>::getVector(): get vector<double> from vector<T> is not implemented for this data type.");
+  stringstream s;
+  s << "FunctionOfPos<T>::getVector(): get vector<double> from vector<T> is not implemented for data type "
+    << typeid(T).name();
+  throw logic_error(s.str());
+}
+
+
+
+
+//orbit import is defined only for T=AccPair (-> template specialization)
+template <class T>
+void FunctionOfPos<T>::madxClosedOrbit(char *madxTwissFile)
+{
+  stringstream s;
+  s << "FunctionOfPos<T>::madxClosedOrbit() is not implemented for data type " << typeid(T).name()
+    << ". It is only defined for T=AccPair (x,z).";
+  throw logic_error(s.str());
+}
+
+template <class T>
+void FunctionOfPos<T>::madxTrajectory(const FILENAMES files, unsigned int particle)
+{
+  stringstream s;
+  s << "FunctionOfPos<T>::madxTrajectory() is not implemented for data type " << typeid(T).name()
+    << ". It is only defined for T=AccPair (x,z).";
+  throw logic_error(s.str());
 }

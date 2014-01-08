@@ -14,6 +14,7 @@
 #include <stdexcept>
 #include "interpolate.hpp"
 #include "spectrum.hpp"
+#include "filenames.hpp"
 
 
 
@@ -67,6 +68,10 @@ public:
   //   !! set() is much slower than modify(). you can initialize equidistant positions by samples&turns in constructor & use modify.
   void clear();
   void pop_back_turn(); // erase data of last turn, reduces turns by 1
+
+  // orbit import
+  void madxClosedOrbit(char *madxTwissFile);                         //import closed orbit from madx twiss file
+  void madxTrajectory(const FILENAMES files, unsigned int particle); //import single particle trajectory from madx tracking "obs" files at each quadrupole
 
   // tests
   bool exists(double pos, unsigned int turn=1) const; // is there data at pos?
