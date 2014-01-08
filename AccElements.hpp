@@ -38,6 +38,7 @@ public:
 
   AccElement(string _name, double _length,element_type _type)
     : name(_name),length(_length),type(_type),dpsi(0.) {}
+  virtual ~AccElement() {};
 
   virtual AccElement* clone() const =0;
 
@@ -58,7 +59,7 @@ class Drift : public AccElement {
 public:
   Drift(string _name="nothing", double _length=0.)
     : AccElement(_name,_length,drift) {}
- ~Drift() {}
+  ~Drift() {}
   
   virtual Drift* clone() const {return new Drift(*this);}
 
@@ -106,6 +107,7 @@ protected:
 
 
 
+
 //-------- definition of magnet types -----------
 
 class Dipole : public PlaneMagnet {
@@ -122,6 +124,12 @@ public:
 };
 
 
+
+// ====== ATTENTION ====================================================================
+// Change of "element_family" (F <-> D) changes sign of "B()" !
+// So either set "element_family" and use absolute values for "strength"
+// or always use default "element_family" (F) and set negative "strength" for D magnets.
+// =====================================================================================
 
 class Quadrupole : public FamilyMagnet {
 public:
