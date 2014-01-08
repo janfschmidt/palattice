@@ -34,13 +34,15 @@ public:
   AccLattice(double _circumference, Anchor _refPos=begin);
   ~AccLattice();
 
-  double locate(double pos, const AccElement *obj, Anchor here) const;  // get here=begin/center/end (in meter) of obj at position pos
+  double locate(double pos, const AccElement *obj, Anchor here) const;  // get here=begin/center/end (in meter) of obj at reference-position pos
   double locate(const_AccIterator it, Anchor here) const;               // get here=begin/center/end (in meter)  of lattice element "it"
   bool inside(double pos, const AccElement *obj, double here) const;    // test if "here" is inside obj at position pos
   bool inside(const_AccIterator it, double here) const;                 // test if "here" is inside lattice element "it"
 
-  const AccElement* operator[](double pos) const;    //get element (any position, Drift returned if not inside any element)
-  void set(double pos, const AccElement &obj);       //set element (throws XXX if no free space for obj)
+  const AccElement* operator[](double pos) const;    // get element (any position, Drift returned if not inside any element)
+  void set(double pos, const AccElement &obj);       // set element (throws XXX if no free space for obj)
+
+  void madximport(char *madxTwissFile);              // set elements from MAD-X Lattice (read from twiss-output)
 
   string refPos_string() const;
   void print() const;                                // print lattice to stdout
@@ -55,11 +57,9 @@ public:
   eNoElement() {}
 };
 
-class eNoFreeSpace : public std::exception {
+class eNoFreeSpace : public std::invalid_argument {
 public:
-  string msg;
-  eNoFreeSpace(string _msg) throw(): msg(_msg) {}
-  ~eNoFreeSpace() throw() {}
+  eNoFreeSpace(string msg) : std::invalid_argument(msg) {}
 };
 
 
