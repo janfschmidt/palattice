@@ -27,6 +27,7 @@
 #include "resonances.hpp"
 #include "functionofpos.hpp"
 #include "field.hpp"
+#include "AccLattice.hpp"
 
 using namespace std;
 
@@ -87,13 +88,14 @@ int main (int argc, char *argv[])
     }
   }
 
-  while ((opt = getopt(argc, argv, ":n:pr:e:t:f:F:c:C:d:m:ah")) != -1) {
+  while ((opt = getopt(argc, argv, ":n:p:r:e:t:f:F:c:C:d:m:ah")) != -1) {
     switch(opt) {
     case 'n':
       n_samp = atoi(optarg);
       break;
     case 'p':
       ptc = true;
+      particle = atoi(optarg);
       break;
     case 'r':
       dtheta = atof(optarg);
@@ -135,7 +137,7 @@ int main (int argc, char *argv[])
       cout << endl << "Bsupply HELP:" << endl;
       cout << "* First argument is project path." << endl;
       cout << "* -n [n_samp] sets number of sampling points (per rev.) for field calculation." << endl;
-      cout << "* -p enables import of single particle trajectory from madx ptc_track." << endl;
+      cout << "* -p [particle no] enables import of single particle trajectory from madx ptc_track." << endl;
       cout << "* -r [dtheta] estimates resonance strengths, stepwidth [dtheta]°" << endl;
       cout << "* -e [spuren] enables ELSA-mode, Spuren as argument (path: [project]/ELSA-Spuren/) " << endl;
       cout << "* -f [fmax] sets maximum frequency for B-Field spectrum (in rev. harmonics)" << endl;
@@ -203,6 +205,9 @@ int main (int argc, char *argv[])
   metadata.add("Field sampling", tmp);
 
 
+  // initialize Lattice
+  AccLattice lattice(circumference, end); // refPos=end used by MAD-X
+
   // initialize orbit
   FunctionOfPos<AccPair> bpmorbit(circumference, gsl_interp_akima_periodic, circumference);
   FunctionOfPos<AccPair> trajectory(circumference, gsl_interp_akima);
@@ -219,23 +224,34 @@ int main (int argc, char *argv[])
   cout << "* maximum frequencies used for B-field evaluation: Bx:"<<fmax_x<<", Bz:"<<fmax_z << endl;
 
 
-  // MAD-X: read particle orbit and lattice (magnet positions & strengths)
-  madximport(file.import.c_str(), bpmorbit, dipols, quads, sexts, vcorrs);
-  misalignments(file.misalign_dip.c_str(), dipols);
-  if (ptc) trajectoryimport(file, trajectory, particle);
+  // MAD-X: read lattice (magnet positions,strengths,misalignments) and  particle orbit
+  lattice.madximport(file.import.c_str());
+  lattice.madximportMisalignments(file.misalign_dip.c_str());
+  bpmorbit.madxClosedOrbit(file.import.c_str());
+
+  if (ptc) madxTrajectory(file, particle);
 
   // elsa=true: quad-&sext-strengths, BPM- & corrector-data from ELSA "Spuren"
   if (elsa) {
-    cout << "* "<<dipols.size()<<" dipoles, "<<quads.size()<<" quadrupoles, "
-	 <<sexts.size()<<" sextupoles, "<<vcorrs.size()<<" correctors read"<<endl<<"  from "<<file.import.c_str() << endl;
-    if (ELSAimport_magnetstrengths(quads, sexts, file.spuren.c_str()) != 0)
-      return 1;
-    ELSAimport(ELSAbpms, ELSAvcorrs, file.spuren.c_str());
-    if (diff) ELSAimport(Ref_ELSAbpms, Ref_ELSAvcorrs, file.ref.c_str());
+    cout << "* "<<lattice.size(dipole)<<" dipoles, "<<lattice.size(quadrupole)<<" quadrupoles, "
+	 <<lattice.size(sextupole)<<" sextupoles, "<<lattice.size(corrector)<<" correctors read"<<endl
+	 <<"  from "<<file.import.c_str() << endl;
+    try {
+      lattice.setELSAoptics(file.spuren.c_str())
+	} catch (std::runtime_error &e) {
+      cout << e.what() << endl;
+      return 1; 
+    }
+    ELSAimport_bpms(ELSAbpms, file.spuren.c_str());
+    ELSAimport_vcorrs(ELSAvcorrs, file.spuren.c_str());
+    if (diff) {
+    ELSAimport_bpms(Ref_ELSAbpms, file.ref.c_str());
+    ELSAimport_vcorrs(Ref_ELSAvcorrs, file.ref.c_str());     
+    }
   }
   else {
-    cout << "* "<<dipols.size()<<" dipoles, "<<quads.size()<<" quadrupoles, "
-	 <<sexts.size()<<" sextupoles, "<<vcorrs.size()<<" correctors and "
+    cout << "* "<<lattice.size(dipole)<<" dipoles, "<<lattice.size(quadrupole)<<" quadrupoles, "
+	 <<lattice.size(sextupole)<<" sextupoles, "<<lattice.size(corrector)<<" correctors and "
 	 <<bpmorbit.samples()<<" BPMs read"<<endl<<"  from "<<file.import.c_str() << endl;
   }
   if (ptc) cout << "* trajectory of particle "<<particle<<" read at "<<trajectory.samples()
@@ -244,7 +260,7 @@ int main (int argc, char *argv[])
 
 
 
-  // magnetic field along ring, [B]=1/m (missing factor gamma*m*c/e)
+  // magnetic field along ring, [B]=1/m (factor gamma*m*c/e multiplied in TBMTsolver)
   Field B(circumference, n_samp, trajectory.turns());
 
   // resonance strengths
@@ -266,14 +282,16 @@ int main (int argc, char *argv[])
       }
 
       metadata.setbyLabel("Time in cycle", t.label(i));
-      err += ELSAimport_getbpmorbit(ELSAbpms, bpmorbit, t.get(i));
-      err += ELSAimport_getvcorrs(ELSAvcorrs, vcorrs, t.get(i));
-      if (err != 0) return 1;
-      cout << "* "<<t.label(i)<<": "<<vcorrs.size()<<" correctors and "
+      try {
+	bpmorbit.elsaClosedOrbit(ELSAbpms, t.get(i));
+	lattice.setELSACorrectors(ELSAvcorrs, t.get(i));
+      }
+
+      cout << "* "<<t.label(i)<<": "<<lattice.size(corrector)<<" correctors and "
 	   <<bpmorbit.samples()<<" BPMs read"<<endl<<"  from "<<file.spuren.c_str() << endl;
     }
     //diff=true: read and subtract reference orbit & corrector data
-    if (diff) {
+    if (diff) {  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	if (difference(file.ref.c_str(), t.get(i), bpmorbit, vcorrs, Ref_ELSAbpms, Ref_ELSAvcorrs, elsa) != 0)
 	  return 1;
     }
