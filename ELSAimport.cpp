@@ -17,16 +17,6 @@ using namespace std;
 
 #define VCPOS_WARNDIFF 0.05  //warning for larger VC pos.diff. in MadX & ELSA-Spuren
 
-/* read ELSA data */
-int ELSAimport(BPM *ELSAbpms, CORR *ELSAvcorrs, const char *spurenFolder)
-{
-  
-  ELSAimport_bpms(ELSAbpms, spurenFolder);
-  ELSAimport_vcorrs(ELSAvcorrs, spurenFolder);
-
-  return 0;
-}
-
 
 
 /* Write quad- & sext-strengths */
@@ -126,28 +116,6 @@ int ELSAimport_bpms(BPM *ELSAbpms, const char *spurenFolder)
   return 0;
 }
 
-
-
-/* write BPM data for time t to bpmorbit */
-int ELSAimport_getbpmorbit(BPM *ELSAbpms, FunctionOfPos<AccPair> &bpmorbit, unsigned int t)
-{
-  int i;
-  AccPair otmp;
-
-  bpmorbit.clear(); //delete old-BPM-data (from madx or previous t)
-  
-  for (i=0; i<NBPMS; i++) {
-    if (t > ELSAbpms[i].time.size()) {
-      printf("ERROR: ELSAimport.cpp: No ELSA BPM%02d data available for %d ms.\n", i+1, t);
-      return 1;
-    }
-    otmp.x = ELSAbpms[i].time[t].x / 1000; // unit mm -> m
-    otmp.z = ELSAbpms[i].time[t].z / 1000;
-    bpmorbit.set(otmp, ELSAbpms[i].pos);
-  }
-  
-  return 0;
-}
 
 
 
