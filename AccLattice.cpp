@@ -82,6 +82,76 @@ bool AccLattice::inside(const_AccIterator it, double here) const
 
 
 
+// get first element of given type
+// returns iterator to end if there is none
+AccIterator AccLattice::firstIt(element_type _type)
+{
+  for (AccIterator it=elements.begin(); it!=elements.end(); ++it) {
+    if (it->second->type == _type)
+      return it;
+  }
+
+  return elements.end();
+}
+
+// get last element of given type
+// returns iterator to end if there is none
+AccIterator AccLattice::lastIt(element_type _type) 
+{
+  for (AccIterator it=elements.end(); it!=elements.begin(); it--) {
+    if (it->second->type == _type)
+      return it;
+  }
+
+  return elements.end();  
+}
+
+// get next element of given type after it
+// returns iterator to end if there is none
+AccIterator AccLattice::nextIt(element_type _type, AccIterator it)
+{
+  it++; // check only elements AFTER it
+ for (; it!=elements.end(); ++it) {
+    if (it->second->type == _type)
+      return it;
+  }
+
+  return elements.end();  
+}
+
+
+
+// get first element of given type
+// returns Drift if there is none
+const AccElement* AccLattice::first(element_type _type) 
+{
+  AccIterator it = this->firstIt(_type);
+  if (it == elements.end()) return empty_space;
+  else return it->second;
+}
+
+// get last element of given type
+// returns Drift if there is none
+const AccElement* AccLattice::last(element_type _type)
+{
+  AccIterator it = lastIt(_type);
+  if (it == elements.end()) return empty_space;
+  else return it->second;
+}
+
+// get next element of given type after pos
+// returns Drift if there is none
+const AccElement* AccLattice::next(element_type _type, double pos)
+{
+  for (const_AccIterator it=getIt(pos); it!=elements.end(); ++it) {
+    if (it->second->type == _type)
+      return it->second;
+  }
+
+  return empty_space;  
+}
+
+
 
 // get const_Iterator
 const_AccIterator AccLattice::getIt(double pos) const
@@ -198,9 +268,26 @@ void AccLattice::set(double pos, const AccElement& obj)
 }
 
 
+// erase element at position pos
+void AccLattice::erase(double pos)
+{
+  try {
+    const_AccIterator it = getIt(pos);
+  }
+  catch (eNoElement &e) {
+    cout << "WARNING: AccLattice::erase(): There is no element at position "<<pos<< " m. Nothing is erased." << endl;
+    return;
+  }
+  elements.erase(it);
+}
+
 
 
 // set elements from MAD-X Lattice (read from twiss-output)
+// ====== ATTENTION ==================================
+// "FamilyMagnets" (Quad,Sext) all of type F, because
+// MAD-X uses different signs of strengths (k,m)
+// ===================================================
 void AccLattice::madximport(char *madxTwissFile)
 {
   // madx column variables
@@ -264,6 +351,174 @@ void AccLattice::madximport(char *madxTwissFile)
 }
 
 
+// set misalignments from MAD-X Lattice (read ealign-output)
+// ! currently only rotation (dpsi) around beam axis (s) is implemented   !
+// ! to add others: define member in class AccElements & implement import !
+void AccLattice::madximportMisalignments(char *madxEalignFile)
+{
+  string tmp;
+  unsigned int j;
+  double _dpsi=0.;
+  fstream madxEalign;
+  AccIterator it=elements.begin();
+
+  madxEalign.open(madxEalignFile, ios::in);
+  if (!madxEalign.is_open()) {
+    cout << "ERROR: AccLattice::madximportMisalignments(): Cannot open " << madxEalignFile << endl;
+    exit(1);
+  }
+  
+  while (!madxEalign.eof()) {
+    madxEalign >> tmp;
+
+    if (tmp == "@" || tmp == "*" || tmp == "$") { // header lines
+      getline(madxEalign, tmp);
+    }
+    else {
+      for (; it!=elements.end(); ++it) {          //madxEalign is sorted by position => loop continued
+	if (it->second->name == tmp) {
+	  for (j=0; j<47; j++) madxEalign >> tmp; //read stupid unnecessary columns
+	  madxEalign >> _dpsi;                    //read & write rotation around s-axis
+	  it->second->dpsi = _dpsi; 
+	  getline(madxEalign, tmp);
+	  break;
+	}
+      }
+    }
+
+  }
+
+}
+
+
+
+
+// change quad&sext strengths to values from "ELSA-Spuren"
+void AccLattice::setELSAoptics(char *spurenFolder)
+{
+  char filename[1024];
+  string tmp;
+  double kf=0, kd=0, mf=0, md=0;
+  fstream f_magnets;
+  AccIterator it;
+
+ // Read "optics.dat"
+  snprintf(filename, 1024, "%s/optics.dat", spurenFolder);
+  f_magnets.open(filename, ios::in);
+  if (!f_magnets.is_open()) {
+    throw std::runtime_error("ERROR: AccLattice::setELSAoptics(): Cannot open %s\n", filename);
+  }
+  while(!f_magnets.eof()) {
+    f_magnets >> tmp;
+    if (tmp=="ELS_MAGNETE_QUADF.KF_AC")
+      f_magnets >> kf;
+    else if (tmp=="ELS_MAGNETE_QUADD.KD_AC")
+      f_magnets >> kd;
+    else if (tmp=="ELS_MAGNETE_SEXTF.MF_AC")
+      f_magnets >> mf;
+    else if (tmp=="ELS_MAGNETE_SEXTD.MD_AC")
+      f_magnets >> md;
+    else if (tmp=="#")         //ignore comment lines
+      getline(f_magnets, tmp);
+    else
+      throw std::runtime_error("ERROR: AccLattice::setELSAoptics(): Unexpected entry in %s\n", filename);
+  }
+  f_magnets.close();
+
+  //Write strengths to quads
+  for (it=firstIt(quadrupole); it!=elements.end(); it=nextIt(quadrupole,it)) {
+    if (it->second->name.compare(1,2,"QF") == 0) {
+      it->second->strength = kf;
+    }
+    else if (it->second->name.compare(1,2,"QD") == 0) {
+      it->second->strength = -kd;
+    }
+  }
+
+  //Write strengths to sexts
+ for (it=firstIt(sextupole); it!=elements.end(); it=nextIt(sextupole,it)) {
+    if (it->second->name.compare(1,2,"SF") == 0) {
+      it->second->strength = mf;
+    }
+    else if (it->second->name.compare(1,2,"SD") == 0) {
+      it->second->strength = -md;
+    }
+  }
+  
+}
+
+
+
+// change corrector pos&strength to values from "ELSA-Spuren" at time t(ms
+void AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
+{
+ unsigned int i, j=0;
+ Corrector corrTmp("default name", 0.);
+ char name[20];
+ char msg[1024];
+ stringstream strMsg;
+ double diff=0;
+ AccIterator it = firstIt(corrector);
+
+ 
+ for (i=0; i<NVCORRS; i++) {
+   if (ELSAvcorrs[i].pos==0.0) {   //inactive correctors have pos=0 in VCORRS.SPOS
+     continue;
+   }
+   else if (t > ELSAvcorrs[i].time.size()) {
+     snprintf(msg, 1024, "ERROR: AccLattice::setELSACorrectors(): No ELSA VC%02d corrector data available for %d ms.\n", i+1, t);
+     throw std::invalid_argument(msg);
+   }
+   
+   //same corrector in Mad-X and ELSA-Spuren?
+   //...check by name
+   snprintf(name, 20, "\"KV%02i\"", i+1);
+   if (it->second->name != name) {
+     strMsg << "ERROR: AccLattice::setELSACorrectors(): Unexpected corrector name. Mad-X lattice does not fit to ELSA." << endl;
+     strMsg << "       Mad-X: " <<it->second->name<< " -- expected: " <<name;
+     throw std::runtime_error(strMsg.str());
+   }
+   //...check by position
+   diff = fabs(ELSAvcorrs[i].pos - locate(it,center));
+   if (diff > VCPOS_WARNDIFF) {
+     cout << "! Position of " <<name<< " differs by " <<diff<< "m in Mad-X and ELSA-Spuren. Use ELSA-Spuren." << endl;
+   }
+   
+   // corrTmp.name = name;
+   // corrTmp.length = it->second->length;
+   // corrTmp.dpsi = it->second->dpsi;
+   corrTmp = *(it->second);
+
+   corrTmp.strength = ELSAvcorrs[i].time[t].kick/1000.0/corrTmp.length;   //unit 1/m
+   this->set(ELSAvcorrs[i].pos, corrTmp);
+
+   it = nextIt(corrector,it);
+   j++;
+   if (it == elements.end())
+     break;
+ }
+ 
+ if (j != this->size(correctors))
+   cout << "WARNING: Not all correctors overwritten by ELSA-Spuren" << endl;
+ 
+}
+
+
+
+
+
+// ------------------ "information" -----------------------
+// returns number of elements of a type in this lattice
+unsigned int AccLattice::size(element_type _type) const
+{
+  unsigned int n=0;
+  for (const_AccIterator it=elements.begin(); it!=elements.end(); ++it) {
+    if (it->second->type == _type)
+      n++;
+  }
+
+  return n;
+}
 
 
 string AccLattice::refPos_string() const
