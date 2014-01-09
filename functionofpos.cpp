@@ -183,3 +183,23 @@ void FunctionOfPos<AccPair>::madxTrajectory(const FILENAMES files, unsigned int 
   this->pop_back_turn();
   
 }
+
+
+//import closed orbit from ELSA BPM-measurement at time t/ms
+template <>
+void FunctionOfPos<AccPair>::elsaClosedOrbit(BPM *ELSAbpms, unsigned int t)
+{
+  int i;
+  AccPair otmp;
+
+  this->clear(); //delete old-BPM-data (from madx or previous t)
+  
+  for (i=0; i<NBPMS; i++) {
+    if (t > ELSAbpms[i].time.size())
+      throw std::runtime_error("ERROR: ELSAimport.cpp: No ELSA BPM%02d data available for %d ms.\n", i+1, t);
+
+    otmp.x = ELSAbpms[i].time[t].x / 1000; // unit mm -> m
+    otmp.z = ELSAbpms[i].time[t].z / 1000;
+    this->set(otmp, ELSAbpms[i].pos);
+  }
+}

@@ -72,6 +72,7 @@ public:
   // orbit import
   void madxClosedOrbit(char *madxTwissFile);                         //import closed orbit from madx twiss file
   void madxTrajectory(const FILENAMES files, unsigned int particle); //import single particle trajectory from madx tracking "obs" files at each quadrupole
+  void elsaClosedOrbit(BPM *ELSAbpms, unsigned int t);               //import closed orbit from ELSA measurement at time t/ms
 
   // tests
   bool exists(double pos, unsigned int turn=1) const; // is there data at pos?

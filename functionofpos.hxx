@@ -465,3 +465,12 @@ void FunctionOfPos<T>::madxTrajectory(const FILENAMES files, unsigned int partic
     << ". It is only defined for T=AccPair (x,z).";
   throw logic_error(s.str());
 }
+
+template <class T>
+void FunctionOfPos<T>::elsaClosedOrbit(BPM *ELSAbpms, unsigned int t)
+{
+  stringstream s;
+  s << "FunctionOfPos<T>::elsaClosedOrbit() is not implemented for data type " << typeid(T).name()
+    << ". It is only defined for T=AccPair (x,z).";
+  throw logic_error(s.str());
+}
