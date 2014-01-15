@@ -74,8 +74,8 @@ public:
   string refPos_string() const;
 
   // output (stdout or file)
-  void print(char *filename="") const;                         // print lattice. If no filename is given, print to stdout
-  void printType(element_type _type, char *filename="") const; // print all elements of one type. If no filename is given, print to stdout
+  void print(const char *filename="") const;                         // print lattice. If no filename is given, print to stdout
+  void printType(element_type _type, const char *filename="") const; // print all elements of one type. If no filename is given, print to stdout
 
 };
 

@@ -670,7 +670,7 @@ string AccLattice::refPos_string() const
 // ----------- output (stdout or file) ----------------------
 
 // print lattice. If no filename is given, print to stdout
-void AccLattice::print(char *filename) const
+void AccLattice::print(const char *filename) const
 {
   const_AccIterator it=elements.begin();
   const int w = 12;
@@ -704,7 +704,7 @@ void AccLattice::print(char *filename) const
 
 
 // print all elements of one type If no filename is given, print to stdout
-void AccLattice::printType(element_type _type, char *filename) const
+void AccLattice::printType(element_type _type, const char *filename) const
 {
   const_AccIterator it=firstIt(_type);
   const int w = 12;
