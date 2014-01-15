@@ -449,7 +449,7 @@ vector<double> FunctionOfPos<T>::getVector(AccAxis axis) const
 
 //orbit import is defined only for T=AccPair (-> template specialization)
 template <class T>
-void FunctionOfPos<T>::madxClosedOrbit(char *madxTwissFile)
+void FunctionOfPos<T>::madxClosedOrbit(const char *madxTwissFile)
 {
   stringstream s;
   s << "FunctionOfPos<T>::madxClosedOrbit() is not implemented for data type " << typeid(T).name()

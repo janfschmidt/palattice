@@ -7,7 +7,8 @@
  *
  */
 
-
+#include <string>
+#include <sstream>
 #include "functionofpos.hpp"
 
 
@@ -96,7 +97,7 @@ vector<double> FunctionOfPos<AccTriple>::getVector(AccAxis axis) const
 // ---------------- Orbit import ---------------------
 //import closed orbit from madx twiss file
 template <>
-void FunctionOfPos<AccPair>::madxClosedOrbit(char *madxTwissFile)
+void FunctionOfPos<AccPair>::madxClosedOrbit(const char *madxTwissFile)
 {
   // --------------------------------------------------------------------------------
   // position of orbit-data at END of quadrupole (according to s in madx twiss file).
@@ -190,13 +191,16 @@ template <>
 void FunctionOfPos<AccPair>::elsaClosedOrbit(BPM *ELSAbpms, unsigned int t)
 {
   int i;
+  char msg[1024];
   AccPair otmp;
 
   this->clear(); //delete old-BPM-data (from madx or previous t)
   
   for (i=0; i<NBPMS; i++) {
-    if (t > ELSAbpms[i].time.size())
-      throw std::runtime_error("ERROR: ELSAimport.cpp: No ELSA BPM%02d data available for %d ms.\n", i+1, t);
+    if (t > ELSAbpms[i].time.size()) {
+      snprintf(msg, 1024, "ERROR: ELSAimport.cpp: No ELSA BPM%02d data available for %d ms.\n", i+1, t);
+      throw std::runtime_error(msg);
+    }
 
     otmp.x = ELSAbpms[i].time[t].x / 1000; // unit mm -> m
     otmp.z = ELSAbpms[i].time[t].z / 1000;
