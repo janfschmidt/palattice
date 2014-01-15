@@ -8,35 +8,31 @@
 #include <iomanip>
 #include <vector>
 #include <exception>
-#include "types.hpp"
-#include "constants.hpp"
-#include "ELSAimport.hpp"
-#include "madximport.hpp"
+#include "difference.hpp"
 
 using namespace std;
 
 // read and subtract reference orbit & corrector data
-int difference(const char *ReferenceFolder, unsigned int t, FunctionOfPos<AccPair> &bpmorbit, magnetvec &vcorrs, BPM *Ref_ELSAbpms, CORR *Ref_ELSAvcorrs, bool elsa)
+int difference(const char *ReferenceFile, unsigned int t, FunctionOfPos<AccPair> &bpmorbit, AccLattice &lattice, BPM *Ref_ELSAbpms, CORR *Ref_ELSAvcorrs, bool elsa)
 {
 
-  unsigned int i = 0;
-  FunctionOfPos<AccPair> Ref_bpmorbit(164.4, gsl_interp_akima_periodic, 164.4);
-  magnetvec Ref_vcorrs;
+  unsigned int i = 0, n;
 
   //read reference
   if (elsa) {
-    Ref_vcorrs  = vcorrs; // take names,positions,lengths from vcorrs (pos will be checked again in getvcorrs()
-    ELSAimport_getbpmorbit(Ref_ELSAbpms, Ref_bpmorbit, t);
-    ELSAimport_getvcorrs(Ref_ELSAvcorrs, Ref_vcorrs, t);
+    Ref_lattice = lattice; // take names,positions,lengths (pos will be checked again in setELSACorrectors()
+    Ref_bpmorbit.elsaClosedOrbit(Ref_ELSAbpms, t);
+    n = Ref_lattice.setELSACorrectors(Ref_ELSAvcorrs, t);
     cout << "* "<<t<<" ms: ";
   }
   else {
-    magnetvec tmpDip, tmpQuad, tmpSext;
-    madximport(ReferenceFolder, Ref_bpmorbit, tmpDip, tmpQuad, tmpSext, Ref_vcorrs);
+    Ref_lattice.madximport(ReferenceFile);
+    Ref_lattice.madximportMisalignments(ReferenceFile);
+    n = Ref_lattice.size(corrector);
     cout << "* ";
   }
-  cout <<Ref_vcorrs.size()<<" correctors and "
-       <<Ref_bpmorbit.samples()<<" BPMs read"<<endl<<"  from "<< ReferenceFolder << endl;
+  cout <<n<<" correctors and "
+       <<Ref_bpmorbit.samples()<<" BPMs read"<<endl<<"  from "<< ReferenceFile << endl;
 
   //subtract orbit
   try {
@@ -49,11 +45,12 @@ int difference(const char *ReferenceFolder, unsigned int t, FunctionOfPos<AccPai
   }
 
   //subtract corrector strengths
-  if (vcorrs.size() != Ref_vcorrs.size()) {
-    cout << "ERROR: difference.cpp: Unequal number of VCs to subtract."<< endl;
+  if (lattice.size(corrector) != Ref_lattice.size(corrector)) {
+    cout << "ERROR: difference.cpp: Unequal number of correctors to subtract."<< endl;
     return 1;
   }
-  for (i=0; i<vcorrs.size(); i++) {
+  /*
+  for (i=0; i<lattice.size(corrector); i++) {
     if (vcorrs[i].start==Ref_vcorrs[i].start) {
       vcorrs[i].strength -= Ref_vcorrs[i].strength;
     }
@@ -62,11 +59,13 @@ int difference(const char *ReferenceFolder, unsigned int t, FunctionOfPos<AccPai
       return 1;
     }
   }
+  */
 
   return 0;
 }
 
 
+/*
 //output file with harmcorr data
 int harmcorr_out(double *HCvcorr, double *HCquad, double *HCsum, unsigned int nd, const char *filename)
 {
@@ -94,22 +93,18 @@ int harmcorr_out(double *HCvcorr, double *HCquad, double *HCsum, unsigned int nd
 
 
 //calculates integral vcorr, quad and vcorr+quad kicks per dipole interval for harmcorr analysis
-int harmcorr(magnetvec vcorrs, magnetvec quads, FunctionOfPos<AccPair> &orbit, magnetvec dipols, const char *filename)
+int harmcorr(AccLattice lattice, FunctionOfPos<AccPair> &orbit, const char *filename)
 {
  unsigned int i=0,j=0,k=0;
- unsigned int nd = dipols.size();
- unsigned int nc = vcorrs.size();
+ unsigned int nd = lattice.size(dipole);
+ unsigned int nc = vcorrs.size(corrector);
  unsigned int nq = quads.size();
  double *HCvcorr = new double[2*nd](); //() -> initialize to zero
  double *HCquad = new double[2*nd]();
  double *HCsum = new double[2*nd]();
  double length;
 
- /*
- memset(HCvcorr, 0, 2*nd*sizeof(double));
- memset(HCquad, 0, 2*nd*sizeof(double));
- memset(HCsum, 0, 2*nd*sizeof(double));
- */
+ 
 
  for (i=0; i<nd; i++) {
      while(vcorrs[j].start < dipols[i].start && j < nc) {
@@ -147,4 +142,4 @@ int harmcorr(magnetvec vcorrs, magnetvec quads, FunctionOfPos<AccPair> &orbit, m
 
  return 0;
 }
-
+*/

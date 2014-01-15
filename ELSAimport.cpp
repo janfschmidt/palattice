@@ -15,11 +15,10 @@
 
 using namespace std;
 
-#define VCPOS_WARNDIFF 0.05  //warning for larger VC pos.diff. in MadX & ELSA-Spuren
-
 
 
 /* Write quad- & sext-strengths */
+/*
 int ELSAimport_magnetstrengths(magnetvec &quads, magnetvec &sexts, const char *spurenFolder)
 {
   int i, n;
@@ -74,7 +73,7 @@ int ELSAimport_magnetstrengths(magnetvec &quads, magnetvec &sexts, const char *s
   
   return 0;
 }
-
+*/
 
 
 /* Write BPM data from files to bpms */
@@ -185,6 +184,7 @@ int ELSAimport_vcorrs(CORR *ELSAvcorrs, const char *spurenFolder)
 
 /* write corrector data for time t to vcorrs
   !vcorrs must be read from madx before to get length! */
+/*
 int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, unsigned int t)
 {
   unsigned int i, j=0;
@@ -228,12 +228,13 @@ int ELSAimport_getvcorrs(CORR *ELSAvcorrs, magnetvec &vcorrs, unsigned int t)
   
   return 0;
 }
-
+*/
 
 
 
 
 /* create output file with corrector data */
+/*
 int corrs_out(magnetvec vcorrs, const char *filename)
 {
  unsigned int i=0;
@@ -256,3 +257,4 @@ int corrs_out(magnetvec vcorrs, const char *filename)
 
  return 0;
 }
+*/

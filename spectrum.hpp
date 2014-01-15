@@ -8,12 +8,16 @@
  */
 
 
-#ifndef __MYSPECTRUM_HPP_
-#define __MYSPECTRUM_HPP_
+#ifndef __BSUPPLY_SPECTRUM_HPP_
+#define __BSUPPLY_SPECTRUM_HPP_
 
+#include <vector>
+#include <string>
 #include <gsl/gsl_fft_complex.h>
 #include <gsl/gsl_const_mksa.h>
-#include "resonances.hpp"
+#include "constants.hpp"
+
+using namespace std;
 
 
 enum unit{meter, second, degree};
@@ -49,10 +53,8 @@ private:
 
 public:
   Spectrum(unsigned int fmaxrevIn=30, double ampcut=0);
-  Spectrum(RESONANCES &In, unsigned int fmaxrevIn=30, double ampcut=0);
   Spectrum(vector<double> In, double circ, unsigned int turns, unsigned int fmaxrevIn=30, double ampcut=0, unit u=meter);
   ~Spectrum() {}
-  //Spectrum(const Spectrum &other);
   
   inline FREQCOMP get(unsigned int i) const {return b[i];}
   inline double freq(unsigned int i) const {return b[i].freq;}
@@ -82,4 +84,4 @@ public:
 
 
 #endif
-/*__MYSPECTRUM_HPP_*/
+/*__BSUPPLY_SPECTRUM_HPP_*/

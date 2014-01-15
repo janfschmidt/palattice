@@ -11,6 +11,7 @@
 
 #include "types.hpp"
 #include "functionofpos.hpp"
+#include "AccLattice.hpp"
 
 
 class Field : public FunctionOfPos<AccTriple> {
@@ -23,7 +24,9 @@ public:
     : FunctionOfPos(circIn, stepwidth, turnsIn, t, periodIn) {}
   ~Field() {}
 
-  // additional functions for Field:
+  
+  void set(AccLattice &lattice, FunctionOfPos<AccPair> &orbit, double n_samples); // set all magnetic field values from lattice and orbit
+
   int magnetlengths(magnetvec &dipols, const char *filename) const;
 
 };

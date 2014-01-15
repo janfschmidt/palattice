@@ -7,7 +7,6 @@
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
  */
 
-#include "spectrum.hpp"
 #include <fstream>
 #include <iostream>
 #include <iomanip>
@@ -15,6 +14,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <gsl/gsl_fft_real.h>
+#include "spectrum.hpp"
 
 using namespace std;
 
@@ -29,6 +29,7 @@ Spectrum::Spectrum(unsigned int fmaxrevIn, double ampcutIn)
 }
 
 
+/*
 Spectrum::Spectrum(RESONANCES &In, unsigned int fmaxrevIn, double ampcutIn)
   : fMax_rev(fmaxrevIn), ampcut(ampcutIn), turns(In.n_turns), circ(360), norm(In.ndipols()*In.n_turns), circUnit(degree)
 {
@@ -40,7 +41,7 @@ Spectrum::Spectrum(RESONANCES &In, unsigned int fmaxrevIn, double ampcutIn)
 
   fft(In.getkickVector());
 }
-
+*/
 
 Spectrum::Spectrum(vector<double> In, double c, unsigned int t, unsigned int fmaxrevIn, double ampcutIn, unit u)
    : fMax_rev(fmaxrevIn), ampcut(ampcutIn), turns(t), circ(c), norm(In.size()), circUnit(u)

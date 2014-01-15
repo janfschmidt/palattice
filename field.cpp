@@ -8,9 +8,40 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <iomanip>
 #include "field.hpp"
 
+
+
+// set all magnetic field values from lattice and orbit
+void Field::set(AccLattice &lattice, FunctionOfPos<AccPair>& orbit, double n_samples)
+{
+  unsigned int i, t;
+  double _pos, _pos_tot;
+  stringstream msg;
+  AccPair otmp;
+  AccTriple Btmp;
+
+ double interval_samp = this->circ / n_samples; // sampling interval of magn. field values along ring in meter
+
+  if (this->circ != orbit.circ) {
+    msg << "ERROR: Field::set(): Field and orbit have different circumferences ("
+	 <<this->circ <<", "<<orbit.circ<<").";
+    throw runtime_error(msg.str());
+  }
+
+   for (t=1; t<=orbit.turns(); t++) {
+     for (i=0; i<n_samples; i++) {
+       _pos = i*interval_samp;
+       _pos_tot = orbit.posTotal(_pos, t);
+       otmp = orbit.interp(_pos_tot);
+
+       Btmp = lattice[_pos]->B(otmp);
+       this->modify(Btmp, i, t);
+     }
+   }
+}
 
 
 //compare magnet lengths in FIELDMAP with exact lengths from lattice

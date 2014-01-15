@@ -16,18 +16,18 @@
 #include <sstream>
 #include "constants.hpp"
 #include "types.hpp"
-#include "spectrum.hpp"
-#include "getfields.hpp"
-#include "madximport.hpp"
-#include "ELSAimport.hpp"
-#include "metadata.hpp"
-#include "difference.hpp"
+#include "AccLattice.hpp"
+//#include "getfields.hpp"
+//#include "madximport.hpp"
 #include "timetag.hpp"
 #include "filenames.hpp"
 #include "resonances.hpp"
-#include "functionofpos.hpp"
+#include "difference.hpp"
+#include "metadata.hpp"
+#include "ELSAimport.hpp"
+#include "spectrum.hpp"
 #include "field.hpp"
-#include "AccLattice.hpp"
+#include "functionofpos.hpp"
 
 using namespace std;
 
@@ -66,7 +66,7 @@ int main (int argc, char *argv[])
   magnetvec vcorrs;
   FunctionOfPos<AccPair> *orbit;
 
-  int err=0;
+  // int err=0;
 
   int opt, warnflg=0, conflictflg=0;          //for getopt()
   extern char *optarg;
@@ -207,9 +207,11 @@ int main (int argc, char *argv[])
 
   // initialize Lattice
   AccLattice lattice(circumference, end); // refPos=end used by MAD-X
+  AccLattice Ref_lattice(circumference, end);
 
   // initialize orbit
   FunctionOfPos<AccPair> bpmorbit(circumference, gsl_interp_akima_periodic, circumference);
+  FunctionOfPos<AccPair> Ref_bpmorbit(circumference, gsl_interp_akima_periodic, circumference);
   FunctionOfPos<AccPair> trajectory(circumference, gsl_interp_akima);
 
 
@@ -229,31 +231,29 @@ int main (int argc, char *argv[])
   lattice.madximportMisalignments(file.misalign_dip.c_str());
   bpmorbit.madxClosedOrbit(file.import.c_str());
 
-  if (ptc) madxTrajectory(file, particle);
+  if (ptc) trajectory.madxTrajectory(file, particle);
 
   // elsa=true: quad-&sext-strengths, BPM- & corrector-data from ELSA "Spuren"
   if (elsa) {
-    cout << "* "<<lattice.size(dipole)<<" dipoles, "<<lattice.size(quadrupole)<<" quadrupoles, "
-	 <<lattice.size(sextupole)<<" sextupoles, "<<lattice.size(corrector)<<" correctors read"<<endl
-	 <<"  from "<<file.import.c_str() << endl;
     try {
-      lattice.setELSAoptics(file.spuren.c_str())
+      lattice.setELSAoptics(file.spuren.c_str());
 	} catch (std::runtime_error &e) {
       cout << e.what() << endl;
       return 1; 
     }
+    // get orbit and vcorrs from ELSA "Spuren" (for all times t) 
     ELSAimport_bpms(ELSAbpms, file.spuren.c_str());
     ELSAimport_vcorrs(ELSAvcorrs, file.spuren.c_str());
     if (diff) {
-    ELSAimport_bpms(Ref_ELSAbpms, file.ref.c_str());
-    ELSAimport_vcorrs(Ref_ELSAvcorrs, file.ref.c_str());     
+      ELSAimport_bpms(Ref_ELSAbpms, file.ref.c_str());
+      ELSAimport_vcorrs(Ref_ELSAvcorrs, file.ref.c_str());
+      Ref_lattice = lattice; // take names,positions,lengths
     }
   }
-  else {
-    cout << "* "<<lattice.size(dipole)<<" dipoles, "<<lattice.size(quadrupole)<<" quadrupoles, "
-	 <<lattice.size(sextupole)<<" sextupoles, "<<lattice.size(corrector)<<" correctors and "
-	 <<bpmorbit.samples()<<" BPMs read"<<endl<<"  from "<<file.import.c_str() << endl;
-  }
+
+  cout << "* "<<lattice.size(dipole)<<" dipoles, "<<lattice.size(quadrupole)<<" quadrupoles, "
+       <<lattice.size(sextupole)<<" sextupoles, "<<lattice.size(corrector)<<" correctors and "
+       <<bpmorbit.samples()<<" BPMs read"<<endl<<"  from "<<file.import.c_str() << endl;
   if (ptc) cout << "* trajectory of particle "<<particle<<" read at "<<trajectory.samples()
 		<<" observation points for "<<trajectory.turns()<<" turns"<<endl;
   cout << "--------------------------------------------" << endl;
@@ -264,7 +264,7 @@ int main (int argc, char *argv[])
   Field B(circumference, n_samp, trajectory.turns());
 
   // resonance strengths
-  RESONANCES Res(dtheta, dipols.size(), trajectory.turns());
+  RESONANCES Res(dtheta, lattice.size(dipole), trajectory.turns());
   // check fmax for resonance strengths (if not set by -F (or to large): set to maximum)
   if (dtheta != -1) {
     ftmp = int(abs(360/dtheta / 2.0));
@@ -273,59 +273,91 @@ int main (int argc, char *argv[])
 
   
 
-  // -----------------------------------------
+
+  // following part of the program can be executed multiple times for different times t,
+  // which is only relevant for ELSA-mode. Else, the loop is executed only once (t.size()=1).
   for(i=0; i<t.size(); i++) {
+
+    // ELSA-mode: read orbit & corrector data for time t
     if (elsa) {
       if (t.get(i) < 0) {
 	cout << "ERROR: t = "<<t.get(i)<<" < 0 is no valid moment of ELSA cycle." << endl;
 	return 1;
       }
-
       metadata.setbyLabel("Time in cycle", t.label(i));
       try {
 	bpmorbit.elsaClosedOrbit(ELSAbpms, t.get(i));
 	lattice.setELSACorrectors(ELSAvcorrs, t.get(i));
+      } catch (exception &e) {
+	cout << e.what();
+	exit(1);
       }
-
       cout << "* "<<t.label(i)<<": "<<lattice.size(corrector)<<" correctors and "
 	   <<bpmorbit.samples()<<" BPMs read"<<endl<<"  from "<<file.spuren.c_str() << endl;
     }
-    //diff=true: read and subtract reference orbit & corrector data
-    if (diff) {  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	if (difference(file.ref.c_str(), t.get(i), bpmorbit, vcorrs, Ref_ELSAbpms, Ref_ELSAvcorrs, elsa) != 0)
-	  return 1;
+
+    // difference-mode: read reference orbit & corrector data
+    if (diff) {
+      if (elsa) {
+	Ref_bpmorbit.elsaClosedOrbit(Ref_ELSAbpms, t.get(i));
+	Ref_lattice.setELSACorrectors(Ref_ELSAvcorrs, t.get(i));
+	cout << "* "<<t.label(i)<<": ";
+	  }
+      else {
+	Ref_bpmorbit.madxClosedOrbit(file.ref.c_str());
+	Ref_lattice.madximport(file.ref.c_str());
+	cout << "* ";
+      }
+      cout <<Ref_lattice.size(corrector)<<" correctors and "
+	   <<Ref_bpmorbit.samples()<<" BPMs read"<<endl<<"  from "<< file.ref.c_str() << endl;
+    }
+    
+    // difference-mode: subtract reference orbit & corrector data
+    if (diff) {
+      bpmorbit -= Ref_bpmorbit;
+      lattice.subtractCorrectorStrengths(Ref_lattice);
     }
 
+    // ======= most important feature: =======
     // calculate field distribution & spectrum
+
+    // if tracking is used (ptc-mode), orbit = trajectory + closed orbit
+    // else, orbit = closed orbit
     if (ptc) {
-      trajectory += bpmorbit;
+      trajectory += bpmorbit; // add closed orbit for every turn (trajectory coord. relative to C.O.)
       orbit = &trajectory;
     }
     else {
       orbit = &bpmorbit;
     }
+
     cout << "Calculate field distribution..." << endl;
-    getfields(B, n_samp, *orbit, dipols, quads, sexts, vcorrs, Res);
+    B.set(lattice, *orbit, n_samp);        // calculate field distribution (s)
+    Res.set(lattice, *orbit);      // calculate Resonances (theta)
+
     cout << "Calculate spectra (FFT)..." << endl;
     Spectrum bx = B.getSpectrum(x, fmax_x, ampcut_x);
     Spectrum bz = B.getSpectrum(z, fmax_z, ampcut_z);
     Spectrum bs = B.getSpectrum(s, fmax_s);
-    Spectrum res(Res, fmax_res, ampcut_res);
+    Spectrum res = Res.getSpectrum(fmax_res, ampcut_res);
     cout << "--------------------------------------------" << endl;
-    // -----------------------------------------
+    // =======================================
+
+
 
 
 
     // generate output files
     if (allout) {
+      //lattice
+      lattice.print(file.out("lattice", t.tag(i)).c_str());
       //BPM data
       bpmorbit.out(file.out("bpms", t.tag(i)).c_str());
       trajectory.out(file.out("trajectory", t.tag(i)).c_str());
       //corrector data
-      corrs_out(vcorrs, file.out("vcorrs", t.tag(i)).c_str());
+      lattice.printType(corrector, file.out("vcorrs", t.tag(i)).c_str());
       //orbit data (interpolated BPMs)
       bpmorbit.interp_out(0.1, file.out("interp_bpms", t.tag(i)).c_str());
-      //trajectory.interp_out(1.0, file.out("interp_trajectory", t.tag(i)).c_str());
       //field data
       B.out(file.out("fields", t.tag(i)).c_str());
       //evaluated field data
@@ -347,9 +379,9 @@ int main (int argc, char *argv[])
 	Res.out(file.out("resonances", t.tag(i)).c_str());
     }
 
-    //harmcorr data
-    if (diff)
-      harmcorr(vcorrs, quads, bpmorbit, dipols, file.out("harmcorr", t.tag(i)).c_str());
+    //harmcorr out
+    if (diff && Res.on)
+      Res.harmcorr_out(file.out("harmcorr", t.tag(i)).c_str());
 
 
     cout << "--------------------------------------------" << endl;
