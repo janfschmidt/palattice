@@ -13,13 +13,27 @@
 #include <iomanip>
 #include <stdexcept>
 #include "AccLattice.hpp"
+#include "constants.hpp"
 
 
+//constructor
 AccLattice::AccLattice(double _circumference, Anchor _refPos)
   : refPos(_refPos), circumference(_circumference)
 {
   empty_space = new Drift;
 }
+
+//copy constructor
+AccLattice::AccLattice(const AccLattice &other)
+  : refPos(other.refPos), circumference(other.circumference)
+{
+  empty_space = new Drift;
+
+  for (const_AccIterator it=other.getItBegin(); it!=other.getItEnd(); ++it) {
+    this->set(it->first, *(it->second));
+  }
+}
+
 
 AccLattice::~AccLattice()
 {
@@ -28,6 +42,32 @@ AccLattice::~AccLattice()
   }
   delete empty_space;
 }
+
+
+AccLattice& AccLattice::operator= (const AccLattice other)
+{
+  stringstream msg;
+
+  if (refPos != other.refPos) {
+    msg << "ERROR: AccLattice::operator=(): Cannot assign Lattice - different refPos ("
+	<< refPos_string() <<"/"<< other.refPos_string() <<")";
+    throw logic_error(msg.str());
+  }
+  if (circumference != other.circumference) {
+    msg << "ERROR: AccLattice::operator=(): Cannot assign Lattice - different circumferences ("
+	<< circumference <<"/"<< other.circumference <<")";
+    throw logic_error(msg.str());
+  }
+
+  for (const_AccIterator it=other.getItBegin(); it!=other.getItEnd(); ++it) {
+    this->set(it->first, *(it->second));
+  }
+
+  return *this;
+}
+
+
+
 
 
 
@@ -93,12 +133,30 @@ AccIterator AccLattice::firstIt(element_type _type)
 
   return elements.end();
 }
+const_AccIterator AccLattice::firstIt(element_type _type) const
+{
+  for (const_AccIterator it=elements.begin(); it!=elements.end(); ++it) {
+    if (it->second->type == _type)
+      return it;
+  }
+
+  return elements.end();
+}
 
 // get last element of given type
 // returns iterator to end if there is none
 AccIterator AccLattice::lastIt(element_type _type) 
 {
   for (AccIterator it=elements.end(); it!=elements.begin(); it--) {
+    if (it->second->type == _type)
+      return it;
+  }
+
+  return elements.end();  
+}
+const_AccIterator AccLattice::lastIt(element_type _type)  const
+{
+  for (const_AccIterator it=elements.end(); it!=elements.begin(); it--) {
     if (it->second->type == _type)
       return it;
   }
@@ -118,12 +176,21 @@ AccIterator AccLattice::nextIt(element_type _type, AccIterator it)
 
   return elements.end();  
 }
+const_AccIterator AccLattice::nextIt(element_type _type, const_AccIterator it) const
+{
+  it++; // check only elements AFTER it
+ for (; it!=elements.end(); ++it) {
+    if (it->second->type == _type)
+      return it;
+  }
 
+  return elements.end();  
+}
 
 
 // get first element of given type
 // returns Drift if there is none
-const AccElement* AccLattice::first(element_type _type) 
+const AccElement* AccLattice::first(element_type _type)
 {
   AccIterator it = this->firstIt(_type);
   if (it == elements.end()) return empty_space;
@@ -153,12 +220,12 @@ const AccElement* AccLattice::next(element_type _type, double pos)
 
 
 
-// get const_Iterator
+// get const_Iterator to element, if pos is inside it
 const_AccIterator AccLattice::getIt(double pos) const
 {
   const_AccIterator candidate_next = elements.upper_bound(pos); //"first element whose key goes after pos"
   const_AccIterator candidate_previous = candidate_next;
-
+  
   if (candidate_next != elements.begin()) {
     candidate_previous--;
     if (refPos == begin || refPos == center) {
@@ -166,14 +233,31 @@ const_AccIterator AccLattice::getIt(double pos) const
 	return candidate_previous;
     }
   }
-
+  
   if (refPos == end || refPos == center) {
     if (inside(candidate_next, pos))
       return candidate_next;
   }
-
+  
   throw eNoElement();
 }
+
+
+// get iterator to begin (first Element)
+const_AccIterator AccLattice::getItBegin() const
+{
+  return elements.begin();
+}
+
+// get iterator to end (after last Element)
+const_AccIterator AccLattice::getItEnd() const
+{
+  return elements.end();
+}
+
+
+
+
 
 
 
@@ -271,10 +355,9 @@ void AccLattice::set(double pos, const AccElement& obj)
 // erase element at position pos
 void AccLattice::erase(double pos)
 {
-  try {
-    const_AccIterator it = getIt(pos);
-  }
-  catch (eNoElement &e) {
+  AccIterator it =  elements.find(pos);
+
+  if (it == elements.end()) {
     cout << "WARNING: AccLattice::erase(): There is no element at position "<<pos<< " m. Nothing is erased." << endl;
     return;
   }
@@ -283,12 +366,14 @@ void AccLattice::erase(double pos)
 
 
 
+
+
 // set elements from MAD-X Lattice (read from twiss-output)
 // ====== ATTENTION ==================================
 // "FamilyMagnets" (Quad,Sext) all of type F, because
 // MAD-X uses different signs of strengths (k,m)
 // ===================================================
-void AccLattice::madximport(char *madxTwissFile)
+void AccLattice::madximport(const char *madxTwissFile)
 {
   // madx column variables
   string tmp;
@@ -300,6 +385,8 @@ void AccLattice::madximport(char *madxTwissFile)
   //AccElements
   Dipole vDip("defaultName", 0., 0., V);
   Dipole hDip("defaultName", 0., 0., H);
+  Corrector vCorr("defaultName", 0., 0., V);
+  Corrector hCorr("defaultName", 0., 0., H);
   Quadrupole Quad("defaultName", 0.);    // madx uses negative sign "strength" for D magnets,
   Sextupole Sext("defaultName", 0.);     // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
 
@@ -339,11 +426,11 @@ void AccLattice::madximport(char *madxTwissFile)
       this->set(s, Sext);
     }
     else if (tmp == "\"VKICKER\"") {
-      madxTwiss >> vDip.name >> s >> x >> y >> vDip.length >> angle >> k1l >> k2l >> vkick;
-      vDip.strength = sin(vkick)/vDip.length;   // 1/R from kick-angle
-      if (refPos == begin) s -= vDip.length;
-      else if (refPos == center) s -= vDip.length/2;
-      this->set(s, vDip);
+      madxTwiss >> vCorr.name >> s >> x >> y >> vCorr.length >> angle >> k1l >> k2l >> vkick;
+      vCorr.strength = sin(vkick)/vCorr.length;   // 1/R from kick-angle
+      if (refPos == begin) s -= vCorr.length;
+      else if (refPos == center) s -= vCorr.length/2;
+      this->set(s, vCorr);
     }
 
   }
@@ -354,7 +441,7 @@ void AccLattice::madximport(char *madxTwissFile)
 // set misalignments from MAD-X Lattice (read ealign-output)
 // ! currently only rotation (dpsi) around beam axis (s) is implemented   !
 // ! to add others: define member in class AccElements & implement import !
-void AccLattice::madximportMisalignments(char *madxEalignFile)
+void AccLattice::madximportMisalignments(const char *madxEalignFile)
 {
   string tmp;
   unsigned int j;
@@ -394,10 +481,11 @@ void AccLattice::madximportMisalignments(char *madxEalignFile)
 
 
 // change quad&sext strengths to values from "ELSA-Spuren"
-void AccLattice::setELSAoptics(char *spurenFolder)
+void AccLattice::setELSAoptics(const char *spurenFolder)
 {
   char filename[1024];
   string tmp;
+  stringstream msg;
   double kf=0, kd=0, mf=0, md=0;
   fstream f_magnets;
   AccIterator it;
@@ -406,7 +494,8 @@ void AccLattice::setELSAoptics(char *spurenFolder)
   snprintf(filename, 1024, "%s/optics.dat", spurenFolder);
   f_magnets.open(filename, ios::in);
   if (!f_magnets.is_open()) {
-    throw std::runtime_error("ERROR: AccLattice::setELSAoptics(): Cannot open %s\n", filename);
+    msg << "ERROR: AccLattice::setELSAoptics(): Cannot open " << filename;
+    throw std::runtime_error(msg.str());
   }
   while(!f_magnets.eof()) {
     f_magnets >> tmp;
@@ -420,8 +509,10 @@ void AccLattice::setELSAoptics(char *spurenFolder)
       f_magnets >> md;
     else if (tmp=="#")         //ignore comment lines
       getline(f_magnets, tmp);
-    else
-      throw std::runtime_error("ERROR: AccLattice::setELSAoptics(): Unexpected entry in %s\n", filename);
+    else {
+      msg << "ERROR: AccLattice::setELSAoptics(): Unexpected entry in " << filename;
+      throw std::runtime_error(msg.str());
+    }
   }
   f_magnets.close();
 
@@ -449,11 +540,12 @@ void AccLattice::setELSAoptics(char *spurenFolder)
 
 
 
-// change corrector pos&strength to values from "ELSA-Spuren" at time t(ms
-void AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
+// change corrector pos&strength to values from "ELSA-Spuren" at time t/ms
+// return number of correctors, where set
+unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
 {
- unsigned int i, j=0;
- Corrector corrTmp("default name", 0.);
+  unsigned int i, n=0;
+ AccElement* corrTmp;
  char name[20];
  char msg[1024];
  stringstream strMsg;
@@ -484,26 +576,63 @@ void AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
      cout << "! Position of " <<name<< " differs by " <<diff<< "m in Mad-X and ELSA-Spuren. Use ELSA-Spuren." << endl;
    }
    
-   // corrTmp.name = name;
-   // corrTmp.length = it->second->length;
-   // corrTmp.dpsi = it->second->dpsi;
-   corrTmp = *(it->second);
+   corrTmp = it->second->clone();
 
-   corrTmp.strength = ELSAvcorrs[i].time[t].kick/1000.0/corrTmp.length;   //unit 1/m
-   this->set(ELSAvcorrs[i].pos, corrTmp);
+   corrTmp->strength = ELSAvcorrs[i].time[t].kick/1000.0/corrTmp->length;   //unit 1/m
+   this->set(ELSAvcorrs[i].pos, *(corrTmp));
+   delete corrTmp;
 
    it = nextIt(corrector,it);
-   j++;
+   n++;
    if (it == elements.end())
      break;
  }
  
- if (j != this->size(correctors))
+ if (n != this->size(corrector))
    cout << "WARNING: Not all correctors overwritten by ELSA-Spuren" << endl;
  
+ return n;
 }
 
 
+
+
+// subtract other corrector strengths from the ones of this lattice
+void AccLattice::subtractCorrectorStrengths(const AccLattice &other)
+{
+  stringstream msg;
+  AccIterator it;
+  const_AccIterator otherIt;
+  
+  if (this->size(corrector) != other.size(corrector)) {
+    msg << "ERROR: AccLattice::subtractCorrectorStrengths(): Unequal number of correctors to subtract.";
+    throw std::invalid_argument(msg.str());
+  }
+  
+  otherIt = other.firstIt(corrector);
+
+  for  (it=firstIt(corrector); it!=lastIt(corrector); it=nextIt(corrector,it)) {
+
+    // check by name
+    if (otherIt->second->name != it->second->name) {
+      msg << "ERROR: AccLattice::subtractCorrectorStrengths(): Unequal names of correctors to subtract. ("
+	  << it->second->name <<"/"<< otherIt->second->name << ").";
+      throw std::runtime_error(msg.str());
+    }
+    // check by position
+    if (otherIt->first != it->first) {
+      msg << "ERROR: AccLattice::subtractCorrectorStrengths(): Unequal positions of correctors to subtract. ("
+	  << it->first <<"/"<< otherIt->first << ").";
+      throw std::runtime_error(msg.str());
+    }
+
+    // subtract
+    it->second->strength -= otherIt->second->strength;
+    // set otherIt to next corrector
+    otherIt=nextIt(corrector,otherIt);
+  }
+
+}
 
 
 

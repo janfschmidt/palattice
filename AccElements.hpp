@@ -40,12 +40,15 @@ public:
   AccElement(string _name, double _length,element_type _type, double _strength=0.)
     : name(_name),length(_length),type(_type),strength(_strength),dpsi(0.) {}
   virtual ~AccElement() {};
+  virtual AccElement& operator=(const AccElement* other);
 
   virtual AccElement* clone() const =0;
 
   virtual AccTriple B() const
   {string msg="B-Field of "+type_string()+" depends on orbit! Please provide argument."; throw std::invalid_argument(msg);}
   virtual AccTriple B(AccPair orbit) const {return zeroTriple;}
+  double hKick_mrad() const {return 1000 * B().x * length;}
+  double hKick_mrad(AccPair orbit) const {return 1000 * B(orbit).x * length;}
 
   void misalign(double _dpsi) {dpsi = _dpsi;}
 
@@ -66,18 +69,6 @@ public:
 
   virtual AccTriple B() const {return zeroTriple;}
 };
-
-
-
-// abstract magnet class
-// class Magnet : public AccElement {
-// public:
-
-
-//   Magnet(string _name, double _length, element_type _type, double _strength=0.)
-//     : AccElement(_name,_length,_type), strength(_strength) {}
-// };
-
 
 
 
