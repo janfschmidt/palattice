@@ -7,6 +7,7 @@
 
 
 #include <cstdlib>
+#include <string>
 #include <sstream>
 #include <fstream>
 #include <iostream>
@@ -665,20 +666,73 @@ string AccLattice::refPos_string() const
 }
 
 
-// print lattice to stdout
-void AccLattice::print() const
+
+// ----------- output (stdout or file) ----------------------
+
+// print lattice. If no filename is given, print to stdout
+void AccLattice::print(char *filename) const
 {
-  const_AccIterator it;
-  AccElement* obj;
+  const_AccIterator it=elements.begin();
   const int w = 12;
+  std::stringstream s;
+  std::stringstream msg;
+  fstream file;
 
-  cout << "# Reference Position: " << refPos_string() << endl;
-  cout <<"#"<< std::setw(w) << "Name" <<std::setw(w)<< "Ref.Pos/m" <<std::setw(w)<< "Begin/m" <<std::setw(w)<< "End/m" << endl;
+  //write text to s
+  s << "# Reference Position: " << refPos_string() << endl;
+  s <<"#"<< std::setw(w) << "Ref.Pos/m" << it->second->printHeader();
 
-  for (it=elements.begin(); it!=elements.end(); ++it) {
-    obj = it->second;
-    cout <<std::setw(w+1)<< obj->name <<std::setw(w)<< it->first <<std::setw(w)<< locate(it, begin) <<std::setw(w)<< locate(it, end) << endl;
+  for (; it!=elements.end(); ++it) {
+    s <<std::setw(w+1)<< it->first << it->second->print();
+  }
+
+  // output of s
+  if (string(filename) == "") 
+    cout << s.str();
+  else {
+    file.open(filename, ios::out);
+    if (!file.is_open()) {
+      msg << "ERROR: corrs_out(): Cannot open " << filename << ".";
+      throw std::runtime_error(msg.str());
+    }
+    file << s.str();
+    file.close();
+    cout << "* Wrote " << filename  << endl;
   }
 
 }
 
+
+// print all elements of one type If no filename is given, print to stdout
+void AccLattice::printType(element_type _type, char *filename) const
+{
+  const_AccIterator it=firstIt(_type);
+  const int w = 12;
+  std::stringstream s;
+  std::stringstream msg;
+  fstream file;
+
+  //write text to s
+  s << "# Reference Position: " << refPos_string() << endl;
+  s << "# List of " << it->second->type_string() << "s only!" << endl;
+  s <<"#"<< std::setw(w) << "Ref.Pos/m" << it->second->printHeader();
+
+  for (; it!=lastIt(_type); it=nextIt(_type, it)) {
+    s <<std::setw(w+1)<< it->first << it->second->print();
+  }
+
+  // output of s
+  if (string(filename) == "") 
+    cout << s.str();
+  else {
+    file.open(filename, ios::out);
+    if (!file.is_open()) {
+      msg << "ERROR: corrs_out(): Cannot open " << filename << ".";
+      throw std::runtime_error(msg.str());
+    }
+    file << s.str();
+    file.close();
+    cout << "* Wrote " << filename  << endl;
+  }
+
+}

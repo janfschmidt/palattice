@@ -5,6 +5,8 @@
  */
 
 #include <sstream>
+#include <string>
+#include <iomanip>
 #include "AccElements.hpp"
 
 // static member definition
@@ -47,4 +49,33 @@ string AccElement::type_string() const
   }
 
   return "Please implement this type in AccElement::type_string()!";
+}
+
+
+
+
+// string output of (some) element properties
+// ! if you change this function, !
+// ! also modify printHeader()    !
+string AccElement::print() const
+{
+  int w=16;
+  std::stringstream s;
+
+  s <<std::setw(w)<< this->name <<std::setw(w)<< this->type_string() <<std::setw(w)
+    << this->length <<std::setw(w)<< this->strength <<std::setw(w)<< this->dpsi << endl;
+
+  return s.str();
+}
+
+// string output of header-line(s) for print()
+string AccElement::printHeader() const
+{
+  int w=16;
+  std::stringstream s;
+
+  s <<std::setw(w)<< "Name" <<std::setw(w)<< "Type" <<std::setw(w)<< "Length/m" <<std::setw(w)
+    << "Strength/m^-1" <<std::setw(w)<< "Rotation(s)/rad" << endl;
+
+  return s.str();
 }

@@ -72,7 +72,10 @@ public:
   unsigned int size(element_type _type) const;        // returns number of elements of a type in this lattice
   unsigned int size() const {return elements.size();} // returns total number of elements
   string refPos_string() const;
-  void print() const;                                 // print lattice to stdout
+
+  // output (stdout or file)
+  void print(char *filename="") const;                         // print lattice. If no filename is given, print to stdout
+  void printType(element_type _type, char *filename="") const; // print all elements of one type. If no filename is given, print to stdout
 
 };
 

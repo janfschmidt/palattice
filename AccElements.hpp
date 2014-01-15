@@ -54,6 +54,9 @@ public:
 
   string type_string() const;    // string output of element type
 
+  string print() const;          // string output of (some) element properties
+  string printHeader() const;    // string output of header-line(s) for print()
+
 };
 
 
