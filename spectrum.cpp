@@ -43,8 +43,8 @@ Spectrum::Spectrum(RESONANCES &In, unsigned int fmaxrevIn, double ampcutIn)
 }
 */
 
-Spectrum::Spectrum(vector<double> In, double c, unsigned int t, unsigned int fmaxrevIn, double ampcutIn, unit u)
-   : fMax_rev(fmaxrevIn), ampcut(ampcutIn), turns(t), circ(c), norm(In.size()), circUnit(u)
+Spectrum::Spectrum(vector<double> In, double c, unsigned int t, int _norm, unsigned int fmaxrevIn, double ampcutIn, unit u)
+   : fMax_rev(fmaxrevIn), ampcut(ampcutIn), turns(t), circ(c), norm(_norm), circUnit(u)
 {
   if (fMax() > In.size()/2.) {
     cout << "WARNING: Spectrum constructor: fmax = " <<fMax_rev<< " is to large." << endl

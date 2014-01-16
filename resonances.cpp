@@ -149,7 +149,8 @@ Spectrum RESONANCES::getSpectrum(unsigned int fmaxrevIn, double ampcutIn) const
 {
   // construct spectrum from kick-vector
   // (unit=degree, circumference=360)
-  Spectrum s(this->getkickVector(), 360, this->n_turns, fmaxrevIn, ampcutIn, degree);
+  // Resonances spectrum is normalized to number of bending dipoles ndip
+  Spectrum s(this->getkickVector(), 360, this->n_turns, ndip, fmaxrevIn, ampcutIn, degree);
 
   return s;
 }

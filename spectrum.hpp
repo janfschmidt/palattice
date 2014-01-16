@@ -53,7 +53,7 @@ private:
 
 public:
   Spectrum(unsigned int fmaxrevIn=30, double ampcut=0);
-  Spectrum(vector<double> In, double circ, unsigned int turns, unsigned int fmaxrevIn=30, double ampcut=0, unit u=meter);
+  Spectrum(vector<double> In, double circ, unsigned int turns, int _norm, unsigned int fmaxrevIn=30, double ampcut=0, unit u=meter);
   ~Spectrum() {}
   
   inline FREQCOMP get(unsigned int i) const {return b[i];}
