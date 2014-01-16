@@ -60,10 +60,10 @@ int main (int argc, char *argv[])
   CORR ELSAvcorrs[NVCORRS];    // ELSAvcorrs[0]=VC01, ELSAvcorrs[31]=VC32
   BPM Ref_ELSAbpms[NBPMS];
   CORR Ref_ELSAvcorrs[NVCORRS];
-  magnetvec dipols;            // use vector class for magnets and orbit; .name shows right labels
-  magnetvec quads;
-  magnetvec sexts;
-  magnetvec vcorrs;
+  // magnetvec dipols;            // use vector class for magnets and orbit; .name shows right labels
+  // magnetvec quads;
+  // magnetvec sexts;
+  // magnetvec vcorrs;
   FunctionOfPos<AccPair> *orbit;
 
   // int err=0;
@@ -364,7 +364,7 @@ int main (int argc, char *argv[])
       bx.eval_out(0.1, B.circ, file.out("eval_x", t.tag(i)).c_str());
       bz.eval_out(0.1, B.circ, file.out("eval_z", t.tag(i)).c_str());
       //check dipole lengths
-      B.magnetlengths(dipols, file.out("dipolelengths", t.tag(i)).c_str());
+      B.magnetlengths(lattice, file.out("dipolelengths", t.tag(i)).c_str());
     }
 
     //export spectrum files for polarization-calculation (TBMTsolver)

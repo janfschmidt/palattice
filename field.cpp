@@ -46,12 +46,13 @@ void Field::set(AccLattice &lattice, FunctionOfPos<AccPair>& orbit, double n_sam
 
 //compare magnet lengths in FIELDMAP with exact lengths from lattice
 //to analyse influence of sampling
-int Field::magnetlengths(magnetvec &dipols, const char *filename) const
+int Field::magnetlengths(AccLattice &lattice, const char *filename) const
 {
   unsigned int w=10;
   unsigned int i, j=0;
   double tmp_start, tmp_end;
   fstream file;
+  const_AccIterator it=lattice.firstCIt(dipole);
 
   file.open(filename, ios::out);
   if (!file.is_open()) {
@@ -65,19 +66,19 @@ int Field::magnetlengths(magnetvec &dipols, const char *filename) const
 
   for (i=0; i<this->samples(); i++) {
 
-    if (getPos(i) >= dipols[j].start) {
+    if ( lattice.inside(it, getPos(i)) ) {
       tmp_start = this->getPos(i);
-      while (this->getPos(i) <= dipols[j].end) i++;
+      while ( lattice.inside(it, getPos(i)) ) i++;
       tmp_end = getPos(i-1);
 
       //write deviations from exact values to file
-      file <<setw(w)<< dipols[j].name;
-      file <<setw(w)<< (tmp_start - dipols[j].start)*1000 <<setw(w)<< (tmp_end - dipols[j].end)*1000;
-      file <<setw(w)<< ((tmp_end-tmp_start) - dipols[j].length)*1000 << endl; 
-
-      j++;
+      file <<setw(w)<< it->second->name;
+      file <<setw(w)<< (tmp_start - lattice.locate(it,begin))*1000 <<setw(w)<< (tmp_end - lattice.locate(it,end))*1000;
+      file <<setw(w)<< ((tmp_end-tmp_start) - it->second->length)*1000 << endl; 
+      
+      if (it == lattice.lastCIt(dipole)) break;
+      it=lattice.nextCIt(dipole,it);
     }
-    if (j >= dipols.size()) break;
   }
 
   file.close();

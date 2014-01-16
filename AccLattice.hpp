@@ -43,9 +43,9 @@ public:
   const_AccIterator getIt(double pos) const;                           // get const_Iterator to element, if pos is inside it
   const_AccIterator getItBegin() const;                                // get iterator to begin (first Element)
   const_AccIterator getItEnd() const;                                  // get iterator to end (after last Element)
-  const_AccIterator firstIt(element_type _type) const;                 // get iterator to first element of given type
-  const_AccIterator lastIt(element_type _type) const;                  // get iterator to last element of given type
-  const_AccIterator nextIt(element_type _type, const_AccIterator it) const;  // get iterator to next element of given type after it
+  const_AccIterator firstCIt(element_type _type) const;                 // get iterator to first element of given type
+  const_AccIterator lastCIt(element_type _type) const;                  // get iterator to last element of given type
+  const_AccIterator nextCIt(element_type _type, const_AccIterator it) const;  // get iterator to next element of given type after it
 
   double where(const_AccIterator it) const {return it->first;}          // get position of element with iterator it
   double locate(double pos, const AccElement *obj, Anchor here) const;  // get here=begin/center/end (in meter) of obj at reference-position pos

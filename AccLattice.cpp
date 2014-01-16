@@ -134,7 +134,7 @@ AccIterator AccLattice::firstIt(element_type _type)
 
   return elements.end();
 }
-const_AccIterator AccLattice::firstIt(element_type _type) const
+const_AccIterator AccLattice::firstCIt(element_type _type) const
 {
   for (const_AccIterator it=elements.begin(); it!=elements.end(); ++it) {
     if (it->second->type == _type)
@@ -155,7 +155,7 @@ AccIterator AccLattice::lastIt(element_type _type)
 
   return elements.end();  
 }
-const_AccIterator AccLattice::lastIt(element_type _type)  const
+const_AccIterator AccLattice::lastCIt(element_type _type)  const
 {
   for (const_AccIterator it=elements.end(); it!=elements.begin(); it--) {
     if (it->second->type == _type)
@@ -177,7 +177,7 @@ AccIterator AccLattice::nextIt(element_type _type, AccIterator it)
 
   return elements.end();  
 }
-const_AccIterator AccLattice::nextIt(element_type _type, const_AccIterator it) const
+const_AccIterator AccLattice::nextCIt(element_type _type, const_AccIterator it) const
 {
   it++; // check only elements AFTER it
  for (; it!=elements.end(); ++it) {
@@ -610,7 +610,7 @@ void AccLattice::subtractCorrectorStrengths(const AccLattice &other)
     throw std::invalid_argument(msg.str());
   }
   
-  otherIt = other.firstIt(corrector);
+  otherIt = other.firstCIt(corrector);
 
   for  (it=firstIt(corrector); it!=lastIt(corrector); it=nextIt(corrector,it)) {
 
@@ -630,7 +630,7 @@ void AccLattice::subtractCorrectorStrengths(const AccLattice &other)
     // subtract
     it->second->strength -= otherIt->second->strength;
     // set otherIt to next corrector
-    otherIt=nextIt(corrector,otherIt);
+    otherIt=nextCIt(corrector,otherIt);
   }
 
 }
@@ -706,7 +706,7 @@ void AccLattice::print(const char *filename) const
 // print all elements of one type If no filename is given, print to stdout
 void AccLattice::printType(element_type _type, const char *filename) const
 {
-  const_AccIterator it=firstIt(_type);
+  const_AccIterator it=firstCIt(_type);
   const int w = 12;
   std::stringstream s;
   std::stringstream msg;
@@ -717,7 +717,7 @@ void AccLattice::printType(element_type _type, const char *filename) const
   s << "# List of " << it->second->type_string() << "s only!" << endl;
   s <<"#"<< std::setw(w) << "Ref.Pos/m" << it->second->printHeader();
 
-  for (; it!=lastIt(_type); it=nextIt(_type, it)) {
+  for (; it!=lastCIt(_type); it=nextCIt(_type, it)) {
     s <<std::setw(w+1)<< it->first << it->second->print();
   }
 

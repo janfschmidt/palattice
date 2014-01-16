@@ -27,7 +27,7 @@ public:
   
   void set(AccLattice &lattice, FunctionOfPos<AccPair> &orbit, double n_samples); // set all magnetic field values from lattice and orbit
 
-  int magnetlengths(magnetvec &dipols, const char *filename) const;
+  int magnetlengths(AccLattice &lattice, const char *filename) const;
 
 };
 

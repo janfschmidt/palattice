@@ -4,8 +4,9 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <gsl/gsl_blas.h>
+#include <gsl/gsl_vector.h>
 #include "constants.hpp"
-
 
 
 
@@ -141,7 +142,7 @@ enum AccAxis {x,z,s};
 
 
 
-// classes
+// ELSA: Closed Orbit & Corrector-Kicks
 class BPM_MS {
 public:
   int ms;
@@ -175,6 +176,7 @@ public:
   CORR() : pos(0) {}
 };
 
+/*
 class MAGNET {
 public:
   std::string name;
@@ -186,11 +188,11 @@ public:
 
   MAGNET() : start(0), end(0), length(0), strength(0), dpsi(0) {}
 };
-
+*/
 
 
 /* typedefs */
-typedef std::vector<MAGNET> magnetvec;
+//typedef std::vector<MAGNET> magnetvec;
 
 
 
