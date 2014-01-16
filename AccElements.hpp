@@ -27,6 +27,10 @@ protected:
   static AccPair zeroPair;
   static AccTriple zeroTriple;
 
+  AccTriple misalign(AccTriple perfect) const; // apply misalignments (e.g. for B)
+
+  // data entries are allowed to be public: AccLattice class uses const AccElement!
+  // (everybody is allowed to modify an Element which is not mounted in a Lattice)
 public:
   string name;
   double length;
@@ -44,13 +48,12 @@ public:
 
   virtual AccElement* clone() const =0;
 
-  virtual AccTriple B() const
-  {string msg="B-Field of "+type_string()+" depends on orbit! Please provide argument."; throw std::invalid_argument(msg);}
-  virtual AccTriple B(AccPair orbit) const {return zeroTriple;}
+  virtual AccTriple B() const;
+  virtual AccTriple B(AccPair orbit) const;
   double hKick_mrad() const {return 1000 * B().x * length;}
   double hKick_mrad(AccPair orbit) const {return 1000 * B(orbit).x * length;}
 
-  void misalign(double _dpsi) {dpsi = _dpsi;}
+  //void misalign(double _dpsi) {dpsi = _dpsi;}
 
   string type_string() const;    // string output of element type
 
@@ -70,7 +73,7 @@ public:
   
   virtual Drift* clone() const {return new Drift(*this);}
 
-  virtual AccTriple B() const {return zeroTriple;}
+  virtual AccTriple B() const;
 };
 
 
@@ -113,7 +116,7 @@ public:
 
   virtual Dipole* clone() const {return new Dipole(*this);}
 
-  virtual AccTriple B() const {AccTriple tmp; if(plane==V) tmp.z=strength; else if(plane==H) tmp.x=strength; return tmp;}
+  virtual AccTriple B() const;
   virtual AccTriple B(AccPair orbit) const {return B();}
 
 };
@@ -127,7 +130,7 @@ public:
 
   virtual Corrector* clone() const {return new Corrector(*this);}
 
-  virtual AccTriple B() const {AccTriple tmp; if(plane==V) tmp.z=strength; else if(plane==H) tmp.x=strength; return tmp;}
+  virtual AccTriple B() const;
   virtual AccTriple B(AccPair orbit) const {return B();}
 };
 
@@ -146,7 +149,7 @@ public:
 
   virtual Quadrupole* clone() const {return new Quadrupole(*this);}
 
-  virtual AccTriple B(AccPair orbit) const {AccTriple tmp; tmp.x=strength*orbit.z; tmp.z=strength*orbit.x; if(family==D) tmp*=(-1.); return tmp;}
+  virtual AccTriple B(AccPair orbit) const;
 
 };
 
@@ -159,7 +162,7 @@ public:
 
   virtual Sextupole* clone() const {return new Sextupole(*this);}
 
-  virtual AccTriple B(AccPair orbit) const {AccTriple tmp; tmp.x=strength*orbit.x*orbit.z; tmp.z=0.5*strength*(pow(orbit.x,2)-pow(orbit.z,2)); if(family==D) tmp*=(-1); return tmp;}
+  virtual AccTriple B(AccPair orbit) const;
 
 };
 
