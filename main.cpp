@@ -17,8 +17,6 @@
 #include "constants.hpp"
 #include "types.hpp"
 #include "AccLattice.hpp"
-//#include "getfields.hpp"
-//#include "madximport.hpp"
 #include "timetag.hpp"
 #include "filenames.hpp"
 #include "resonances.hpp"
@@ -52,8 +50,8 @@ int main (int argc, char *argv[])
   char spuren[20] = "dummy";
   char Reference[50] = "dummy";
   double circumference=0;
-  double ampcut_x = 1e-6;     // minimum amplitudes for magnetic field spectra
-  double ampcut_z = 1e-8;     // be carefull: ampcut_z can change spin tune !
+  double ampcut_x = 1e-5;     // minimum amplitudes for magnetic field spectra
+  double ampcut_z = 1e-5;     // be carefull: ampcut_z can change spin tune !
   double ampcut_res=0;          // minimum amplitude for resonance spectrum (option -c)
   double dtheta = -1;           // spin phaseadvance stepwidth (option -r)
   BPM ELSAbpms[NBPMS];         // ELSAbpms[0]=BPM01, ELSAbpms[31]=BPM32
@@ -121,7 +119,7 @@ int main (int argc, char *argv[])
       break;
     case 'c':
       ampcut_x = atof(optarg);
-      ampcut_z = atof(optarg) / 100;
+      ampcut_z = atof(optarg);
       break;
     case 'C':
       ampcut_res = atof(optarg);
@@ -365,6 +363,8 @@ int main (int argc, char *argv[])
       bz.eval_out(0.1, B.circ, file.out("eval_z", t.tag(i)).c_str());
       //check dipole lengths
       B.magnetlengths(lattice, file.out("dipolelengths", t.tag(i)).c_str());
+      //field as function of spin phaseadvance theta
+      Res.out(file.out("resonances", t.tag(i)).c_str());
     }
 
     //export spectrum files for polarization-calculation (TBMTsolver)
@@ -375,8 +375,6 @@ int main (int argc, char *argv[])
     //resonance strengths (=harmcorr spectrum)
     if (Res.on) {
       res.out( file.spec("resonances", t.tag(i)).c_str(), metadata.get(res, "resonances") );
-      if (allout)
-	Res.out(file.out("resonances", t.tag(i)).c_str());
     }
 
     //harmcorr out
@@ -387,7 +385,7 @@ int main (int argc, char *argv[])
     cout << "--------------------------------------------" << endl;
   }
 
-  cout << "Finished. (Run "<<file.path.c_str()<<"/inout/Bsupply"<<file.difftag.c_str()<<".gp for plots)" << endl << endl;
+  cout << "Finished. (Output in "<<file.path.c_str()<<"/inout/)" << endl << endl;
 
   return 0;
 }
