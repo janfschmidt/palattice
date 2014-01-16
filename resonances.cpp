@@ -161,6 +161,8 @@ int RESONANCES::out(const char *filename) const
  int w=14;
  fstream file;
 
+ if (!on) return 0;  //write output only, if Resonances are used
+
  file.open(filename, ios::out);
  if (!file.is_open()) {
    cout << "ERROR: Cannot open " << filename << "." << endl;

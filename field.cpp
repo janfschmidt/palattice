@@ -49,17 +49,17 @@ void Field::set(AccLattice &lattice, FunctionOfPos<AccPair>& orbit, double n_sam
 int Field::magnetlengths(AccLattice &lattice, const char *filename) const
 {
   unsigned int w=10;
-  unsigned int i, j=0;
+  unsigned int i;
   double tmp_start, tmp_end;
   fstream file;
   const_AccIterator it=lattice.firstCIt(dipole);
 
   file.open(filename, ios::out);
   if (!file.is_open()) {
-    cout << "ERROR: FIELDMAP::magnetlengths(): Cannot open " << filename << "." << endl;
+    cout << "ERROR: Field::magnetlengths(): Cannot open " << filename << "." << endl;
     return 1;
   }
-  file << "deviation of magnet start/end/length from lattice (fieldmap - lattice)" << endl;
+  file << "deviation of start/end/length of stepwise field from lattice (field - lattice)" << endl;
   file << "n_samp = " << this->samples() << " sampling points per turn" << endl << endl;
   file <<setw(w)<< "Name" <<setw(w)<< "start/mm" <<setw(w) << "end/mm" <<setw(w)<< "length/mm" << endl;
 
