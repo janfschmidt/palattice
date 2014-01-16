@@ -151,7 +151,8 @@ AccTriple Quadrupole::B(AccPair orbit) const
    AccTriple tmp; 
    
    tmp.x=strength*orbit.z;
-   tmp.z=strength*orbit.x;
+   //tmp.z=strength*orbit.x;
+   tmp.z=0;
    
    if(family==D) tmp*=(-1.);
    
@@ -165,7 +166,8 @@ AccTriple Sextupole::B(AccPair orbit) const
    AccTriple tmp; 
    
    tmp.x=strength*orbit.x*orbit.z;
-   tmp.z=0.5*strength*(pow(orbit.x,2)-pow(orbit.z,2));
+   //tmp.z=0.5*strength*(pow(orbit.x,2)-pow(orbit.z,2));
+   tmp.z=0;
    
    if(family==D) tmp*=(-1.);
    
