@@ -229,8 +229,6 @@ int main (int argc, char *argv[])
   lattice.madximportMisalignments(file.misalign_dip.c_str());
   bpmorbit.madxClosedOrbit(file.import.c_str());
 
-  if (ptc) trajectory.madxTrajectory(file, particle);
-
   // elsa=true: quad-&sext-strengths, BPM- & corrector-data from ELSA "Spuren"
   if (elsa) {
     try {
@@ -252,8 +250,12 @@ int main (int argc, char *argv[])
   cout << "* "<<lattice.size(dipole)<<" dipoles, "<<lattice.size(quadrupole)<<" quadrupoles, "
        <<lattice.size(sextupole)<<" sextupoles, "<<lattice.size(corrector)<<" correctors and "
        <<bpmorbit.samples()<<" BPMs read"<<endl<<"  from "<<file.import.c_str() << endl;
-  if (ptc) cout << "* trajectory of particle "<<particle<<" read at "<<trajectory.samples()
-		<<" observation points for "<<trajectory.turns()<<" turns"<<endl;
+
+  if (ptc) {
+    trajectory.madxTrajectory(file, particle);
+    cout << "* trajectory of particle "<<particle<<" read at "<<trajectory.samples()
+	 <<" observation points for "<<trajectory.turns()<<" turns"<<endl;
+  }
   cout << "--------------------------------------------" << endl;
 
 

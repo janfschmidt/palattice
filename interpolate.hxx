@@ -147,13 +147,13 @@ double Interpolate<T>::evalSpline(gsl_spline *s, double xIn)
   if ( xIn >= interpMin() && xIn <= interpMax() )
     tmp =  gsl_spline_eval (s, xIn, acc);
   else {
-    msg << "Extrapolation instead of Interpolation requested @ x=" <<xIn<< endl;
+    msg << "ERROR: Interpolate<T>::evalSpline(): f(x) Extrapolation instead of Interpolation requested @ x=" <<xIn<< endl;
     throw range_error(msg.str());
   }
   
   if (isnan(tmp)) {
     cout << "ERROR: Interpolate::evalSpline(): interpolation error at x="<<xIn<< endl
-	 << "return 0.0 and ";
+	 << "return 0.0 and continue";
     return 0.;
   }
   else
