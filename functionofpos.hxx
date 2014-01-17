@@ -26,7 +26,7 @@ FunctionOfPos<T>::FunctionOfPos(double circIn, const gsl_interp_type *t, double 
 {
 }
 
-// constructor to additionally set positions with given stepwidth for given #turns (increase speed for set())
+// constructor to additionally set EQUIDISTANT positions with given stepwidth for given #turns (increase speed for set())
 template <class T>
 FunctionOfPos<T>::FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, const gsl_interp_type *t, double periodIn)
   : Interpolate<T>::Interpolate(t,periodIn,samplesIn*turnsIn), pos(this->_x), value(this->f), n_turns(turnsIn), n_samples(samplesIn), circ(circIn)
