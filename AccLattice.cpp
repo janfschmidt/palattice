@@ -283,7 +283,7 @@ const AccElement* AccLattice::operator[](double pos) const
 
 
 // set element (replace if key (pos) already used; check for "free space" to insert element)
-void AccLattice::set(double pos, const AccElement& obj)
+void AccLattice::set(double pos, const AccElement& obj, bool verbose)
 {
  if (pos > circumference) {
     stringstream msg;
@@ -306,7 +306,7 @@ void AccLattice::set(double pos, const AccElement& obj)
   // empty map (set first element)
   if (elements.size() == 0) {
     elements[pos] = objPtr->clone();
-    cout << objPtr->name << " inserted." << endl;
+    if (verbose) cout << objPtr->name << " inserted." << endl;
     return;
   }
 
@@ -348,7 +348,8 @@ void AccLattice::set(double pos, const AccElement& obj)
   }
   //if there is free space:
   else elements[pos] = objPtr->clone();
-  cout << objPtr->name << " inserted." << endl;
+
+  if (verbose) cout << objPtr->name << " inserted." << endl;
 
 }
 

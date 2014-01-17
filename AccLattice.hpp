@@ -57,9 +57,9 @@ public:
   const AccElement* next(element_type _type, double pos);               // get next element of given type after pos
 
 
-  const AccElement* operator[](double pos) const;    // get element (any position, Drift returned if not inside any element)
-  void set(double pos, const AccElement &obj);       // set element (throws XXX if no free space for obj)
-  void erase(double pos);                            // erase element at position pos
+  const AccElement* operator[](double pos) const;                  // get element (any position, Drift returned if not inside any element)
+  void set(double pos, const AccElement &obj, bool verbose=false); // set element (throws XXX if no free space for obj)
+  void erase(double pos);                                          // erase element at position pos
 
   void madximport(const char *madxTwissFile);              // set elements from MAD-X Lattice (read from twiss-output)
   void madximportMisalignments(const char *madxEalignFile);// set misalignments from MAD-X Lattice (read ealign-output)
