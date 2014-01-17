@@ -387,8 +387,8 @@ void AccLattice::madximport(const char *madxTwissFile)
   //AccElements
   Dipole vDip("defaultName", 0., 0., V);
   Dipole hDip("defaultName", 0., 0., H);
-  Corrector vCorr("defaultName", 0., 0., V);
-  Corrector hCorr("defaultName", 0., 0., H);
+  Corrector vCorr("defaultName", 0., 0., H); // vertical kicker has HORIZONTAL field
+  Corrector hCorr("defaultName", 0., 0., V);
   Quadrupole Quad("defaultName", 0.);    // madx uses negative sign "strength" for D magnets,
   Sextupole Sext("defaultName", 0.);     // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
 
@@ -581,6 +581,7 @@ unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
    corrTmp = it->second->clone();
 
    corrTmp->strength = ELSAvcorrs[i].time[t].kick/1000.0/corrTmp->length;   //unit 1/m
+   elements.erase(it);   // erase "old" corrector (madx) to be able to mount new one
    this->set(ELSAvcorrs[i].pos, *(corrTmp));
    delete corrTmp;
 

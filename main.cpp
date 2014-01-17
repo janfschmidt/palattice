@@ -141,7 +141,6 @@ int main (int argc, char *argv[])
       cout << "* -f [fmax] sets maximum frequency for B-Field spectrum (in rev. harmonics)" << endl;
       cout << "* -F [fmax] sets maximum frequency for resonance-spectrum (-r) output (in rev. harmonics)" << endl;
       cout << "* -c [minamp] sets minimum amplitude for B-Field spectrum, others are cutted" << endl;
-      cout << "*    (vertical.spectrum is cutted at [minamp]/100 due to influence on spin tune)" << endl;
       cout << "* -C [minamp] sets minimum amplitude for resonance-spectrum (-r), others are cutted" << endl;
       cout << "* -t [time] sets time of ELSA cycle to evaluate BPMs and correctors (in ms)" << endl;
       cout << "* -m [tagfile] multiple times of ELSA cycle evaluated. Times listed in [tagfile]" << endl;
