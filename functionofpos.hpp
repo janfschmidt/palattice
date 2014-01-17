@@ -33,6 +33,7 @@ protected:
 private:
   unsigned int index(unsigned int i, unsigned int turn) const; //get index for pos[] & value[] from index(1turn) and turn
   unsigned int index(double pos, unsigned int turn) const; //get index for pos[] & value[] from pos(1turn) and turn
+  void hide_last_turn(); // reduce turns by one (only do this, if you need pos=0. value to avoid extrapolation for non-periodic function!)
 
 
 public:
@@ -67,10 +68,10 @@ public:
   void set(T valueIn, double pos, unsigned int turn=1);        //set (existing or new) value by pos or by pos(1turn) and turn
   //   !! set() is much slower than modify(). you can initialize equidistant positions by samples&turns in constructor & use modify.
   void clear();
-  void pop_back_turn(); // erase data of last turn, reduces turns by 1
+  void pop_back_turn();  // erase data of last turn, reduces turns by 1
 
   // orbit import
-  void madxClosedOrbit(const char *madxTwissFile);                         //import closed orbit from madx twiss file
+  void madxClosedOrbit(const char *madxTwissFile);                    //import closed orbit from madx twiss file
   void madxTrajectory(const FILENAMES files, unsigned int particle); //import single particle trajectory from madx tracking "obs" files at each quadrupole
   void elsaClosedOrbit(BPM *ELSAbpms, unsigned int t);               //import closed orbit from ELSA measurement at time t/ms
 

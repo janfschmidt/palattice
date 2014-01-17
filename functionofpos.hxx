@@ -289,6 +289,13 @@ void FunctionOfPos<T>::pop_back_turn()
   n_turns -= 1;
 }
 
+// reduce turns by one (only do this, if you need pos=0. value to avoid extrapolation for non-periodic function!)
+template <class T>
+void FunctionOfPos<T>::hide_last_turn()
+{
+  n_turns -= 1;
+}
+
 
 
 // output to file

@@ -162,7 +162,6 @@ void FunctionOfPos<AccPair>::madxTrajectory(const FILENAMES files, unsigned int 
       }
     }
     getline(madx, tmp);
-
     //read trajectory data
     while (!madx.eof()) {
       madx >> tmp >> turn >> x >> tmp >> y >> tmp >> tmp >> tmp >> s;
@@ -181,8 +180,8 @@ void FunctionOfPos<AccPair>::madxTrajectory(const FILENAMES files, unsigned int 
     obs++;
     madx.open(files.tracking(obs,particle).c_str(), ios::in);
   }
-  this->pop_back_turn();
-  
+  this->hide_last_turn();
+
 }
 
 
