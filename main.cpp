@@ -119,7 +119,7 @@ int main (int argc, char *argv[])
       break;
     case 'c':
       ampcut_x = atof(optarg);
-      ampcut_z = atof(optarg);
+      ampcut_z = ampcut_x;
       break;
     case 'C':
       ampcut_res = atof(optarg);
