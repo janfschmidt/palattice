@@ -8,16 +8,10 @@ Bsupply: main.o ELSAimport.o metadata.o timetag.o filenames.o resonances.o spect
 
 main.o: main.cpp constants.hpp types.hpp spectrum.hpp  metadata.hpp timetag.hpp filenames.hpp resonances.hpp interpolate.hpp interpolate.hxx functionofpos.hpp functionofpos.hxx field.hpp AccElements.hpp AccLattice.hpp
 	g++ $(cflags) -c main.cpp
-#getfields.o: getfields.cpp constants.hpp types.hpp resonances.hpp interpolate.hpp interpolate.hxx functionofpos.hpp functionofpos.hxx field.hpp
-#	g++ $(cflags) -c getfields.cpp
-#madximport.o: madximport.cpp constants.hpp types.hpp filenames.hpp functionofpos.hpp functionofpos.hxx
-#	g++ $(cflags) -c madximport.cpp
 ELSAimport.o: ELSAimport.cpp constants.hpp types.hpp functionofpos.hpp functionofpos.hxx
 	g++ $(cflags) -c ELSAimport.cpp
 metadata.o: metadata.cpp
 	g++ $(cflags) -c metadata.cpp
-#difference.o: difference.cpp constants.hpp types.hpp ELSAimport.hpp spectrum.hpp interpolate.hpp interpolate.hxx functionofpos.hpp functionofpos.hxx AccLattice.hpp
-#	g++ $(cflags) -c difference.cpp
 timetag.o: timetag.cpp
 	g++ $(cflags) -c timetag.cpp
 filenames.o: filenames.cpp filenames.hpp

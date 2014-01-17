@@ -20,7 +20,6 @@
 #include "timetag.hpp"
 #include "filenames.hpp"
 #include "resonances.hpp"
-#include "difference.hpp"
 #include "metadata.hpp"
 #include "ELSAimport.hpp"
 #include "spectrum.hpp"
