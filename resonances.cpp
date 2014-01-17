@@ -132,7 +132,7 @@ void RESONANCES::set(AccLattice &lattice, FunctionOfPos<AccPair> &orbit)
 	addDip(it->second);
       }
       else {
-	pos_tot = orbit.posTotal(lattice.where(it), t);
+	pos_tot = orbit.posTotal(it->first, t);
 	addOther(it->second, orbit.interp(pos_tot));
       }
 
@@ -150,7 +150,7 @@ Spectrum RESONANCES::getSpectrum(unsigned int fmaxrevIn, double ampcutIn) const
   // construct spectrum from kick-vector
   // (unit=degree, circumference=360)
   // Resonances spectrum is normalized to number of bending dipoles ndip
-  Spectrum s(this->getkickVector(), 360, this->n_turns, ndip, fmaxrevIn, ampcutIn, degree);
+  Spectrum s(this->getkickVector(), 360, n_turns, ndip*n_turns, fmaxrevIn, ampcutIn, degree);
 
   return s;
 }
