@@ -363,7 +363,7 @@ int main (int argc, char *argv[])
       bz.eval_out(0.1, B.circ, file.out("eval_z", t.tag(i)).c_str());
       //check dipole lengths
       B.magnetlengths(lattice, file.out("dipolelengths", t.tag(i)).c_str());
-      //field as function of spin phaseadvance theta
+      //kicks as function of spin phaseadvance theta (total, vcorr, quad)
       Res.out(file.out("resonances", t.tag(i)).c_str());
     }
 
@@ -371,15 +371,10 @@ int main (int argc, char *argv[])
     bx.out( file.spec("horizontal", t.tag(i)).c_str(), metadata.get(bx, "horizontal") );
     bz.out( file.spec("vertical", t.tag(i)).c_str(), metadata.get(bz, "vertical") );
     bs.out( file.spec("longitudinal", t.tag(i)).c_str(), metadata.get(bs, "longitudinal") );
-
-    //resonance strengths (=harmcorr spectrum)
+    //resonance spectrum (=resonance strengths)
     if (Res.on) {
       res.out( file.spec("resonances", t.tag(i)).c_str(), metadata.get(res, "resonances") );
     }
-
-    //harmcorr out
-    if (diff && Res.on)
-      Res.harmcorr_out(file.out("harmcorr", t.tag(i)).c_str());
 
 
     cout << "--------------------------------------------" << endl;

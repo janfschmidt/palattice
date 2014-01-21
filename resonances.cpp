@@ -156,52 +156,30 @@ Spectrum RESONANCES::getSpectrum(unsigned int fmaxrevIn, double ampcutIn) const
 }
 
 
-int RESONANCES::out(const char *filename) const
+
+//output of kicks as function of spin phaseadvance theta (total, vcorr, quad)
+void RESONANCES::out(const char *filename) const
 {
  unsigned int i=0;
  int w=14;
  fstream file;
+ stringstream msg;
 
- if (!on) return 0;  //write output only, if Resonances are used
+ if (!on) return;  //write output only, if Resonances are used
 
  file.open(filename, ios::out);
  if (!file.is_open()) {
-   cout << "ERROR: Cannot open " << filename << "." << endl;
-   return 1;
+   msg << "ERROR: RESONANCES::out: Cannot open " << filename << ".";
+   throw std::runtime_error(msg.str());
  }
 
- file <<setw(w)<< "theta [°]" <<setw(w)<<  "kick [mrad]" << endl;
+ file <<setw(w)<< "theta [°]" <<setw(w)<<  "tot.kick [mrad]" <<setw(w)<< "corrs [mrad]"
+      <<setw(w)<< "quads [mrad]"<<setw(w)<< "corrs+quads" << endl;
  file <<setiosflags(ios::scientific)<<showpoint<<setprecision(3);
  for (i=0; i<theta.size(); i++) {
-   file <<setw(w)<< theta[i] <<setw(w)<< kick[i] << endl;
+   file <<setw(w)<< theta[i] <<setw(w)<< kick[i] <<setw(w)<< vCorrKick[i]
+	<<setw(w)<< quadKick[i] <<setw(w)<< vCorrKick[i]+quadKick[i] << endl;
  }
  file.close();
  cout << "* Wrote " << filename  << endl;
-  return 0;
-}
-
-
-//output of vCorr & quad kicks (harmcorr)
-void RESONANCES::harmcorr_out(const char *filename) const
-{
-  unsigned int i=0;
-  int w=14;
-  fstream file;
-  stringstream msg;
-  
-  file.open(filename, ios::out);
-  if (!file.is_open()) {
-    msg << "ERROR: harmcorr_out: Cannot open " << filename << ".";
-    throw std::runtime_error(msg.str());
-  }
-  
-  file <<setw(w)<< "theta / °" <<setw(w)<< "corrs [mrad]" <<setw(w)<< "quads [mrad]" <<setw(w)<< "sum [mrad]" << endl;
-
-  file <<setiosflags(ios::scientific)<<showpoint<<setprecision(3);
-  // output only between dipoles => each n-th step
-  for (i=0; i<theta.size(); i+=n) {
-    file <<setw(w)<< theta[i] <<setw(w)<< vCorrKick[i] <<setw(w)<< quadKick[i] <<setw(w)<< vCorrKick[i]+quadKick[i] << endl;
-  }
-  file.close();
-  cout << "* Wrote " << filename  << endl;
 }

@@ -45,8 +45,7 @@ public:
 
   Spectrum getSpectrum(unsigned int fmaxrevIn=30, double ampcut=0) const;
 
-  int out(const char *filename) const;
-  void harmcorr_out(const char *filename) const; //output of vCorr & quad kicks
+  void out(const char *filename) const; //output of kicks as function of theta (total, vcorr, quad)
  
 };
 
