@@ -389,8 +389,8 @@ void AccLattice::madximport(const char *madxTwissFile)
   Dipole hDip("defaultName", 0., 0., H);
   Corrector vCorr("defaultName", 0., 0., H); // vertical kicker has HORIZONTAL field
   Corrector hCorr("defaultName", 0., 0., V);
-  Quadrupole Quad("defaultName", 0.);    // madx uses negative sign "strength" for D magnets,
-  Sextupole Sext("defaultName", 0.);     // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
+  Quadrupole Quad("defaultName", 0., 0., F); // madx uses negative sign "strength" for D magnets,
+  Sextupole Sext("defaultName", 0., 0., F);  // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
 
   if (refPos != end)
     cout << "WARNING: AccLattice::madximport(): The input file (MAD-X twiss) uses element end as positions." << endl
@@ -478,6 +478,114 @@ void AccLattice::madximportMisalignments(const char *madxEalignFile)
   }
 
 }
+
+
+
+
+
+// set elements from elegant Lattice (read from ascii parameter file ".param")
+// ====== ATTENTION ==================================
+// "FamilyMagnets" (Quad,Sext) all of type F, because
+// elegant uses different signs of strengths (k,m)
+// ===================================================
+void AccLattice::elegantimport(const char *elegantParamFile)
+{
+  double s, pos;
+  double l, k1, k2, angle, kick; //parameter values
+  paramRow row, row_old;
+  AccElement *element;
+  fstream elegantParam;
+  bool firstElement = true;
+  string tmp;
+
+  //AccElements
+  Dipole vDip("defaultName", 0., 0., V);
+  Dipole hDip("defaultName", 0., 0., H);
+  Corrector vCorr("defaultName", 0., 0., H); // vertical kicker has HORIZONTAL field
+  Corrector hCorr("defaultName", 0., 0., V);
+  Quadrupole Quad("defaultName", 0., 0., F); // madx uses negative sign "strength" for D magnets,
+  Sextupole Sext("defaultName", 0., 0., F);  // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
+  Drift empty_space("defaultName", 0.);
+
+  if (refPos != end)
+    cout << "WARNING: AccLattice::elegantimport(): The input file (elegant parameter) uses element end as positions." << endl
+	 << "They are transformed to the current Anchor set for this lattice: " << refPos_string() << endl;
+
+  elegantParam.open(elegantParamFile, ios::in);
+  if (!elegantParam.is_open()) {
+    cout << "ERROR: AccLattice::elegantimport(): Cannot open " << elegantParamFile << endl;
+    exit(1);
+  }
+
+
+  //read each row of .param file
+  while (!elegantParam.eof()) {
+    elegantParam >> row.name >> row.param >> row.value >> row.type;
+    getline(elegantParam, tmp); //ignore additional columns
+    if (firstElement) {
+      row_old = row;
+      firstElement = false;
+    }
+
+    //mount element if next element reached (=all parameters read)
+    if (row.name != row_old.name) {
+
+     if (row_old.type=="CSBEND" || row_old.type=="CSRCSBEND" || row_old.type=="KSBEND" || row_old.type=="NIBEND" || row_old.type=="TUBEND") {
+       element = &vDip;
+       element->strength = angle / l;
+     }
+     else if (row_old.type=="QUAD") {
+       element = &Quad;
+       element->strength = k1;
+     }
+     else if (row_old.type=="SEXT") {
+       element = &Sext;
+       element->strength = k2;
+     }
+     else if (row_old.type=="VKICK") {
+       element = &vCorr;
+       element->strength = kick;
+     }
+     else if (row_old.type=="HKICK") {
+       element = &hCorr;
+       element->strength = kick;
+     }
+     else
+       element = &empty_space; //Drift
+
+     if (element->type != drift) {
+       element->length = l;
+       element->name = row_old.name;
+       if (refPos == begin) pos = s-l;
+       else if (refPos == center) pos = s-l/2;
+       else pos = s; 
+       this->set(pos, *element); // mount element
+       pos=l=k1=k2=angle=kick=0.;   // clear param. values to avoid reuse of an old value
+     }
+    }
+
+
+    //read parameter in row (if needed)
+    if (row.param == "L") {    //element length L used to get position (s)
+      l = row.value;
+      s += l;
+    }
+    else if (row.param == "K1") k1 = row.value;
+    else if (row.param == "K2") k2 = row.value;
+    else if (row.param == "ANGLE") angle = row.value;
+    else if (row.param == "KICK") kick = row.value;
+    //... add more parameters here
+
+ 
+   row_old = row;
+  }
+  
+
+  elegantParam.close();
+}
+
+
+
 
 
 
@@ -706,7 +814,7 @@ void AccLattice::print(const char *filename) const
 
 
 // print all elements of one type If no filename is given, print to stdout
-void AccLattice::printType(element_type _type, const char *filename) const
+void AccLattice::print(element_type _type, const char *filename) const
 {
   const_AccIterator it=firstCIt(_type);
   const int w = 12;

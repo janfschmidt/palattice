@@ -353,7 +353,7 @@ int main (int argc, char *argv[])
       bpmorbit.out(file.out("bpms", t.tag(i)).c_str());
       trajectory.out(file.out("trajectory", t.tag(i)).c_str());
       //corrector data
-      lattice.printType(corrector, file.out("vcorrs", t.tag(i)).c_str());
+      lattice.print(corrector, file.out("vcorrs", t.tag(i)).c_str());
       //orbit data (interpolated BPMs)
       bpmorbit.interp_out(0.1, file.out("interp_bpms", t.tag(i)).c_str());
       //field data

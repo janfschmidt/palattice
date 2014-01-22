@@ -64,6 +64,7 @@ public:
   void madximport(const char *madxTwissFile);              // set elements from MAD-X Lattice (read from twiss-output)
   void madximportMisalignments(const char *madxEalignFile);// set misalignments from MAD-X Lattice (read ealign-output)
                                                      // !! currently only rotation (dpsi) around beam axis (s) is implemented!
+  void elegantimport(const char *elegantParamFile);        // set elements from elegant Lattice (read from ascii parameter file ".param")
   void setELSAoptics(const char *spurenFolder);                    // change quad&sext strengths to values from "ELSA-Spuren"
   unsigned int setELSACorrectors(CORR *ELSAvcorrs, unsigned int t);// change corrector pos&strength to values from "ELSA-Spuren" at time t
   void subtractCorrectorStrengths(const AccLattice &other);    // subtract other corrector strengths from the ones of this lattice
@@ -75,7 +76,7 @@ public:
 
   // output (stdout or file)
   void print(const char *filename="") const;                         // print lattice. If no filename is given, print to stdout
-  void printType(element_type _type, const char *filename="") const; // print all elements of one type. If no filename is given, print to stdout
+  void print(element_type _type, const char *filename="") const; // print all elements of one type. If no filename is given, print to stdout
 
 };
 
@@ -92,6 +93,16 @@ public:
   eNoFreeSpace(string msg) : std::invalid_argument(msg) {}
 };
 
+
+// data format for elegant parameters file (".param")
+class paramRow {
+public:
+  string name;
+  string type;
+  string param;
+  double value;
+  paramRow() : name(""), type(""), param(""), value(0.) {};
+};
 
 #endif
 /*__ACCLATTICE_HPP_*/
