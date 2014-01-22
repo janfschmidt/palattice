@@ -39,7 +39,7 @@ private:
 public:
   const double circ;                          //circumference of accelerator
 
-  FunctionOfPos(double circIn=164.4, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
+  FunctionOfPos(double circIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
   FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
   ~FunctionOfPos() {}
 
@@ -71,8 +71,9 @@ public:
   void pop_back_turn();  // erase data of last turn, reduces turns by 1
 
   // orbit import
-  void madxClosedOrbit(const char *madxTwissFile);                    //import closed orbit from madx twiss file
+  void madxClosedOrbit(const char *madxTwissFile);                   //import closed orbit from madx twiss file
   void madxTrajectory(const FILENAMES files, unsigned int particle); //import single particle trajectory from madx tracking "obs" files at each quadrupole
+  void elegantClosedOrbit(const char *elegantCloFile);               //import closed orbit from elegant .clo file
   void elsaClosedOrbit(BPM *ELSAbpms, unsigned int t);               //import closed orbit from ELSA measurement at time t/ms
 
   // tests

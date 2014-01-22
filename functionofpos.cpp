@@ -94,6 +94,8 @@ vector<double> FunctionOfPos<AccTriple>::getVector(AccAxis axis) const
 
 
 
+
+
 // ---------------- Orbit import ---------------------
 //import closed orbit from madx twiss file
 template <>
@@ -105,15 +107,15 @@ void FunctionOfPos<AccPair>::madxClosedOrbit(const char *madxTwissFile)
   // --------------------------------------------------------------------------------
 
   string tmp;
-  double s, k1l; 
-  string x, y;
-
+  double pos, k1l; 
+  string s, x, y;
+  char *p, *pp, *ppp;
   fstream madxTwiss;
   AccPair otmp;
 
   madxTwiss.open(madxTwissFile, ios::in);
   if (!madxTwiss.is_open()) {
-    cout << "ERROR: AccLattice::madximport(): Cannot open " << madxTwissFile << endl;
+    cout << "ERROR: FunctionOfPos::madxClosedOrbit(): Cannot open " << madxTwissFile << endl;
     exit(1);
   }
 
@@ -122,15 +124,21 @@ void FunctionOfPos<AccPair>::madxClosedOrbit(const char *madxTwissFile)
 
     if (tmp == "\"QUADRUPOLE\"") {
       madxTwiss >> tmp >> s >> x >> y >> tmp >> tmp >> k1l;
-      if (x!="na" && y!="na" && k1l!=0) { //k1l: no BPM for inactive quad (ELSA: SQ, LQ)
-      	otmp.x = strtod(x.c_str(), NULL); // ! double x=0.0 if no valid format in string x
-      	otmp.z = strtod(y.c_str(), NULL);
-      	this->set(otmp, s);
+      pos = strtod(s.c_str(), &p);
+      otmp.x = strtod(x.c_str(), &pp);
+      otmp.z = strtod(y.c_str(), &ppp);
+      if (*p!=0 || *pp!=0 || *ppp!=0) {
+	cout << "WARNING: FunctionOfPos::madxClosedOrbit(): No correct BPM data @ s="
+	     <<s<< "("<<x<<", "<<y<<"). Ignore it and continue." << endl;
       }
+      else
+	this->set(otmp, pos);
     }
-
   }
 }
+
+
+
 
 //import single particle trajectory from madx tracking "obs" files at each quadrupole
 template <>
@@ -183,6 +191,49 @@ void FunctionOfPos<AccPair>::madxTrajectory(const FILENAMES files, unsigned int 
   this->hide_last_turn();
 
 }
+
+
+
+//import closed orbit from elegant .clo file
+template<>
+void FunctionOfPos<AccPair>::elegantClosedOrbit(const char *elegantCloFile)
+{
+ // --------------------------------------------------------------------------------
+  // position of orbit-data at END of quadrupole (according to s in elegant .clo file).
+  // Corresponds to BPM behind the Quadrupole
+  // --------------------------------------------------------------------------------
+
+  string tmp;
+  string s, x, y;
+  double pos;
+  char *p, *pp, *ppp;
+  fstream elegantClo;
+  AccPair otmp;
+
+  elegantClo.open(elegantCloFile, ios::in);
+  if (!elegantClo.is_open()) {
+    cout << "ERROR: FunctionOfPos::elegantClosedOrbit(): Cannot open " << elegantCloFile << endl;
+    exit(1);
+  }
+
+  while (!elegantClo.eof()) {
+    elegantClo >> tmp;
+
+    if (tmp == "QUAD") {
+      elegantClo >> s >> x >> y;
+      pos = strtod(s.c_str(), &p);
+      otmp.x = strtod(x.c_str(), &pp);
+      otmp.z = strtod(y.c_str(), &ppp);
+      if (*p!=0 || *pp!=0 || *ppp!=0) {
+	cout << "WARNING: FunctionOfPos::elegantClosedOrbit(): No correct BPM data @ s="
+	     <<s<< "("<<x<<", "<<y<<"). Ignore it and continue." << endl;
+      }
+      else
+	this->set(otmp, pos);
+    }
+  }
+}
+
 
 
 //import closed orbit from ELSA BPM-measurement at time t/ms
