@@ -91,6 +91,51 @@ int METADATA::madximport(char *madxLabels, const char *madxfile)
 }
 
 
+
+//  add metadata from elegant .param ascii file (written with subprocess command).
+// returns number of read values
+int METADATA::elegantimport(char *elegantLabels, const char *elegantfile)
+{
+  unsigned int i, n=0;
+  string tmp, tmpEntry;
+  fstream elegant;
+  char *p;
+  vector<string> tmpLabel;
+
+  elegant.open(elegantfile, ios::in);
+  if (!elegant.is_open()) {
+    cout << "ERROR: metadata.elegantimport(): Cannot open " << elegantfile << endl;
+    return -1;
+  }
+
+  //read Labels from elegantLabels
+  p = strtok(elegantLabels, ", ");
+  while(p != NULL) {
+    tmp=p;
+    tmpLabel.push_back(tmp);
+    p = strtok(NULL, ", ");
+  }
+
+  //read corresponding entries 
+  while(!elegant.eof()) {
+    elegant >> tmp;
+    for (i=0; i<tmpLabel.size(); i++) {
+      if(tmp==tmpLabel[i]) {
+	elegant >> tmpEntry;
+	//add to metadata
+	label.push_back(tmpLabel[i]);
+	entry.push_back(tmpEntry);
+	n++;
+      }
+    }
+    if (tmp == "***") break; //end of header
+  }
+
+  elegant.close();
+  return n;
+}
+
+
 /* add one line manually */
 void METADATA::add(string inLabel, string inEntry)
 {

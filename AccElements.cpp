@@ -94,7 +94,7 @@ string AccElement::printHeader() const
   std::stringstream s;
 
   s <<std::setw(w)<< "Name" <<std::setw(w)<< "Type" <<std::setw(w)<< "Length/m" <<std::setw(w)
-    << "Strength/m^-1" <<std::setw(w)<< "Rotation(s)/rad" << endl;
+    << "Strength*" <<std::setw(w)<< "Rotation(s)/rad" << endl;
 
   return s.str();
 }

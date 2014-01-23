@@ -7,12 +7,24 @@
 
 
 //constructor
-FILENAMES::FILENAMES(string pathIn, bool elsa, bool diff, bool sgt_access, string spurenIn, string refIn)
+FILENAMES::FILENAMES(string pathIn, simulationTool _simTool, bool elsa, bool diff, bool sgt_access, string spurenIn, string refIn)
+  : simTool(_simTool)
 {
   //======default filenames (private)=====
-  file_import = "/madx/madx.twiss";
-  file_misalign_dip = "/madx/dipols.ealign";
-  file_import_ref = "/madx_ref.twiss";
+  if (simTool == madx) {
+    file_lattice = "/madx/madx.twiss";
+    file_orbit = "/madx/madx.twiss";
+    file_misalign_dip = "/madx/dipols.ealign";
+    file_lattice_ref = "/madx_ref.twiss";
+    file_orbit_ref = "/madx_ref.twiss";
+  }
+  else {
+    file_lattice = "/elegant/elegant.param";
+    file_orbit = "/elegant/elegant.clo";
+    file_misalign_dip = "/elegant/dipols.ealign";
+    file_lattice_ref = "/elegant_ref.param";
+    file_orbit_ref = "/elegant_ref.clo";
+  }
   //======================================
 
 
@@ -25,19 +37,35 @@ FILENAMES::FILENAMES(string pathIn, bool elsa, bool diff, bool sgt_access, strin
 
   //public filenames (including path):
   path = pathIn;  //project-path
-  import = path + file_import;
+  lattice = path + file_lattice;
+  orbit = path + file_orbit;
   misalign_dip = path + file_misalign_dip;
+
   if (sgt_access)
     spuren = "/sgt/elsa/data/bpm/"+spurenIn;
   else
     spuren = path+"/ELSA-Spuren/"+spurenIn;
-  if (elsa)
-    if (sgt_access)
-      ref = "/sgt/elsa/data/bpm/"+refIn;
-    else
-      ref = path+"/ELSA-Spuren/"+refIn;
-  else
-    ref = path+"/madx/"+refIn;
+
+  if (elsa) {
+    if (sgt_access) {
+      lattice_ref = "/sgt/elsa/data/bpm/"+refIn;
+      orbit_ref = "/sgt/elsa/data/bpm/"+refIn;
+    }
+    else { // no sgt_access
+      lattice_ref = path+"/ELSA-Spuren/"+refIn;
+      orbit_ref = path+"/ELSA-Spuren/"+refIn;
+    }
+  }
+  else { // not elsa
+    if (simTool == madx) {
+      orbit_ref = path+"/madx/"+refIn;
+      lattice_ref = path+"/madx/"+refIn;
+    }
+    else {
+      orbit_ref = path+"/elegant/"+refIn;
+      lattice_ref = path+"/elegant/"+refIn;
+    }
+  }
   
 }
 

@@ -17,6 +17,7 @@ public:
   METADATA(string path, bool elsa, bool diff, char *spuren, char *Ref_spuren);
   ~METADATA() {}
   int madximport(char *madxLabels, const char *madxfile);
+  int elegantimport(char *elegantLabels, const char *elegantfile);
   void add(string inLabel, string inEntry);
   unsigned int size() const;
   string getLabel(unsigned int i) const;

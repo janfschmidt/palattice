@@ -14,7 +14,7 @@ metadata.o: metadata.cpp
 	g++ $(cflags) -c metadata.cpp
 timetag.o: timetag.cpp
 	g++ $(cflags) -c timetag.cpp
-filenames.o: filenames.cpp filenames.hpp
+filenames.o: filenames.cpp filenames.hpp types.hpp
 	g++ $(cflags) -c filenames.cpp
 resonances.o: resonances.cpp resonances.hpp types.hpp functionofpos.hpp functionofpos.hxx AccLattice.hpp spectrum.hpp
 	g++ $(cflags) -c resonances.cpp

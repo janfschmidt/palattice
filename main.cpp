@@ -57,15 +57,11 @@ int main (int argc, char *argv[])
   CORR ELSAvcorrs[NVCORRS];    // ELSAvcorrs[0]=VC01, ELSAvcorrs[31]=VC32
   BPM Ref_ELSAbpms[NBPMS];
   CORR Ref_ELSAvcorrs[NVCORRS];
-  // magnetvec dipols;            // use vector class for magnets and orbit; .name shows right labels
-  // magnetvec quads;
-  // magnetvec sexts;
-  // magnetvec vcorrs;
   FunctionOfPos<AccPair> *orbit;
+  simulationTool simTool = madx;  // lattice/orbit/tracking from madx or elegant? (option -s)
 
-  // int err=0;
-
-  int opt, warnflg=0, conflictflg=0;          //for getopt()
+  //for getopt():
+  int opt, warnflg=0, conflictflg=0;
   extern char *optarg;
   extern int optopt, optind;
  
@@ -85,7 +81,7 @@ int main (int argc, char *argv[])
     }
   }
 
-  while ((opt = getopt(argc, argv, ":n:p:r:e:t:f:F:c:C:d:m:ah")) != -1) {
+  while ((opt = getopt(argc, argv, ":n:p:s:r:e:t:f:F:c:C:d:m:ah")) != -1) {
     switch(opt) {
     case 'n':
       n_samp = atoi(optarg);
@@ -93,6 +89,11 @@ int main (int argc, char *argv[])
     case 'p':
       ptc = true;
       particle = atoi(optarg);
+      break;
+    case 's':
+      if (strcmp(optarg,"madx") == 0) simTool = madx;
+      else if (strcmp(optarg,"elegant") == 0) simTool = elegant;
+      else cout << "WARNING: invalid input for simulation tool (-s). Default is used. See -h for help." << endl;
       break;
     case 'r':
       dtheta = atof(optarg);
@@ -111,7 +112,7 @@ int main (int argc, char *argv[])
       break;
     case 'f':
       fmax_x = atoi(optarg);
-      fmax_z = atoi(optarg);
+      fmax_z = fmax_x;
       break;
     case 'F':
       fmax_res = atoi(optarg);
@@ -135,6 +136,7 @@ int main (int argc, char *argv[])
       cout << "* First argument is project path." << endl;
       cout << "* -n [n_samp] sets number of sampling points (per rev.) for field calculation." << endl;
       cout << "* -p [particle no] enables import of single particle trajectory from madx ptc_track." << endl;
+      cout << "* -s [madx/elegant] set simulation tool whose output is used for lattice/orbit/tracking import." << endl;
       cout << "* -r [dtheta] estimates resonance strengths, stepwidth [dtheta]°" << endl;
       cout << "* -e [spuren] enables ELSA-mode, Spuren as argument (path: [project]/ELSA-Spuren/) " << endl;
       cout << "* -f [fmax] sets maximum frequency for B-Field spectrum (in rev. harmonics)" << endl;
@@ -183,18 +185,26 @@ int main (int argc, char *argv[])
   
 
   //initialize filenames
-  FILENAMES file(argv[1], elsa, diff, sgt_access, spuren, Reference);
+  FILENAMES file(argv[1], simTool, elsa, diff, sgt_access, spuren, Reference);
   cout << "Pfad: "<<file.path.c_str() << endl;
 
 
   //metadata for spectrum files
   METADATA metadata(file.path, elsa, diff, spuren, Reference);
   char tmp[100];
-  snprintf(tmp, 100, "TITLE,LENGTH,ORIGIN,PARTICLE");
-  metadata.madximport(tmp, file.import.c_str());
+  if (simTool == madx) {
+    snprintf(tmp, 100, "TITLE,LENGTH,ORIGIN,PARTICLE");
+    metadata.madximport(tmp, file.lattice.c_str());
   circumference = strtod(metadata.getbyLabel("LENGTH").c_str(), NULL);
+  }
+  else {
+    metadata.add("ORIGIN", "Elegant");
+    snprintf(tmp, 100, "circumference,pCentral/m_e*c,tune Qx,tune Qz");
+    metadata.elegantimport(tmp, file.lattice.c_str());
+    circumference = strtod(metadata.getbyLabel("circumference").c_str(), NULL);
+  }
   if (circumference == 0) {
-    cout << "ERROR: metadata: cannot read accelerator circumference from "<< file.import.c_str() << endl;
+    cout << "ERROR: metadata: cannot read accelerator circumference from "<< file.lattice << endl;
     return 1;
   }
   snprintf(tmp, 100, "%d points per turn", n_samp);
@@ -219,13 +229,20 @@ int main (int argc, char *argv[])
   if (diff) cout << "         harmcorr analysis (difference-mode)" << endl;
   cout << "--------------------------------------------" << endl;
   cout << "* "<<n_samp<<" sampling points along ring" << endl;
-  cout << "* maximum frequencies used for B-field evaluation: Bx:"<<fmax_x<<", Bz:"<<fmax_z << endl;
+  cout << "* maximum frequency used for B-field evaluation: Bx=Bz="<<fmax_x << endl; //<<", Bz:"<<fmax_z << endl;
 
 
-  // MAD-X: read lattice (magnet positions,strengths,misalignments) and  particle orbit
-  lattice.madximport(file.import.c_str());
-  lattice.madximportMisalignments(file.misalign_dip.c_str());
-  bpmorbit.madxClosedOrbit(file.import.c_str());
+  // read lattice (magnet positions,strengths,misalignments) and  particle orbit
+  if (simTool == madx) {
+    lattice.madximport(file.lattice.c_str());
+    lattice.madximportMisalignments(file.misalign_dip.c_str());
+    bpmorbit.madxClosedOrbit(file.orbit.c_str());
+  }
+  else { //elegant
+    lattice.elegantimport(file.lattice.c_str());
+    //lattice.madximportMisalignments(file.misalign_dip.c_str());
+    bpmorbit.elegantClosedOrbit(file.orbit.c_str());
+  }
 
   // elsa=true: quad-&sext-strengths, BPM- & corrector-data from ELSA "Spuren"
   if (elsa) {
@@ -239,15 +256,17 @@ int main (int argc, char *argv[])
     ELSAimport_bpms(ELSAbpms, file.spuren.c_str());
     ELSAimport_vcorrs(ELSAvcorrs, file.spuren.c_str());
     if (diff) {
-      ELSAimport_bpms(Ref_ELSAbpms, file.ref.c_str());
-      ELSAimport_vcorrs(Ref_ELSAvcorrs, file.ref.c_str());
+      ELSAimport_bpms(Ref_ELSAbpms, file.orbit_ref.c_str());
+      ELSAimport_vcorrs(Ref_ELSAvcorrs, file.lattice_ref.c_str());
       Ref_lattice = lattice; // take names,positions,lengths
     }
   }
 
   cout << "* "<<lattice.size(dipole)<<" dipoles, "<<lattice.size(quadrupole)<<" quadrupoles, "
-       <<lattice.size(sextupole)<<" sextupoles, "<<lattice.size(corrector)<<" correctors and "
-       <<bpmorbit.samples()<<" BPMs read"<<endl<<"  from "<<file.import.c_str() << endl;
+       <<lattice.size(sextupole)<<" sextupoles, "<<lattice.size(corrector)<<" kickers read"<<endl
+       <<"  from "<<file.lattice<<endl
+       << "* "<<bpmorbit.samples()<<" BPMs(@Quad) read"<<endl
+       <<"  from "<<file.orbit << endl;
 
   if (ptc) {
     trajectory.madxTrajectory(file, particle);
@@ -291,7 +310,7 @@ int main (int argc, char *argv[])
 	exit(1);
       }
       cout << "* "<<t.label(i)<<": "<<lattice.size(corrector)<<" correctors and "
-	   <<bpmorbit.samples()<<" BPMs read"<<endl<<"  from "<<file.spuren.c_str() << endl;
+	   <<bpmorbit.samples()<<" BPMs read"<<endl<<"  from "<<file.spuren << endl;
     }
 
     // difference-mode: read reference orbit & corrector data
@@ -302,12 +321,20 @@ int main (int argc, char *argv[])
 	cout << "* "<<t.label(i)<<": ";
 	  }
       else {
-	Ref_bpmorbit.madxClosedOrbit(file.ref.c_str());
-	Ref_lattice.madximport(file.ref.c_str());
+	if (simTool == madx) {
+	  Ref_bpmorbit.madxClosedOrbit(file.orbit_ref.c_str());
+	  Ref_lattice.madximport(file.lattice_ref.c_str());
+	}
+	else { //elegant
+	  Ref_bpmorbit.elegantClosedOrbit(file.orbit_ref.c_str());
+	  Ref_lattice.elegantimport(file.lattice_ref.c_str());
+	}
 	cout << "* ";
       }
-      cout <<Ref_lattice.size(corrector)<<" correctors and "
-	   <<Ref_bpmorbit.samples()<<" BPMs read"<<endl<<"  from "<< file.ref.c_str() << endl;
+      cout <<Ref_lattice.size(corrector)<<" kickers read"<<endl
+	   <<"  from "<< file.lattice_ref <<endl
+	   <<"* "<<Ref_bpmorbit.samples()<<" BPMs(@Quad) read"<<endl
+	   <<"  from "<< file.orbit_ref << endl;
     }
     
     // difference-mode: subtract reference orbit & corrector data
@@ -330,7 +357,7 @@ int main (int argc, char *argv[])
     }
 
     cout << "Calculate field distribution..." << endl;
-    B.set(lattice, *orbit, n_samp);        // calculate field distribution (s)
+    B.set(lattice, *orbit, n_samp);        // calculate field distributions (s)
     Res.set(lattice, *orbit);      // calculate Resonances (theta)
 
     cout << "Calculate spectra (FFT)..." << endl;
@@ -380,7 +407,7 @@ int main (int argc, char *argv[])
     cout << "--------------------------------------------" << endl;
   }
 
-  cout << "Finished. (Output in "<<file.path.c_str()<<"/inout/)" << endl << endl;
+  cout << "Finished. (Output in "<<file.path<<"/inout/)" << endl << endl;
 
   return 0;
 }

@@ -517,8 +517,13 @@ void AccLattice::elegantimport(const char *elegantParamFile)
     exit(1);
   }
 
+  
+  // goto first line with data (*** marks end of parameters, two header lines below it)
+  elegantParam >> tmp;
+  while (tmp != "***") elegantParam >> tmp;
+  for (int i=0; i<3; i++)   getline(elegantParam, tmp);
 
-  //read each row of .param file
+  //read each row of .param file data
   while (!elegantParam.eof()) {
     elegantParam >> row.name >> row.param >> row.value >> row.type;
     getline(elegantParam, tmp); //ignore additional columns
@@ -544,11 +549,11 @@ void AccLattice::elegantimport(const char *elegantParamFile)
      }
      else if (row_old.type=="VKICK") {
        element = &vCorr;
-       element->strength = kick;
+       element->strength = sin(kick) / l;  // 1/R from kick-angle
      }
      else if (row_old.type=="HKICK") {
        element = &hCorr;
-       element->strength = kick;
+       element->strength = sin(kick) / l;  // 1/R from kick-angle
      }
      else
        element = &empty_space; //Drift
@@ -790,6 +795,7 @@ void AccLattice::print(const char *filename) const
 
   //write text to s
   s << "# Reference Position: " << refPos_string() << endl;
+  s <<"# (* unit of Strength depends on magnet type! e.g. Quad: k1, Sext: k2, Dipole: 1/R)" <<endl;
   s <<"#"<< std::setw(w) << "Ref.Pos/m" << it->second->printHeader();
 
   for (; it!=elements.end(); ++it) {
@@ -825,6 +831,7 @@ void AccLattice::print(element_type _type, const char *filename) const
   //write text to s
   s << "# Reference Position: " << refPos_string() << endl;
   s << "# List of " << it->second->type_string() << "s only!" << endl;
+  s <<"# (* unit of Strength depends on magnet type! e.g. Quad: k1, Sext: k2, Dipole: 1/R)" <<endl;
   s <<"#"<< std::setw(w) << "Ref.Pos/m" << it->second->printHeader();
 
   for (; it!=lastCIt(_type); it=nextCIt(_type, it)) {

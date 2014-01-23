@@ -10,6 +10,8 @@
 
 
 
+enum simulationTool{madx,elegant};
+
 // ----- accelerator coordinates (2D "Pair" & 3D "Triple") -----
 
 class AccPair {
@@ -175,24 +177,6 @@ public:
 
   CORR() : pos(0) {}
 };
-
-/*
-class MAGNET {
-public:
-  std::string name;
-  double start;
-  double end;
-  double length;
-  double strength;
-  double dpsi;   //alignment error: rotation around s
-
-  MAGNET() : start(0), end(0), length(0), strength(0), dpsi(0) {}
-};
-*/
-
-
-/* typedefs */
-//typedef std::vector<MAGNET> magnetvec;
 
 
 
