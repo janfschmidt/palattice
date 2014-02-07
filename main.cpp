@@ -42,7 +42,7 @@ int main (int argc, char *argv[])
   unsigned int fmax_res = 0;
   unsigned int particle = 1;    // particle counter (for individual fields based on multi-particle tracking)
   TIMETAG t(530);               // moment(s) of elsa-cycle (ms)
-  bool ptc = false;             // true: single particle trajectory imported from madx ptc_track results
+  bool tracking = false;        // true: single particle trajectory imported from madx (ptc_track) or elegant results
   bool elsa = false;            // true: orbit, correctors, k & m read from /sgt/elsa/bpm/...
   bool diff = false;            // true: "harmcorr mode", calculate difference of two "Spuren"...
   bool allout = false;          // true: additional output files (orbit, field, bpms, ...)
@@ -87,7 +87,7 @@ int main (int argc, char *argv[])
       n_samp = atoi(optarg);
       break;
     case 'p':
-      ptc = true;
+      tracking = true;
       particle = atoi(optarg);
       break;
     case 's':
@@ -135,7 +135,7 @@ int main (int argc, char *argv[])
       cout << endl << "Bsupply HELP:" << endl;
       cout << "* First argument is project path." << endl;
       cout << "* -n [n_samp] sets number of sampling points (per rev.) for field calculation." << endl;
-      cout << "* -p [particle no] enables import of single particle trajectory from madx ptc_track." << endl;
+      cout << "* -p [particle no] enables import of single particle trajectory from madx (ptc_track) or elegant." << endl;
       cout << "* -s [madx/elegant] set simulation tool whose output is used for lattice/orbit/tracking import." << endl;
       cout << "* -r [dtheta] estimates resonance strengths, stepwidth [dtheta]°" << endl;
       cout << "* -e [spuren] enables ELSA-mode, Spuren as argument (path: [project]/ELSA-Spuren/) " << endl;
@@ -190,7 +190,7 @@ int main (int argc, char *argv[])
 
 
   //metadata for spectrum files
-  METADATA metadata(file.path, elsa, diff, spuren, Reference);
+  METADATA metadata(file.path, elsa, simTool, diff, spuren, Reference);
   char tmp[100];
   if (simTool == madx) {
     snprintf(tmp, 100, "TITLE,LENGTH,ORIGIN,PARTICLE");
@@ -268,8 +268,11 @@ int main (int argc, char *argv[])
        << "* "<<bpmorbit.samples()<<" BPMs(@Quad) read"<<endl
        <<"  from "<<file.orbit << endl;
 
-  if (ptc) {
-    trajectory.madxTrajectory(file, particle);
+  if (tracking) {
+    if (simTool == madx)
+      trajectory.madxTrajectory(file, particle);
+    else //elegant
+      trajectory.elegantTrajectory(file, particle);
     cout << "* trajectory of particle "<<particle<<" read at "<<trajectory.samples()
 	 <<" observation points for "<<trajectory.turns()<<" turns"<<endl;
   }
@@ -346,9 +349,9 @@ int main (int argc, char *argv[])
     // ======= most important feature: =======
     // calculate field distribution & spectrum
 
-    // if tracking is used (ptc-mode), orbit = trajectory + closed orbit
+    // if tracking is used (tracking-mode), orbit = trajectory + closed orbit
     // else, orbit = closed orbit
-    if (ptc) {
+    if (tracking) {
       trajectory += bpmorbit; // add closed orbit for every turn (trajectory coord. relative to C.O.)
       orbit = &trajectory;
     }
@@ -383,8 +386,9 @@ int main (int argc, char *argv[])
       lattice.print(corrector, file.out("vcorrs", t.tag(i)).c_str());
       //orbit data (interpolated BPMs)
       bpmorbit.interp_out(0.1, file.out("interp_bpms", t.tag(i)).c_str());
-      //field data
-      B.out(file.out("fields", t.tag(i)).c_str());
+      //field data (if tracking: file may be to large)
+      if (!tracking)
+	B.out(file.out("fields", t.tag(i)).c_str());
       //evaluated field data
       bx.eval_out(0.1, B.circ, file.out("eval_x", t.tag(i)).c_str());
       bz.eval_out(0.1, B.circ, file.out("eval_z", t.tag(i)).c_str());

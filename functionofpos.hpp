@@ -74,6 +74,7 @@ public:
   void madxClosedOrbit(const char *madxTwissFile);                   //import closed orbit from madx twiss file
   void madxTrajectory(const FILENAMES files, unsigned int particle); //import single particle trajectory from madx tracking "obs" files at each quadrupole
   void elegantClosedOrbit(const char *elegantCloFile);               //import closed orbit from elegant .clo file
+  void elegantTrajectory(const FILENAMES files, unsigned int particle); //import single particle trajectory from elegant tracking "watch" files at each quadrupole
   void elsaClosedOrbit(BPM *ELSAbpms, unsigned int t);               //import closed orbit from ELSA measurement at time t/ms
 
   // tests

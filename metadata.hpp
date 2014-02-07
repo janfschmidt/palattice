@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include "types.hpp"
 #include "spectrum.hpp"
 
 using namespace std;
@@ -14,7 +15,7 @@ private:
 
 public:
   METADATA() {METADATA::add("created at", timestamp());}
-  METADATA(string path, bool elsa, bool diff, char *spuren, char *Ref_spuren);
+  METADATA(string path, bool elsa, simulationTool s, bool diff, char *spuren, char *Ref_spuren);
   ~METADATA() {}
   int madximport(char *madxLabels, const char *madxfile);
   int elegantimport(char *elegantLabels, const char *elegantfile);

@@ -236,6 +236,64 @@ void FunctionOfPos<AccPair>::elegantClosedOrbit(const char *elegantCloFile)
 
 
 
+
+//import single particle trajectory from elegant tracking "watch" files at each quadrupole
+template <>
+void FunctionOfPos<AccPair>::elegantTrajectory(const FILENAMES files, unsigned int particle)
+{
+  unsigned int watch=0;
+  string tmp="init";
+  unsigned int turn, p;
+  double x, y, s;
+  fstream elegant;
+  AccPair otmp;
+
+  elegant.open(files.tracking(watch,particle).c_str(), ios::in);
+  while ( elegant.is_open() ) {
+    
+    // header with parameters (*** marks end of parameters, three header lines below it)
+    while (tmp != "***") {
+      elegant >> tmp;
+      // read position s
+      if (tmp == "position_s/m") {
+	elegant >> s;
+      }
+      if (elegant.eof()) {
+	cout << "ERROR: functionofpos::elegantTrajectory(): Wrong data format in " << files.tracking(watch,particle) << endl;
+	exit(1);
+      }
+    }
+    for (int i=0; i<4; i++)   getline(elegant, tmp);
+
+    //read trajectory data
+    while (!elegant.eof()) {
+      elegant >> x >> tmp >> y >> tmp >> tmp >> tmp >> p >> turn;
+      getline(elegant, tmp);
+      if (elegant.eof()) break;
+
+      if (p != particle) {
+	cout << "ERROR: functionofpos::elegantTrajectory(): particleID in " << files.tracking(watch,particle) 
+	     << " does not match the input particle ("<<p<<"/"<<particle<<")"<< endl;
+	exit(1);
+      }
+      
+      otmp.x = x;
+      otmp.z = y;
+      this->set(otmp, s, turn);
+    }
+
+    elegant.close();
+    watch++;
+    elegant.open(files.tracking(watch,particle).c_str(), ios::in);
+  }
+  this->hide_last_turn();
+
+}
+
+
+
+
+
 //import closed orbit from ELSA BPM-measurement at time t/ms
 template <>
 void FunctionOfPos<AccPair>::elsaClosedOrbit(BPM *ELSAbpms, unsigned int t)

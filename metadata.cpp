@@ -15,7 +15,7 @@ using namespace std;
 
 
 /* constructor with entries for project, mode & spuren */
-METADATA::METADATA(string path, bool elsa, bool diff, char *spuren, char *Reference)
+METADATA::METADATA(string path, bool elsa, simulationTool s, bool diff, char *spuren, char *Reference)
 {
   METADATA::add("created at", timestamp());
   METADATA::add("Project path", path.c_str());
@@ -32,11 +32,17 @@ METADATA::METADATA(string path, bool elsa, bool diff, char *spuren, char *Refere
   }
   else {
     if (diff) {
-      METADATA::add("Program Mode", "madx + difference");
+      if (s==madx)
+	METADATA::add("Program Mode", "madx + difference");
+      else
+	METADATA::add("Program Mode", "elegant + difference");
       METADATA::add("Referenz-MadXfile", Reference);
     }
     else {
-      METADATA::add("Program Mode", "madx");
+      if (s==madx)
+	METADATA::add("Program Mode", "madx");
+      else
+	METADATA::add("Program Mode", "elegant");
     }
   }  
 }

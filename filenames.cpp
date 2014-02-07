@@ -74,7 +74,10 @@ string FILENAMES::tracking(unsigned int obs, unsigned int p) const
 {
   char tmp[512];
   string out;
-  sprintf(tmp, "%s/madx/madx.obs%04d.p%04d", path.c_str(), obs, p);
+  if (simTool == madx)
+    sprintf(tmp, "%s/madx/madx.obs%04d.p%04d", path.c_str(), obs, p);
+  else // elegant
+    sprintf(tmp, "%s/elegant/elegant.w%03d.p%d", path.c_str(), obs, p);
   out = tmp;
 
   return out;
