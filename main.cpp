@@ -199,7 +199,7 @@ int main (int argc, char *argv[])
   }
   else {
     metadata.add("ORIGIN", "Elegant");
-    snprintf(tmp, 100, "circumference,pCentral/m_e*c,tune Qx,tune Qz");
+    snprintf(tmp, 100, "circumference,pCentral/m_e*c,tune:Qx,tune:Qz");
     metadata.elegantimport(tmp, file.lattice.c_str());
     circumference = strtod(metadata.getbyLabel("circumference").c_str(), NULL);
   }
