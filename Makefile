@@ -1,4 +1,4 @@
-cflags = -Wall #-g -O0 #last 2 for valgrind
+cflags = -Wall -g -O0 #last 2 for valgrind
 
 all: Bsupply strom2kick new_strom2kick
 .PHONY: all

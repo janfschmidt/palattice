@@ -31,7 +31,7 @@ using namespace std;
 int main (int argc, char *argv[])
 {
   //-----------------------------
-  bool sgt_access=false;       //special option for elsa-mode:
+  bool sgt_access=true;       //special option for elsa-mode:
                                //if 1, spuren are read from /sgt/elsa/data/bpm/ instead of [project]/ELSA-Spuren/
   //-----------------------------
   unsigned int n_samp = 1644; // number of sampling points along ring for magn. field strengths
@@ -343,6 +343,7 @@ int main (int argc, char *argv[])
     // difference-mode: subtract reference orbit & corrector data
     if (diff) {
       bpmorbit -= Ref_bpmorbit;
+      lattice.print("debug_elsa.txt");
       lattice.subtractCorrectorStrengths(Ref_lattice);
     }
 
