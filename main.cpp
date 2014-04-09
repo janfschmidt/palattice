@@ -34,10 +34,11 @@ int main (int argc, char *argv[])
   bool sgt_access=false;       //special option for elsa-mode:
                                //if 1, spuren are read from /sgt/elsa/data/bpm/ instead of [project]/ELSA-Spuren/
   //-----------------------------
-  unsigned int n_samp = 1644; // number of sampling points along ring for magn. field strengths
+  unsigned int n_samp;         // number of sampling points along ring for magn. field strengths
+  bool  default_n_samp = true;
   unsigned int i, ftmp;
-  unsigned int fmax_x = 6;      // max Frequency used for magnetic field spectrum (in revolution harmonics)
-  unsigned int fmax_z = 6;
+  unsigned int fmax_x = 25;      // max Frequency used for magnetic field spectrum (in revolution harmonics)
+  unsigned int fmax_z = 25;
   unsigned int fmax_s = 0;
   unsigned int fmax_res = 0;
   unsigned int particle = 1;    // particle counter (for individual fields based on multi-particle tracking)
@@ -50,7 +51,7 @@ int main (int argc, char *argv[])
   char Reference[50] = "dummy";
   double circumference=0;
   double ampcut_x = 1e-5;     // minimum amplitudes for magnetic field spectra
-  double ampcut_z = 1e-5;     // be carefull: ampcut_z can change spin tune !
+  double ampcut_z = 1e-6;     // be carefull: ampcut_z can change spin tune !
   double ampcut_res=0;          // minimum amplitude for resonance spectrum (option -c)
   double dtheta = -1;           // spin phaseadvance stepwidth (option -r)
   BPM ELSAbpms[NBPMS];         // ELSAbpms[0]=BPM01, ELSAbpms[31]=BPM32
@@ -84,6 +85,7 @@ int main (int argc, char *argv[])
   while ((opt = getopt(argc, argv, ":n:p:s:r:e:t:f:F:c:C:d:m:ah")) != -1) {
     switch(opt) {
     case 'n':
+      default_n_samp = false;
       n_samp = atoi(optarg);
       break;
     case 'p':
@@ -165,10 +167,6 @@ int main (int argc, char *argv[])
     cout << "ERROR: do not use both options -t and -m. Use -h for help." << endl;
     return 1;
   }
-  if (fmax_x >= n_samp/2 || fmax_z >= n_samp/2) {
-    cout << "ERROR: The maximum frequency is to large to be calculated with "<<n_samp<<" sampling points." << endl;
-    return 1;
-  }
   if (warnflg && !elsa) {
     cout << endl;
     cout << "================================================================================" << endl;
@@ -207,10 +205,22 @@ int main (int argc, char *argv[])
     cout << "ERROR: metadata: cannot read accelerator circumference from "<< file.lattice << endl;
     return 1;
   }
+
+  // calculate default sampling points along ring (n_samp)
+  double stepwidth = 0.001;  // in m
+  if (default_n_samp) n_samp = circumference/stepwidth;
+  
+  // check fmax and n_samp
+  if (fmax_x >= n_samp/2 || fmax_z >= n_samp/2) {
+    cout << "ERROR: The maximum frequency is to large to be calculated with "<<n_samp<<" sampling points." << endl;
+    return 1;
+  }
+  
+  // write n_samp to metadata
   snprintf(tmp, 100, "%d points per turn", n_samp);
   metadata.add("Field sampling", tmp);
-
-
+  
+  
   // initialize Lattice
   AccLattice lattice(circumference, end); // refPos=end used by MAD-X
   AccLattice Ref_lattice(circumference, end);
@@ -221,6 +231,7 @@ int main (int argc, char *argv[])
   FunctionOfPos<AccPair> trajectory(circumference, gsl_interp_akima);
 
 
+
   // output
   cout << endl;
   cout << "--------------------------------------------" << endl;
@@ -229,7 +240,8 @@ int main (int argc, char *argv[])
   if (diff) cout << "         harmcorr analysis (difference-mode)" << endl;
   cout << "--------------------------------------------" << endl;
   cout << "* "<<n_samp<<" sampling points along ring" << endl;
-  cout << "* maximum frequency used for B-field evaluation: Bx=Bz="<<fmax_x << endl; //<<", Bz:"<<fmax_z << endl;
+  cout << "* maximum frequency used for B-field evaluation:  Bx->"<<fmax_x <<", Bz->"<<fmax_z << endl;
+  cout << "* frequency components cutted if amplitude below: Bx->"<<ampcut_x<<" 1/m, Bz->"<<ampcut_z<< " 1/m" << endl;
 
 
   // read lattice (magnet positions,strengths,misalignments) and  particle orbit
