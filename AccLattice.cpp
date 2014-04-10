@@ -390,6 +390,8 @@ void AccLattice::madximport(const char *madxTwissFile)
 {
   // madx column variables
   string tmp;
+  string expectedColumns[11] = {"KEYWORD","NAME","S","X","Y","L","ANGLE","K1L","K2L","VKICK","HKICK"};
+  unsigned int j;
   double s, angle, k1l, k2l, vkick; 
   string x, y;
 
@@ -415,6 +417,19 @@ void AccLattice::madximport(const char *madxTwissFile)
 
   while (!madxTwiss.eof()) {
     madxTwiss >> tmp;
+
+    // --- check correct column order by comparing headline ---------------------
+    if (tmp == "*") {
+      for (j=0; j<11; j++) {
+	madxTwiss >> tmp;
+	//cout << "debug: madx=>" <<tmp<< " expected=>" <<expectedColumns[j] << endl; //debug
+	if (tmp != expectedColumns[j]) {
+	  cout << "ERROR: AccLattice::madximport(): Unexpected columns (or column order) in " << madxTwissFile << endl;
+	  exit(1);
+	}
+      }
+    }
+    // --------------------------------------------------------------------------
   
     if (tmp == "\"SBEND\"" || tmp == "\"RBEND\"") {  //vertical Dipole (assume all bends have vertical field)
       madxTwiss >> vDip.name >> s >> x >> y >> vDip.length >> angle;

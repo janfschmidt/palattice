@@ -107,6 +107,8 @@ void FunctionOfPos<AccPair>::madxClosedOrbit(const char *madxTwissFile)
   // --------------------------------------------------------------------------------
 
   string tmp;
+  string expectedColumns[11] = {"KEYWORD","NAME","S","X","Y","L","ANGLE","K1L","K2L","VKICK","HKICK"};
+  unsigned int j;
   double pos, k1l; 
   string s, x, y;
   char *p, *pp, *ppp;
@@ -121,6 +123,19 @@ void FunctionOfPos<AccPair>::madxClosedOrbit(const char *madxTwissFile)
 
   while (!madxTwiss.eof()) {
     madxTwiss >> tmp;
+
+    // --- check correct column order by comparing headline ---------------------
+    if (tmp == "*") {
+      for (j=0; j<11; j++) {
+	madxTwiss >> tmp;
+	//cout << "debug: madx=>" <<tmp<< " expected=>" <<expectedColumns[j] << endl; //debug
+	if (tmp != expectedColumns[j]) {
+	  cout << "ERROR: FunctionOfPos::madxClosedOrbit(): Unexpected columns (or column order) in " << madxTwissFile << endl;
+	  exit(1);
+	}
+      }
+    }
+    // --------------------------------------------------------------------------
 
     if (tmp == "\"QUADRUPOLE\"") {
       madxTwiss >> tmp >> s >> x >> y >> tmp >> tmp >> k1l;
