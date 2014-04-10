@@ -1,6 +1,7 @@
 cflags = -Wall #-g -O0 #last 2 for valgrind
 INSTALL_PATH=/usr/local/bin/
 
+
 all: Bsupply strom2kick new_strom2kick
 .PHONY: all
 

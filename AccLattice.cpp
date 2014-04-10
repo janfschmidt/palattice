@@ -134,6 +134,8 @@ AccIterator AccLattice::firstIt(element_type _type)
 
   return elements.end();
 }
+
+
 const_AccIterator AccLattice::firstCIt(element_type _type) const
 {
   for (const_AccIterator it=elements.begin(); it!=elements.end(); ++it) {
@@ -144,20 +146,27 @@ const_AccIterator AccLattice::firstCIt(element_type _type) const
   return elements.end();
 }
 
+
+
 // get last element of given type
 // returns iterator to end if there is none
 AccIterator AccLattice::lastIt(element_type _type) 
 {
-  for (AccIterator it=elements.end(); it!=elements.begin(); it--) {
+  AccIterator it = elements.end();
+  it--;
+  for (; it!=elements.begin(); it--) {
     if (it->second->type == _type)
       return it;
   }
 
   return elements.end();  
 }
+
 const_AccIterator AccLattice::lastCIt(element_type _type)  const
 {
-  for (const_AccIterator it=elements.end(); it!=elements.begin(); it--) {
+  const_AccIterator it = elements.end();
+  it--;
+  for (; it!=elements.begin(); it--) {
     if (it->second->type == _type)
       return it;
   }
@@ -235,9 +244,11 @@ const_AccIterator AccLattice::getIt(double pos) const
     }
   }
   
-  if (refPos == end || refPos == center) {
-    if (inside(candidate_next, pos))
-      return candidate_next;
+  if (candidate_next != elements.end()) {
+    if (refPos == end || refPos == center) {
+      if (inside(candidate_next, pos))
+	return candidate_next;
+    }
   }
   
   throw eNoElement();
@@ -379,6 +390,8 @@ void AccLattice::madximport(const char *madxTwissFile)
 {
   // madx column variables
   string tmp;
+  string expectedColumns[11] = {"KEYWORD","NAME","S","X","Y","L","ANGLE","K1L","K2L","VKICK","HKICK"};
+  unsigned int j;
   double s, angle, k1l, k2l, vkick; 
   string x, y;
 
@@ -404,6 +417,19 @@ void AccLattice::madximport(const char *madxTwissFile)
 
   while (!madxTwiss.eof()) {
     madxTwiss >> tmp;
+
+    // --- check correct column order by comparing headline ---------------------
+    if (tmp == "*") {
+      for (j=0; j<11; j++) {
+	madxTwiss >> tmp;
+	//cout << "debug: madx=>" <<tmp<< " expected=>" <<expectedColumns[j] << endl; //debug
+	if (tmp != expectedColumns[j]) {
+	  cout << "ERROR: AccLattice::madximport(): Unexpected columns (or column order) in " << madxTwissFile << endl;
+	  exit(1);
+	}
+      }
+    }
+    // --------------------------------------------------------------------------
   
     if (tmp == "\"SBEND\"" || tmp == "\"RBEND\"") {  //vertical Dipole (assume all bends have vertical field)
       madxTwiss >> vDip.name >> s >> x >> y >> vDip.length >> angle;
@@ -665,7 +691,9 @@ unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
  char msg[1024];
  stringstream strMsg;
  double diff=0;
+ double endPos;
  AccIterator it = firstIt(corrector);
+ AccIterator it_next;
 
  
  for (i=0; i<NVCORRS; i++) {
@@ -673,6 +701,7 @@ unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
      continue;
    }
    else if (t > ELSAvcorrs[i].time.size()) {
+     cout << ELSAvcorrs[i].time[ELSAvcorrs[i].time.size()-1].ms << endl;
      snprintf(msg, 1024, "ERROR: AccLattice::setELSACorrectors(): No ELSA VC%02d corrector data available for %d ms.\n", i+1, t);
      throw std::invalid_argument(msg);
    }
@@ -694,11 +723,14 @@ unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
    corrTmp = it->second->clone();
 
    corrTmp->strength = ELSAvcorrs[i].time[t].kick/1000.0/corrTmp->length;   //unit 1/m
+   it_next = nextIt(corrector,it);
    elements.erase(it);   // erase "old" corrector (madx) to be able to mount new one
-   this->set(ELSAvcorrs[i].pos, *(corrTmp));
+   endPos = ELSAvcorrs[i].pos + corrTmp->length/2;
+   this->set(endPos, *(corrTmp));
    delete corrTmp;
 
-   it = nextIt(corrector,it);
+   //it = nextIt(corrector,it);
+   it = it_next;
    n++;
    if (it == elements.end())
      break;
