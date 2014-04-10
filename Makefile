@@ -1,4 +1,5 @@
 cflags = -Wall #-g -O0 #last 2 for valgrind
+INSTALL_PATH=/usr/local/bin/
 
 all: Bsupply strom2kick new_strom2kick
 .PHONY: all
@@ -42,3 +43,6 @@ new_strom2kick: new_strom2kick.c
 
 clean: 
 	rm Bsupply main.o ELSAimport.o metadata.o timetag.o filenames.o resonances.o spectrum.o interpolate.o functionofpos.o field.o AccElements.o AccLattice.o strom2kick new_strom2kick
+
+install:
+	cp Bsupply $(INSTALL_PATH)
