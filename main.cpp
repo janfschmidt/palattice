@@ -25,6 +25,7 @@
 #include "spectrum.hpp"
 #include "field.hpp"
 #include "functionofpos.hpp"
+#include "gitversion.hpp"
 
 using namespace std;
 
@@ -189,6 +190,7 @@ int main (int argc, char *argv[])
 
   //metadata for spectrum files
   METADATA metadata(file.path, elsa, simTool, diff, spuren, Reference);
+  //metadata.add("POLE version", gitversion());
   char tmp[100];
   if (simTool == madx) {
     snprintf(tmp, 100, "TITLE,LENGTH,ORIGIN,PARTICLE");
@@ -238,6 +240,7 @@ int main (int argc, char *argv[])
   cout << "Bsupply: calculate magnetic field & spectrum" << endl;
   if (elsa) cout << "         ELSA-mode" << endl;
   if (diff) cout << "         harmcorr analysis (difference-mode)" << endl;
+  cout << "                    version:" <<endl<<gitversion() << endl;
   cout << "--------------------------------------------" << endl;
   cout << "* "<<n_samp<<" sampling points along ring" << endl;
   cout << "* maximum frequency used for B-field evaluation:  Bx->"<<fmax_x <<", Bz->"<<fmax_z << endl;

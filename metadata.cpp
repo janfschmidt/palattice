@@ -18,6 +18,7 @@ using namespace std;
 METADATA::METADATA(string path, bool elsa, simulationTool s, bool diff, char *spuren, char *Reference)
 {
   METADATA::add("created at", timestamp());
+  METADATA::add("by pole version", gitversion());
   METADATA::add("Project path", path.c_str());
 
   if (elsa) {

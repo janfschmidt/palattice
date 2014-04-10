@@ -5,6 +5,7 @@
 #include <string>
 #include "types.hpp"
 #include "spectrum.hpp"
+#include "gitversion.hpp"
 
 using namespace std;
 
