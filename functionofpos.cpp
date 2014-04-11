@@ -330,3 +330,18 @@ void FunctionOfPos<AccPair>::elsaClosedOrbit(BPM *ELSAbpms, unsigned int t)
     this->set(otmp, ELSAbpms[i].pos);
   }
 }
+
+
+
+
+// headline entry for "value" in output file
+template <>
+string FunctionOfPos<AccPair>::header() const
+{
+  return this->value[0].header();
+}
+template <>
+string FunctionOfPos<AccTriple>::header() const
+{
+  return this->value[0].header();
+}

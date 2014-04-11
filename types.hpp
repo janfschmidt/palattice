@@ -20,6 +20,7 @@ public:
   double z;
   
   AccPair() : x(0.), z(0.) {}
+  inline std::string header() const {return "x / m\t\t z / m";}
 
   //addition and subraction
   AccPair operator+(AccPair second) {
@@ -71,6 +72,7 @@ public:
   double s;
 
   AccTriple() : s(0.) {x=0.; z=0.;}
+  inline std::string header() const {return "x / m\t\t z / m\t\t s / m";}
 
   // addition and subraction
   AccTriple operator+(AccTriple second) {

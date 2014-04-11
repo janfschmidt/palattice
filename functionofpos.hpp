@@ -15,6 +15,7 @@
 #include "interpolate.hpp"
 #include "spectrum.hpp"
 #include "filenames.hpp"
+#include "types.hpp"
 
 
 
@@ -82,6 +83,7 @@ public:
   bool compatible(FunctionOfPos<T> &other, bool verbose=true) const; // can I add/subract with other? (data at same pos?)
 
   // output to file
+  std::string header() const;
   void out(const char *filename) const;
 
   // operators

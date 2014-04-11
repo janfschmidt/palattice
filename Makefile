@@ -24,9 +24,9 @@ resonances.o: resonances.cpp resonances.hpp types.hpp functionofpos.hpp function
 	$(CC) $(cflags) -c resonances.cpp
 spectrum.o: spectrum.cpp spectrum.hpp
 	$(CC) $(cflags) -c spectrum.cpp
-interpolate.o: interpolate.cpp interpolate.hpp interpolate.hxx
+interpolate.o: interpolate.cpp interpolate.hpp interpolate.hxx types.hpp
 	$(CC) $(cflags) -c interpolate.cpp
-functionofpos.o: functionofpos.cpp functionofpos.hpp functionofpos.hxx
+functionofpos.o: functionofpos.cpp functionofpos.hpp functionofpos.hxx types.hpp
 	$(CC) $(cflags) -c functionofpos.cpp
 field.o: field.cpp field.hpp functionofpos.hpp functionofpos.hxx types.hpp AccLattice.hpp
 	$(CC) $(cflags) -c field.cpp

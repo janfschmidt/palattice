@@ -298,6 +298,13 @@ void FunctionOfPos<T>::hide_last_turn()
 
 
 
+// headline entry for "value" in output file (specialization for AccPair & AccTriple)
+template <class T>
+string FunctionOfPos<T>::header() const
+{
+  return "value";
+}
+
 // output to file
 template <class T>
 void FunctionOfPos<T>::out(const char *filename) const
@@ -311,7 +318,7 @@ void FunctionOfPos<T>::out(const char *filename) const
    return;
  }
 
- file <<"#"<<setw(w)<<"pos"<<setw(w)<<"posInTurn"<<setw(w)<<"turn"<<setw(w)<<"value" << endl;
+ file <<"#"<<setw(w)<<"pos / m"<<setw(w)<<"posInTurn"<<setw(w)<<"turn"<<"\t"<< this->header() << endl;
  file <<setprecision(3);
  
  for (unsigned int i=0; i<size(); i++) {
