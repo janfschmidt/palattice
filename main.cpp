@@ -207,6 +207,10 @@ int main (int argc, char *argv[])
     cout << "ERROR: metadata: cannot read accelerator circumference from "<< file.lattice << endl;
     return 1;
   }
+  // add revolution freq. to metadata
+  stringstream frev;
+  frev << GSL_CONST_MKSA_SPEED_OF_LIGHT/circumference;
+  metadata.add("rev.frequency/Hz", frev.str());
 
   // calculate default sampling points along ring (n_samp)
   double stepwidth = 0.001;  // in m
