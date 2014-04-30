@@ -362,7 +362,6 @@ int main (int argc, char *argv[])
     // difference-mode: subtract reference orbit & corrector data
     if (diff) {
       bpmorbit -= Ref_bpmorbit;
-      lattice.print("debug_elsa.txt");
       lattice.subtractCorrectorStrengths(Ref_lattice);
     }
 
@@ -414,17 +413,17 @@ int main (int argc, char *argv[])
       bz.eval_out(0.1, B.circ, file.out("eval_z", t.tag(i)).c_str());
       //check dipole lengths
       B.magnetlengths(lattice, file.out("dipolelengths", t.tag(i)).c_str());
-      //kicks as function of spin phaseadvance theta (total, vcorr, quad)
-      Res.out(file.out("resonances", t.tag(i)).c_str());
     }
 
     //export spectrum files for polarization-calculation (TBMTsolver)
     bx.out( file.spec("horizontal", t.tag(i)).c_str(), metadata.get(bx, "horizontal") );
     bz.out( file.spec("vertical", t.tag(i)).c_str(), metadata.get(bz, "vertical") );
     bs.out( file.spec("longitudinal", t.tag(i)).c_str(), metadata.get(bs, "longitudinal") );
-    //resonance spectrum (=resonance strengths)
     if (Res.on) {
+      //resonance spectrum (=resonance strengths)
       res.out( file.spec("resonances", t.tag(i)).c_str(), metadata.get(res, "resonances") );
+      //kicks as function of spin phaseadvance theta (total, vcorr, quad)
+      Res.out(file.out("resonances", t.tag(i)).c_str());
     }
 
 
