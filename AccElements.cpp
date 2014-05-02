@@ -61,8 +61,8 @@ AccTriple AccElement::misalign(AccTriple i) const
   AccTriple f; //final
 
   // rotation around s (longitudinal axis) -> dpsi
-  f.x = cos(dpsi)*i.x - sin(dpsi)*i.z;
-  f.z = sin(dpsi)*i.x + cos(dpsi)*i.z;
+  f.x = cos(dpsi)*i.x + sin(dpsi)*i.z;
+  f.z = - sin(dpsi)*i.x + cos(dpsi)*i.z;
   f.s = i.s;
 
   //implement other misalignments here, take care of commutation!
