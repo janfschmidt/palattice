@@ -56,19 +56,19 @@ string AccElement::type_string() const
 
 
 // apply misalignments (e.g. for B) to initial AccTriple i
-AccTriple AccElement::misalign(AccTriple i) const
-{
-  AccTriple f; //final
+// AccTriple AccElement::misalign(AccTriple i) const
+// {
+//   AccTriple f; //final
 
-  // rotation around s (longitudinal axis) -> dpsi
-  f.x = cos(dpsi)*i.x + sin(dpsi)*i.z;
-  f.z = - sin(dpsi)*i.x + cos(dpsi)*i.z;
-  f.s = i.s;
+//   // rotation around s (longitudinal axis) -> dpsi
+//   f.x = cos(dpsi)*i.x + sin(dpsi)*i.z;
+//   f.z = - sin(dpsi)*i.x + cos(dpsi)*i.z;
+//   f.s = i.s;
 
-  //implement other misalignments here, take care of commutation!
+//   //implement other misalignments here, take care of commutation!
 
-  return f;
-}
+//   return f;
+// }
 
 
 
@@ -131,7 +131,7 @@ AccTriple Dipole::B() const
    AccTriple tmp; 
    if(plane==V) tmp.z=strength;
    else if(plane==H) tmp.x=strength;
-   return misalign(tmp);
+   return tmp.tilt(this->dpsi);
  }
 
 
@@ -141,35 +141,43 @@ AccTriple Corrector::B() const
    AccTriple tmp; 
    if(plane==V) tmp.z=strength;
    else if(plane==H) tmp.x=strength;
-   return misalign(tmp);
+   return tmp.tilt(this->dpsi);
  }
 
+
+
+//misalignment: tilt around s-Axis:
+// if B depends on orbit, two steps are required:
+// 1. rotate orbit to system of magnet (-dpsi)
+// 2. rotate calculated field back to lab frame (+dpsi)
 
 // Quadrupole
 AccTriple Quadrupole::B(AccPair orbit) const
  {
    AccTriple tmp; 
-   
-   tmp.x=strength*orbit.z;
-   tmp.z=strength*orbit.x;
+   AccPair rotOrbit = orbit.tilt(- this->dpsi);
+
+   tmp.x=strength*rotOrbit.z;
+   tmp.z=strength*rotOrbit.x;
    tmp.s=0;
    
    if(family==D) tmp*=(-1.);
    
-   return misalign(tmp);
+   return tmp.tilt(this->dpsi);
  }
 
 
 // Sextupole
 AccTriple Sextupole::B(AccPair orbit) const
  {
-   AccTriple tmp; 
+   AccTriple tmp;
+   AccPair rotOrbit = orbit.tilt(- this->dpsi);
    
-   tmp.x=strength*orbit.x*orbit.z;
-   tmp.z=0.5*strength*(pow(orbit.x,2)-pow(orbit.z,2));
+   tmp.x=strength*rotOrbit.x*rotOrbit.z;
+   tmp.z=0.5*strength*(pow(rotOrbit.x,2)-pow(rotOrbit.z,2));
    tmp.s=0;
    
    if(family==D) tmp*=(-1.);
    
-   return misalign(tmp);
+   return tmp.tilt(this->dpsi);
  }

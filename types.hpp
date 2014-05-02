@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <cmath>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_vector.h>
 #include "constants.hpp"
@@ -64,6 +65,13 @@ AccPair operator*(double num) {
     this->x /= num;
     this->z /= num;
   }
+  // tilt clockwise around s (longitudinal) axis -> dpsi
+  AccPair tilt(double dpsi) {
+    AccPair tmp;
+    tmp.x = this->x*cos(dpsi) + this->z*sin(dpsi);
+    tmp.z = - this->x*sin(dpsi) + this->z*cos(dpsi);
+    return tmp;
+  }
 };
 
 
@@ -123,6 +131,14 @@ public:
     this->x /= num;
     this->z /= num;
     this->s /= num;
+  }
+  // tilt clockwise around s (longitudinal) axis -> dpsi
+  AccTriple tilt(double dpsi) {
+    AccTriple tmp;
+    tmp.x = this->x*cos(dpsi) + this->z*sin(dpsi);
+    tmp.z = - this->x*sin(dpsi) + this->z*cos(dpsi);
+    tmp.s = this->s;
+    return tmp;
   }
 
 };

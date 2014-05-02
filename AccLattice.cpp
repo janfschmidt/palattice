@@ -610,6 +610,7 @@ void AccLattice::elegantimport(const char *elegantParamFile)
     else if (row.param == "ANGLE") angle = row.value;
     else if (row.param == "KICK") kick = row.value;
     else if (row.param == "ETILT") tilt = row.value;
+    else if (row.param == "TILT" && row.type!="CSBEND" && row.type!="CSRCSBEND" && row.type!="KSBEND" && row.type!="NIBEND") tilt = row.value;
     //... add more parameters here
 
  
