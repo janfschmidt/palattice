@@ -9,6 +9,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 #include <cstring>
 #include <cmath>
@@ -46,6 +47,8 @@ Spectrum::Spectrum(RESONANCES &In, unsigned int fmaxrevIn, double ampcutIn)
 Spectrum::Spectrum(vector<double> In, double c, unsigned int t, int _norm, unsigned int fmaxrevIn, double ampcutIn, unit u)
    : fMax_rev(fmaxrevIn), ampcut(ampcutIn), turns(t), circ(c), norm(_norm), circUnit(u)
 {
+  if (_norm == -1) norm = In.size(); // default normaization
+
   if (fMax() > In.size()/2.) {
     cout << "WARNING: Spectrum constructor: fmax = " <<fMax_rev<< " is to large." << endl
 	 << "The " <<In.size()<< " given datapoints allow fmax = " <<  In.size()/2. << ", which is used instead." << endl;
@@ -255,34 +258,41 @@ double Spectrum::eval(double t) const
 void Spectrum::out(const char *filename, string metadata) const
 {
   fstream file;
+  stringstream s;
   const int w = 14;
 
- file.open(filename, ios::out);
- if (!file.is_open()) {
-   cout << "ERROR: Spectrum:out(): Cannot open " << filename << "." << endl;
-   return;
- }
-
  // write metadata
- file << metadata << endl;
-
+ s << metadata << endl;
 
  // write spectrum data
  if (circUnit == degree)
-   file <<"#"<<setw(w+2)<<"Freq[rev.harm.]"<<setw(w)<<"Amp[mrad]"<<setw(w)<<"Phase[deg]" << endl;
+   s <<"#"<<setw(w+2)<<"Freq[rev.harm.]"<<setw(w)<<"Amp[mrad]"<<setw(w)<<"Phase[deg]" << endl;
  else
-   file <<"#"<<setw(w+2)<<"Freq[Hz]"<<setw(w)<<"Amp[1/m]"<<setw(w)<<"Phase[deg]" << endl;
+   s <<"#"<<setw(w+2)<<"Freq[Hz]"<<setw(w)<<"Amp[1/m]"<<setw(w)<<"Phase[deg]" << endl;
  
  for (unsigned int i=0; i<size(); i++) {
-   file <<resetiosflags(ios::fixed)<<setiosflags(ios::scientific)<<showpoint<<setprecision(8);
-   file <<setw(3+w)<< freq(i);
-   file <<setprecision(6)<<setw(w)<< amp(i);
-   file <<resetiosflags(ios::scientific)<<setiosflags(ios::fixed)<<setprecision(1);
-   file <<setw(w)  << phase(i) * 360/(2*M_PI) << endl;
+   s <<resetiosflags(ios::fixed)<<setiosflags(ios::scientific)<<showpoint<<setprecision(8);
+   s <<setw(3+w)<< freq(i);
+   s <<setprecision(6)<<setw(w)<< amp(i);
+   s <<resetiosflags(ios::scientific)<<setiosflags(ios::fixed)<<setprecision(1);
+   s <<setw(w)  << phase(i) * 360/(2*M_PI) << endl;
  }
 
- file.close();
- cout << "* Wrote [" <<setw(8)<< size()<< " frequency components] "<< filename  << endl;
+
+ // output of s
+ if (string(filename) == "")
+   cout << s.str();
+ else {
+   file.open(filename, ios::out);
+   if (!file.is_open()) {
+     cout << "ERROR: Spectrum:out(): Cannot open " << filename << "." << endl;
+     return;
+   }
+   file << s.str();
+   file.close();
+   cout << "* Wrote [" <<setw(8)<< size()<< " frequency components] "<< filename  << endl;
+ }
+
 }
 
 

@@ -53,7 +53,7 @@ private:
 
 public:
   Spectrum(unsigned int fmaxrevIn=30, double ampcut=0);
-  Spectrum(vector<double> In, double circ, unsigned int turns, int _norm, unsigned int fmaxrevIn=30, double ampcut=0, unit u=meter);
+  Spectrum(vector<double> In, double circ, unsigned int turns, int _norm=-1, unsigned int fmaxrevIn=30, double ampcut=0, unit u=meter);
   ~Spectrum() {}
   
   inline FREQCOMP get(unsigned int i) const {return b[i];}
@@ -75,7 +75,7 @@ public:
   void push_back(FREQCOMP tmp);      // add FREQCOMP manually
   void clear() {b.clear();}
 
-  void out(const char *filename, string metadata="") const;
+  void out(const char *filename="", string metadata="") const;
   void eval_out(double stepwidth, double max, const char *filename) const;
 
 };
