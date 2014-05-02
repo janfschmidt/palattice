@@ -510,6 +510,7 @@ void AccLattice::madximportMisalignments(const char *madxEalignFile)
 
 
 // set elements from elegant Lattice (read from ascii parameter file ".param")
+// misalignments included (no separate function as for MADX)
 // ====== ATTENTION ==================================
 // "FamilyMagnets" (Quad,Sext) all of type F, because
 // elegant uses different signs of strengths (k,m)
@@ -517,19 +518,21 @@ void AccLattice::madximportMisalignments(const char *madxEalignFile)
 void AccLattice::elegantimport(const char *elegantParamFile)
 {
   double s, pos;
-  double l, k1, k2, angle, kick; //parameter values
+  double l, k1, k2, angle, kick, tilt; //parameter values
   paramRow row, row_old;
   AccElement *element;
   fstream elegantParam;
   bool firstElement = true;
   string tmp;
 
+  pos=l=k1=k2=angle=kick=tilt=0.;   // initialize param. values
+
   //AccElements
   Dipole vDip("defaultName", 0., 0., V);
   Dipole hDip("defaultName", 0., 0., H);
   Corrector vCorr("defaultName", 0., 0., H); // vertical kicker has HORIZONTAL field
   Corrector hCorr("defaultName", 0., 0., V);
-  Quadrupole Quad("defaultName", 0., 0., F); // madx uses negative sign "strength" for D magnets,
+  Quadrupole Quad("defaultName", 0., 0., F); // elegant uses negative sign "strength" for D magnets,
   Sextupole Sext("defaultName", 0., 0., F);  // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
   Drift empty_space("defaultName", 0.);
 
@@ -587,11 +590,12 @@ void AccLattice::elegantimport(const char *elegantParamFile)
      if (element->type != drift) {
        element->length = l;
        element->name = row_old.name;
+       element->dpsi = tilt;
        if (refPos == begin) pos = s-l;
        else if (refPos == center) pos = s-l/2;
        else pos = s; 
        this->set(pos, *element); // mount element
-       pos=l=k1=k2=angle=kick=0.;   // clear param. values to avoid reuse of an old value
+       pos=l=k1=k2=angle=kick=tilt=0.;   // clear param. values to avoid reuse of an old value
      }
     }
 
@@ -605,6 +609,7 @@ void AccLattice::elegantimport(const char *elegantParamFile)
     else if (row.param == "K2") k2 = row.value;
     else if (row.param == "ANGLE") angle = row.value;
     else if (row.param == "KICK") kick = row.value;
+    else if (row.param == "ETILT") tilt = row.value;
     //... add more parameters here
 
  
