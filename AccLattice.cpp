@@ -469,6 +469,12 @@ void AccLattice::madximport(const char *madxTwissFile)
 // set misalignments from MAD-X Lattice (read ealign-output)
 // ! currently only rotation (dpsi) around beam axis (s) is implemented   !
 // ! to add others: define member in class AccElements & implement import !
+// *************************sign of rotation angle:*********************************
+// test with influence of dpsi on vertical closed orbit in madx show
+// that dpsi is defined counter clockwise (dpsi>0 for dipole => kick to negative z)
+// Bsupply and elegant use clockwise definition, so sign is changed here
+// to get the correct signs for the magnetic fields calculated from dpsi
+// *********************************************************************************
 void AccLattice::madximportMisalignments(const char *madxEalignFile)
 {
   string tmp;
@@ -494,7 +500,7 @@ void AccLattice::madximportMisalignments(const char *madxEalignFile)
 	if (it->second->name == tmp) {
 	  for (j=0; j<47; j++) madxEalign >> tmp; //read stupid unnecessary columns
 	  madxEalign >> _dpsi;                    //read & write rotation around s-axis
-	  it->second->dpsi = _dpsi; 
+	  it->second->dpsi = - _dpsi;    // <<<<<<!!! sign of rotation angle (see comment above)
 	  getline(madxEalign, tmp);
 	  break;
 	}
