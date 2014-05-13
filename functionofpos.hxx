@@ -438,7 +438,7 @@ void FunctionOfPos<T>::operator-=(FunctionOfPos<T> &other)
 // ----------- defaults for template specialization (functionofpos.cpp)
 
 // construct Spectrum (FFT) from this FunctionOfPos
-// implemented as template specialization in functionofpos.cpp
+// uses getVector() to generate 1D input data
 template <class T>
 Spectrum FunctionOfPos<T>::getSpectrum(AccAxis axis, unsigned int fmaxrevIn, double ampcutIn) const
 {

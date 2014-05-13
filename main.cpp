@@ -32,7 +32,7 @@ using namespace std;
 int main (int argc, char *argv[])
 {
   //-----------------------------
-  bool sgt_access=false;       //special option for elsa-mode:
+  bool sgt_access=true;       //special option for elsa-mode:
                                //if 1, spuren are read from /sgt/elsa/data/bpm/ instead of [project]/ELSA-Spuren/
   //-----------------------------
   unsigned int n_samp;         // number of sampling points along ring for magn. field strengths
@@ -150,7 +150,10 @@ int main (int argc, char *argv[])
       cout << "* -m [tagfile] multiple times of ELSA cycle evaluated. Times listed in [tagfile]" << endl;
       cout << "* -a enables all output files (orbit, fields, correctors, ...)" << endl;
       cout << "* -d [reference] enables difference-mode, where a reference orbit and corrector kicks are subtracted to analyse harmcorr."  << endl;
-      cout << "     in ELSA-mode [reference] are Spuren ([project]/ELSA-Spuren/), else a MadX-twiss file ([project]/madx/)" << endl;
+      cout << "     in ELSA-mode [reference] are Spuren ([project]/ELSA-Spuren/)," << endl;
+      cout << "     else a MadX-twiss file ([project]/madx/[reference])" << endl;
+      cout << "     or the name of elegant output files ([project]/elegant/[reference].clo \& [project]/elegant/[reference].param)." << endl;
+      cout << "     MadX or elegant is chosen by -s option." << endl;
       cout << "* -h displays this help" << endl << endl;
       return 0;
     case ':':
