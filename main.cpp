@@ -29,6 +29,35 @@
 
 using namespace std;
 
+
+
+void usage()
+{
+  cout << endl << "Bsupply HELP:" << endl;
+  cout << "* First argument is project path." << endl;
+  cout << "* -n [n_samp] sets number of sampling points (per rev.) for field calculation." << endl;
+  cout << "* -p [particle no] enables import of single particle trajectory from madx (ptc_track) or elegant." << endl;
+  cout << "* -s [madx/elegant] set simulation tool whose output is used for lattice/orbit/tracking import." << endl;
+  cout << "* -r [dtheta] estimates resonance strengths, stepwidth [dtheta]°" << endl;
+  cout << "* -e [spuren] enables ELSA-mode, Spuren as argument (path: [project]/ELSA-Spuren/) " << endl;
+  cout << "* -f [fmax] sets maximum frequency for B-Field spectrum (in rev. harmonics)" << endl;
+  cout << "* -F [fmax] sets maximum frequency for resonance-spectrum (-r) output (in rev. harmonics)" << endl;
+  cout << "* -c [minamp] sets minimum amplitude for B-Field spectrum, others are cutted" << endl;
+  cout << "* -C [minamp] sets minimum amplitude for resonance-spectrum (-r), others are cutted" << endl;
+  cout << "* -t [time] sets time of ELSA cycle to evaluate BPMs and correctors (in ms)" << endl;
+  cout << "* -m [tagfile] multiple times of ELSA cycle evaluated. Times listed in [tagfile]" << endl;
+  cout << "* -a enables all output files (orbit, fields, correctors, ...)" << endl;
+  cout << "* -d [reference] enables difference-mode, where a reference orbit and corrector kicks are subtracted:"  << endl;
+  cout << "     in ELSA-mode [reference] are Spuren ([project]/ELSA-Spuren/)," << endl;
+  cout << "     else a MadX-twiss file ([project]/madx/[reference])" << endl;
+  cout << "     or the name of elegant output files ([project]/elegant/[reference].clo & [project]/elegant/[reference].param)." << endl;
+  cout << "     MadX or elegant is chosen by -s option." << endl;
+  cout << "* -h displays this help" << endl << endl;
+}
+
+
+
+
 int main (int argc, char *argv[])
 {
   //-----------------------------
@@ -79,6 +108,7 @@ int main (int argc, char *argv[])
       optind=1;
     else {
       cout << "Please enter project path as first argument." << endl;
+      usage();
       return 1;
     }
   }
@@ -135,26 +165,7 @@ int main (int argc, char *argv[])
       allout = true;
       break;
     case 'h':
-      cout << endl << "Bsupply HELP:" << endl;
-      cout << "* First argument is project path." << endl;
-      cout << "* -n [n_samp] sets number of sampling points (per rev.) for field calculation." << endl;
-      cout << "* -p [particle no] enables import of single particle trajectory from madx (ptc_track) or elegant." << endl;
-      cout << "* -s [madx/elegant] set simulation tool whose output is used for lattice/orbit/tracking import." << endl;
-      cout << "* -r [dtheta] estimates resonance strengths, stepwidth [dtheta]°" << endl;
-      cout << "* -e [spuren] enables ELSA-mode, Spuren as argument (path: [project]/ELSA-Spuren/) " << endl;
-      cout << "* -f [fmax] sets maximum frequency for B-Field spectrum (in rev. harmonics)" << endl;
-      cout << "* -F [fmax] sets maximum frequency for resonance-spectrum (-r) output (in rev. harmonics)" << endl;
-      cout << "* -c [minamp] sets minimum amplitude for B-Field spectrum, others are cutted" << endl;
-      cout << "* -C [minamp] sets minimum amplitude for resonance-spectrum (-r), others are cutted" << endl;
-      cout << "* -t [time] sets time of ELSA cycle to evaluate BPMs and correctors (in ms)" << endl;
-      cout << "* -m [tagfile] multiple times of ELSA cycle evaluated. Times listed in [tagfile]" << endl;
-      cout << "* -a enables all output files (orbit, fields, correctors, ...)" << endl;
-      cout << "* -d [reference] enables difference-mode, where a reference orbit and corrector kicks are subtracted to analyse harmcorr."  << endl;
-      cout << "     in ELSA-mode [reference] are Spuren ([project]/ELSA-Spuren/)," << endl;
-      cout << "     else a MadX-twiss file ([project]/madx/[reference])" << endl;
-      cout << "     or the name of elegant output files ([project]/elegant/[reference].clo \& [project]/elegant/[reference].param)." << endl;
-      cout << "     MadX or elegant is chosen by -s option." << endl;
-      cout << "* -h displays this help" << endl << endl;
+      usage();
       return 0;
     case ':':
       cout << "ERROR: -" << (char)optopt << " without argument. Use -h for help." << endl;
@@ -168,7 +179,8 @@ int main (int argc, char *argv[])
 
   // check input
   if (conflictflg==2) {
-    cout << "ERROR: do not use both options -t and -m. Use -h for help." << endl;
+    cout << "ERROR: do not use both options -t and -m." << endl;
+    usage();
     return 1;
   }
   if (warnflg && !elsa) {
