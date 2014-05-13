@@ -62,8 +62,8 @@ FILENAMES::FILENAMES(string pathIn, simulationTool _simTool, bool elsa, bool dif
       lattice_ref = path+"/madx/"+refIn;
     }
     else {
-      orbit_ref = path+"/elegant/"+refIn;
-      lattice_ref = path+"/elegant/"+refIn;
+      orbit_ref = path+"/elegant/"+refIn+".clo";
+      lattice_ref = path+"/elegant/"+refIn+".param";
     }
   }
   
