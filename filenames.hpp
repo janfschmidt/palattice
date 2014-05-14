@@ -21,6 +21,7 @@ public:
   string misalign_dip;
   string spuren;
   string lattice_ref;
+  string misalign_dip_ref;
   string orbit_ref;
   string difftag;
   simulationTool simTool;
@@ -30,6 +31,7 @@ private:
   string file_lattice;
   string file_orbit;
   string file_misalign_dip;
+  string file_misalign_dip_ref;
   string file_lattice_ref;
   string file_orbit_ref;
 };

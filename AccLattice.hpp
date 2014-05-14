@@ -68,6 +68,7 @@ public:
   void setELSAoptics(const char *spurenFolder);                    // change quad&sext strengths to values from "ELSA-Spuren"
   unsigned int setELSACorrectors(CORR *ELSAvcorrs, unsigned int t);// change corrector pos&strength to values from "ELSA-Spuren" at time t
   void subtractCorrectorStrengths(const AccLattice &other);    // subtract other corrector strengths from the ones of this lattice
+  void subtractMisalignments(const AccLattice &other);         // subtract other misalignments from the ones of this lattice
 
   // "information"
   unsigned int size(element_type _type) const;        // returns number of elements of a type in this lattice

@@ -15,13 +15,15 @@ FILENAMES::FILENAMES(string pathIn, simulationTool _simTool, bool elsa, bool dif
     file_lattice = "/madx/madx.twiss";
     file_orbit = "/madx/madx.twiss";
     file_misalign_dip = "/madx/dipols.ealign";
+    file_misalign_dip_ref = "/madx/dipols_ref.ealign";
     file_lattice_ref = "/madx_ref.twiss";
     file_orbit_ref = "/madx_ref.twiss";
   }
   else {
     file_lattice = "/elegant/elegant.param";
     file_orbit = "/elegant/elegant.clo";
-    file_misalign_dip = "/elegant/dipols.ealign";
+    file_misalign_dip = "/elegant/dipols.ealign";      //not needed for elegant
+    file_misalign_dip_ref = "/madx/dipols_ref.ealign"; //not needed for elegant
     file_lattice_ref = "/elegant_ref.param";
     file_orbit_ref = "/elegant_ref.clo";
   }
@@ -40,6 +42,7 @@ FILENAMES::FILENAMES(string pathIn, simulationTool _simTool, bool elsa, bool dif
   lattice = path + file_lattice;
   orbit = path + file_orbit;
   misalign_dip = path + file_misalign_dip;
+  misalign_dip_ref = path + file_misalign_dip_ref;
 
   if (sgt_access)
     spuren = "/sgt/elsa/data/bpm/"+spurenIn;

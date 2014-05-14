@@ -361,6 +361,7 @@ int main (int argc, char *argv[])
 	if (simTool == madx) {
 	  Ref_bpmorbit.madxClosedOrbit(file.orbit_ref.c_str());
 	  Ref_lattice.madximport(file.lattice_ref.c_str());
+	  Ref_lattice.madximportMisalignments(file.misalign_dip_ref.c_str());
 	}
 	else { //elegant
 	  Ref_bpmorbit.elegantClosedOrbit(file.orbit_ref.c_str());
@@ -368,8 +369,9 @@ int main (int argc, char *argv[])
 	}
 	cout << "* ";
       }
-      cout <<Ref_lattice.size(corrector)<<" kickers read"<<endl
-	   <<"  from "<< file.lattice_ref <<endl
+      cout <<Ref_lattice.size(dipole)<<" dipoles, "<<Ref_lattice.size(quadrupole)<<" quadrupoles, "
+	   <<Ref_lattice.size(sextupole)<<" sextupoles, "<<Ref_lattice.size(corrector)<<" kickers read"<<endl
+	   <<"  from "<<file.lattice_ref<<endl
 	   <<"* "<<Ref_bpmorbit.samples()<<" BPMs(@Quad) read"<<endl
 	   <<"  from "<< file.orbit_ref << endl;
     }
@@ -378,6 +380,7 @@ int main (int argc, char *argv[])
     if (diff) {
       bpmorbit -= Ref_bpmorbit;
       lattice.subtractCorrectorStrengths(Ref_lattice);
+      lattice.subtractMisalignments(Ref_lattice);
     }
 
     // ======= most important feature: =======

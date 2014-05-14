@@ -795,6 +795,44 @@ void AccLattice::subtractCorrectorStrengths(const AccLattice &other)
 }
 
 
+// subtract other misalignments from the ones of this lattice
+void AccLattice::subtractMisalignments(const AccLattice &other)
+{
+  stringstream msg;
+  AccIterator it;
+  const_AccIterator otherIt;
+  
+  if (this->size() != other.size()) {
+    msg << "ERROR: AccLattice::subtractMissalignments(): Unequal number of elements to subtract.";
+    throw std::invalid_argument(msg.str());
+  }
+  
+  otherIt = other.getItBegin();
+
+  for  (it=elements.begin(); it!=elements.end(); ++it) {
+
+    // check by name
+    if (otherIt->second->name != it->second->name) {
+      msg << "ERROR: AccLattice::subtractMisalignments(): Unequal names of elements to subtract. ("
+	  << it->second->name <<"/"<< otherIt->second->name << ").";
+      throw std::runtime_error(msg.str());
+    }
+    // check by position
+    if (otherIt->first != it->first) {
+      msg << "ERROR: AccLattice::subtractMisalignments(): Unequal positions of elements to subtract. ("
+	  << it->first <<"/"<< otherIt->first << ").";
+      throw std::runtime_error(msg.str());
+    }
+
+    // subtract
+    it->second->dpsi -= otherIt->second->dpsi;
+    // set otherIt to next corrector
+    otherIt++;
+  }
+
+}
+
+
 
 // ------------------ "information" -----------------------
 // returns number of elements of a type in this lattice
