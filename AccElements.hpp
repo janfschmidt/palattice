@@ -12,6 +12,7 @@
 #include <string>
 #include <cmath>
 #include <stdexcept>
+#include <vector>
 #include "types.hpp"
 
 using namespace std;
@@ -53,7 +54,8 @@ public:
   double hKick_mrad() const {return 1000 * B().x * length;}
   double hKick_mrad(AccPair orbit) const {return 1000 * B(orbit).x * length;}
 
-  //void misalign(double _dpsi) {dpsi = _dpsi;}
+  bool nameMatch(vector<string> &nameList) const; // true if element name matches entry in List (can include 1 wildcard *)
+  bool nameMatch(string &pattern) const;           // true if element name matches pattern (can include 1 wildcard *)
 
   string type_string() const;    // string output of element type
 

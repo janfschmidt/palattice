@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 #include <iomanip>
+#include <vector>
 #include "AccElements.hpp"
 
 // static member definition
@@ -34,6 +35,57 @@ AccElement& AccElement::operator=(const AccElement* other)
 }
 
 
+
+
+// true if element name matches entry in List (can include 1 wildcard *)
+bool AccElement::nameMatch(vector<string> &nameList) const
+{
+  for (unsigned int i=0; i<nameList.size(); i++) {
+    if (nameMatch(nameList[i]))
+      return true;
+  }
+  return false;
+}
+
+
+// true if element name matches pattern (can include 1 wildcard *)
+bool AccElement::nameMatch(string &pattern) const
+{
+
+  if (this->name.size() < pattern.size()-1)
+    return false;
+
+  int wildcardPos = pattern.find("*");
+
+  if (wildcardPos != string::npos) { // if wildcard * occurs in pattern
+    if (this->name.substr(0,wildcardPos) != pattern.substr(0,wildcardPos)) {//match before wildcard
+      return false;
+    }
+    string afterString = pattern.substr(wildcardPos+1);
+    if (afterString.size() == 0) {
+      return true;
+    }
+    int afterPos = this->name.find( afterString ); //first pos after wildcard in name
+    if (afterPos == string::npos) { //afterString not found in name
+      return false;
+    }
+    else if (afterString.size() < this->name.substr(afterPos).size()) {
+      return false;
+    }
+  }
+  else {
+    if (this->name != pattern)       // if no wildcard occurs
+      return false;
+  }
+
+  return true; 
+}
+
+
+
+
+
+
 string AccElement::type_string() const
 {
   switch (type) {
@@ -53,22 +105,6 @@ string AccElement::type_string() const
 }
 
 
-
-
-// apply misalignments (e.g. for B) to initial AccTriple i
-// AccTriple AccElement::misalign(AccTriple i) const
-// {
-//   AccTriple f; //final
-
-//   // rotation around s (longitudinal axis) -> dpsi
-//   f.x = cos(dpsi)*i.x + sin(dpsi)*i.z;
-//   f.z = - sin(dpsi)*i.x + cos(dpsi)*i.z;
-//   f.s = i.s;
-
-//   //implement other misalignments here, take care of commutation!
-
-//   return f;
-// }
 
 
 
