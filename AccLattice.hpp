@@ -12,6 +12,7 @@
 #include <map>
 #include <stdexcept>
 #include <iostream>
+#include <vector>
 #include "AccElements.hpp"
 
 typedef std::map<double,AccElement*>::iterator AccIterator;
@@ -25,6 +26,8 @@ class AccLattice {
 protected:
   std::map<double,AccElement*> elements;                  // first: position in lattice / m
   const Drift* empty_space;
+  vector<string> ignoreList;                              // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted (set) in this lattice
+  unsigned int ignoreCounter;
 
   AccIterator firstIt(element_type _type);                // get first element of given type
   AccIterator lastIt(element_type _type);                 // get last element of given type
@@ -61,6 +64,7 @@ public:
   void set(double pos, const AccElement &obj, bool verbose=false); // set element (throws XXX if no free space for obj)
   void erase(double pos);                                          // erase element at position pos
 
+  void setIgnoreList(string ignoreFile);         // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted (set) in this lattice
   void madximport(const char *madxTwissFile);              // set elements from MAD-X Lattice (read from twiss-output)
   void madximportMisalignments(const char *madxEalignFile);// set misalignments from MAD-X Lattice (read ealign-output)
                                                      // !! currently only rotation (dpsi) around beam axis (s) is implemented!
@@ -73,6 +77,8 @@ public:
   // "information"
   unsigned int size(element_type _type) const;        // returns number of elements of a type in this lattice
   unsigned int size() const {return elements.size();} // returns total number of elements
+  vector<string> getIgnoreList() const {return ignoreList;}
+  unsigned int ignoredElements() const {return ignoreCounter;}
   string refPos_string() const;
 
   // output (stdout or file)

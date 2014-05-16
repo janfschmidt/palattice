@@ -38,6 +38,8 @@ void usage()
   cout << "* -n [n_samp] sets number of sampling points (per rev.) for field calculation." << endl;
   cout << "* -p [particle no] enables import of single particle trajectory from madx (ptc_track) or elegant." << endl;
   cout << "* -s [madx/elegant] set simulation tool whose output is used for lattice/orbit/tracking import." << endl;
+  cout << "* -i [ignoreFile] elements (magnets) with a name given in the file [ignoreFile] are ignored " << endl;
+  cout << "     when importing a lattice from madx or elegant. File entries can contain 1 wildcard * each." << endl;
   cout << "* -r [dtheta] estimates resonance strengths, stepwidth [dtheta]°" << endl;
   cout << "* -e [spuren] enables ELSA-mode, Spuren as argument (path: [project]/ELSA-Spuren/) " << endl;
   cout << "* -f [fmax] sets maximum frequency for B-Field spectrum (in rev. harmonics)" << endl;
@@ -79,6 +81,7 @@ int main (int argc, char *argv[])
   bool allout = false;          // true: additional output files (orbit, field, bpms, ...)
   char spuren[20] = "dummy";
   char Reference[50] = "dummy";
+  string ignoreFile = "NULL";
   double circumference=0;
   double ampcut_x = 1e-5;     // minimum amplitudes for magnetic field spectra
   double ampcut_z = 1e-6;     // be carefull: ampcut_z can change spin tune !
@@ -113,7 +116,7 @@ int main (int argc, char *argv[])
     }
   }
 
-  while ((opt = getopt(argc, argv, ":n:p:s:r:e:t:f:F:c:C:d:m:ah")) != -1) {
+  while ((opt = getopt(argc, argv, ":n:p:s:r:e:t:f:F:c:C:d:m:i:ah")) != -1) {
     switch(opt) {
     case 'n':
       default_n_samp = false;
@@ -160,6 +163,9 @@ int main (int argc, char *argv[])
     case 'd':
       diff = true;
       strncpy(Reference, optarg, 50);
+      break;
+    case 'i':
+      ignoreFile = optarg;
       break;
     case 'a':
       allout = true;
@@ -245,6 +251,11 @@ int main (int argc, char *argv[])
   // initialize Lattice
   AccLattice lattice(circumference, end); // refPos=end used by MAD-X
   AccLattice Ref_lattice(circumference, end);
+  // ignoreFile
+  if (ignoreFile != "NULL") {
+    lattice.setIgnoreList(ignoreFile);
+    Ref_lattice.setIgnoreList(ignoreFile);
+  }
 
   // initialize orbit
   FunctionOfPos<AccPair> bpmorbit(circumference, gsl_interp_akima_periodic, circumference);
@@ -299,6 +310,7 @@ int main (int argc, char *argv[])
   cout << "* "<<lattice.size(dipole)<<" dipoles, "<<lattice.size(quadrupole)<<" quadrupoles, "
        <<lattice.size(sextupole)<<" sextupoles, "<<lattice.size(corrector)<<" kickers read"<<endl
        <<"  from "<<file.lattice<<endl
+       <<"* "<<lattice.ignoredElements()<<" elements ignored due to match with " << ignoreFile<<endl
        << "* "<<bpmorbit.samples()<<" BPMs(@Quad) read"<<endl
        <<"  from "<<file.orbit << endl;
 
@@ -372,6 +384,7 @@ int main (int argc, char *argv[])
       cout <<Ref_lattice.size(dipole)<<" dipoles, "<<Ref_lattice.size(quadrupole)<<" quadrupoles, "
 	   <<Ref_lattice.size(sextupole)<<" sextupoles, "<<Ref_lattice.size(corrector)<<" kickers read"<<endl
 	   <<"  from "<<file.lattice_ref<<endl
+	   <<"* "<<Ref_lattice.ignoredElements()<<" elements ignored due to match with " << ignoreFile<<endl
 	   <<"* "<<Ref_bpmorbit.samples()<<" BPMs(@Quad) read"<<endl
 	   <<"  from "<< file.orbit_ref << endl;
     }

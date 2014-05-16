@@ -19,7 +19,7 @@
 
 //constructor
 AccLattice::AccLattice(double _circumference, Anchor _refPos)
-  : refPos(_refPos), circumference(_circumference)
+  : ignoreCounter(0), refPos(_refPos), circumference(_circumference)
 {
   empty_space = new Drift;
 }
@@ -294,8 +294,15 @@ const AccElement* AccLattice::operator[](double pos) const
 
 
 // set element (replace if key (pos) already used; check for "free space" to insert element)
+// if name is in ignoreList, element is not set and ignoreCounter is increased
 void AccLattice::set(double pos, const AccElement& obj, bool verbose)
 {
+  //ignoreList
+  if ( obj.nameMatch(ignoreList) ) {
+    ignoreCounter++;
+    return;
+  }
+
  if (pos > circumference) {
     stringstream msg;
     msg << pos << " m is larger than lattice circumference " << circumference << " m.";
@@ -377,6 +384,26 @@ void AccLattice::erase(double pos)
   elements.erase(it);
 }
 
+
+
+
+// elements with a name in this list (can contain 1 wildcard * per entry) are not mounted (set) in this lattice
+void AccLattice::setIgnoreList(string ignoreFile)
+{
+  ifstream f;
+  string tmp;
+
+  f.open(ignoreFile.c_str());
+  if (!f.is_open()) {
+    cout << "ERROR: AccLattice::setIgnoreList(): Cannot open " << ignoreFile << endl;
+    exit(1);
+  }
+
+  while (!f.eof()) {
+    f >> tmp;
+    ignoreList.push_back(tmp);
+  }
+}
 
 
 

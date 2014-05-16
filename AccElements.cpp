@@ -55,7 +55,7 @@ bool AccElement::nameMatch(string &pattern) const
   if (this->name.size() < pattern.size()-1)
     return false;
 
-  int wildcardPos = pattern.find("*");
+  unsigned int wildcardPos = pattern.find("*");
 
   if (wildcardPos != string::npos) { // if wildcard * occurs in pattern
     if (this->name.substr(0,wildcardPos) != pattern.substr(0,wildcardPos)) {//match before wildcard
@@ -65,7 +65,7 @@ bool AccElement::nameMatch(string &pattern) const
     if (afterString.size() == 0) {
       return true;
     }
-    int afterPos = this->name.find( afterString ); //first pos after wildcard in name
+    unsigned int afterPos = this->name.find( afterString ); //first pos after wildcard in name
     if (afterPos == string::npos) { //afterString not found in name
       return false;
     }
