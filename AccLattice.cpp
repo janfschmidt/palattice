@@ -1,6 +1,6 @@
 /* === AccLattice Class ===
  * a container to store elements of an accelerator (ring) by position
- * They can be imported from MAD-X.
+ * They can be imported from MAD-X or ELEGANT.
  * Uses the "AccElements" classes
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
  */
@@ -15,6 +15,16 @@
 #include <stdexcept>
 #include "AccLattice.hpp"
 #include "constants.hpp"
+
+
+//remove quotation marks ("" or '') from begin&end of string
+string removeQuote(string s)
+{
+  if ( (s.compare(0,1,"\"") && s.compare(s.length()-1,1,"\"")) || (s.compare(0,1,"\'") && s.compare(s.length()-1,1,"\'")) )
+    return s.substr(1,s.length()-2);
+  else
+    return s;
+}
 
 
 //constructor
@@ -402,6 +412,7 @@ void AccLattice::setIgnoreList(string ignoreFile)
   while (!f.eof()) {
     f >> tmp;
     ignoreList.push_back(tmp);
+    cout << "* ignore magnets named " << tmp << endl;
   }
 }
 
@@ -416,7 +427,7 @@ void AccLattice::setIgnoreList(string ignoreFile)
 void AccLattice::madximport(const char *madxTwissFile)
 {
   // madx column variables
-  string tmp;
+  string tmp, tmpName;
   string expectedColumns[11] = {"KEYWORD","NAME","S","X","Y","L","ANGLE","K1L","K2L","VKICK","HKICK"};
   unsigned int j;
   double s, angle, k1l, k2l, vkick; 
@@ -459,14 +470,16 @@ void AccLattice::madximport(const char *madxTwissFile)
     // --------------------------------------------------------------------------
   
     if (tmp == "\"SBEND\"" || tmp == "\"RBEND\"") {  //vertical Dipole (assume all bends have vertical field)
-      madxTwiss >> vDip.name >> s >> x >> y >> vDip.length >> angle;
+      madxTwiss >> tmpName >> s >> x >> y >> vDip.length >> angle;
+      vDip.name = removeQuote(tmpName);
       vDip.strength = angle/vDip.length;   // 1/R (!!! assuming l is arclength (along ref. orbit) !!!)
       if (refPos == begin) s -= vDip.length;
       else if (refPos == center) s -= vDip.length/2;
       this->set(s, vDip);
     }
     else if (tmp == "\"QUADRUPOLE\"") {
-      madxTwiss >> Quad.name >> s >> x >> y >> Quad.length >> angle >> k1l;
+      madxTwiss >> tmpName >> s >> x >> y >> Quad.length >> angle >> k1l;
+      Quad.name = removeQuote(tmpName);
       Quad.strength = k1l/Quad.length;   // k
       if (refPos == begin) s -= Quad.length;
       else if (refPos == center) s -= Quad.length/2;
@@ -474,14 +487,16 @@ void AccLattice::madximport(const char *madxTwissFile)
       // BPMs at quads - Closed orbit not included in lattice, read in separate function of Orbit-class
     }
     else if (tmp == "\"SEXTUPOLE\"") {
-      madxTwiss >> Sext.name >> s >> x >> y >> Sext.length >> angle >> k1l >> k2l;
+      madxTwiss >> tmpName >> s >> x >> y >> Sext.length >> angle >> k1l >> k2l;
+      Sext.name = removeQuote(tmpName);
       Sext.strength = k2l/Sext.length;
       if (refPos == begin) s -= Sext.length;
       else if (refPos == center) s -= Sext.length/2;
       this->set(s, Sext);
     }
     else if (tmp == "\"VKICKER\"") {
-      madxTwiss >> vCorr.name >> s >> x >> y >> vCorr.length >> angle >> k1l >> k2l >> vkick;
+      madxTwiss >> tmpName >> s >> x >> y >> vCorr.length >> angle >> k1l >> k2l >> vkick;
+      vCorr.name = removeQuote(tmpName);
       vCorr.strength = sin(vkick)/vCorr.length;   // 1/R from kick-angle
       if (refPos == begin) s -= vCorr.length;
       else if (refPos == center) s -= vCorr.length/2;

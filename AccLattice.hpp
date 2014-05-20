@@ -111,5 +111,8 @@ public:
   paramRow() : name(""), type(""), param(""), value(0.) {};
 };
 
+
+string removeQuote(string s); //remove quotation marks ("" or '') from begin&end of string
+
 #endif
 /*__ACCLATTICE_HPP_*/
