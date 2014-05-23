@@ -54,7 +54,8 @@ void usage()
   cout << "     else a MadX-twiss file ([project]/madx/[reference])" << endl;
   cout << "     or the name of elegant output files ([project]/elegant/[reference].clo & [project]/elegant/[reference].param)." << endl;
   cout << "     MadX or elegant is chosen by -s option." << endl;
-  cout << "* -h displays this help" << endl << endl;
+  cout << "* -h displays this help" << endl;
+  cout << "Bsupply version:" <<endl<<gitversion() << endl << endl;
 }
 
 
@@ -206,7 +207,6 @@ int main (int argc, char *argv[])
 
   //initialize filenames
   FILENAMES file(argv[1], simTool, elsa, diff, sgt_access, spuren, Reference);
-  cout << "Pfad: "<<file.path.c_str() << endl;
 
 
   //metadata for spectrum files
