@@ -309,10 +309,11 @@ int main (int argc, char *argv[])
 
   cout << "* "<<lattice.size(dipole)<<" dipoles, "<<lattice.size(quadrupole)<<" quadrupoles, "
        <<lattice.size(sextupole)<<" sextupoles, "<<lattice.size(corrector)<<" kickers read"<<endl
-       <<"  from "<<file.lattice<<endl
-       <<"* "<<lattice.ignoredElements()<<" elements ignored due to match with " << ignoreFile<<endl
-       << "* "<<bpmorbit.samples()<<" BPMs(@Quad) read"<<endl
-       <<"  from "<<file.orbit << endl;
+       <<"  from "<<file.lattice<<endl;
+  if (ignoreFile!="NULL")
+    cout <<"* "<<lattice.ignoredElements()<<" elements ignored due to match with " << ignoreFile<<endl;
+  cout  << "* "<<bpmorbit.samples()<<" BPMs(@Quad) read"<<endl
+	<<"  from "<<file.orbit << endl;
 
   if (tracking) {
     if (simTool == madx)
