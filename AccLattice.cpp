@@ -355,6 +355,13 @@ void AccLattice::set(double pos, const AccElement& obj, bool verbose)
   }
   catch(std::out_of_range &e){ }
 
+  // avoid numerical problems when checking for "free space"
+  if (abs(newBegin - locate(previous,end)) < ZERO_DISTANCE) {
+    newBegin += ZERO_DISTANCE;
+  }
+  if (abs(newEnd - locate(next,begin)) < ZERO_DISTANCE)
+      newEnd -= ZERO_DISTANCE;
+
   // check for "free space" to insert obj
   if (newBegin < 0.) {
     msg << objPtr->name << " (" << newBegin <<" - "<< newEnd << "m) cannot be inserted --- overlap with lattice begin at 0.0m";
@@ -412,7 +419,7 @@ void AccLattice::setIgnoreList(string ignoreFile)
   while (!f.eof()) {
     f >> tmp;
     ignoreList.push_back(tmp);
-    cout << "* ignore magnets named " << tmp << endl;
+    // cout << "* ignore magnets named " << tmp << endl;
   }
 }
 
