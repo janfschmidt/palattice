@@ -81,3 +81,17 @@ AccTriple Interpolate<AccTriple>::interpThis(double xIn)
   tmp.s = evalSpline(spline[2], xIn);  // s: spline[2]
   return tmp;
 }
+
+
+
+// headline entry for "value" in output file
+template <>
+string Interpolate<AccPair>::header() const
+{
+  return this->f[0].header();
+}
+template <>
+string Interpolate<AccTriple>::header() const
+{
+  return this->f[0].header();
+}

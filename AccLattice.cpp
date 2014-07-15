@@ -769,7 +769,7 @@ unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
    
    //same corrector in Mad-X and ELSA-Spuren?
    //...check by name
-   snprintf(name, 20, "\"KV%02i\"", i+1);
+   snprintf(name, 20, "KV%02i", i+1);
    if (it->second->name != name) {
      strMsg << "ERROR: AccLattice::setELSACorrectors(): Unexpected corrector name. Mad-X lattice does not fit to ELSA." << endl;
      strMsg << "       Mad-X: " <<it->second->name<< " -- expected: " <<name;

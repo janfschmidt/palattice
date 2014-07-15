@@ -2,13 +2,14 @@ CC=g++
 cflags = -Wall #-g -O0 #last 2 for valgrind
 INSTALL_PATH=/usr/local/bin/
 PROG_NAME=Bsupply
+ALL_O=main.o ELSAimport.o metadata.o timetag.o filenames.o resonances.o spectrum.o interpolate.o functionofpos.o field.o AccElements.o AccLattice.o
 
 
 all: $(PROG_NAME) strom2kick new_strom2kick
 .PHONY: all
 
-$(PROG_NAME): main.o ELSAimport.o metadata.o timetag.o filenames.o resonances.o spectrum.o interpolate.o functionofpos.o field.o AccElements.o AccLattice.o
-	$(CC) $(cflags) -o $(PROG_NAME) main.o ELSAimport.o metadata.o timetag.o filenames.o resonances.o spectrum.o interpolate.o functionofpos.o field.o AccElements.o AccLattice.o -lgsl -lgslcblas -lm
+$(PROG_NAME): $(ALL_O)
+	$(CC) $(cflags) -o $(PROG_NAME) $(ALL_O) -lgsl -lgslcblas -lm
 
 main.o: main.cpp constants.hpp types.hpp spectrum.hpp  metadata.hpp timetag.hpp filenames.hpp resonances.hpp interpolate.hpp interpolate.hxx functionofpos.hpp functionofpos.hxx field.hpp AccElements.hpp AccLattice.hpp gitversion.hpp
 	$(CC) $(cflags) -c main.cpp
@@ -22,11 +23,11 @@ filenames.o: filenames.cpp filenames.hpp types.hpp
 	$(CC) $(cflags) -c filenames.cpp
 resonances.o: resonances.cpp resonances.hpp types.hpp functionofpos.hpp functionofpos.hxx AccLattice.hpp spectrum.hpp
 	$(CC) $(cflags) -c resonances.cpp
-spectrum.o: spectrum.cpp spectrum.hpp
+spectrum.o: spectrum.cpp spectrum.hpp constants.hpp
 	$(CC) $(cflags) -c spectrum.cpp
 interpolate.o: interpolate.cpp interpolate.hpp interpolate.hxx types.hpp
 	$(CC) $(cflags) -c interpolate.cpp
-functionofpos.o: functionofpos.cpp functionofpos.hpp functionofpos.hxx types.hpp
+functionofpos.o: functionofpos.cpp functionofpos.hpp functionofpos.hxx interpolate.hpp interpolate.hxx spectrum.hpp filenames.hpp types.hpp
 	$(CC) $(cflags) -c functionofpos.cpp
 field.o: field.cpp field.hpp functionofpos.hpp functionofpos.hxx types.hpp AccLattice.hpp
 	$(CC) $(cflags) -c field.cpp
@@ -50,7 +51,7 @@ new_strom2kick: new_strom2kick.c
 
 
 clean: 
-	rm $(PROG_NAME) main.o ELSAimport.o metadata.o timetag.o filenames.o resonances.o spectrum.o interpolate.o functionofpos.o field.o AccElements.o AccLattice.o strom2kick new_strom2kick gitversion.hpp
+	rm $(PROG_NAME) $(ALL_O) strom2kick new_strom2kick gitversion.hpp
 
 install:
 	install -m 755 -p -v $(PROG_NAME) $(INSTALL_PATH)

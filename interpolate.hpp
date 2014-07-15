@@ -9,6 +9,7 @@
 #define __INTERPOLATE_HPP_
 
 #include <vector>
+#include <string>
 #include <stdexcept>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_spline.h>
@@ -63,6 +64,8 @@ public:
   const char * getType() const {return gsl_spline_name(spline[0]);}
   double getPeriod() const {return period;}
 
+  // output
+  virtual std::string header() const;
   void interp_out(double stepwidth, const char *filename);
 };
 

@@ -292,7 +292,7 @@ void Interpolate<T>::interp_out(double stepwidth, const char *filename)
     return;
   }
   
-  file <<setw(w)<< "x" <<setw(w)<< "f(x)" << endl;
+  file <<setw(w)<< "position" <<"\t"<< this->header() << endl;
   file <<setiosflags(ios::fixed)<<showpoint<<setprecision(6);
   if (interpRange() > 0) {
     for (double s=interpMin(); s<=interpMax(); s+=stepwidth) {
@@ -321,4 +321,13 @@ T Interpolate<T>::interpThis(double xIn)
 {
   cout << "ERROR: Interpolate<>:interpThis(): Interpolation is not implemented for this data type." << endl;
   exit(1);
+}
+
+
+
+// headline entry for "value" in output file (specialization for AccPair & AccTriple)
+template <class T>
+string Interpolate<T>::header() const
+{
+  return "value";
 }
