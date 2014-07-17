@@ -748,7 +748,7 @@ unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
 {
   unsigned int i, n=0;
  AccElement* corrTmp;
- char name[20];
+ char name1[20], name2[20];
  char msg[1024];
  stringstream strMsg;
  double diff=0;
@@ -769,16 +769,17 @@ unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
    
    //same corrector in Mad-X and ELSA-Spuren?
    //...check by name
-   snprintf(name, 20, "KV%02i", i+1);
-   if (it->second->name != name) {
+   snprintf(name1, 20, "KV%02i", i+1); // old madx-lattice: KVxx
+   snprintf(name2, 20, "VC%02i", i+1); // new madx-lattice (2014): VCxx
+   if (it->second->name != name1 && it->second->name != name2) {
      strMsg << "ERROR: AccLattice::setELSACorrectors(): Unexpected corrector name. Mad-X lattice does not fit to ELSA." << endl;
-     strMsg << "       Mad-X: " <<it->second->name<< " -- expected: " <<name;
+     strMsg << "       Mad-X: " <<it->second->name<< " -- expected: " <<name2<< " (" <<name1<< ")";
      throw std::runtime_error(strMsg.str());
    }
    //...check by position
-   diff = fabs(ELSAvcorrs[i].pos - locate(it,center));
-   if (diff > VCPOS_WARNDIFF) {
-     cout << "! Position of " <<name<< " differs by " <<diff<< "m in Mad-X and ELSA-Spuren. Use ELSA-Spuren." << endl;
+   diff = ELSAvcorrs[i].pos - locate(it,center);
+   if (fabs(diff) > VCPOS_WARNDIFF) {
+     cout << "! Position of " <<name2<< " differs by " <<diff<< "m in Mad-X and ELSA-Spuren. Use ELSA-Spuren." << endl;
    }
    
    corrTmp = it->second->clone();
