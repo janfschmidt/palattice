@@ -216,7 +216,7 @@ int main (int argc, char *argv[])
   if (simTool == madx) {
     snprintf(tmp, 100, "TITLE,LENGTH,ORIGIN,PARTICLE");
     metadata.madximport(tmp, file.lattice.c_str());
-  circumference = strtod(metadata.getbyLabel("LENGTH").c_str(), NULL);
+    circumference = strtod(metadata.getbyLabel("LENGTH").c_str(), NULL);
   }
   else {
     metadata.add("ORIGIN", "Elegant");
@@ -309,6 +309,7 @@ int main (int argc, char *argv[])
 
   cout << "* "<<lattice.size(dipole)<<" dipoles, "<<lattice.size(quadrupole)<<" quadrupoles, "
        <<lattice.size(sextupole)<<" sextupoles, "<<lattice.size(corrector)<<" kickers read"<<endl
+       << lattice.size(rfdipole) <<" RF dipoles" <<  endl
        <<"  from "<<file.lattice<<endl;
   if (ignoreFile!="NULL")
     cout <<"* "<<lattice.ignoredElements()<<" elements ignored due to match with " << ignoreFile<<endl;

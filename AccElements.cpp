@@ -99,6 +99,8 @@ string AccElement::type_string() const
     return "Sextupole";
   case drift:
     return "Drift";
+  case rfdipole:
+    return "RF-Dipole";
   }
 
   return "Please implement this type in AccElement::type_string()!";
@@ -141,17 +143,28 @@ string AccElement::printHeader() const
 
 // ========= magnetic field calculation for all magnet types =================
 
-// default B(), throw exception if orbit is needed as input
+// default B-Field functions, throw exceptions
 AccTriple AccElement::B() const
 {
-  string msg="B-Field of "+type_string()+" depends on orbit! Please provide argument.";
+  string msg="B-Field of "+type_string()+" may depend on orbit or turn! Please provide argument.";
   throw std::invalid_argument(msg);
 }
-//default B(orbit), returns B=0
 AccTriple AccElement::B(AccPair orbit) const
 {
-  return zeroTriple;
+  string msg="B-Field of "+type_string()+" may depend on turn! Please provide argument.";
+  throw std::invalid_argument(msg);
 }
+AccTriple AccElement::B(unsigned int turn) const
+{
+  string msg="B-Field of "+type_string()+" may depend on orbit! Please provide argument.";
+  throw std::invalid_argument(msg);
+}
+// AccTriple AccElement::B(AccPair orbit, unsigned int turn) const
+// {
+//   string msg="B-Field of "+type_string()+" not implemented.";
+//   throw std::invalid_argument(msg);
+// }
+
 
 
 // Drift: B=0
@@ -177,6 +190,18 @@ AccTriple Corrector::B() const
    AccTriple tmp; 
    if(plane==V) tmp.z=strength;
    else if(plane==H) tmp.x=strength;
+   return tmp.tilt(this->dpsi);
+ }
+
+
+// RFdipole
+AccTriple RFdipole::B(unsigned int turn) const
+ {
+   AccTriple tmp;
+   double phi = turn*Qrf0 + turn*(turn+1)/2 * dQrf;
+   double rfStrength = strength * cos(2*M_PI*phi);
+   if(plane==V) tmp.z = rfStrength;
+   else if(plane==H) tmp.x = rfStrength;
    return tmp.tilt(this->dpsi);
  }
 

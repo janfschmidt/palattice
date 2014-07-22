@@ -447,6 +447,7 @@ void AccLattice::madximport(const char *madxTwissFile)
   Dipole hDip("defaultName", 0., 0., H);
   Corrector vCorr("defaultName", 0., 0., H); // vertical kicker has HORIZONTAL field
   Corrector hCorr("defaultName", 0., 0., V);
+  RFdipole vRFdip("defaultName", 0., 0., H); // vertical kicker has HORIZONTAL field
   Quadrupole Quad("defaultName", 0., 0., F); // madx uses negative sign "strength" for D magnets,
   Sextupole Sext("defaultName", 0., 0., F);  // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
 
@@ -507,7 +508,19 @@ void AccLattice::madximport(const char *madxTwissFile)
       vCorr.strength = sin(vkick)/vCorr.length;   // 1/R from kick-angle
       if (refPos == begin) s -= vCorr.length;
       else if (refPos == center) s -= vCorr.length/2;
-      this->set(s, vCorr);
+      //RF dipole:
+      if (vCorr.name.substr(0,6) == "RFDIP.") {
+	vRFdip.name = vCorr.name;
+	vRFdip.length = vCorr.length;
+	vRFdip.strength = vCorr.strength;
+	vRFdip.Qrf0 = 0.625;              // !! hardcoded RF-tune values !!
+	vRFdip.dQrf = 5.402e-6;
+	this->set(s, vRFdip);
+      }
+      //Corrector:
+      else {
+	this->set(s, vCorr);
+      }
     }
 
   }
