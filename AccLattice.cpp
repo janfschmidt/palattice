@@ -540,7 +540,7 @@ void AccLattice::madximport(const char *madxTwissFile)
 void AccLattice::madximportMisalignments(const char *madxEalignFile)
 {
   string tmp;
-  unsigned int j;
+  unsigned int j, column=0;
   double _dpsi=0.;
   fstream madxEalign;
   AccIterator it=elements.begin();
@@ -554,13 +554,26 @@ void AccLattice::madximportMisalignments(const char *madxEalignFile)
   while (!madxEalign.eof()) {
     madxEalign >> tmp;
 
-    if (tmp == "@" || tmp == "*" || tmp == "$") { // header lines
+    if (tmp == "@" || tmp == "$") {    // header lines
       getline(madxEalign, tmp);
     }
+    else if (tmp == "*") {             // column headline, check which column is DPSI
+      getline(madxEalign, tmp);
+      stringstream s(tmp);
+      while (!s.eof()) {
+	s >> tmp;
+	if (tmp == "DPSI") {cout << column << endl; break;}
+	else column++;
+      }
+    }
     else {
+      if (column == 0) {
+	cout << "ERROR: AccLattice::madximportMisalignments(): No column header with DPSI in " << madxEalignFile << endl;
+	exit(1);
+      }
       for (; it!=elements.end(); ++it) {          //madxEalign is sorted by position => loop continued
-	if (it->second->name == tmp) {
-	  for (j=0; j<47; j++) madxEalign >> tmp; //read stupid unnecessary columns
+	if (it->second->name == removeQuote(tmp)) {
+	  for (j=0; j<column-1; j++) madxEalign >> tmp; //read stupid unnecessary columns
 	  madxEalign >> _dpsi;                    //read & write rotation around s-axis
 	  it->second->dpsi = - _dpsi;    // <<<<<<!!! sign of rotation angle (see comment above)
 	  getline(madxEalign, tmp);
