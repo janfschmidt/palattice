@@ -21,8 +21,8 @@ using namespace std;
 
 // constructor (set circumference[default 164.4] & interpolation)
 template <class T>
-FunctionOfPos<T>::FunctionOfPos(double circIn, const gsl_interp_type *t, double periodIn)
-  : Interpolate<T>::Interpolate(t,periodIn), pos(this->_x), value(this->f), n_turns(1), n_samples(0), circ(circIn)
+FunctionOfPos<T>::FunctionOfPos(double circIn, const gsl_interp_type *t, double periodIn, unsigned int turnsIn, unsigned int samplesIn)
+  : Interpolate<T>::Interpolate(t,periodIn,turnsIn*samplesIn), pos(this->_x), value(this->f), n_turns(turnsIn), n_samples(samplesIn), circ(circIn)
 {
 }
 
