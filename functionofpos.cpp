@@ -196,15 +196,17 @@ void FunctionOfPos<AccPair>::madxTrajectory(const FILENAMES files, unsigned int 
       }
       otmp.x = x;
       otmp.z = y;
+
       this->set(otmp, s, turn);
+      cout << " set turn " <<turn << endl; //debug
     }
 
     madx.close();
+    cout << "Trajectory from obs" << obs << " read." << endl; //debug
     obs++;
     madx.open(files.tracking(obs,particle).c_str(), ios::in);
   }
   this->hide_last_turn();
-
 }
 
 
