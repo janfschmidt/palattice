@@ -562,7 +562,7 @@ void AccLattice::madximportMisalignments(const char *madxEalignFile)
       stringstream s(tmp);
       while (!s.eof()) {
 	s >> tmp;
-	if (tmp == "DPSI") {cout << column << endl; break;}
+	if (tmp == "DPSI") break;
 	else column++;
       }
     }

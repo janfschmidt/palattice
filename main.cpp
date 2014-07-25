@@ -247,7 +247,22 @@ int main (int argc, char *argv[])
   snprintf(tmp, 100, "%d points per turn", n_samp);
   metadata.add("Field sampling", tmp);
   
-  
+
+
+   // output
+  cout << endl;
+  cout << "--------------------------------------------" << endl;
+  cout << "Bsupply: calculate magnetic field & spectrum" << endl;
+  if (elsa) cout << "         ELSA-mode" << endl;
+  if (diff) cout << "         harmcorr analysis (difference-mode)" << endl;
+  cout << "                    version:" <<endl<<gitversion() << endl;
+  cout << "--------------------------------------------" << endl;
+  cout << "* "<<n_samp<<" sampling points along ring" << endl;
+  cout << "* maximum frequency used for B-field evaluation:  Bx->"<<fmax_x <<", Bz->"<<fmax_z << endl;
+  cout << "* frequency components cutted if amplitude below: Bx->"<<ampcut_x<<" 1/m, Bz->"<<ampcut_z<< " 1/m" << endl;
+
+
+
   // initialize Lattice
   AccLattice lattice(circumference, end); // refPos=end used by MAD-X
   AccLattice Ref_lattice(circumference, end);
@@ -262,19 +277,7 @@ int main (int argc, char *argv[])
   FunctionOfPos<AccPair> Ref_bpmorbit(circumference, gsl_interp_akima_periodic, circumference);
   FunctionOfPos<AccPair> trajectory(circumference, gsl_interp_akima);
 
-
-
-  // output
-  cout << endl;
-  cout << "--------------------------------------------" << endl;
-  cout << "Bsupply: calculate magnetic field & spectrum" << endl;
-  if (elsa) cout << "         ELSA-mode" << endl;
-  if (diff) cout << "         harmcorr analysis (difference-mode)" << endl;
-  cout << "                    version:" <<endl<<gitversion() << endl;
-  cout << "--------------------------------------------" << endl;
-  cout << "* "<<n_samp<<" sampling points along ring" << endl;
-  cout << "* maximum frequency used for B-field evaluation:  Bx->"<<fmax_x <<", Bz->"<<fmax_z << endl;
-  cout << "* frequency components cutted if amplitude below: Bx->"<<ampcut_x<<" 1/m, Bz->"<<ampcut_z<< " 1/m" << endl;
+ 
 
 
   // read lattice (magnet positions,strengths,misalignments) and  particle orbit

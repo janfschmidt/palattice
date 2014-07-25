@@ -40,8 +40,9 @@ private:
 public:
   const double circ;                          //circumference of accelerator
 
-  FunctionOfPos(double circIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0., unsigned int turnsIn=1, unsigned int samplesIn=0);
+  FunctionOfPos(double circIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
   FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
+  FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, vector<double> posIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
   ~FunctionOfPos() {}
 
   unsigned int turns() const {return n_turns;}

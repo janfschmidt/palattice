@@ -159,20 +159,66 @@ void FunctionOfPos<AccPair>::madxClosedOrbit(const char *madxTwissFile)
 template <>
 void FunctionOfPos<AccPair>::madxTrajectory(const FILENAMES files, unsigned int particle)
 {
- unsigned int obs=1;
+  unsigned int obs=1;
   string tmp="init";
-  unsigned int turn; // madx column variables
+  unsigned int turn, theTurn; // madx column variables
   double x, y, s;
   fstream madx;
   AccPair otmp;
+  vector<double> obsPos;
 
-  //for chosen particle read data from all observation points
+  //for chosen particle: read turns, samples and positions
+  //then modify() can be used below instead of set() ->  much faster for large datasets
+  cout << "* Initializing trajectory... " << endl;
+  madx.open(files.tracking(obs,particle).c_str(), ios::in);
+  while ( madx.is_open() ) {
+    //go to end of "header" / first data line
+    while (tmp != "$") {
+      madx >> tmp;
+      if (madx.eof()) {
+  	cout << "ERROR: madximport.cpp: Wrong data format in " << files.tracking(obs,particle) << endl;
+  	exit(1);
+      }
+    }
+    getline(madx, tmp);
+    //obs1: read all lines to get #turns
+    while (!madx.eof()) {
+      madx >> tmp >> turn >> x >> tmp >> y >> tmp >> tmp >> tmp >> s;
+      getline(madx, tmp);
+      if (madx.eof()) break;
+      if (obs==1) { //see comment above
+  	theTurn = turn + 1;
+      }
+      else // all other obs: only read s from first line
+	break;
+    }
+    madx.close();
+    obsPos.push_back(s);
+    obs++;
+    madx.open(files.tracking(obs,particle).c_str(), ios::in);
+  }
+  //resize & set positions s
+  AccPair empty;
+  n_turns = theTurn;
+  n_samples = obsPos.size();
+  pos.resize(turns()*samples());
+  value.resize(turns()*samples());
+  for (unsigned int t=1; t<=turns(); t++) {
+    for (unsigned int i=0; i<samples(); i++) {
+      pos[index(i,t)] = posTotal(obsPos[i], t);
+      value[index(i,t)] =  empty;
+    }
+  }
+  
+
+  //for chosen particle: read data from all observation points
   //-----------------------------------------------------------------------------------------------------
   //obs0001 is a special case: it corresponds to s=0.0m (START marker in MAD-X), but counts the turns different:
   //turn=0, s=0.0 are the initial conditions (beginning of turn 1)
   //turn=1, s=0.0 is the beginning of turn 2 or END of turn 1.
   //So the data of obs0001 is used with s=0.0 but one turn later than written in MAD-X to fit our notation
   //-----------------------------------------------------------------------------------------------------
+  obs=1;
   madx.open(files.tracking(obs,particle).c_str(), ios::in);
   while ( madx.is_open() ) {
     
@@ -180,8 +226,8 @@ void FunctionOfPos<AccPair>::madxTrajectory(const FILENAMES files, unsigned int 
     while (tmp != "$") {
       madx >> tmp;
       if (madx.eof()) {
-	cout << "ERROR: madximport.cpp: Wrong data format in " << files.tracking(obs,particle) << endl;
-	exit(1);
+  	cout << "ERROR: madximport.cpp: Wrong data format in " << files.tracking(obs,particle) << endl;
+  	exit(1);
       }
     }
     getline(madx, tmp);
@@ -192,21 +238,24 @@ void FunctionOfPos<AccPair>::madxTrajectory(const FILENAMES files, unsigned int 
       if (madx.eof()) break;
       
       if (obs==1) { //see comment above
-	turn += 1;
+  	turn += 1;
       }
       otmp.x = x;
       otmp.z = y;
 
-      this->set(otmp, s, turn);
-      cout << " set turn " <<turn << endl; //debug
+      //this->set(otmp, s, turn);
+      this->modify(otmp, obs-1, turn); // by index (obs) and not by pos -> faster than set() !
+      //cout << " set turn " <<turn << endl; //debug
     }
 
     madx.close();
-    cout << "Trajectory from obs" << obs << " read." << endl; //debug
+    cout << "\r  reading trajectory from obs" << obs; //debug
     obs++;
     madx.open(files.tracking(obs,particle).c_str(), ios::in);
   }
   this->hide_last_turn();
+  cout << endl; //debug
+    
 }
 
 
