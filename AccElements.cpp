@@ -270,9 +270,9 @@ string Corrector::printElegant() const
 {
   stringstream s;
   if (plane == H)
-    s << name <<" : HKICK, ";
+    s << name <<" : VKICK, "; //! plane==H => horizontal field => vertical kick
   else if (plane == V)
-    s << name <<" : VKICK, ";
+    s << name <<" : HKICK, ";
   s <<"l="<< length
     << endl;
   return s.str();
@@ -282,9 +282,9 @@ string RFdipole::printElegant() const // same as corrector
 {
  stringstream s;
   if (plane == H)
-    s << name <<" : HKICK, ";
+    s << name <<" : VKICK, "; //! plane==H => horizontal field => vertical kick
   else if (plane == V)
-    s << name <<" : VKICK, ";
+    s << name <<" : HKICK, ";
   s <<"l="<< length
     << endl;
   return s.str();
