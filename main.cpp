@@ -54,6 +54,7 @@ void usage()
   cout << "     else a MadX-twiss file ([project]/madx/[reference])" << endl;
   cout << "     or the name of elegant output files ([project]/elegant/[reference].clo & [project]/elegant/[reference].param)." << endl;
   cout << "     MadX or elegant is chosen by -s option." << endl;
+  cout << "* -x Additionally creates elegant compliant lattice ([project]/inout/lattice.lte)." << endl;
   cout << "* -h displays this help" << endl;
   cout << "Bsupply version:" <<endl<<gitversion() << endl << endl;
 }
@@ -80,6 +81,7 @@ int main (int argc, char *argv[])
   bool elsa = false;            // true: orbit, correctors, k & m read from /sgt/elsa/bpm/...
   bool diff = false;            // true: "harmcorr mode", calculate difference of two "Spuren"...
   bool allout = false;          // true: additional output files (orbit, field, bpms, ...)
+  bool exp = false;          // true: create elegant compliant lattice output
   char spuren[20] = "dummy";
   char Reference[50] = "dummy";
   string ignoreFile = "NULL";
@@ -117,7 +119,7 @@ int main (int argc, char *argv[])
     }
   }
 
-  while ((opt = getopt(argc, argv, ":n:p:s:r:e:t:f:F:c:C:d:m:i:ah")) != -1) {
+  while ((opt = getopt(argc, argv, ":n:p:s:r:e:t:f:F:c:C:d:m:i:axh")) != -1) {
     switch(opt) {
     case 'n':
       default_n_samp = false;
@@ -170,6 +172,9 @@ int main (int argc, char *argv[])
       break;
     case 'a':
       allout = true;
+      break;
+    case 'x':
+      exp = true;
       break;
     case 'h':
       usage();
@@ -449,6 +454,10 @@ int main (int argc, char *argv[])
       bz.eval_out(0.1, B.circ, file.out("eval_z", t.tag(i)).c_str());
       //check dipole lengths
       B.magnetlengths(lattice, file.out("dipolelengths", t.tag(i)).c_str());
+    }
+    //elegant lattice
+    if (exp) {
+      lattice.elegantexport((file.path+"/inout/lattice.lte").c_str());
     }
 
     //export spectrum files for polarization-calculation (TBMTsolver)

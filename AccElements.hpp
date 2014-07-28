@@ -18,7 +18,7 @@
 using namespace std;
 
 
-enum element_type{dipole,quadrupole,corrector,sextupole,drift, rfdipole};
+enum element_type{dipole, quadrupole, corrector, rfdipole, sextupole, drift}; //! keep dipole as first and drift as last
 enum element_plane{H,V,L};    //horizontal,vertical,longitudinal
 enum element_family{F,D};     //focus,defocus
 
@@ -67,6 +67,7 @@ public:
   string type_string() const;    // string output of element type
 
   string print() const;          // string output of (some) element properties
+  virtual string printElegant() const =0;  // string output of element definition in elegant format
   string printHeader() const;    // string output of header-line(s) for print()
 
 };
@@ -86,6 +87,7 @@ public:
   virtual AccTriple B(AccPair orbit) const {return B();}
   virtual AccTriple B(unsigned int turn) const {return B();}
   virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B();}
+  string printElegant() const;
 };
 
 
@@ -130,6 +132,7 @@ public:
   virtual AccTriple B(AccPair orbit) const {return B();}
   virtual AccTriple B(unsigned int turn) const {return B();}
   virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B();}
+  string printElegant() const;
 };
 
 
@@ -145,6 +148,7 @@ public:
   virtual AccTriple B(AccPair orbit) const {return B();}
   virtual AccTriple B(unsigned int turn) const {return B();}
   virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B();}
+  string printElegant() const;
 };
 
 
@@ -158,6 +162,7 @@ public:
 
   virtual AccTriple B(unsigned int turn) const;
   virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B(turn);}
+  string printElegant() const;
 };
 
 
@@ -178,6 +183,7 @@ public:
 
   virtual AccTriple B(AccPair orbit) const;
   virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B(orbit);}
+  string printElegant() const;
 };
 
 
@@ -191,6 +197,7 @@ public:
 
   virtual AccTriple B(AccPair orbit) const;
   virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B(orbit);}
+  string printElegant() const;
 };
 
 

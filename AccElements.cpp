@@ -95,12 +95,12 @@ string AccElement::type_string() const
     return "Quadrupole";
   case corrector:
     return "Corrector";
+  case rfdipole:
+    return "RF-Dipole";
   case sextupole:
     return "Sextupole";
   case drift:
     return "Drift";
-  case rfdipole:
-    return "RF-Dipole";
   }
 
   return "Please implement this type in AccElement::type_string()!";
@@ -242,3 +242,78 @@ AccTriple Sextupole::B(AccPair orbit) const
    
    return tmp.tilt(this->dpsi);
  }
+
+
+
+
+// ============ printElegant ==========================
+string Drift::printElegant() const
+{
+  stringstream s;
+  s << name <<" : DRIF, l="<< length << endl;
+  return s.str();
+}
+
+string Dipole::printElegant() const
+{
+  stringstream s;
+  s << name <<" : CSBEND, "
+    <<"l="<< length <<", "
+    <<"angle="<< strength*length <<", "
+    <<"e1=0, e2=0, "   //not implemented
+    <<"synch_rad=1, isr=1, use_rad_dist=0"
+    << endl;
+  return s.str();
+}
+
+string Corrector::printElegant() const
+{
+  stringstream s;
+  if (plane == H)
+    s << name <<" : HKICK, ";
+  else if (plane == V)
+    s << name <<" : VKICK, ";
+  s <<"l="<< length
+    << endl;
+  return s.str();
+}
+
+string RFdipole::printElegant() const // same as corrector
+{
+ stringstream s;
+  if (plane == H)
+    s << name <<" : HKICK, ";
+  else if (plane == V)
+    s << name <<" : VKICK, ";
+  s <<"l="<< length
+    << endl;
+  return s.str();
+}
+
+string Quadrupole::printElegant() const
+{
+  stringstream s;
+  s << name <<" : QUAD, "
+    <<"l="<< length <<", ";
+  if (family == F)
+    s  <<"k1="<< strength <<", ";
+  else if (family == D)
+    s  <<"k1="<< -strength <<", ";
+  s <<"fringe_type=fixed-strength, ffringe=0"
+    << endl;
+  return s.str();
+}
+
+string Sextupole::printElegant() const
+{
+ stringstream s;
+  s << name <<" : SEXT, "
+    <<"l="<< length <<", ";
+  if (family == F)
+    s  <<"k2="<< strength <<", ";
+  else if (family == D)
+    s  <<"k2="<< -strength <<", ";
+  s <<"ffringe=0"
+    << endl;
+  return s.str();
+}

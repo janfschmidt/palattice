@@ -15,6 +15,8 @@
 #include <stdexcept>
 #include "AccLattice.hpp"
 #include "constants.hpp"
+#include "metadata.hpp"
+#include "gitversion.hpp"
 
 
 //remove quotation marks ("" or '') from begin&end of string
@@ -965,7 +967,7 @@ void AccLattice::print(const char *filename) const
   else {
     file.open(filename, ios::out);
     if (!file.is_open()) {
-      msg << "ERROR: corrs_out(): Cannot open " << filename << ".";
+      msg << "ERROR: AccLattice::print(): Cannot open " << filename << ".";
       throw std::runtime_error(msg.str());
     }
     file << s.str();
@@ -1001,7 +1003,7 @@ void AccLattice::print(element_type _type, const char *filename) const
   else {
     file.open(filename, ios::out);
     if (!file.is_open()) {
-      msg << "ERROR: corrs_out(): Cannot open " << filename << ".";
+      msg << "ERROR: AccLattice::print(): Cannot open " << filename << ".";
       throw std::runtime_error(msg.str());
     }
     file << s.str();
@@ -1009,4 +1011,93 @@ void AccLattice::print(element_type _type, const char *filename) const
     cout << "* Wrote " << filename  << endl;
   }
 
+}
+
+
+
+// return list of elegant compliant element definitions for given type
+string AccLattice::getElegantDef(element_type _type) const
+{
+  stringstream s;
+  const_AccIterator it=firstCIt(_type);
+
+  if (it == elements.end())
+    return "";
+  s << "! " << it->second->type_string() << "s" << endl;
+  for (; it!=elements.end(); it=nextCIt(_type, it)) {
+    s << it->second->printElegant();
+  }
+  s << endl;
+
+  return s.str();
+}
+
+
+// print lattice readable by elegant. If no filename is given, print to stdout
+void AccLattice::elegantexport(const char *filename) const
+{
+  const_AccIterator it=elements.begin();
+  std::stringstream s;
+  std::stringstream msg;
+  fstream file;
+  unsigned int n;
+
+  //write text to s
+  s << "! Lattice for ELEGANT" << endl
+    << "!" << endl;
+  s << "! created at " << timestamp() << endl;
+  s << "! by pole/Bsupply, version " << gitversion() << endl
+    << endl;
+  s << "BEGIN : MARK" << endl << endl;
+
+  //element definitions
+  for (element_type type=dipole; type<drift; type=element_type(type+1)) {
+    s << this->getElegantDef(type);
+  }
+  s << endl;
+
+  //Drifts
+  double driftlength, lastend;
+  s << "! Drifts" << endl;
+  it=elements.begin();
+  n=0;
+  for (; it!=elements.end(); ++it) {
+    if (it == elements.begin()) {
+      driftlength = locate(it, begin);
+    }
+    else {
+      driftlength = locate(it, begin) - lastend;
+    }
+    lastend = locate(it, end);
+    s << "DRIFT_" << n << " : DRIF, l=" << driftlength << endl;
+    n++;
+  }
+  s << "DRIFT_" << n << " : DRIF, l=" << circumference - lastend << endl;   //drift to end
+  s << endl;
+
+  //sequence
+  s << "LATTICE_BY_BSUPPLY_1 : LINE=(BEGIN, ";
+  it=elements.begin();
+  n=0;
+  for (; it!=elements.end(); ++it) {
+    s << "DRIFT_" << n << ", "
+      << it->second->name << ", ";
+    n++;
+  }
+  s << "DRIFT_" << n << ")";   // drift to end
+
+
+  // output of s
+  if (string(filename) == "") 
+    cout << s.str();
+  else {
+    file.open(filename, ios::out);
+    if (!file.is_open()) {
+      msg << "ERROR: AccLattice::printElegant(): Cannot open " << filename << ".";
+      throw std::runtime_error(msg.str());
+    }
+    file << s.str();
+    file.close();
+    cout << "* Wrote " << filename  << endl;
+  }
 }
