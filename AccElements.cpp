@@ -317,3 +317,69 @@ string Sextupole::printElegant() const
     << endl;
   return s.str();
 }
+
+
+
+
+// ============ printLaTeX ==========================
+string Drift::printLaTeX() const
+{
+  return getLaTeXDrift(length);
+}
+
+string Dipole::printLaTeX() const
+{
+  stringstream s;
+  s << "\\dipole{"<< name <<"}{"<< length <<"}{"<< strength*length*180/M_PI <<"}" << endl;
+  return s.str();
+}
+
+string Corrector::printLaTeX() const
+{
+  stringstream s;
+  s << "\\kicker{"<< name <<"}{"<< length <<"}" << endl;
+  return s.str();
+}
+
+string RFdipole::printLaTeX() const // same as corrector
+{
+ stringstream s;
+  s << "\\kicker{"<< name <<"}{"<< length <<"}" << endl;
+  return s.str();
+}
+
+string Quadrupole::printLaTeX() const
+{
+  stringstream s;
+  s << "\\quadrupole{"<< name <<"}{"<< length <<"}" << endl;
+  return s.str();
+}
+
+string Sextupole::printLaTeX() const
+{
+ stringstream s;
+  s << "\\sextupole{"<< name <<"}{"<< length <<"}" << endl;
+  return s.str();
+}
+
+
+
+// Drift element for LaTeX (used by Drift::printLaTeX and AccLattice::latexexport)
+//maximum drift length 2.9m in lattice package -> split longer drifts
+string getLaTeXDrift(double driftlength)
+{
+  if (fabs(driftlength) < 1e-6)
+    return "";
+
+  std::stringstream s;
+  int factor = driftlength/2.9 +1;
+    if (factor > 1) { 
+      driftlength /= factor;
+      for (int i=0; i<factor; i++)
+	s << "\\drift{" << driftlength << "}"<< endl;
+    }
+    else {
+      s << "\\drift{" << driftlength << "}"<< endl; //drift
+    }
+    return s.str();
+}

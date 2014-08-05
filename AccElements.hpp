@@ -68,6 +68,7 @@ public:
 
   string print() const;          // string output of (some) element properties
   virtual string printElegant() const =0;  // string output of element definition in elegant format
+  virtual string printLaTeX() const =0;  // string output of element definition in LaTeX format (using lattice package by Jan Schmidt <schmidt@physik.uni-bonn.de>)
   string printHeader() const;    // string output of header-line(s) for print()
 
 };
@@ -88,6 +89,7 @@ public:
   virtual AccTriple B(unsigned int turn) const {return B();}
   virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B();}
   string printElegant() const;
+  string printLaTeX() const;
 };
 
 
@@ -133,6 +135,7 @@ public:
   virtual AccTriple B(unsigned int turn) const {return B();}
   virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B();}
   string printElegant() const;
+  string printLaTeX() const;
 };
 
 
@@ -149,6 +152,7 @@ public:
   virtual AccTriple B(unsigned int turn) const {return B();}
   virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B();}
   string printElegant() const;
+  string printLaTeX() const;
 };
 
 
@@ -163,6 +167,7 @@ public:
   virtual AccTriple B(unsigned int turn) const;
   virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B(turn);}
   string printElegant() const;
+  string printLaTeX() const;
 };
 
 
@@ -184,6 +189,7 @@ public:
   virtual AccTriple B(AccPair orbit) const;
   virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B(orbit);}
   string printElegant() const;
+  string printLaTeX() const;
 };
 
 
@@ -198,7 +204,11 @@ public:
   virtual AccTriple B(AccPair orbit) const;
   virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B(orbit);}
   string printElegant() const;
+  string printLaTeX() const;
 };
+
+
+string getLaTeXDrift(double driftlength); // Drift element for LaTeX (used by Drift::printLaTeX and AccLattice::latexexport)
 
 
 

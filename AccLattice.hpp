@@ -88,6 +88,7 @@ public:
   void print(const char *filename="") const;                     // print lattice.
   void print(element_type _type, const char *filename="") const; // print all elements of one type.
   void elegantexport(const char *filename="") const;             // print lattice readable by elegant.
+  void latexexport(const char *filename="") const;             // print lattice readable by LaTeX (using lattice package by Jan Schmidt <schmidt@physik.uni-bonn.de>)
 
 };
 

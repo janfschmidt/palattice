@@ -1093,7 +1093,7 @@ void AccLattice::elegantexport(const char *filename) const
   else {
     file.open(filename, ios::out);
     if (!file.is_open()) {
-      msg << "ERROR: AccLattice::printElegant(): Cannot open " << filename << ".";
+      msg << "ERROR: AccLattice::elegantexport(): Cannot open " << filename << ".";
       throw std::runtime_error(msg.str());
     }
     file << s.str();
@@ -1101,3 +1101,67 @@ void AccLattice::elegantexport(const char *filename) const
     cout << "* Wrote " << filename  << endl;
   }
 }
+
+
+
+
+// print lattice readable by LaTeX. If no filename is given, print to stdout
+// (using lattice package by Jan Schmidt <schmidt@physik.uni-bonn.de>)
+void AccLattice::latexexport(const char *filename) const
+{
+  const_AccIterator it=elements.begin();
+  std::stringstream s;
+  std::stringstream msg;
+  fstream file;
+
+  //write text to s
+  s << "% Lattice for LaTeX" << endl
+    << "%" << endl;
+  s << "% created at " << timestamp() << endl;
+  s << "% by pole/Bsupply, version " << gitversion() << endl
+    << endl;
+
+  //preamble
+  s << "\\documentclass[]{standalone}" <<endl
+    << "\\usepackage[ngerman]{babel}" <<endl
+    << "\\usepackage[utf8]{inputenc}" <<endl
+    << "\\usepackage{lattice} % by Jan Schmidt <schmidt@physik.uni-bonn.de>" <<endl<<endl;
+
+  //lattice
+  s << "\\begin{document}" << endl << "\\begin{lattice}" << endl;
+  double driftlength, lastend;
+  it=elements.begin();
+  for (; it!=elements.end(); ++it) {
+    if (it == elements.begin()) {
+      driftlength = locate(it, begin);
+    }
+    else {
+      driftlength = locate(it, begin) - lastend;
+    }
+    lastend = locate(it, end);
+    s << getLaTeXDrift(driftlength);    //drift
+    s << it->second->printLaTeX(); //element
+  }
+
+  //drift to end
+  driftlength = circumference - lastend;
+  s << getLaTeXDrift(driftlength);
+
+  s << "\\end{lattice}" << endl << "\\end{document}" << endl;
+
+
+  // output of s
+  if (string(filename) == "") 
+    cout << s.str();
+  else {
+    file.open(filename, ios::out);
+    if (!file.is_open()) {
+      msg << "ERROR: AccLattice::latexexport(): Cannot open " << filename << ".";
+      throw std::runtime_error(msg.str());
+    }
+    file << s.str();
+    file.close();
+    cout << "* Wrote " << filename  << endl;
+  }
+}
+

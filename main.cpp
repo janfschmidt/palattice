@@ -316,9 +316,8 @@ int main (int argc, char *argv[])
   }
 
   cout << "* "<<lattice.size(dipole)<<" dipoles, "<<lattice.size(quadrupole)<<" quadrupoles, "
-       <<lattice.size(sextupole)<<" sextupoles, "<<lattice.size(corrector)<<" kickers read"<<endl
-       << lattice.size(rfdipole) <<" RF dipoles" <<  endl
-       <<"  from "<<file.lattice<<endl;
+       <<lattice.size(sextupole)<<" sextupoles, "<<lattice.size(corrector)<<" kickers, "<<lattice.size(rfdipole)<<" rfdipoles read"<<endl
+       <<"  as " <<lattice.circumference << "m lattice from " <<file.lattice<<endl;
   if (ignoreFile!="NULL")
     cout <<"* "<<lattice.ignoredElements()<<" elements ignored due to match with " << ignoreFile<<endl;
   cout  << "* "<<bpmorbit.samples()<<" BPMs(@Quad) read"<<endl
@@ -439,6 +438,7 @@ int main (int argc, char *argv[])
     if (allout) {
       //lattice
       lattice.print(file.out("lattice", t.tag(i)).c_str());
+      lattice.latexexport((file.path+"/inout/lattice.tex").c_str());
       //BPM data
       bpmorbit.out(file.out("bpms", t.tag(i)).c_str());
       trajectory.out(file.out("trajectory", t.tag(i)).c_str());
