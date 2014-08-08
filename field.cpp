@@ -79,7 +79,7 @@ int Field::magnetlengths(AccLattice &lattice, const char *filename) const
 
     if ( lattice.inside(it, getPos(i)) ) {
       tmp_start = this->getPos(i);
-      while ( lattice.inside(it, getPos(i)) ) i++;
+      while ( i<this->samples() && lattice.inside(it, getPos(i)) ) i++;
       tmp_end = getPos(i-1);
 
       //write deviations from exact values to file
