@@ -171,6 +171,12 @@ void Interpolate<T>::init()
     cout << "ERROR: Interpolate::init(): Interpolation initialisation called twice. Skip." << endl;
     return;
   }
+  if (_x.size() < 2) {
+    stringstream msg;
+    msg << "ERROR: Interpolate::init(): Interpolation not possible for only " << _x.size() << " datapoints. Skip.";
+    throw std::runtime_error(msg.str());
+  }
+
 
   initThis(); // specialized function for each data type
 

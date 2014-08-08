@@ -22,6 +22,7 @@ void Field::set(AccLattice &lattice, FunctionOfPos<AccPair>& orbit, double n_sam
   stringstream msg;
   AccPair otmp;
   AccTriple Btmp;
+  bool noorbit = false;
 
  double interval_samp = this->circ / n_samples; // sampling interval of magn. field values along ring in meter
 
@@ -35,7 +36,17 @@ void Field::set(AccLattice &lattice, FunctionOfPos<AccPair>& orbit, double n_sam
      for (i=0; i<n_samples; i++) {
        _pos = i*interval_samp;
        _pos_tot = orbit.posTotal(_pos, t);
+       try{
        otmp = orbit.interp(_pos_tot);
+       }
+       catch (std::runtime_error &e) {
+	 if (!noorbit) {
+	   cout << e.what() << endl;
+	   noorbit = true;
+	 }
+	 Btmp = lattice[_pos]->B(t); //use field without orbit
+	 this->modify(Btmp, i, t);
+       }
 
        Btmp = lattice[_pos]->B(otmp,t);
        this->modify(Btmp, i, t);
