@@ -515,8 +515,8 @@ void AccLattice::madximport(const char *madxTwissFile)
 	vRFdip.name = vCorr.name;
 	vRFdip.length = vCorr.length;
 	vRFdip.strength = vCorr.strength;
-	vRFdip.Qrf0 = 0.625;              // !! hardcoded RF-tune values !!
-	vRFdip.dQrf = 5.402e-6;
+	//vRFdip.Qrf0 = 0.625;              // !! hardcoded RF-tune values !!
+	//vRFdip.dQrf = 5.402e-6;
 	this->set(s, vRFdip);
       }
       //Corrector:
