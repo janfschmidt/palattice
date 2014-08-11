@@ -40,6 +40,25 @@ FunctionOfPos<T>::FunctionOfPos(double circIn, unsigned int samplesIn, unsigned 
   }
 }
 
+// constructor to set positions by vector
+template <class T>
+FunctionOfPos<T>::FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, vector<double> posIn, const gsl_interp_type *t, double periodIn)
+  : Interpolate<T>::Interpolate(t,periodIn, samplesIn*turnsIn), pos(this->_x), value(this->f), n_turns(turnsIn), n_samples(samplesIn), circ(circIn)
+{
+  if (n_samples != posIn.size()) {
+    stringstream msg;
+    msg << "Given number of samples (" <<n_samples<< ") does not match number of given positions (" <<posIn.size()<< ")";
+    throw invalid_argument(msg.str());
+  }
+  T empty = T();
+  for (unsigned int t=1; t<=turns(); t++) {
+    for (unsigned int i=0; i<samples(); i++) {
+      pos[index(i,t)] = posTotal(posIn[i], t);
+      value[index(i,t)] =  empty;
+    }
+  }
+}
+
 
 
 //get index for pos[] & value[] from index(1turn) and turn
@@ -211,11 +230,11 @@ void FunctionOfPos<T>::modify(T valueIn, unsigned int i, unsigned int turnIn)
 template <class T>
 void FunctionOfPos<T>::set(T valueIn, double posIn, unsigned int turnIn)
 {
-  T empty = T();
   double newPos = posTotal(posIn,turnIn);
   unsigned int newTurn = turn(newPos);
   // add new turn(s)
   if (newTurn > turns()) {
+    T empty = T();
     for (unsigned int t=turns(); t<newTurn; t++) {
       for (unsigned int i=0; i<samples(); i++) {
 	pos.push_back( pos[i]+t*circ );
@@ -226,7 +245,7 @@ void FunctionOfPos<T>::set(T valueIn, double posIn, unsigned int turnIn)
   }
   
   try {
-    unsigned int tmpIndex = index(posIn,turnIn);
+    unsigned int tmpIndex = index(posIn,turnIn); // TEUER!!!!!
     // +++++++++++++++++++++++++++++++++++++
     //if pos does exist, modify value
     // ++++++++++++++++++++++++++++++++++++++
@@ -237,6 +256,7 @@ void FunctionOfPos<T>::set(T valueIn, double posIn, unsigned int turnIn)
   // if pos does not exist, create new data
   // ++++++++++++++++++++++++++++++++++++++
   catch (eNoData &e) {
+    T empty = T();
     vector<double>::iterator it_pos;
     typename vector<T>::iterator it_value;
     unsigned int newIndex;
@@ -258,8 +278,10 @@ void FunctionOfPos<T>::set(T valueIn, double posIn, unsigned int turnIn)
       value.insert(it_value, empty);
     }
     n_samples++;
-    // call this function again to set value
-    set(valueIn,posIn,turnIn);
+    // now set value
+    unsigned int tmpIndex = index(posIn,turnIn);
+    value[tmpIndex] = valueIn;
+    this->reset(); //reset interpolation
     return;
   }
 }

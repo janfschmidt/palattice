@@ -9,6 +9,9 @@
 
 using namespace std;
 
+string timestamp();
+
+
 class METADATA {
 private:
   vector<string> label;
@@ -30,10 +33,9 @@ public:
   string get(Spectrum s, string tag="") const;
   unsigned int columnwidth() const;
 
-private:
-  string timestamp() const;
+// private:
+//   string timestamp() const;
 };
-
 
 #endif
 

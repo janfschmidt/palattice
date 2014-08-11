@@ -207,23 +207,6 @@ void METADATA::setbyLabel(string inLabel, string inEntry)
 }
 
 
-/* get date&time */
-string METADATA::timestamp() const
-{
-  time_t rawtime;
-  struct tm *t;
-  char timestamp[20];
-
-  time(&rawtime);
-  t = localtime(&rawtime); //Sommerzeit geht, Winterzeit?
-  //if (t->tm_isdst < 0) t->tm_hour = +1; /* UTC -> ME(S)Z */
-  //else t->tm_hour += 1 + t->tm_isdst;
-  snprintf(timestamp, 20, "%02d.%02d.%4d %02d:%02d:%02d", t->tm_mday, t->tm_mon+1, t->tm_year+1900, t->tm_hour, t->tm_min, t->tm_sec);
-
-  return timestamp;
-}
-
-
 
 // formated output of all metadata to be written to a file.
 // Additional metadata for Spectrum spec are added to output.
@@ -275,3 +258,23 @@ unsigned int METADATA::columnwidth() const
 
   return width + 2;
 }
+
+
+
+
+/* get date&time */
+string timestamp()
+{
+  time_t rawtime;
+  struct tm *t;
+  char timestamp[20];
+
+  time(&rawtime);
+  t = localtime(&rawtime); //Sommerzeit geht, Winterzeit?
+  //if (t->tm_isdst < 0) t->tm_hour = +1; /* UTC -> ME(S)Z */
+  //else t->tm_hour += 1 + t->tm_isdst;
+  snprintf(timestamp, 20, "%02d.%02d.%4d %02d:%02d:%02d", t->tm_mday, t->tm_mon+1, t->tm_year+1900, t->tm_hour, t->tm_min, t->tm_sec);
+
+  return timestamp;
+}
+

@@ -15,6 +15,8 @@
 #include <stdexcept>
 #include "AccLattice.hpp"
 #include "constants.hpp"
+#include "metadata.hpp"
+#include "gitversion.hpp"
 
 
 //remove quotation marks ("" or '') from begin&end of string
@@ -447,6 +449,7 @@ void AccLattice::madximport(const char *madxTwissFile)
   Dipole hDip("defaultName", 0., 0., H);
   Corrector vCorr("defaultName", 0., 0., H); // vertical kicker has HORIZONTAL field
   Corrector hCorr("defaultName", 0., 0., V);
+  RFdipole vRFdip("defaultName", 0., 0., H); // vertical kicker has HORIZONTAL field
   Quadrupole Quad("defaultName", 0., 0., F); // madx uses negative sign "strength" for D magnets,
   Sextupole Sext("defaultName", 0., 0., F);  // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
 
@@ -507,7 +510,19 @@ void AccLattice::madximport(const char *madxTwissFile)
       vCorr.strength = sin(vkick)/vCorr.length;   // 1/R from kick-angle
       if (refPos == begin) s -= vCorr.length;
       else if (refPos == center) s -= vCorr.length/2;
-      this->set(s, vCorr);
+      //RF dipole:
+      if (vCorr.name.substr(0,6) == "RFDIP.") {
+	vRFdip.name = vCorr.name;
+	vRFdip.length = vCorr.length;
+	vRFdip.strength = vCorr.strength;
+	//vRFdip.Qrf0 = 0.625;              // !! hardcoded RF-tune values !!
+	//vRFdip.dQrf = 5.402e-6;
+	this->set(s, vRFdip);
+      }
+      //Corrector:
+      else {
+	this->set(s, vCorr);
+      }
     }
 
   }
@@ -527,7 +542,7 @@ void AccLattice::madximport(const char *madxTwissFile)
 void AccLattice::madximportMisalignments(const char *madxEalignFile)
 {
   string tmp;
-  unsigned int j;
+  unsigned int j, column=0;
   double _dpsi=0.;
   fstream madxEalign;
   AccIterator it=elements.begin();
@@ -541,13 +556,26 @@ void AccLattice::madximportMisalignments(const char *madxEalignFile)
   while (!madxEalign.eof()) {
     madxEalign >> tmp;
 
-    if (tmp == "@" || tmp == "*" || tmp == "$") { // header lines
+    if (tmp == "@" || tmp == "$") {    // header lines
       getline(madxEalign, tmp);
     }
+    else if (tmp == "*") {             // column headline, check which column is DPSI
+      getline(madxEalign, tmp);
+      stringstream s(tmp);
+      while (!s.eof()) {
+	s >> tmp;
+	if (tmp == "DPSI") break;
+	else column++;
+      }
+    }
     else {
+      if (column == 0) {
+	cout << "ERROR: AccLattice::madximportMisalignments(): No column header with DPSI in " << madxEalignFile << endl;
+	exit(1);
+      }
       for (; it!=elements.end(); ++it) {          //madxEalign is sorted by position => loop continued
-	if (it->second->name == tmp) {
-	  for (j=0; j<47; j++) madxEalign >> tmp; //read stupid unnecessary columns
+	if (it->second->name == removeQuote(tmp)) {
+	  for (j=0; j<column-1; j++) madxEalign >> tmp; //read stupid unnecessary columns
 	  madxEalign >> _dpsi;                    //read & write rotation around s-axis
 	  it->second->dpsi = - _dpsi;    // <<<<<<!!! sign of rotation angle (see comment above)
 	  getline(madxEalign, tmp);
@@ -940,7 +968,7 @@ void AccLattice::print(const char *filename) const
   else {
     file.open(filename, ios::out);
     if (!file.is_open()) {
-      msg << "ERROR: corrs_out(): Cannot open " << filename << ".";
+      msg << "ERROR: AccLattice::print(): Cannot open " << filename << ".";
       throw std::runtime_error(msg.str());
     }
     file << s.str();
@@ -976,7 +1004,7 @@ void AccLattice::print(element_type _type, const char *filename) const
   else {
     file.open(filename, ios::out);
     if (!file.is_open()) {
-      msg << "ERROR: corrs_out(): Cannot open " << filename << ".";
+      msg << "ERROR: AccLattice::print(): Cannot open " << filename << ".";
       throw std::runtime_error(msg.str());
     }
     file << s.str();
@@ -985,3 +1013,156 @@ void AccLattice::print(element_type _type, const char *filename) const
   }
 
 }
+
+
+
+// return list of elegant compliant element definitions for given type
+string AccLattice::getElegantDef(element_type _type) const
+{
+  stringstream s;
+  const_AccIterator it=firstCIt(_type);
+
+  if (it == elements.end())
+    return "";
+  s << "! " << it->second->type_string() << "s" << endl;
+  for (; it!=elements.end(); it=nextCIt(_type, it)) {
+    s << it->second->printElegant();
+  }
+  s << endl;
+
+  return s.str();
+}
+
+
+// print lattice readable by elegant. If no filename is given, print to stdout
+void AccLattice::elegantexport(const char *filename) const
+{
+  const_AccIterator it=elements.begin();
+  std::stringstream s;
+  std::stringstream msg;
+  fstream file;
+  unsigned int n;
+
+  //write text to s
+  s << "! Lattice for ELEGANT" << endl
+    << "!" << endl;
+  s << "! created at " << timestamp() << endl;
+  s << "! by pole/Bsupply, version " << gitversion() << endl
+    << endl;
+  s << "BEGIN : MARK" << endl << endl;
+
+  //element definitions
+  for (element_type type=dipole; type<drift; type=element_type(type+1)) {
+    s << this->getElegantDef(type);
+  }
+  s << endl;
+
+  //Drifts
+  double driftlength, lastend;
+  s << "! Drifts" << endl;
+  it=elements.begin();
+  n=0;
+  for (; it!=elements.end(); ++it) {
+    if (it == elements.begin()) {
+      driftlength = locate(it, begin);
+    }
+    else {
+      driftlength = locate(it, begin) - lastend;
+    }
+    lastend = locate(it, end);
+    s << "DRIFT_" << n << " : DRIF, l=" << driftlength << endl;
+    n++;
+  }
+  s << "DRIFT_" << n << " : DRIF, l=" << circumference - lastend << endl;   //drift to end
+  s << endl;
+
+  //sequence
+  s << "LATTICE_BY_BSUPPLY_1 : LINE=(BEGIN, ";
+  it=elements.begin();
+  n=0;
+  for (; it!=elements.end(); ++it) {
+    s << "DRIFT_" << n << ", "
+      << it->second->name << ", ";
+    n++;
+  }
+  s << "DRIFT_" << n << ")";   // drift to end
+
+
+  // output of s
+  if (string(filename) == "") 
+    cout << s.str();
+  else {
+    file.open(filename, ios::out);
+    if (!file.is_open()) {
+      msg << "ERROR: AccLattice::elegantexport(): Cannot open " << filename << ".";
+      throw std::runtime_error(msg.str());
+    }
+    file << s.str();
+    file.close();
+    cout << "* Wrote " << filename  << endl;
+  }
+}
+
+
+
+
+// print lattice readable by LaTeX. If no filename is given, print to stdout
+// (using lattice package by Jan Schmidt <schmidt@physik.uni-bonn.de>)
+void AccLattice::latexexport(const char *filename) const
+{
+  const_AccIterator it=elements.begin();
+  std::stringstream s;
+  std::stringstream msg;
+  fstream file;
+
+  //write text to s
+  s << "% Lattice for LaTeX" << endl
+    << "%" << endl;
+  s << "% created at " << timestamp() << endl;
+  s << "% by pole/Bsupply, version " << gitversion() << endl
+    << endl;
+
+  //preamble
+  s << "\\documentclass[]{standalone}" <<endl
+    << "\\usepackage[ngerman]{babel}" <<endl
+    << "\\usepackage[utf8]{inputenc}" <<endl
+    << "\\usepackage{lattice} % by Jan Schmidt <schmidt@physik.uni-bonn.de>" <<endl<<endl;
+
+  //lattice
+  s << "\\begin{document}" << endl << "\\begin{lattice}" << endl;
+  double driftlength, lastend;
+  it=elements.begin();
+  for (; it!=elements.end(); ++it) {
+    if (it == elements.begin()) {
+      driftlength = locate(it, begin);
+    }
+    else {
+      driftlength = locate(it, begin) - lastend;
+    }
+    lastend = locate(it, end);
+    s << getLaTeXDrift(driftlength);    //drift
+    s << it->second->printLaTeX(); //element
+  }
+
+  //drift to end
+  driftlength = circumference - lastend;
+  s << getLaTeXDrift(driftlength);
+
+  s << "\\end{lattice}" << endl << "\\end{document}" << endl;
+
+
+  // output of s
+  if (string(filename) == "") 
+    cout << s.str();
+  else {
+    file.open(filename, ios::out);
+    if (!file.is_open()) {
+      msg << "ERROR: AccLattice::latexexport(): Cannot open " << filename << ".";
+      throw std::runtime_error(msg.str());
+    }
+    file << s.str();
+    file.close();
+    cout << "* Wrote " << filename  << endl;
+  }
+}
+

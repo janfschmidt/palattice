@@ -80,10 +80,15 @@ public:
   vector<string> getIgnoreList() const {return ignoreList;}
   unsigned int ignoredElements() const {return ignoreCounter;}
   string refPos_string() const;
+  string getElegantDef(element_type _type) const; // return elegant compliant element definitions for given type
+
 
   // output (stdout or file)
-  void print(const char *filename="") const;                         // print lattice. If no filename is given, print to stdout
-  void print(element_type _type, const char *filename="") const; // print all elements of one type. If no filename is given, print to stdout
+  // If no filename is given, print to stdout.
+  void print(const char *filename="") const;                     // print lattice.
+  void print(element_type _type, const char *filename="") const; // print all elements of one type.
+  void elegantexport(const char *filename="") const;             // print lattice readable by elegant.
+  void latexexport(const char *filename="") const;             // print lattice readable by LaTeX (using lattice package by Jan Schmidt <schmidt@physik.uni-bonn.de>)
 
 };
 

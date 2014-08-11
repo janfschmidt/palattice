@@ -95,6 +95,8 @@ string AccElement::type_string() const
     return "Quadrupole";
   case corrector:
     return "Corrector";
+  case rfdipole:
+    return "RF-Dipole";
   case sextupole:
     return "Sextupole";
   case drift:
@@ -141,17 +143,28 @@ string AccElement::printHeader() const
 
 // ========= magnetic field calculation for all magnet types =================
 
-// default B(), throw exception if orbit is needed as input
+// default B-Field functions, throw exceptions
 AccTriple AccElement::B() const
 {
-  string msg="B-Field of "+type_string()+" depends on orbit! Please provide argument.";
+  string msg="B-Field of "+type_string()+" may depend on orbit or turn! Please provide argument.";
   throw std::invalid_argument(msg);
 }
-//default B(orbit), returns B=0
 AccTriple AccElement::B(AccPair orbit) const
 {
-  return zeroTriple;
+  string msg="B-Field of "+type_string()+" may depend on turn! Please provide argument.";
+  throw std::invalid_argument(msg);
 }
+AccTriple AccElement::B(unsigned int turn) const
+{
+  string msg="B-Field of "+type_string()+" may depend on orbit! Please provide argument.";
+  throw std::invalid_argument(msg);
+}
+// AccTriple AccElement::B(AccPair orbit, unsigned int turn) const
+// {
+//   string msg="B-Field of "+type_string()+" not implemented.";
+//   throw std::invalid_argument(msg);
+// }
+
 
 
 // Drift: B=0
@@ -177,6 +190,18 @@ AccTriple Corrector::B() const
    AccTriple tmp; 
    if(plane==V) tmp.z=strength;
    else if(plane==H) tmp.x=strength;
+   return tmp.tilt(this->dpsi);
+ }
+
+
+// RFdipole
+AccTriple RFdipole::B(unsigned int turn) const
+ {
+   AccTriple tmp;
+   double phi = turn*Qrf0 + turn*(turn+1)/2 * dQrf;
+   double rfStrength = strength * cos(2*M_PI*phi);
+   if(plane==V) tmp.z = rfStrength;
+   else if(plane==H) tmp.x = rfStrength;
    return tmp.tilt(this->dpsi);
  }
 
@@ -217,3 +242,144 @@ AccTriple Sextupole::B(AccPair orbit) const
    
    return tmp.tilt(this->dpsi);
  }
+
+
+
+
+// ============ printElegant ==========================
+string Drift::printElegant() const
+{
+  stringstream s;
+  s << name <<" : DRIF, l="<< length << endl;
+  return s.str();
+}
+
+string Dipole::printElegant() const
+{
+  stringstream s;
+  s << name <<" : CSBEND, "
+    <<"l="<< length <<", "
+    <<"angle="<< strength*length <<", "
+    <<"e1=0, e2=0, "   //not implemented
+    <<"synch_rad=1, isr=1, use_rad_dist=0"
+    << endl;
+  return s.str();
+}
+
+string Corrector::printElegant() const
+{
+  stringstream s;
+  if (plane == H)
+    s << name <<" : VKICK, "; //! plane==H => horizontal field => vertical kick
+  else if (plane == V)
+    s << name <<" : HKICK, ";
+  s <<"l="<< length
+    << endl;
+  return s.str();
+}
+
+string RFdipole::printElegant() const // same as corrector
+{
+ stringstream s;
+  if (plane == H)
+    s << name <<" : VKICK, "; //! plane==H => horizontal field => vertical kick
+  else if (plane == V)
+    s << name <<" : HKICK, ";
+  s <<"l="<< length
+    << endl;
+  return s.str();
+}
+
+string Quadrupole::printElegant() const
+{
+  stringstream s;
+  s << name <<" : QUAD, "
+    <<"l="<< length <<", ";
+  if (family == F)
+    s  <<"k1="<< strength <<", ";
+  else if (family == D)
+    s  <<"k1="<< -strength <<", ";
+  s <<"fringe_type=fixed-strength, ffringe=0"
+    << endl;
+  return s.str();
+}
+
+string Sextupole::printElegant() const
+{
+ stringstream s;
+  s << name <<" : SEXT, "
+    <<"l="<< length <<", ";
+  if (family == F)
+    s  <<"k2="<< strength <<", ";
+  else if (family == D)
+    s  <<"k2="<< -strength <<", ";
+  s <<"ffringe=0"
+    << endl;
+  return s.str();
+}
+
+
+
+
+// ============ printLaTeX ==========================
+string Drift::printLaTeX() const
+{
+  return getLaTeXDrift(length);
+}
+
+string Dipole::printLaTeX() const
+{
+  stringstream s;
+  s << "\\dipole{"<< name <<"}{"<< length <<"}{"<< strength*length*180/M_PI <<"}" << endl;
+  return s.str();
+}
+
+string Corrector::printLaTeX() const
+{
+  stringstream s;
+  s << "\\kicker{"<< name <<"}{"<< length <<"}" << endl;
+  return s.str();
+}
+
+string RFdipole::printLaTeX() const // same as corrector
+{
+ stringstream s;
+  s << "\\kicker{"<< name <<"}{"<< length <<"}" << endl;
+  return s.str();
+}
+
+string Quadrupole::printLaTeX() const
+{
+  stringstream s;
+  s << "\\quadrupole{"<< name <<"}{"<< length <<"}" << endl;
+  return s.str();
+}
+
+string Sextupole::printLaTeX() const
+{
+ stringstream s;
+  s << "\\sextupole{"<< name <<"}{"<< length <<"}" << endl;
+  return s.str();
+}
+
+
+
+// Drift element for LaTeX (used by Drift::printLaTeX and AccLattice::latexexport)
+//maximum drift length 2.9m in lattice package -> split longer drifts
+string getLaTeXDrift(double driftlength)
+{
+  if (fabs(driftlength) < 1e-6)
+    return "";
+
+  std::stringstream s;
+  int factor = driftlength/2.9 +1;
+    if (factor > 1) { 
+      driftlength /= factor;
+      for (int i=0; i<factor; i++)
+	s << "\\drift{" << driftlength << "}"<< endl;
+    }
+    else {
+      s << "\\drift{" << driftlength << "}"<< endl; //drift
+    }
+    return s.str();
+}

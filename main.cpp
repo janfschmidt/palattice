@@ -54,6 +54,7 @@ void usage()
   cout << "     else a MadX-twiss file ([project]/madx/[reference])" << endl;
   cout << "     or the name of elegant output files ([project]/elegant/[reference].clo & [project]/elegant/[reference].param)." << endl;
   cout << "     MadX or elegant is chosen by -s option." << endl;
+  cout << "* -x Additionally creates elegant compliant lattice ([project]/inout/lattice.lte)." << endl;
   cout << "* -h displays this help" << endl;
   cout << "Bsupply version:" <<endl<<gitversion() << endl << endl;
 }
@@ -80,6 +81,7 @@ int main (int argc, char *argv[])
   bool elsa = false;            // true: orbit, correctors, k & m read from /sgt/elsa/bpm/...
   bool diff = false;            // true: "harmcorr mode", calculate difference of two "Spuren"...
   bool allout = false;          // true: additional output files (orbit, field, bpms, ...)
+  bool exp = false;          // true: create elegant compliant lattice output
   char spuren[20] = "dummy";
   char Reference[50] = "dummy";
   string ignoreFile = "NULL";
@@ -117,7 +119,7 @@ int main (int argc, char *argv[])
     }
   }
 
-  while ((opt = getopt(argc, argv, ":n:p:s:r:e:t:f:F:c:C:d:m:i:ah")) != -1) {
+  while ((opt = getopt(argc, argv, ":n:p:s:r:e:t:f:F:c:C:d:m:i:axh")) != -1) {
     switch(opt) {
     case 'n':
       default_n_samp = false;
@@ -171,6 +173,9 @@ int main (int argc, char *argv[])
     case 'a':
       allout = true;
       break;
+    case 'x':
+      exp = true;
+      break;
     case 'h':
       usage();
       return 0;
@@ -216,7 +221,7 @@ int main (int argc, char *argv[])
   if (simTool == madx) {
     snprintf(tmp, 100, "TITLE,LENGTH,ORIGIN,PARTICLE");
     metadata.madximport(tmp, file.lattice.c_str());
-  circumference = strtod(metadata.getbyLabel("LENGTH").c_str(), NULL);
+    circumference = strtod(metadata.getbyLabel("LENGTH").c_str(), NULL);
   }
   else {
     metadata.add("ORIGIN", "Elegant");
@@ -247,7 +252,22 @@ int main (int argc, char *argv[])
   snprintf(tmp, 100, "%d points per turn", n_samp);
   metadata.add("Field sampling", tmp);
   
-  
+
+
+   // output
+  cout << endl;
+  cout << "--------------------------------------------" << endl;
+  cout << "Bsupply: calculate magnetic field & spectrum" << endl;
+  if (elsa) cout << "         ELSA-mode" << endl;
+  if (diff) cout << "         harmcorr analysis (difference-mode)" << endl;
+  cout << "                    version:" <<endl<<gitversion() << endl;
+  cout << "--------------------------------------------" << endl;
+  cout << "* "<<n_samp<<" sampling points along ring" << endl;
+  cout << "* maximum frequency used for B-field evaluation:  Bx->"<<fmax_x <<", Bz->"<<fmax_z << endl;
+  cout << "* frequency components cutted if amplitude below: Bx->"<<ampcut_x<<" 1/m, Bz->"<<ampcut_z<< " 1/m" << endl;
+
+
+
   // initialize Lattice
   AccLattice lattice(circumference, end); // refPos=end used by MAD-X
   AccLattice Ref_lattice(circumference, end);
@@ -262,19 +282,7 @@ int main (int argc, char *argv[])
   FunctionOfPos<AccPair> Ref_bpmorbit(circumference, gsl_interp_akima_periodic, circumference);
   FunctionOfPos<AccPair> trajectory(circumference, gsl_interp_akima);
 
-
-
-  // output
-  cout << endl;
-  cout << "--------------------------------------------" << endl;
-  cout << "Bsupply: calculate magnetic field & spectrum" << endl;
-  if (elsa) cout << "         ELSA-mode" << endl;
-  if (diff) cout << "         harmcorr analysis (difference-mode)" << endl;
-  cout << "                    version:" <<endl<<gitversion() << endl;
-  cout << "--------------------------------------------" << endl;
-  cout << "* "<<n_samp<<" sampling points along ring" << endl;
-  cout << "* maximum frequency used for B-field evaluation:  Bx->"<<fmax_x <<", Bz->"<<fmax_z << endl;
-  cout << "* frequency components cutted if amplitude below: Bx->"<<ampcut_x<<" 1/m, Bz->"<<ampcut_z<< " 1/m" << endl;
+ 
 
 
   // read lattice (magnet positions,strengths,misalignments) and  particle orbit
@@ -308,8 +316,8 @@ int main (int argc, char *argv[])
   }
 
   cout << "* "<<lattice.size(dipole)<<" dipoles, "<<lattice.size(quadrupole)<<" quadrupoles, "
-       <<lattice.size(sextupole)<<" sextupoles, "<<lattice.size(corrector)<<" kickers read"<<endl
-       <<"  from "<<file.lattice<<endl;
+       <<lattice.size(sextupole)<<" sextupoles, "<<lattice.size(corrector)<<" kickers, "<<lattice.size(rfdipole)<<" rfdipoles read"<<endl
+       <<"  as " <<lattice.circumference << "m lattice from " <<file.lattice<<endl;
   if (ignoreFile!="NULL")
     cout <<"* "<<lattice.ignoredElements()<<" elements ignored due to match with " << ignoreFile<<endl;
   cout  << "* "<<bpmorbit.samples()<<" BPMs(@Quad) read"<<endl
@@ -430,6 +438,7 @@ int main (int argc, char *argv[])
     if (allout) {
       //lattice
       lattice.print(file.out("lattice", t.tag(i)).c_str());
+      lattice.latexexport((file.path+"/inout/lattice.tex").c_str());
       //BPM data
       bpmorbit.out(file.out("bpms", t.tag(i)).c_str());
       trajectory.out(file.out("trajectory", t.tag(i)).c_str());
@@ -445,6 +454,10 @@ int main (int argc, char *argv[])
       bz.eval_out(0.1, B.circ, file.out("eval_z", t.tag(i)).c_str());
       //check dipole lengths
       B.magnetlengths(lattice, file.out("dipolelengths", t.tag(i)).c_str());
+    }
+    //elegant lattice
+    if (exp) {
+      lattice.elegantexport((file.path+"/inout/lattice.lte").c_str());
     }
 
     //export spectrum files for polarization-calculation (TBMTsolver)

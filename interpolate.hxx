@@ -171,6 +171,12 @@ void Interpolate<T>::init()
     cout << "ERROR: Interpolate::init(): Interpolation initialisation called twice. Skip." << endl;
     return;
   }
+  if (this->size() < 2) {
+    stringstream msg;
+    msg << "ERROR: Interpolate::init(): Interpolation not possible for only " << _x.size() << " datapoints. Skip.";
+    throw std::runtime_error(msg.str());
+  }
+
 
   initThis(); // specialized function for each data type
 
@@ -294,7 +300,8 @@ void Interpolate<T>::interp_out(double stepwidth, const char *filename)
   
   file <<setw(w)<< "position" <<"\t"<< this->header() << endl;
   file <<setiosflags(ios::fixed)<<showpoint<<setprecision(6);
-  if (interpRange() > 0) {
+  if (size() > 0) {
+    cout << "interpRange " << interpRange() << endl; //debug
     for (double s=interpMin(); s<=interpMax(); s+=stepwidth) {
       file <<setw(w)<< s <<setw(w)<< this->interp(s)<< endl;
     }

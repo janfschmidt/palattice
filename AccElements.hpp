@@ -18,7 +18,7 @@
 using namespace std;
 
 
-enum element_type{dipole,quadrupole,corrector,sextupole,drift};
+enum element_type{dipole, quadrupole, corrector, rfdipole, sextupole, drift}; //! keep dipole as first and drift as last
 enum element_plane{H,V,L};    //horizontal,vertical,longitudinal
 enum element_family{F,D};     //focus,defocus
 
@@ -28,8 +28,6 @@ protected:
   static AccPair zeroPair;
   static AccTriple zeroTriple;
 
-  AccTriple misalign(AccTriple perfect) const; // apply misalignments (e.g. for B)
-
   // data entries are allowed to be public: AccLattice class uses const AccElement!
   // (everybody is allowed to modify an Element which is not mounted in a Lattice)
 public:
@@ -37,20 +35,29 @@ public:
   double length;
   const element_type type;
   double strength;
+  double Qrf0;
+  double dQrf;
   
   //alignment errors:
   double dpsi; //rotation around s axis in rad
 
 
   AccElement(string _name, double _length,element_type _type, double _strength=0.)
-    : name(_name),length(_length),type(_type),strength(_strength),dpsi(0.) {}
+    : name(_name),length(_length),type(_type),strength(_strength),Qrf0(0.),dQrf(0.),dpsi(0.) {}
   virtual ~AccElement() {};
   virtual AccElement& operator=(const AccElement* other);
 
   virtual AccElement* clone() const =0;
 
+  // magnetic field with all arguments, has to be implemented in each derived class
+  virtual AccTriple B(AccPair orbit, unsigned int turn) const =0;
+
+  // magnetic field defaults with less arguments. throws exception.
+  // => implement the "wanted" cases in derived classes
   virtual AccTriple B() const;
   virtual AccTriple B(AccPair orbit) const;
+  virtual AccTriple B(unsigned int turn) const;
+
   double hKick_mrad() const {return 1000 * B().x * length;}
   double hKick_mrad(AccPair orbit) const {return 1000 * B(orbit).x * length;}
 
@@ -60,6 +67,8 @@ public:
   string type_string() const;    // string output of element type
 
   string print() const;          // string output of (some) element properties
+  virtual string printElegant() const =0;  // string output of element definition in elegant format
+  virtual string printLaTeX() const =0;  // string output of element definition in LaTeX format (using lattice package by Jan Schmidt <schmidt@physik.uni-bonn.de>)
   string printHeader() const;    // string output of header-line(s) for print()
 
 };
@@ -76,11 +85,16 @@ public:
   virtual Drift* clone() const {return new Drift(*this);}
 
   virtual AccTriple B() const;
+  virtual AccTriple B(AccPair orbit) const {return B();}
+  virtual AccTriple B(unsigned int turn) const {return B();}
+  virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B();}
+  string printElegant() const;
+  string printLaTeX() const;
 };
 
 
 
-// two magnet classes:
+// two abstract magnet classes:
 //  PlaneMagnet - homogeneous field in one plane e.g. dipole,corrector (occur as horizontal,vertical,longitudinal)
 //  FamilyMagnet - field in multiple plane e.g. quad, sext (occur as focus and defocus)
 
@@ -90,7 +104,6 @@ protected:
 
   PlaneMagnet(string _name, double _length,element_type _type, element_plane _plane, double _strength=0.)
     : AccElement(_name,_length,_type,_strength), plane(_plane) {}
-
 };
 
 class FamilyMagnet : public AccElement {
@@ -99,7 +112,6 @@ protected:
 
   FamilyMagnet(string _name, double _length,element_type _type, element_family _family, double _strength=0.)
     : AccElement(_name,_length,_type,_strength), family(_family) {}
-
 };
 
 
@@ -120,7 +132,10 @@ public:
 
   virtual AccTriple B() const;
   virtual AccTriple B(AccPair orbit) const {return B();}
-
+  virtual AccTriple B(unsigned int turn) const {return B();}
+  virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B();}
+  string printElegant() const;
+  string printLaTeX() const;
 };
 
 
@@ -134,7 +149,27 @@ public:
 
   virtual AccTriple B() const;
   virtual AccTriple B(AccPair orbit) const {return B();}
+  virtual AccTriple B(unsigned int turn) const {return B();}
+  virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B();}
+  string printElegant() const;
+  string printLaTeX() const;
 };
+
+
+class RFdipole : public PlaneMagnet {
+public:
+  RFdipole(string _name, double _length, double _strength=0., element_plane _plane=H)
+    : PlaneMagnet(_name,_length,rfdipole,_plane,_strength) {}
+  ~RFdipole() {}
+
+  virtual RFdipole* clone() const {return new RFdipole(*this);}
+
+  virtual AccTriple B(unsigned int turn) const;
+  virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B(turn);}
+  string printElegant() const;
+  string printLaTeX() const;
+};
+
 
 
 // ====== ATTENTION ====================================================================
@@ -152,7 +187,9 @@ public:
   virtual Quadrupole* clone() const {return new Quadrupole(*this);}
 
   virtual AccTriple B(AccPair orbit) const;
-
+  virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B(orbit);}
+  string printElegant() const;
+  string printLaTeX() const;
 };
 
 
@@ -165,8 +202,13 @@ public:
   virtual Sextupole* clone() const {return new Sextupole(*this);}
 
   virtual AccTriple B(AccPair orbit) const;
-
+  virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B(orbit);}
+  string printElegant() const;
+  string printLaTeX() const;
 };
+
+
+string getLaTeXDrift(double driftlength); // Drift element for LaTeX (used by Drift::printLaTeX and AccLattice::latexexport)
 
 
 
