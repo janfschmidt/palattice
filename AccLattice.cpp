@@ -453,6 +453,7 @@ void AccLattice::madximport(const char *madxTwissFile)
   RFdipole hRFdip("defaultName", 0., 0., V);
   Quadrupole Quad("defaultName", 0., 0., F); // madx uses negative sign "strength" for D magnets,
   Sextupole Sext("defaultName", 0., 0., F);  // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
+  Cavity Cav("defaultName");
 
   if (refPos != end)
     cout << "WARNING: AccLattice::madximport(): The input file (MAD-X twiss) uses element end as positions." << endl
@@ -544,6 +545,13 @@ void AccLattice::madximport(const char *madxTwissFile)
       else {
 	this->set(s, hCorr);
       }
+    }
+    else if (tmp == "\"RFCAVITY\"") {
+      madxTwiss >> tmpName >> s >> x >> y >> Cav.length;
+      Cav.name = removeQuote(tmpName);
+      if (refPos == begin) s -= Cav.length;
+      else if (refPos == center) s -= Cav.length/2;
+      this->set(s, Cav);
     }
 
 
@@ -639,6 +647,7 @@ void AccLattice::elegantimport(const char *elegantParamFile)
   Corrector hCorr("defaultName", 0., 0., V);
   Quadrupole Quad("defaultName", 0., 0., F); // elegant uses negative sign "strength" for D magnets,
   Sextupole Sext("defaultName", 0., 0., F);  // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
+  Cavity Cav("defaultName", 0.);
   Drift empty_space("defaultName", 0.);
 
   if (refPos != end)
@@ -688,6 +697,10 @@ void AccLattice::elegantimport(const char *elegantParamFile)
      else if (row_old.type=="HKICK") {
        element = &hCorr;
        element->strength = sin(kick) / l;  // 1/R from kick-angle
+     }
+     else if (row_old.type=="RFCA") {
+       element = &Cav;
+       element->strength = 0.;
      }
      else
        element = &empty_space; //Drift

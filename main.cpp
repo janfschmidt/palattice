@@ -316,7 +316,8 @@ int main (int argc, char *argv[])
   }
 
   cout << "* "<<lattice.size(dipole)<<" dipoles, "<<lattice.size(quadrupole)<<" quadrupoles, "
-       <<lattice.size(sextupole)<<" sextupoles, "<<lattice.size(corrector)<<" kickers, "<<lattice.size(rfdipole)<<" rfdipoles read"<<endl
+       <<lattice.size(sextupole)<<" sextupoles, "<<lattice.size(corrector)<<" kickers, "
+       <<lattice.size(rfdipole)<<" rfdipoles, "<<lattice.size(cavity)<<" cavities read"<<endl
        <<"  as " <<lattice.circumference << "m lattice from " <<file.lattice<<endl;
   if (ignoreFile!="NULL")
     cout <<"* "<<lattice.ignoredElements()<<" elements ignored due to match with " << ignoreFile<<endl;

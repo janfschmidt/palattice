@@ -99,6 +99,8 @@ string AccElement::type_string() const
     return "RF-Dipole";
   case sextupole:
     return "Sextupole";
+  case cavity:
+    return "Cavity";
   case drift:
     return "Drift";
   }
@@ -169,6 +171,12 @@ AccTriple AccElement::B(unsigned int turn) const
 
 // Drift: B=0
 AccTriple Drift::B() const
+{
+  return zeroTriple;
+}
+
+// Cavity: B=0
+AccTriple Cavity::B() const
 {
   return zeroTriple;
 }
@@ -260,6 +268,25 @@ string Drift::printSimTool(simulationTool t) const
     <<"L="<< length <<";"<<endl;
   return s.str();
 }
+
+string Cavity::printSimTool(simulationTool t) const
+{
+  stringstream s;
+  string nameInTool;
+  if (t == elegant)
+    nameInTool = "RFCA";
+  else
+    nameInTool = "RFCAVITY";
+
+  s << name <<" : "<< nameInTool <<", "
+    <<"L="<< length <<", "
+    <<"VOLT=0.0";
+  if (t==madx)
+    s << ", HARMON=0;";
+  s << " ! Voltage and frequency not implemented in pole/Bsupply. Please set manually." <<endl;
+  return s.str();
+}
+
 
 string Dipole::printSimTool(simulationTool t) const
 {
@@ -367,6 +394,13 @@ string Sextupole::printSimTool(simulationTool t) const
 string Drift::printLaTeX() const
 {
   return getLaTeXDrift(length);
+}
+
+string Cavity::printLaTeX() const
+{
+  stringstream s;
+  s << "\\cavity{"<< name <<"}{"<< length <<"}" << endl;
+  return s.str();
 }
 
 string Dipole::printLaTeX() const

@@ -18,7 +18,7 @@
 using namespace std;
 
 
-enum element_type{dipole, quadrupole, corrector, rfdipole, sextupole, drift}; //! keep dipole as first and drift as last
+enum element_type{dipole, quadrupole, corrector, rfdipole, sextupole, cavity, drift}; //! keep dipole as first and drift as last
 enum element_plane{H,V,L};    //horizontal,vertical,longitudinal
 enum element_family{F,D};     //focus,defocus
 
@@ -84,6 +84,25 @@ public:
   
   virtual Drift* clone() const {return new Drift(*this);}
 
+  virtual AccTriple B() const;
+  virtual AccTriple B(AccPair orbit) const {return B();}
+  virtual AccTriple B(unsigned int turn) const {return B();}
+  virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B();}
+  string printSimTool(simulationTool t) const;
+  string printLaTeX() const;
+};
+
+
+
+// cavity (no B-field)
+class Cavity : public AccElement {
+public:
+  Cavity(string _name, double _length=0.)
+    : AccElement(_name,_length,cavity) {}
+  ~Cavity() {}
+
+  virtual Cavity* clone() const {return new Cavity(*this);}
+  
   virtual AccTriple B() const;
   virtual AccTriple B(AccPair orbit) const {return B();}
   virtual AccTriple B(unsigned int turn) const {return B();}
