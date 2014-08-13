@@ -14,6 +14,8 @@
 #include <iostream>
 #include <vector>
 #include "AccElements.hpp"
+#include "types.hpp"
+
 
 typedef std::map<double,AccElement*>::iterator AccIterator;
 typedef std::map<double,AccElement*>::const_iterator const_AccIterator;
@@ -80,15 +82,20 @@ public:
   vector<string> getIgnoreList() const {return ignoreList;}
   unsigned int ignoredElements() const {return ignoreCounter;}
   string refPos_string() const;
-  string getElegantDef(element_type _type) const; // return elegant compliant element definitions for given type
+  string getElementDefs(simulationTool tool,element_type _type) const; // return elegant or madx compliant element definitions for given type
+  string getLine(simulationTool tool) const; // return lattice in elegant or madx compliant "LINE=(..." format
+  string getSequence() const;                // return lattice in madx compliant "SEQUENCE" format
 
 
   // output (stdout or file)
   // If no filename is given, print to stdout.
   void print(const char *filename="") const;                     // print lattice.
   void print(element_type _type, const char *filename="") const; // print all elements of one type.
-  void elegantexport(const char *filename="") const;             // print lattice readable by elegant.
+  void simToolExport(simulationTool tool, const char *filename="", madxLatticeType ltype=sequence) const; // print lattice readable by elegant or madx
   void latexexport(const char *filename="") const;             // print lattice readable by LaTeX (using lattice package by Jan Schmidt <schmidt@physik.uni-bonn.de>)
+  // "shortcuts:"
+  void elegantexport(const char *file="") const {simToolExport(elegant,file);}
+  void madxexport(const char *file="",madxLatticeType t=sequence) const {simToolExport(madx,file,t);}
 
 };
 

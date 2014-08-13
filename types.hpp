@@ -12,6 +12,7 @@
 
 
 enum simulationTool{madx,elegant};
+enum madxLatticeType{line,sequence};
 
 // ----- accelerator coordinates (2D "Pair" & 3D "Triple") -----
 

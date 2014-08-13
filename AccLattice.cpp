@@ -439,7 +439,7 @@ void AccLattice::madximport(const char *madxTwissFile)
   string tmp, tmpName;
   string expectedColumns[11] = {"KEYWORD","NAME","S","X","Y","L","ANGLE","K1L","K2L","VKICK","HKICK"};
   unsigned int j;
-  double s, angle, k1l, k2l, vkick; 
+  double s, angle, k1l, k2l, vkick, hkick; 
   string x, y;
 
   fstream madxTwiss;
@@ -450,6 +450,7 @@ void AccLattice::madximport(const char *madxTwissFile)
   Corrector vCorr("defaultName", 0., 0., H); // vertical kicker has HORIZONTAL field
   Corrector hCorr("defaultName", 0., 0., V);
   RFdipole vRFdip("defaultName", 0., 0., H); // vertical kicker has HORIZONTAL field
+  RFdipole hRFdip("defaultName", 0., 0., V);
   Quadrupole Quad("defaultName", 0., 0., F); // madx uses negative sign "strength" for D magnets,
   Sextupole Sext("defaultName", 0., 0., F);  // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
 
@@ -524,6 +525,27 @@ void AccLattice::madximport(const char *madxTwissFile)
 	this->set(s, vCorr);
       }
     }
+    else if (tmp == "\"HKICKER\"") {
+      madxTwiss >> tmpName >> s >> x >> y >> hCorr.length >> angle >> k1l >> k2l >> vkick >> hkick;
+      hCorr.name = removeQuote(tmpName);
+      hCorr.strength = sin(hkick)/hCorr.length;   // 1/R from kick-angle
+      if (refPos == begin) s -= hCorr.length;
+      else if (refPos == center) s -= hCorr.length/2;
+      //RF dipole:
+      if (hCorr.name.substr(0,6) == "RFDIP.") {
+	hRFdip.name = hCorr.name;
+	hRFdip.length = hCorr.length;
+	hRFdip.strength = hCorr.strength;
+	//hRFdip.Qrf0 = 0.625;              // !! hardcoded RF-tune values !!
+	//hRFdip.dQrf = 5.402e-6;
+	this->set(s, hRFdip);
+      }
+      //Corrector:
+      else {
+	this->set(s, hCorr);
+      }
+    }
+
 
   }
   madxTwiss.close();
@@ -1016,8 +1038,8 @@ void AccLattice::print(element_type _type, const char *filename) const
 
 
 
-// return list of elegant compliant element definitions for given type
-string AccLattice::getElegantDef(element_type _type) const
+// return list of elegant or madx compliant element definitions for given type
+string AccLattice::getElementDefs(simulationTool tool, element_type _type) const
 {
   stringstream s;
   const_AccIterator it=firstCIt(_type);
@@ -1026,7 +1048,7 @@ string AccLattice::getElegantDef(element_type _type) const
     return "";
   s << "! " << it->second->type_string() << "s" << endl;
   for (; it!=elements.end(); it=nextCIt(_type, it)) {
-    s << it->second->printElegant();
+    s << it->second->printSimTool(tool);
   }
   s << endl;
 
@@ -1034,34 +1056,25 @@ string AccLattice::getElegantDef(element_type _type) const
 }
 
 
-// print lattice readable by elegant. If no filename is given, print to stdout
-void AccLattice::elegantexport(const char *filename) const
+// return lattice in elegant or madx compliant "LINE=(..." format
+// including definition of drifts in-between elements
+string AccLattice::getLine(simulationTool tool) const
 {
-  const_AccIterator it=elements.begin();
-  std::stringstream s;
-  std::stringstream msg;
-  fstream file;
-  unsigned int n;
-
-  //write text to s
-  s << "! Lattice for ELEGANT" << endl
-    << "!" << endl;
-  s << "! created at " << timestamp() << endl;
-  s << "! by pole/Bsupply, version " << gitversion() << endl
-    << endl;
-  s << "BEGIN : MARK" << endl << endl;
-
-  //element definitions
-  for (element_type type=dipole; type<drift; type=element_type(type+1)) {
-    s << this->getElegantDef(type);
-  }
-  s << endl;
-
-  //Drifts
+  std::stringstream s, line;
   double driftlength, lastend;
-  s << "! Drifts" << endl;
-  it=elements.begin();
-  n=0;
+
+  line << "BEGIN : ";
+  if (tool==elegant)
+    line << "MARK";
+  else
+    line << "MARKER;";
+  line << endl << endl;
+
+  s << "! Drifts (caculated from element positions)" << endl; //Drifts
+  line << "LATTICE_BY_BSUPPLY : LINE=(BEGIN";                 //line
+
+  const_AccIterator it=elements.begin();
+  unsigned int n=0;
   for (; it!=elements.end(); ++it) {
     if (it == elements.begin()) {
       driftlength = locate(it, begin);
@@ -1070,22 +1083,77 @@ void AccLattice::elegantexport(const char *filename) const
       driftlength = locate(it, begin) - lastend;
     }
     lastend = locate(it, end);
-    s << "DRIFT_" << n << " : DRIF, l=" << driftlength << endl;
-    n++;
+    if (driftlength > ZERO_DISTANCE) { //ignore very short drifts
+      s << "DRIFT_" << n << " : ";
+      if (tool==elegant)
+	s << "DRIF, l=";
+      else
+	s << "DRIFT, L=";
+      s << driftlength <<";"<< endl;  //drift definition
+      line << ", DRIFT_" << n;  //insert drift in line
+      n++;
+    }
+    line <<", "<< it->second->name; //insert element in line
   }
-  s << "DRIFT_" << n << " : DRIF, l=" << circumference - lastend << endl;   //drift to end
+  //final drift to end
+  if ( (circumference - lastend) > ZERO_DISTANCE ) { //ignore very short drift
+    s << "DRIFT_" << n << " : ";
+    if (tool==elegant)
+      s << "DRIF, l=";
+    else
+      s << "DRIFT, L=";
+    s << this->circumference - lastend <<";"<<endl;
+    line << ", DRIFT_" << n;   // drift to end
+  }
+
+  s << endl<<endl << line.str() << ")";
+  if (tool==madx)
+    s << ";";
+
+  return s.str();
+}
+
+
+// return lattice in madx compliant "SEQUENCE" format
+string AccLattice::getSequence() const
+{
+  std::stringstream s;
+
+  return s.str();
+}
+
+
+// print lattice readable by elegant or madx. If no filename is given, print to stdout
+void AccLattice::simToolExport(simulationTool tool, const char *filename, madxLatticeType ltype) const
+{
+  std::stringstream s;
+  std::stringstream msg;
+  fstream file;
+
+  //write text to s
+  if (tool==elegant)
+    s << "! Lattice for ELEGANT" << endl;
+  else
+    s << "! Lattice for MAD-X" << endl;
+  s << "!" << endl<<"! created at " << timestamp() << endl;
+  s << "! by pole/Bsupply, version " << gitversion() << endl
+    << endl;
+
+
+  //element definitions
+  for (element_type type=dipole; type<drift; type=element_type(type+1)) {
+    s << this->getElementDefs(tool,type);
+  }
   s << endl;
 
-  //sequence
-  s << "LATTICE_BY_BSUPPLY_1 : LINE=(BEGIN, ";
-  it=elements.begin();
-  n=0;
-  for (; it!=elements.end(); ++it) {
-    s << "DRIFT_" << n << ", "
-      << it->second->name << ", ";
-    n++;
+  //lattice
+  if (tool == madx && ltype == sequence) {
+    s << getSequence();
   }
-  s << "DRIFT_" << n << ")";   // drift to end
+  else {
+    s << getLine(tool);
+  }
+  
 
 
   // output of s

@@ -246,75 +246,117 @@ AccTriple Sextupole::B(AccPair orbit) const
 
 
 
-// ============ printElegant ==========================
-string Drift::printElegant() const
+// ============ printSimTool (elegant or madx) ======================
+string Drift::printSimTool(simulationTool t) const
 {
   stringstream s;
-  s << name <<" : DRIF, l="<< length << endl;
+  string nameInTool;
+  if (t == elegant)
+    nameInTool = "DRIF";
+  else
+    nameInTool = "DRIFT";
+
+  s << name <<" : "<< nameInTool <<", "
+    <<"L="<< length <<";"<<endl;
   return s.str();
 }
 
-string Dipole::printElegant() const
+string Dipole::printSimTool(simulationTool t) const
 {
   stringstream s;
-  s << name <<" : CSBEND, "
-    <<"l="<< length <<", "
-    <<"angle="<< strength*length <<", "
-    <<"e1=0, e2=0, "   //not implemented
-    <<"synch_rad=1, isr=1, use_rad_dist=0"
-    << endl;
+  string nameInTool;
+  if (t == elegant)
+    nameInTool = "CSBEND";
+  else
+    nameInTool = "SBEND";
+
+  s << name <<" : "<< nameInTool <<", "
+    <<"L="<< length <<", "
+    <<"ANGLE="<< strength*length;
+  if (t == elegant) {
+    s <<", e1=0, e2=0, "   //not implemented
+      <<"synch_rad=1, isr=1, use_rad_dist=0";
+  }
+  s <<";"<< endl;
   return s.str();
 }
 
-string Corrector::printElegant() const
+string Corrector::printSimTool(simulationTool t) const
 {
   stringstream s;
+  string nameInTool;
+  if (t == elegant)
+    nameInTool = "KICK";
+  else
+    nameInTool = "KICKER";
+ 
   if (plane == H)
-    s << name <<" : VKICK, "; //! plane==H => horizontal field => vertical kick
+    s << name <<" : V"<< nameInTool <<", "; //! plane==H => horizontal field => vertical kick
   else if (plane == V)
-    s << name <<" : HKICK, ";
-  s <<"l="<< length
-    << endl;
+    s << name <<" : H"<< nameInTool <<", ";
+  s <<"L="<< length <<", "
+    <<"KICK="<< strength
+    <<";"<< endl;
   return s.str();
 }
 
-string RFdipole::printElegant() const // same as corrector
+string RFdipole::printSimTool(simulationTool t) const // same as corrector
+{
+  stringstream s;
+  string nameInTool;
+  if (t == elegant)
+    nameInTool = "KICK";
+  else
+    nameInTool = "KICKER";
+ 
+  if (plane == H)
+    s << name <<" : V"<< nameInTool <<", "; //! plane==H => horizontal field => vertical kick
+  else if (plane == V)
+    s << name <<" : H"<< nameInTool <<", ";
+  s <<"L="<< length <<", "
+    <<"KICK="<< strength
+    <<"; ! This is a RFDipole in pole/Bsupply"<< endl;
+  return s.str();
+}
+
+string Quadrupole::printSimTool(simulationTool t) const
+{
+  stringstream s;
+  string nameInTool;
+  if (t == elegant)
+    nameInTool = "QUAD";
+  else
+    nameInTool = "QUADRUPOLE";
+
+  s << name <<" : "<< nameInTool <<", "
+    <<"L="<< length <<", ";
+  if (family == F)
+    s  <<"K1="<< strength;
+  else if (family == D)
+    s  <<"K1="<< -strength;
+  if (t == elegant) {
+    s <<", fringe_type=fixed-strength, ffringe=0";
+  }
+  s <<";"<< endl;
+  return s.str();
+}
+
+string Sextupole::printSimTool(simulationTool t) const
 {
  stringstream s;
-  if (plane == H)
-    s << name <<" : VKICK, "; //! plane==H => horizontal field => vertical kick
-  else if (plane == V)
-    s << name <<" : HKICK, ";
-  s <<"l="<< length
-    << endl;
-  return s.str();
-}
+ string nameInTool;
+  if (t == elegant)
+    nameInTool = "SEXT";
+  else
+    nameInTool = "SEXTUPOLE";
 
-string Quadrupole::printElegant() const
-{
-  stringstream s;
-  s << name <<" : QUAD, "
-    <<"l="<< length <<", ";
+  s << name <<" : "<< nameInTool <<", "
+    <<"L="<< length <<", ";
   if (family == F)
-    s  <<"k1="<< strength <<", ";
+    s  <<"K2="<< strength;
   else if (family == D)
-    s  <<"k1="<< -strength <<", ";
-  s <<"fringe_type=fixed-strength, ffringe=0"
-    << endl;
-  return s.str();
-}
-
-string Sextupole::printElegant() const
-{
- stringstream s;
-  s << name <<" : SEXT, "
-    <<"l="<< length <<", ";
-  if (family == F)
-    s  <<"k2="<< strength <<", ";
-  else if (family == D)
-    s  <<"k2="<< -strength <<", ";
-  s <<"ffringe=0"
-    << endl;
+    s  <<"K2="<< -strength;
+  s <<";"<< endl;
   return s.str();
 }
 

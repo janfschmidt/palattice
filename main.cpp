@@ -54,7 +54,7 @@ void usage()
   cout << "     else a MadX-twiss file ([project]/madx/[reference])" << endl;
   cout << "     or the name of elegant output files ([project]/elegant/[reference].clo & [project]/elegant/[reference].param)." << endl;
   cout << "     MadX or elegant is chosen by -s option." << endl;
-  cout << "* -x Additionally creates elegant compliant lattice ([project]/inout/lattice.lte)." << endl;
+  cout << "* -x Additionally creates elegant/madx compliant lattice ([project]/inout/lattice.lte/madx)." << endl;
   cout << "* -h displays this help" << endl;
   cout << "Bsupply version:" <<endl<<gitversion() << endl << endl;
 }
@@ -455,9 +455,10 @@ int main (int argc, char *argv[])
       //check dipole lengths
       B.magnetlengths(lattice, file.out("dipolelengths", t.tag(i)).c_str());
     }
-    //elegant lattice
+    // lattice export
     if (exp) {
       lattice.elegantexport((file.path+"/inout/lattice.lte").c_str());
+      lattice.madxexport((file.path+"/inout/lattice.madx").c_str(),line);
     }
 
     //export spectrum files for polarization-calculation (TBMTsolver)
