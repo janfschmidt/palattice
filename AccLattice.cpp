@@ -1128,9 +1128,26 @@ string AccLattice::getLine(simulationTool tool) const
 
 
 // return lattice in madx compliant "SEQUENCE" format
-string AccLattice::getSequence() const
+string AccLattice::getSequence(Anchor refer) const
 {
   std::stringstream s;
+
+  s << "LATTICE_BY_BSUPPLY : SEQUENCE, REFER=";
+  if (refer==center)
+    s << "CENTRE, ";
+  else if (refer==begin)
+    s << "ENTRY, ";
+  else if (refer==end)
+    s << "EXIT, ";
+  s << "L=" << this->circumference <<";"<< endl;
+
+  s << "BEGIN : MARKER, AT=0.0;" << endl;
+  const_AccIterator it=elements.begin();
+  for (; it!=elements.end(); ++it) {
+    s << it->second->name << ", AT=" << this->locate(it, refer) << ";" << endl;
+  }
+  s << "END : MARKER, AT=" <<this->circumference <<";"<< endl;
+  s << "ENDSEQUENCE;";
 
   return s.str();
 }

@@ -84,7 +84,7 @@ public:
   string refPos_string() const;
   string getElementDefs(simulationTool tool,element_type _type) const; // return elegant or madx compliant element definitions for given type
   string getLine(simulationTool tool) const; // return lattice in elegant or madx compliant "LINE=(..." format
-  string getSequence() const;                // return lattice in madx compliant "SEQUENCE" format
+  string getSequence(Anchor refer=center) const;    // return lattice in madx compliant "SEQUENCE" format
 
 
   // output (stdout or file)

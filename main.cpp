@@ -459,7 +459,7 @@ int main (int argc, char *argv[])
     // lattice export
     if (exp) {
       lattice.elegantexport((file.path+"/inout/lattice.lte").c_str());
-      lattice.madxexport((file.path+"/inout/lattice.madx").c_str(),line);
+      lattice.madxexport((file.path+"/inout/lattice.madx").c_str());
     }
 
     //export spectrum files for polarization-calculation (TBMTsolver)
