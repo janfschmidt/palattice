@@ -43,7 +43,7 @@ AccLattice::AccLattice(const AccLattice &other)
   empty_space = new Drift;
 
   for (const_AccIterator it=other.getItBegin(); it!=other.getItEnd(); ++it) {
-    this->set(it->first, *(it->second));
+    this->mount(it->first, *(it->second));
   }
 }
 
@@ -73,7 +73,7 @@ AccLattice& AccLattice::operator= (const AccLattice other)
   }
 
   for (const_AccIterator it=other.getItBegin(); it!=other.getItEnd(); ++it) {
-    this->set(it->first, *(it->second));
+    this->mount(it->first, *(it->second));
   }
 
   return *this;
@@ -305,9 +305,9 @@ const AccElement* AccLattice::operator[](double pos) const
 
 
 
-// set element (replace if key (pos) already used; check for "free space" to insert element)
+// mount element (replace if key (pos) already used; check for "free space" to insert element)
 // if name is in ignoreList, element is not set and ignoreCounter is increased
-void AccLattice::set(double pos, const AccElement& obj, bool verbose)
+void AccLattice::mount(double pos, const AccElement& obj, bool verbose)
 {
   //ignoreList
   if ( obj.nameMatch(ignoreList) ) {
@@ -329,11 +329,11 @@ void AccLattice::set(double pos, const AccElement& obj, bool verbose)
   stringstream msg;
   
   if (pos < 0.) {
-    cout << "ERROR: AccLattice::set(): Position of Lattice elements must be > 0. " << pos << " is not." <<endl;
+    cout << "ERROR: AccLattice::mount(): Position of Lattice elements must be > 0. " << pos << " is not." <<endl;
     exit(1);
   }
 
-  // empty map (set first element)
+  // empty map (mount first element)
   if (elements.size() == 0) {
     elements[pos] = objPtr->clone();
     if (verbose) cout << objPtr->name << " inserted." << endl;
@@ -391,13 +391,13 @@ void AccLattice::set(double pos, const AccElement& obj, bool verbose)
 }
 
 
-// erase element at position pos
-void AccLattice::erase(double pos)
+// dismount element at position pos
+void AccLattice::dismount(double pos)
 {
   AccIterator it =  elements.find(pos);
 
   if (it == elements.end()) {
-    cout << "WARNING: AccLattice::erase(): There is no element at position "<<pos<< " m. Nothing is erased." << endl;
+    cout << "WARNING: AccLattice::dismount(): There is no element at position "<<pos<< " m. Nothing is dismounted." << endl;
     return;
   }
   elements.erase(it);
@@ -428,7 +428,7 @@ void AccLattice::setIgnoreList(string ignoreFile)
 
 
 
-// set elements from MAD-X Lattice (read from twiss-output)
+// mount elements from MAD-X Lattice (read from twiss-output)
 // ====== ATTENTION ==================================
 // "FamilyMagnets" (Quad,Sext) all of type F, because
 // MAD-X uses different signs of strengths (k,m)
@@ -487,7 +487,7 @@ void AccLattice::madximport(const char *madxTwissFile)
       vDip.strength = angle/vDip.length;   // 1/R (!!! assuming l is arclength (along ref. orbit) !!!)
       if (refPos == begin) s -= vDip.length;
       else if (refPos == center) s -= vDip.length/2;
-      this->set(s, vDip);
+      this->mount(s, vDip);
     }
     else if (tmp == "\"QUADRUPOLE\"") {
       madxTwiss >> tmpName >> s >> x >> y >> Quad.length >> angle >> k1l;
@@ -495,7 +495,7 @@ void AccLattice::madximport(const char *madxTwissFile)
       Quad.strength = k1l/Quad.length;   // k
       if (refPos == begin) s -= Quad.length;
       else if (refPos == center) s -= Quad.length/2;
-      this->set(s, Quad);
+      this->mount(s, Quad);
       // BPMs at quads - Closed orbit not included in lattice, read in separate function of Orbit-class
     }
     else if (tmp == "\"SEXTUPOLE\"") {
@@ -504,7 +504,7 @@ void AccLattice::madximport(const char *madxTwissFile)
       Sext.strength = k2l/Sext.length;
       if (refPos == begin) s -= Sext.length;
       else if (refPos == center) s -= Sext.length/2;
-      this->set(s, Sext);
+      this->mount(s, Sext);
     }
     else if (tmp == "\"VKICKER\"") {
       madxTwiss >> tmpName >> s >> x >> y >> vCorr.length >> angle >> k1l >> k2l >> vkick;
@@ -519,11 +519,11 @@ void AccLattice::madximport(const char *madxTwissFile)
 	vRFdip.strength = vCorr.strength;
 	//vRFdip.Qrf0 = 0.625;              // !! hardcoded RF-tune values !!
 	//vRFdip.dQrf = 5.402e-6;
-	this->set(s, vRFdip);
+	this->mount(s, vRFdip);
       }
       //Corrector:
       else {
-	this->set(s, vCorr);
+	this->mount(s, vCorr);
       }
     }
     else if (tmp == "\"HKICKER\"") {
@@ -539,11 +539,11 @@ void AccLattice::madximport(const char *madxTwissFile)
 	hRFdip.strength = hCorr.strength;
 	//hRFdip.Qrf0 = 0.625;              // !! hardcoded RF-tune values !!
 	//hRFdip.dQrf = 5.402e-6;
-	this->set(s, hRFdip);
+	this->mount(s, hRFdip);
       }
       //Corrector:
       else {
-	this->set(s, hCorr);
+	this->mount(s, hCorr);
       }
     }
     else if (tmp == "\"RFCAVITY\"") {
@@ -551,7 +551,7 @@ void AccLattice::madximport(const char *madxTwissFile)
       Cav.name = removeQuote(tmpName);
       if (refPos == begin) s -= Cav.length;
       else if (refPos == center) s -= Cav.length/2;
-      this->set(s, Cav);
+      this->mount(s, Cav);
     }
 
 
@@ -622,7 +622,7 @@ void AccLattice::madximportMisalignments(const char *madxEalignFile)
 
 
 
-// set elements from elegant Lattice (read from ascii parameter file ".param")
+// mount elements from elegant Lattice (read from ascii parameter file ".param")
 // misalignments included (no separate function as for MADX)
 // ====== ATTENTION ==================================
 // "FamilyMagnets" (Quad,Sext) all of type F, because
@@ -712,7 +712,7 @@ void AccLattice::elegantimport(const char *elegantParamFile)
        if (refPos == begin) pos = s-l;
        else if (refPos == center) pos = s-l/2;
        else pos = s; 
-       this->set(pos, *element); // mount element
+       this->mount(pos, *element); // mount element
        pos=l=k1=k2=angle=kick=tilt=0.;   // clear param. values to avoid reuse of an old value
      }
     }
@@ -849,9 +849,9 @@ unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
 
    corrTmp->strength = ELSAvcorrs[i].time[t].kick/1000.0/corrTmp->length;   //unit 1/m
    it_next = nextIt(corrector,it);
-   elements.erase(it);   // erase "old" corrector (madx) to be able to mount new one
+   elements.erase(it);   // dismount "old" corrector (madx) to be able to mount new one
    endPos = ELSAvcorrs[i].pos + corrTmp->length/2;
-   this->set(endPos, *(corrTmp));
+   this->mount(endPos, *(corrTmp));
    delete corrTmp;
 
    //it = nextIt(corrector,it);

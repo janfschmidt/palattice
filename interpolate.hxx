@@ -301,7 +301,6 @@ void Interpolate<T>::interp_out(double stepwidth, const char *filename)
   file <<setw(w)<< "position" <<"\t"<< this->header() << endl;
   file <<setiosflags(ios::fixed)<<showpoint<<setprecision(6);
   if (size() > 0) {
-    cout << "interpRange " << interpRange() << endl; //debug
     for (double s=interpMin(); s<=interpMax(); s+=stepwidth) {
       file <<setw(w)<< s <<setw(w)<< this->interp(s)<< endl;
     }

@@ -63,14 +63,14 @@ public:
 
 
   const AccElement* operator[](double pos) const;                  // get element (any position, Drift returned if not inside any element)
-  void set(double pos, const AccElement &obj, bool verbose=false); // set element (throws XXX if no free space for obj)
-  void erase(double pos);                                          // erase element at position pos
+  void mount(double pos, const AccElement &obj, bool verbose=false); // mount an element (throws eNoFreeSpace if no free space for obj)
+  void dismount(double pos);                                          // dismount element at Ref.position pos (if no element at pos: do nothing)
 
-  void setIgnoreList(string ignoreFile);         // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted (set) in this lattice
-  void madximport(const char *madxTwissFile);              // set elements from MAD-X Lattice (read from twiss-output)
+  void setIgnoreList(string ignoreFile);         // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted in this lattice
+  void madximport(const char *madxTwissFile);              // mount elements from MAD-X Lattice (read from twiss-output)
   void madximportMisalignments(const char *madxEalignFile);// set misalignments from MAD-X Lattice (read ealign-output)
                                                      // !! currently only rotation (dpsi) around beam axis (s) is implemented!
-  void elegantimport(const char *elegantParamFile);        // set elements from elegant Lattice (read from ascii parameter file ".param")
+  void elegantimport(const char *elegantParamFile);        // mount elements from elegant Lattice (read from ascii parameter file ".param")
   void setELSAoptics(const char *spurenFolder);                    // change quad&sext strengths to values from "ELSA-Spuren"
   unsigned int setELSACorrectors(CORR *ELSAvcorrs, unsigned int t);// change corrector pos&strength to values from "ELSA-Spuren" at time t
   void subtractCorrectorStrengths(const AccLattice &other);    // subtract other corrector strengths from the ones of this lattice
@@ -79,6 +79,7 @@ public:
   // "information"
   unsigned int size(element_type _type) const;        // returns number of elements of a type in this lattice
   unsigned int size() const {return elements.size();} // returns total number of elements
+
   vector<string> getIgnoreList() const {return ignoreList;}
   unsigned int ignoredElements() const {return ignoreCounter;}
   string refPos_string() const;
