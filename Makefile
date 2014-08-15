@@ -13,7 +13,7 @@ $(PROG_NAME): $(ALL_O)
 
 main.o: main.cpp constants.hpp types.hpp spectrum.hpp  metadata.hpp timetag.hpp filenames.hpp resonances.hpp interpolate.hpp interpolate.hxx functionofpos.hpp functionofpos.hxx field.hpp AccElements.hpp AccLattice.hpp gitversion.hpp
 	$(CC) $(cflags) -c main.cpp
-ELSAimport.o: ELSAimport.cpp constants.hpp types.hpp functionofpos.hpp functionofpos.hxx
+ELSAimport.o: ELSAimport.cpp constants.hpp types.hpp
 	$(CC) $(cflags) -c ELSAimport.cpp
 metadata.o: metadata.cpp gitversion.hpp
 	$(CC) $(cflags) -c metadata.cpp
@@ -27,7 +27,7 @@ spectrum.o: spectrum.cpp spectrum.hpp constants.hpp
 	$(CC) $(cflags) -c spectrum.cpp
 interpolate.o: interpolate.cpp interpolate.hpp interpolate.hxx types.hpp
 	$(CC) $(cflags) -c interpolate.cpp
-functionofpos.o: functionofpos.cpp functionofpos.hpp functionofpos.hxx interpolate.hpp interpolate.hxx spectrum.hpp filenames.hpp types.hpp
+functionofpos.o: functionofpos.cpp functionofpos.hpp functionofpos.hxx interpolate.hpp interpolate.hxx spectrum.hpp types.hpp
 	$(CC) $(cflags) -c functionofpos.cpp
 field.o: field.cpp field.hpp functionofpos.hpp functionofpos.hxx types.hpp AccLattice.hpp
 	$(CC) $(cflags) -c field.cpp

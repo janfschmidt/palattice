@@ -65,7 +65,7 @@ void usage()
 int main (int argc, char *argv[])
 {
   //-----------------------------
-  bool sgt_access=true;       //special option for elsa-mode:
+  bool sgt_access=false;       //special option for elsa-mode:
                                //if 1, spuren are read from /sgt/elsa/data/bpm/ instead of [project]/ELSA-Spuren/
   //-----------------------------
   unsigned int n_samp;         // number of sampling points along ring for magn. field strengths
@@ -326,9 +326,9 @@ int main (int argc, char *argv[])
 
   if (tracking) {
     if (simTool == madx)
-      trajectory.madxTrajectory(file, particle);
+      trajectory.madxTrajectory(file.path_simTool, particle);
     else //elegant
-      trajectory.elegantTrajectory(file, particle);
+      trajectory.elegantTrajectory(file.path_simTool, particle);
     cout << "* trajectory of particle "<<particle<<" read at "<<trajectory.samples()
 	 <<" observation points for "<<trajectory.turns()<<" turns"<<endl;
   }
@@ -368,7 +368,7 @@ int main (int argc, char *argv[])
 	cout << e.what();
 	exit(1);
       }
-      cout << "* "<<t.label(i)<<": "<<lattice.size(corrector)<<" correctors and "
+      cout << "* "<<t.label(i)<<": "<<lattice.size(corrector,H)<<" correctors and "
 	   <<bpmorbit.samples()<<" BPMs read"<<endl<<"  from "<<file.spuren << endl;
     }
 

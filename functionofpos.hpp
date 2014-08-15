@@ -14,7 +14,6 @@
 #include <stdexcept>
 #include "interpolate.hpp"
 #include "spectrum.hpp"
-#include "filenames.hpp"
 #include "types.hpp"
 
 
@@ -29,6 +28,10 @@ protected:
 
   unsigned int n_turns;                       //number of turns (initialized as 1)
   unsigned int n_samples;                     //number of samples per turn (initialized as zero)
+
+  // returns filename for trajectory files of particle p from madx or elegant at observation point obs:
+  string trajectoryFile(string path, simulationTool s, unsigned int obs, unsigned int p) const;
+
 
 
 private:
@@ -74,9 +77,9 @@ public:
 
   // orbit import
   void madxClosedOrbit(const char *madxTwissFile);                   //import closed orbit from madx twiss file
-  void madxTrajectory(const FILENAMES files, unsigned int particle); //import single particle trajectory from madx tracking "obs" files at each quadrupole
+  void madxTrajectory(string path, unsigned int particle); //import single particle trajectory from madx tracking "obs" files at each quadrupole
   void elegantClosedOrbit(const char *elegantCloFile);               //import closed orbit from elegant .clo file
-  void elegantTrajectory(const FILENAMES files, unsigned int particle); //import single particle trajectory from elegant tracking "watch" files at each quadrupole
+  void elegantTrajectory(string path, unsigned int particle); //import single particle trajectory from elegant tracking "watch" files at each quadrupole
   void elsaClosedOrbit(BPM *ELSAbpms, unsigned int t);               //import closed orbit from ELSA measurement at time t/ms
 
   // tests

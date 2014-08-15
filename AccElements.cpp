@@ -30,6 +30,9 @@ AccElement& AccElement::operator=(const AccElement* other)
    this->length = other->length;
    this->dpsi = other->dpsi;
    this->strength = other->strength;
+   this->Qrf0 = other->Qrf0;
+   this->dQrf = other->dQrf;
+
 
    return *this;
 }
@@ -107,7 +110,6 @@ string AccElement::type_string() const
 
   return "Please implement this type in AccElement::type_string()!";
 }
-
 
 
 

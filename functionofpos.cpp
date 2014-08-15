@@ -157,45 +157,45 @@ void FunctionOfPos<AccPair>::madxClosedOrbit(const char *madxTwissFile)
 
 //import single particle trajectory from madx tracking "obs" files at each quadrupole
 template <>
-void FunctionOfPos<AccPair>::madxTrajectory(const FILENAMES files, unsigned int particle)
+void FunctionOfPos<AccPair>::madxTrajectory(string path, unsigned int particle)
 {
   unsigned int obs=1;
   string tmp="init";
   unsigned int turn, theTurn; // madx column variables
   double x, y, s;
-  fstream madx;
+  fstream madxFile;
   AccPair otmp;
   vector<double> obsPos;
 
   //for chosen particle: read turns, samples and positions
   //then modify() can be used below instead of set() ->  much faster for large datasets
   cout << "* Initializing trajectory... " << endl;
-  madx.open(files.tracking(obs,particle).c_str(), ios::in);
-  while ( madx.is_open() ) {
+  madxFile.open(trajectoryFile(path,madx,obs,particle).c_str(), ios::in);
+  while ( madxFile.is_open() ) {
     //go to end of "header" / first data line
     while (tmp != "$") {
-      madx >> tmp;
-      if (madx.eof()) {
-  	cout << "ERROR: madximport.cpp: Wrong data format in " << files.tracking(obs,particle) << endl;
+      madxFile >> tmp;
+      if (madxFile.eof()) {
+  	cout << "ERROR: madximport.cpp: Wrong data format in " << trajectoryFile(path,madx,obs,particle) << endl;
   	exit(1);
       }
     }
-    getline(madx, tmp);
+    getline(madxFile, tmp);
     //obs1: read all lines to get #turns
-    while (!madx.eof()) {
-      madx >> tmp >> turn >> x >> tmp >> y >> tmp >> tmp >> tmp >> s;
-      getline(madx, tmp);
-      if (madx.eof()) break;
+    while (!madxFile.eof()) {
+      madxFile >> tmp >> turn >> x >> tmp >> y >> tmp >> tmp >> tmp >> s;
+      getline(madxFile, tmp);
+      if (madxFile.eof()) break;
       if (obs==1) { //see comment above
   	theTurn = turn + 1;
       }
       else // all other obs: only read s from first line
 	break;
     }
-    madx.close();
+    madxFile.close();
     obsPos.push_back(s);
     obs++;
-    madx.open(files.tracking(obs,particle).c_str(), ios::in);
+    madxFile.open(trajectoryFile(path,madx,obs,particle).c_str(), ios::in);
   }
   //resize & set positions s
   AccPair empty;
@@ -219,23 +219,23 @@ void FunctionOfPos<AccPair>::madxTrajectory(const FILENAMES files, unsigned int 
   //So the data of obs0001 is used with s=0.0 but one turn later than written in MAD-X to fit our notation
   //-----------------------------------------------------------------------------------------------------
   obs=1;
-  madx.open(files.tracking(obs,particle).c_str(), ios::in);
-  while ( madx.is_open() ) {
+  madxFile.open(trajectoryFile(path,madx,obs,particle).c_str(), ios::in);
+  while ( madxFile.is_open() ) {
     
     //go to end of "header" / first data line
     while (tmp != "$") {
-      madx >> tmp;
-      if (madx.eof()) {
-  	cout << "ERROR: madximport.cpp: Wrong data format in " << files.tracking(obs,particle) << endl;
+      madxFile >> tmp;
+      if (madxFile.eof()) {
+  	cout << "ERROR: madximport.cpp: Wrong data format in " << trajectoryFile(path,madx,obs,particle) << endl;
   	exit(1);
       }
     }
-    getline(madx, tmp);
+    getline(madxFile, tmp);
     //read trajectory data
-    while (!madx.eof()) {
-      madx >> tmp >> turn >> x >> tmp >> y >> tmp >> tmp >> tmp >> s;
-      getline(madx, tmp);
-      if (madx.eof()) break;
+    while (!madxFile.eof()) {
+      madxFile >> tmp >> turn >> x >> tmp >> y >> tmp >> tmp >> tmp >> s;
+      getline(madxFile, tmp);
+      if (madxFile.eof()) break;
       
       if (obs==1) { //see comment above
   	turn += 1;
@@ -248,13 +248,11 @@ void FunctionOfPos<AccPair>::madxTrajectory(const FILENAMES files, unsigned int 
       //cout << " set turn " <<turn << endl; //debug
     }
 
-    madx.close();
-    cout << "\r  reading trajectory from obs" << obs; //debug
+    madxFile.close();
     obs++;
-    madx.open(files.tracking(obs,particle).c_str(), ios::in);
+    madxFile.open(trajectoryFile(path,madx,obs,particle).c_str(), ios::in);
   }
   this->hide_last_turn();
-  cout << endl; //debug
     
 }
 
@@ -305,40 +303,40 @@ void FunctionOfPos<AccPair>::elegantClosedOrbit(const char *elegantCloFile)
 
 //import single particle trajectory from elegant tracking "watch" files at each quadrupole
 template <>
-void FunctionOfPos<AccPair>::elegantTrajectory(const FILENAMES files, unsigned int particle)
+void FunctionOfPos<AccPair>::elegantTrajectory(string path, unsigned int particle)
 {
   unsigned int watch=0;
   string tmp="init";
   unsigned int turn, p;
   double x, y, s;
-  fstream elegant;
+  fstream elegantFile;
   AccPair otmp;
 
-  elegant.open(files.tracking(watch,particle).c_str(), ios::in);
-  while ( elegant.is_open() ) {
+  elegantFile.open(trajectoryFile(path,elegant,watch,particle).c_str(), ios::in);
+  while ( elegantFile.is_open() ) {
     
     // header with parameters (*** marks end of parameters, three header lines below it)
     while (tmp != "***") {
-      elegant >> tmp;
+      elegantFile >> tmp;
       // read position s
       if (tmp == "position_s/m") {
-	elegant >> s;
+	elegantFile >> s;
       }
-      if (elegant.eof()) {
-	cout << "ERROR: functionofpos::elegantTrajectory(): Wrong data format in " << files.tracking(watch,particle) << endl;
+      if (elegantFile.eof()) {
+	cout << "ERROR: functionofpos::elegantTrajectory(): Wrong data format in " << trajectoryFile(path,elegant,watch,particle) << endl;
 	exit(1);
       }
     }
-    for (int i=0; i<4; i++)   getline(elegant, tmp);
+    for (int i=0; i<4; i++)   getline(elegantFile, tmp);
 
     //read trajectory data
-    while (!elegant.eof()) {
-      elegant >> x >> tmp >> y >> tmp >> tmp >> tmp >> p >> turn;
-      getline(elegant, tmp);
-      if (elegant.eof()) break;
+    while (!elegantFile.eof()) {
+      elegantFile >> x >> tmp >> y >> tmp >> tmp >> tmp >> p >> turn;
+      getline(elegantFile, tmp);
+      if (elegantFile.eof()) break;
 
       if (p != particle) {
-	cout << "ERROR: functionofpos::elegantTrajectory(): particleID in " << files.tracking(watch,particle) 
+	cout << "ERROR: functionofpos::elegantTrajectory(): particleID in " << trajectoryFile(path,elegant,watch,particle) 
 	     << " does not match the input particle ("<<p<<"/"<<particle<<")"<< endl;
 	exit(1);
       }
@@ -348,9 +346,9 @@ void FunctionOfPos<AccPair>::elegantTrajectory(const FILENAMES files, unsigned i
       this->set(otmp, s, turn);
     }
 
-    elegant.close();
+    elegantFile.close();
     watch++;
-    elegant.open(files.tracking(watch,particle).c_str(), ios::in);
+    elegantFile.open(trajectoryFile(path,elegant,watch,particle).c_str(), ios::in);
   }
   this->hide_last_turn();
 
@@ -396,3 +394,6 @@ string FunctionOfPos<AccTriple>::header() const
 {
   return this->value[0].header();
 }
+
+
+

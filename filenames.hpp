@@ -14,8 +14,8 @@ public:
   ~FILENAMES() {}
   string out(string name, string t) const {return (path+"/inout/"+name+t+difftag+".dat");}
   string spec(string name, string t) const {return (path+"/inout/"+name+t+difftag+".spectrum");}
-  string tracking(unsigned int obs, unsigned int p) const;
   string path;
+  string path_simTool;
   string lattice;
   string orbit;
   string misalign_dip;

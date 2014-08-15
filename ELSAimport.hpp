@@ -1,7 +1,6 @@
 #ifndef __POLSIM__ELSAIMPORT_HPP_
 #define __POLSIM__ELSAIMPORT_HPP_
 
-#include "functionofpos.hpp"
 
 int ELSAimport_bpms(BPM *ELSAbpms, const char *spurenFolder);
 

@@ -31,9 +31,9 @@ protected:
   vector<string> ignoreList;                              // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted (set) in this lattice
   unsigned int ignoreCounter;
 
-  AccIterator firstIt(element_type _type);                // get first element of given type
-  AccIterator lastIt(element_type _type);                 // get last element of given type
-  AccIterator nextIt(element_type _type, AccIterator it); // get next element of given type after it
+  AccIterator firstIt(element_type _type, element_plane p=noplane, element_family f=nofamily);                // get first element of given type
+  AccIterator lastIt(element_type _type, element_plane p=noplane, element_family f=nofamily);                 // get last element of given type
+  AccIterator nextIt(element_type _type, AccIterator it, element_plane p=noplane, element_family f=nofamily); // get next element of given type after it
 
 
 public:
@@ -48,18 +48,18 @@ public:
   const_AccIterator getIt(double pos) const;                           // get const_Iterator to element, if pos is inside it
   const_AccIterator getItBegin() const;                                // get iterator to begin (first Element)
   const_AccIterator getItEnd() const;                                  // get iterator to end (after last Element)
-  const_AccIterator firstCIt(element_type _type) const;                 // get iterator to first element of given type
-  const_AccIterator lastCIt(element_type _type) const;                  // get iterator to last element of given type
-  const_AccIterator nextCIt(element_type _type, const_AccIterator it) const;  // get iterator to next element of given type after it
+  const_AccIterator firstCIt(element_type _type, element_plane p=noplane, element_family f=nofamily) const; // get iterator to first element of given type
+  const_AccIterator lastCIt(element_type _type, element_plane p=noplane, element_family f=nofamily) const;  // get iterator to last element of given type
+  const_AccIterator nextCIt(element_type _type, const_AccIterator it, element_plane p=noplane, element_family f=nofamily) const; // get iterator to next element of given type after it
 
   double where(const_AccIterator it) const {return it->first;}          // get position of element with iterator it
   double locate(double pos, const AccElement *obj, Anchor here) const;  // get here=begin/center/end (in meter) of obj at reference-position pos
   bool inside(double pos, const AccElement *obj, double here) const;    // test if "here" is inside obj at position pos
   double locate(const_AccIterator it, Anchor here) const;        // get here=begin/center/end (in meter)  of lattice element "it"
   bool inside(const_AccIterator it, double here) const;                 // test if "here" is inside lattice element "it"
-  const AccElement* first(element_type _type);                          // get first element of given type
-  const AccElement* last(element_type _type);                           // get last element of given type
-  const AccElement* next(element_type _type, double pos);               // get next element of given type after pos
+  const AccElement* first(element_type _type, element_plane p=noplane, element_family f=nofamily);             // get first element of given type
+  const AccElement* last(element_type _type, element_plane p=noplane, element_family f=nofamily);              // get last element of given type
+  const AccElement* next(element_type _type, double pos, element_plane p=noplane, element_family f=nofamily);  // get next element of given type after pos
 
 
   const AccElement* operator[](double pos) const;                  // get element (any position, Drift returned if not inside any element)
@@ -77,7 +77,7 @@ public:
   void subtractMisalignments(const AccLattice &other);         // subtract other misalignments from the ones of this lattice
 
   // "information"
-  unsigned int size(element_type _type) const;        // returns number of elements of a type in this lattice
+  unsigned int size(element_type _type,element_plane p=noplane,element_family f=nofamily) const;        // returns number of elements of a type in this lattice
   unsigned int size() const {return elements.size();} // returns total number of elements
   vector<string> getIgnoreList() const {return ignoreList;}
   unsigned int ignoredElements() const {return ignoreCounter;}

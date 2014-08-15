@@ -137,24 +137,22 @@ bool AccLattice::inside(const_AccIterator it, double here) const
 
 // get first element of given type
 // returns iterator to end if there is none
-AccIterator AccLattice::firstIt(element_type _type)
+AccIterator AccLattice::firstIt(element_type _type, element_plane p, element_family f)
 {
   for (AccIterator it=elements.begin(); it!=elements.end(); ++it) {
-    if (it->second->type == _type)
+    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it;
   }
-
   return elements.end();
 }
 
 
-const_AccIterator AccLattice::firstCIt(element_type _type) const
+const_AccIterator AccLattice::firstCIt(element_type _type, element_plane p, element_family f) const
 {
   for (const_AccIterator it=elements.begin(); it!=elements.end(); ++it) {
-    if (it->second->type == _type)
+    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it;
   }
-
   return elements.end();
 }
 
@@ -162,24 +160,24 @@ const_AccIterator AccLattice::firstCIt(element_type _type) const
 
 // get last element of given type
 // returns iterator to end if there is none
-AccIterator AccLattice::lastIt(element_type _type) 
+AccIterator AccLattice::lastIt(element_type _type, element_plane p, element_family f) 
 {
   AccIterator it = elements.end();
   it--;
   for (; it!=elements.begin(); it--) {
-    if (it->second->type == _type)
+    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it;
   }
 
   return elements.end();  
 }
 
-const_AccIterator AccLattice::lastCIt(element_type _type)  const
+const_AccIterator AccLattice::lastCIt(element_type _type, element_plane p, element_family f)  const
 {
   const_AccIterator it = elements.end();
   it--;
   for (; it!=elements.begin(); it--) {
-    if (it->second->type == _type)
+    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it;
   }
 
@@ -188,21 +186,21 @@ const_AccIterator AccLattice::lastCIt(element_type _type)  const
 
 // get next element of given type after it
 // returns iterator to end if there is none
-AccIterator AccLattice::nextIt(element_type _type, AccIterator it)
+AccIterator AccLattice::nextIt(element_type _type, AccIterator it, element_plane p, element_family f)
 {
   it++; // check only elements AFTER it
  for (; it!=elements.end(); ++it) {
-    if (it->second->type == _type)
+   if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it;
   }
 
   return elements.end();  
 }
-const_AccIterator AccLattice::nextCIt(element_type _type, const_AccIterator it) const
+const_AccIterator AccLattice::nextCIt(element_type _type, const_AccIterator it, element_plane p, element_family f) const
 {
   it++; // check only elements AFTER it
  for (; it!=elements.end(); ++it) {
-    if (it->second->type == _type)
+   if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it;
   }
 
@@ -212,7 +210,7 @@ const_AccIterator AccLattice::nextCIt(element_type _type, const_AccIterator it) 
 
 // get first element of given type
 // returns Drift if there is none
-const AccElement* AccLattice::first(element_type _type)
+const AccElement* AccLattice::first(element_type _type, element_plane p, element_family f)
 {
   AccIterator it = this->firstIt(_type);
   if (it == elements.end()) return empty_space;
@@ -221,7 +219,7 @@ const AccElement* AccLattice::first(element_type _type)
 
 // get last element of given type
 // returns Drift if there is none
-const AccElement* AccLattice::last(element_type _type)
+const AccElement* AccLattice::last(element_type _type, element_plane p, element_family f)
 {
   AccIterator it = lastIt(_type);
   if (it == elements.end()) return empty_space;
@@ -230,10 +228,10 @@ const AccElement* AccLattice::last(element_type _type)
 
 // get next element of given type after pos
 // returns Drift if there is none
-const AccElement* AccLattice::next(element_type _type, double pos)
+const AccElement* AccLattice::next(element_type _type, double pos, element_plane p, element_family f)
 {
   for (const_AccIterator it=getIt(pos); it!=elements.end(); ++it) {
-    if (it->second->type == _type)
+    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it->second;
   }
 
@@ -816,7 +814,7 @@ unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
  stringstream strMsg;
  double diff=0;
  double endPos;
- AccIterator it = firstIt(corrector);
+ AccIterator it = firstIt(corrector,H); // only vertical correctors (H)!
  AccIterator it_next;
 
  
@@ -836,7 +834,7 @@ unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
    snprintf(name2, 20, "VC%02i", i+1); // new madx-lattice (2014): VCxx
    if (it->second->name != name1 && it->second->name != name2) {
      strMsg << "ERROR: AccLattice::setELSACorrectors(): Unexpected corrector name. Mad-X lattice does not fit to ELSA." << endl;
-     strMsg << "       Mad-X: " <<it->second->name<< " -- expected: " <<name2<< " (" <<name1<< ")";
+     strMsg << "       Mad-X: " <<it->second->name<< " -- expected: " <<name2<< " (" <<name1<< ")" << endl;
      throw std::runtime_error(strMsg.str());
    }
    //...check by position
@@ -848,7 +846,7 @@ unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
    corrTmp = it->second->clone();
 
    corrTmp->strength = ELSAvcorrs[i].time[t].kick/1000.0/corrTmp->length;   //unit 1/m
-   it_next = nextIt(corrector,it);
+   it_next = nextIt(corrector,it,H);  // only vertical correctors (H)!
    elements.erase(it);   // erase "old" corrector (madx) to be able to mount new one
    endPos = ELSAvcorrs[i].pos + corrTmp->length/2;
    this->set(endPos, *(corrTmp));
@@ -861,7 +859,7 @@ unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
      break;
  }
  
- if (n != this->size(corrector))
+ if (n != this->size(corrector,H)) // only vertical correctors (H)!
    cout << "WARNING: Not all correctors overwritten by ELSA-Spuren" << endl;
  
  return n;
@@ -949,11 +947,11 @@ void AccLattice::subtractMisalignments(const AccLattice &other)
 
 // ------------------ "information" -----------------------
 // returns number of elements of a type in this lattice
-unsigned int AccLattice::size(element_type _type) const
+unsigned int AccLattice::size(element_type _type, element_plane p, element_family f) const
 {
   unsigned int n=0;
   for (const_AccIterator it=elements.begin(); it!=elements.end(); ++it) {
-    if (it->second->type == _type)
+    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       n++;
   }
 

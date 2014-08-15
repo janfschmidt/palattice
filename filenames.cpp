@@ -39,6 +39,10 @@ FILENAMES::FILENAMES(string pathIn, simulationTool _simTool, bool elsa, bool dif
 
   //public filenames (including path):
   path = pathIn;  //project-path
+  if (simTool == madx)
+    path_simTool = path + "/madx/";
+  else
+    path_simTool = path + "/elegant/";
   lattice = path + file_lattice;
   orbit = path + file_orbit;
   misalign_dip = path + file_misalign_dip;
@@ -73,15 +77,3 @@ FILENAMES::FILENAMES(string pathIn, simulationTool _simTool, bool elsa, bool dif
 }
 
 
-string FILENAMES::tracking(unsigned int obs, unsigned int p) const
-{
-  char tmp[512];
-  string out;
-  if (simTool == madx)
-    sprintf(tmp, "%s/madx/madx.obs%04d.p%04d", path.c_str(), obs, p);
-  else // elegant
-    sprintf(tmp, "%s/elegant/elegant.w%03d.p%d", path.c_str(), obs, p);
-  out = tmp;
-
-  return out;
-}
