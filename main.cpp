@@ -14,7 +14,6 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
-#include "constants.hpp"
 #include "types.hpp"
 #include "AccLattice.hpp"
 #include "timetag.hpp"

@@ -7,7 +7,6 @@
 #include <cmath>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_vector.h>
-#include "constants.hpp"
 
 
 

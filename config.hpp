@@ -1,5 +1,5 @@
-#ifndef __POLSIM__CONSTANTS_H_
-#define __POLSIM__CONSTANTS_H_
+#ifndef __POLSIM__CONFIG_HPP_
+#define __POLSIM__CONFIG_HPP_
 
 
 /* acclattice options */
@@ -10,4 +10,4 @@
 
 #endif
 
-/*__POLSIM__CONSTANTS_H_*/
+/*__POLSIM__CONFIG_HPP_*/

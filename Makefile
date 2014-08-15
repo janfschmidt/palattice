@@ -11,7 +11,7 @@ all: $(PROG_NAME) strom2kick new_strom2kick
 $(PROG_NAME): $(ALL_O)
 	$(CC) $(cflags) -o $(PROG_NAME) $(ALL_O) -lgsl -lgslcblas -lm
 
-main.o: main.cpp constants.hpp types.hpp spectrum.hpp  metadata.hpp timetag.hpp filenames.hpp resonances.hpp interpolate.hpp interpolate.hxx functionofpos.hpp functionofpos.hxx field.hpp AccElements.hpp AccLattice.hpp gitversion.hpp ELSASpuren.hpp
+main.o: main.cpp types.hpp spectrum.hpp  metadata.hpp timetag.hpp filenames.hpp resonances.hpp interpolate.hpp interpolate.hxx functionofpos.hpp functionofpos.hxx field.hpp AccElements.hpp AccLattice.hpp gitversion.hpp ELSASpuren.hpp
 	$(CC) $(cflags) -c main.cpp
 ELSASpuren.o: ELSASpuren.cpp types.hpp
 	$(CC) $(cflags) -c ELSASpuren.cpp
@@ -23,7 +23,7 @@ filenames.o: filenames.cpp filenames.hpp types.hpp
 	$(CC) $(cflags) -c filenames.cpp
 resonances.o: resonances.cpp resonances.hpp types.hpp functionofpos.hpp functionofpos.hxx AccLattice.hpp spectrum.hpp
 	$(CC) $(cflags) -c resonances.cpp
-spectrum.o: spectrum.cpp spectrum.hpp constants.hpp
+spectrum.o: spectrum.cpp spectrum.hpp config.hpp
 	$(CC) $(cflags) -c spectrum.cpp
 interpolate.o: interpolate.cpp interpolate.hpp interpolate.hxx types.hpp
 	$(CC) $(cflags) -c interpolate.cpp
@@ -33,7 +33,7 @@ field.o: field.cpp field.hpp functionofpos.hpp functionofpos.hxx types.hpp AccLa
 	$(CC) $(cflags) -c field.cpp
 AccElements.o: AccElements.cpp AccElements.hpp types.hpp
 	$(CC) $(cflags) -c AccElements.cpp
-AccLattice.o: AccLattice.cpp AccLattice.hpp AccElements.hpp ELSASpuren.hpp metadata.hpp constants.hpp types.hpp
+AccLattice.o: AccLattice.cpp AccLattice.hpp AccElements.hpp ELSASpuren.hpp metadata.hpp config.hpp types.hpp
 	$(CC) $(cflags) -c AccLattice.cpp
 
 gitversion.hpp: ../.git/HEAD ../.git/index

@@ -15,7 +15,7 @@
 #include <string>
 #include <gsl/gsl_fft_complex.h>
 #include <gsl/gsl_const_mksa.h>
-#include "constants.hpp"
+#include "config.hpp"
 
 using namespace std;
 
