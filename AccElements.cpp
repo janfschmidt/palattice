@@ -188,8 +188,8 @@ AccTriple Cavity::B() const
 AccTriple Dipole::B() const
  {
    AccTriple tmp; 
-   if(plane==V) tmp.z=strength;
-   else if(plane==H) tmp.x=strength;
+   if(plane==H) tmp.z=strength;       // H means a horizontally bending magnet (horizontal kick, VERTICAL magnetic field)
+   else if(plane==V) tmp.x=strength;
    return tmp.tilt(this->dpsi);
  }
 
@@ -198,8 +198,8 @@ AccTriple Dipole::B() const
 AccTriple Corrector::B() const
  {
    AccTriple tmp; 
-   if(plane==V) tmp.z=strength;
-   else if(plane==H) tmp.x=strength;
+   if(plane==H) tmp.z=strength;
+   else if(plane==V) tmp.x=strength;
    return tmp.tilt(this->dpsi);
  }
 
@@ -210,8 +210,8 @@ AccTriple RFdipole::B(unsigned int turn) const
    AccTriple tmp;
    double phi = turn*Qrf0 + turn*(turn+1)/2 * dQrf;
    double rfStrength = strength * cos(2*M_PI*phi);
-   if(plane==V) tmp.z = rfStrength;
-   else if(plane==H) tmp.x = rfStrength;
+   if(plane==H) tmp.z = rfStrength;
+   else if(plane==V) tmp.x = rfStrength;
    return tmp.tilt(this->dpsi);
  }
 
@@ -319,9 +319,9 @@ string Corrector::printSimTool(simulationTool t) const
   else
     nameInTool = "KICKER";
  
-  if (plane == H)
-    s << name <<" : V"<< nameInTool <<", "; //! plane==H => horizontal field => vertical kick
-  else if (plane == V)
+  if (plane == V)
+    s << name <<" : V"<< nameInTool <<", "; // plane==V => vertical kick
+  else if (plane == H)
     s << name <<" : H"<< nameInTool <<", ";
   s <<"L="<< length <<", "
     <<"KICK="<< strength
@@ -338,9 +338,9 @@ string RFdipole::printSimTool(simulationTool t) const // same as corrector
   else
     nameInTool = "KICKER";
  
-  if (plane == H)
-    s << name <<" : V"<< nameInTool <<", "; //! plane==H => horizontal field => vertical kick
-  else if (plane == V)
+  if (plane == V)
+    s << name <<" : V"<< nameInTool <<", ";  // plane==V => vertical kick
+  else if (plane == H)
     s << name <<" : H"<< nameInTool <<", ";
   s <<"L="<< length <<", "
     <<"KICK="<< strength

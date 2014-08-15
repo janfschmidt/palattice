@@ -441,12 +441,12 @@ void AccLattice::madximport(const char *madxTwissFile)
   fstream madxTwiss;
 
   //AccElements
-  Dipole vDip("defaultName", 0., 0., V);
-  Dipole hDip("defaultName", 0., 0., H);
-  Corrector vCorr("defaultName", 0., 0., H); // vertical kicker has HORIZONTAL field
-  Corrector hCorr("defaultName", 0., 0., V);
-  RFdipole vRFdip("defaultName", 0., 0., H); // vertical kicker has HORIZONTAL field
-  RFdipole hRFdip("defaultName", 0., 0., V);
+  Dipole hDip("defaultName", 0., 0., H); // horizontally bending dipole
+  Dipole vDip("defaultName", 0., 0., V); // vertically bending dipole
+  Corrector vCorr("defaultName", 0., 0., V); // vertical kicker has HORIZONTAL field
+  Corrector hCorr("defaultName", 0., 0., H);
+  RFdipole vRFdip("defaultName", 0., 0., V); // vertical kicker has HORIZONTAL field
+  RFdipole hRFdip("defaultName", 0., 0., H);
   Quadrupole Quad("defaultName", 0., 0., F); // madx uses negative sign "strength" for D magnets,
   Sextupole Sext("defaultName", 0., 0., F);  // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
   Cavity Cav("defaultName");
@@ -478,12 +478,12 @@ void AccLattice::madximport(const char *madxTwissFile)
     // --------------------------------------------------------------------------
   
     if (tmp == "\"SBEND\"" || tmp == "\"RBEND\"") {  //vertical Dipole (assume all bends have vertical field)
-      madxTwiss >> tmpName >> s >> x >> y >> vDip.length >> angle;
-      vDip.name = removeQuote(tmpName);
-      vDip.strength = angle/vDip.length;   // 1/R (!!! assuming l is arclength (along ref. orbit) !!!)
-      if (refPos == begin) s -= vDip.length;
-      else if (refPos == center) s -= vDip.length/2;
-      this->set(s, vDip);
+      madxTwiss >> tmpName >> s >> x >> y >> hDip.length >> angle;
+      hDip.name = removeQuote(tmpName);
+      hDip.strength = angle/hDip.length;   // 1/R (!!! assuming l is arclength (along ref. orbit) !!!)
+      if (refPos == begin) s -= hDip.length;
+      else if (refPos == center) s -= hDip.length/2;
+      this->set(s, hDip);
     }
     else if (tmp == "\"QUADRUPOLE\"") {
       madxTwiss >> tmpName >> s >> x >> y >> Quad.length >> angle >> k1l;
@@ -637,10 +637,10 @@ void AccLattice::elegantimport(const char *elegantParamFile)
   pos=l=k1=k2=angle=kick=tilt=0.;   // initialize param. values
 
   //AccElements
-  Dipole vDip("defaultName", 0., 0., V);
   Dipole hDip("defaultName", 0., 0., H);
-  Corrector vCorr("defaultName", 0., 0., H); // vertical kicker has HORIZONTAL field
-  Corrector hCorr("defaultName", 0., 0., V);
+  Dipole vDip("defaultName", 0., 0., V);
+  Corrector vCorr("defaultName", 0., 0., V); // vertical kicker has HORIZONTAL field
+  Corrector hCorr("defaultName", 0., 0., H);
   Quadrupole Quad("defaultName", 0., 0., F); // elegant uses negative sign "strength" for D magnets,
   Sextupole Sext("defaultName", 0., 0., F);  // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
   Cavity Cav("defaultName", 0.);
@@ -675,7 +675,7 @@ void AccLattice::elegantimport(const char *elegantParamFile)
     if (row.name != row_old.name) {
 
      if (row_old.type=="CSBEND" || row_old.type=="CSRCSBEND" || row_old.type=="KSBEND" || row_old.type=="NIBEND" || row_old.type=="TUBEND") {
-       element = &vDip;
+       element = &hDip;
        element->strength = angle / l;
      }
      else if (row_old.type=="QUAD") {
@@ -812,7 +812,7 @@ unsigned int AccLattice::setELSACorrectors(ELSASpuren &spuren, unsigned int t)
  stringstream strMsg;
  double diff=0;
  double endPos;
- AccIterator it = firstIt(corrector,H); // only vertical correctors (H)!
+ AccIterator it = firstIt(corrector,V); // only vertical correctors (V)!
  AccIterator it_next;
 
  
@@ -844,7 +844,7 @@ unsigned int AccLattice::setELSACorrectors(ELSASpuren &spuren, unsigned int t)
    corrTmp = it->second->clone();
 
    corrTmp->strength = spuren.vcorrs[i].time[t].kick/1000.0/corrTmp->length;   //unit 1/m
-   it_next = nextIt(corrector,it,H);  // only vertical correctors (H)!
+   it_next = nextIt(corrector,it,V);  // only vertical correctors (V)!
    elements.erase(it);   // erase "old" corrector (madx) to be able to mount new one
    endPos = spuren.vcorrs[i].pos + corrTmp->length/2;
    this->set(endPos, *(corrTmp));
@@ -857,7 +857,7 @@ unsigned int AccLattice::setELSACorrectors(ELSASpuren &spuren, unsigned int t)
      break;
  }
  
- if (n != this->size(corrector,H)) // only vertical correctors (H)!
+ if (n != this->size(corrector,V)) // only vertical correctors (V)!
    cout << "WARNING: Not all correctors overwritten by ELSA-Spuren" << endl;
  
  return n;

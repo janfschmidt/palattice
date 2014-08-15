@@ -117,6 +117,7 @@ public:
 
 // two abstract magnet classes:
 //  PlaneMagnet - homogeneous field in one plane e.g. dipole,corrector (occur as horizontal,vertical,longitudinal)
+//     -> e.g. H means a horizontally bending magnet (horizontal kick, VERTICAL magnetic field)
 //  FamilyMagnet - field in multiple plane e.g. quad, sext (occur as focus and defocus)
 
 class PlaneMagnet : public AccElement {
@@ -141,7 +142,7 @@ public:
 
 class Dipole : public PlaneMagnet {
 public:
-  Dipole(string _name, double _length, double _strength=0., element_plane _plane=V)
+  Dipole(string _name, double _length, double _strength=0., element_plane _plane=H)
     : PlaneMagnet(_name,_length,dipole,_plane,_strength) {}
   ~Dipole() {}
 
@@ -158,7 +159,7 @@ public:
 
 class Corrector : public PlaneMagnet {
 public:
-  Corrector(string _name, double _length, double _strength=0., element_plane _plane=V)
+  Corrector(string _name, double _length, double _strength=0., element_plane _plane=H)
     : PlaneMagnet(_name,_length,corrector,_plane,_strength) {}
   ~Corrector() {}
 
