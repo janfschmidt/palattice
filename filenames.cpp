@@ -55,12 +55,10 @@ FILENAMES::FILENAMES(string pathIn, simulationTool _simTool, bool elsa, bool dif
 
   if (elsa) {
     if (sgt_access) {
-      lattice_ref = "/sgt/elsa/data/bpm/"+refIn;
-      orbit_ref = "/sgt/elsa/data/bpm/"+refIn;
+      spuren_ref = "/sgt/elsa/data/bpm/"+refIn;
     }
     else { // no sgt_access
-      lattice_ref = path+"/ELSA-Spuren/"+refIn;
-      orbit_ref = path+"/ELSA-Spuren/"+refIn;
+      spuren_ref = path+"/ELSA-Spuren/"+refIn;
     }
   }
   else { // not elsa

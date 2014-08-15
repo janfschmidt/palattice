@@ -20,6 +20,7 @@ public:
   string orbit;
   string misalign_dip;
   string spuren;
+  string spuren_ref;
   string lattice_ref;
   string misalign_dip_ref;
   string orbit_ref;

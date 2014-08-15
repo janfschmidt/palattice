@@ -360,7 +360,7 @@ void FunctionOfPos<AccPair>::elegantTrajectory(string path, unsigned int particl
 
 //import closed orbit from ELSA BPM-measurement at time t/ms
 template <>
-void FunctionOfPos<AccPair>::elsaClosedOrbit(BPM *ELSAbpms, unsigned int t)
+void FunctionOfPos<AccPair>::elsaClosedOrbit(ELSASpuren &spuren, unsigned int t)
 {
   int i;
   char msg[1024];
@@ -369,14 +369,14 @@ void FunctionOfPos<AccPair>::elsaClosedOrbit(BPM *ELSAbpms, unsigned int t)
   this->clear(); //delete old-BPM-data (from madx or previous t)
   
   for (i=0; i<NBPMS; i++) {
-    if (t > ELSAbpms[i].time.size()) {
-      snprintf(msg, 1024, "ERROR: ELSAimport.cpp: No ELSA BPM%02d data available for %d ms.\n", i+1, t);
+    if (t > spuren.bpms[i].time.size()) {
+      snprintf(msg, 1024, "ERROR: FunctionOfPos::elsaClosedOrbit: No ELSA BPM%02d data available for %d ms.\n", i+1, t);
       throw std::runtime_error(msg);
     }
 
-    otmp.x = ELSAbpms[i].time[t].x / 1000; // unit mm -> m
-    otmp.z = ELSAbpms[i].time[t].z / 1000;
-    this->set(otmp, ELSAbpms[i].pos);
+    otmp.x = spuren.bpms[i].time[t].x / 1000; // unit mm -> m
+    otmp.z = spuren.bpms[i].time[t].z / 1000;
+    this->set(otmp, spuren.bpms[i].pos);
   }
 }
 

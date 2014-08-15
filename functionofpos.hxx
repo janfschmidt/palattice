@@ -522,7 +522,7 @@ void FunctionOfPos<T>::elegantTrajectory(string path, unsigned int particle)
 }
 
 template <class T>
-void FunctionOfPos<T>::elsaClosedOrbit(BPM *ELSAbpms, unsigned int t)
+void FunctionOfPos<T>::elsaClosedOrbit(ELSASpuren &spuren, unsigned int t)
 {
   stringstream s;
   s << "FunctionOfPos<T>::elsaClosedOrbit() is not implemented for data type " << typeid(T).name()

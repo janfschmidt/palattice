@@ -21,7 +21,7 @@
 #include "filenames.hpp"
 #include "resonances.hpp"
 #include "metadata.hpp"
-#include "ELSAimport.hpp"
+#include "ELSASpuren.hpp"
 #include "spectrum.hpp"
 #include "field.hpp"
 #include "functionofpos.hpp"
@@ -90,10 +90,8 @@ int main (int argc, char *argv[])
   double ampcut_z = 1e-6;     // be carefull: ampcut_z can change spin tune !
   double ampcut_res=0;          // minimum amplitude for resonance spectrum (option -c)
   double dtheta = -1;           // spin phaseadvance stepwidth (option -r)
-  BPM ELSAbpms[NBPMS];         // ELSAbpms[0]=BPM01, ELSAbpms[31]=BPM32
-  CORR ELSAvcorrs[NVCORRS];    // ELSAvcorrs[0]=VC01, ELSAvcorrs[31]=VC32
-  BPM Ref_ELSAbpms[NBPMS];
-  CORR Ref_ELSAvcorrs[NVCORRS];
+  ELSASpuren ELSA;
+  ELSASpuren Ref_ELSA;
   FunctionOfPos<AccPair> *orbit;
   simulationTool simTool = madx;  // lattice/orbit/tracking from madx or elegant? (option -s)
 
@@ -300,17 +298,15 @@ int main (int argc, char *argv[])
   // elsa=true: quad-&sext-strengths, BPM- & corrector-data from ELSA "Spuren"
   if (elsa) {
     try {
-      lattice.setELSAoptics(file.spuren.c_str());
+      lattice.setELSAoptics(file.spuren);
 	} catch (std::runtime_error &e) {
       cout << e.what() << endl;
       return 1; 
     }
     // get orbit and vcorrs from ELSA "Spuren" (for all times t) 
-    ELSAimport_bpms(ELSAbpms, file.spuren.c_str());
-    ELSAimport_vcorrs(ELSAvcorrs, file.spuren.c_str());
+    ELSA.read(file.spuren);
     if (diff) {
-      ELSAimport_bpms(Ref_ELSAbpms, file.orbit_ref.c_str());
-      ELSAimport_vcorrs(Ref_ELSAvcorrs, file.lattice_ref.c_str());
+      Ref_ELSA.read(file.spuren_ref);
       Ref_lattice = lattice; // take names,positions,lengths
     }
   }
@@ -362,21 +358,21 @@ int main (int argc, char *argv[])
       }
       metadata.setbyLabel("Time in cycle", t.label(i));
       try {
-	bpmorbit.elsaClosedOrbit(ELSAbpms, t.get(i));
-	lattice.setELSACorrectors(ELSAvcorrs, t.get(i));
+	bpmorbit.elsaClosedOrbit(ELSA, t.get(i));
+	lattice.setELSACorrectors(ELSA, t.get(i));
       } catch (exception &e) {
 	cout << e.what();
 	exit(1);
       }
-      cout << "* "<<t.label(i)<<": "<<lattice.size(corrector,H)<<" correctors and "
+      cout << "* "<<t.label(i)<<": "<<lattice.size(corrector,H)<<" vertical correctors and "
 	   <<bpmorbit.samples()<<" BPMs read"<<endl<<"  from "<<file.spuren << endl;
     }
 
     // difference-mode: read reference orbit & corrector data
     if (diff) {
       if (elsa) {
-	Ref_bpmorbit.elsaClosedOrbit(Ref_ELSAbpms, t.get(i));
-	Ref_lattice.setELSACorrectors(Ref_ELSAvcorrs, t.get(i));
+	Ref_bpmorbit.elsaClosedOrbit(Ref_ELSA, t.get(i));
+	Ref_lattice.setELSACorrectors(Ref_ELSA, t.get(i));
 	cout << "* "<<t.label(i)<<": ";
 	  }
       else {

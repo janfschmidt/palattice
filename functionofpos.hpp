@@ -14,6 +14,7 @@
 #include <stdexcept>
 #include "interpolate.hpp"
 #include "spectrum.hpp"
+#include "ELSASpuren.hpp"
 #include "types.hpp"
 
 
@@ -80,7 +81,7 @@ public:
   void madxTrajectory(string path, unsigned int particle); //import single particle trajectory from madx tracking "obs" files at each quadrupole
   void elegantClosedOrbit(const char *elegantCloFile);               //import closed orbit from elegant .clo file
   void elegantTrajectory(string path, unsigned int particle); //import single particle trajectory from elegant tracking "watch" files at each quadrupole
-  void elsaClosedOrbit(BPM *ELSAbpms, unsigned int t);               //import closed orbit from ELSA measurement at time t/ms
+  void elsaClosedOrbit(ELSASpuren &spuren, unsigned int t);               //import closed orbit from ELSA measurement at time t/ms
 
   // tests
   bool exists(double pos, unsigned int turn=1) const; // is there data at pos?

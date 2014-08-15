@@ -14,6 +14,9 @@
 #include <iostream>
 #include <vector>
 #include "AccElements.hpp"
+#include "ELSASpuren.hpp"
+#include "metadata.hpp"
+#include "constants.hpp"
 #include "types.hpp"
 
 
@@ -71,8 +74,8 @@ public:
   void madximportMisalignments(const char *madxEalignFile);// set misalignments from MAD-X Lattice (read ealign-output)
                                                      // !! currently only rotation (dpsi) around beam axis (s) is implemented!
   void elegantimport(const char *elegantParamFile);        // set elements from elegant Lattice (read from ascii parameter file ".param")
-  void setELSAoptics(const char *spurenFolder);                    // change quad&sext strengths to values from "ELSA-Spuren"
-  unsigned int setELSACorrectors(CORR *ELSAvcorrs, unsigned int t);// change corrector pos&strength to values from "ELSA-Spuren" at time t
+  void setELSAoptics(string spurenFolder);                    // change quad&sext strengths to values from "ELSA-Spuren"
+  unsigned int setELSACorrectors(ELSASpuren &spuren, unsigned int t);// change corrector pos&strength to values from "ELSA-Spuren" at time t
   void subtractCorrectorStrengths(const AccLattice &other);    // subtract other corrector strengths from the ones of this lattice
   void subtractMisalignments(const AccLattice &other);         // subtract other misalignments from the ones of this lattice
 

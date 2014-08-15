@@ -319,7 +319,7 @@ void Spectrum::eval_out(double stepwidth, double max, const char *filename) cons
   file <<"# "<<setw(w)<< "s [m]" <<setw(w)<< "t [s]" <<setw(w)<< "B [1/m]"  << endl;
   for (s=0.0; s<=max; s+=stepwidth) {
     file <<setiosflags(ios::scientific)<<showpoint<<setprecision(4);
-    file <<setw(w+2)<< s <<setw(w)<< s/SPEED_OF_LIGHT <<setw(w)<< eval(s/SPEED_OF_LIGHT) << endl;
+    file <<setw(w+2)<< s <<setw(w)<< s/GSL_CONST_MKSA_SPEED_OF_LIGHT <<setw(w)<< eval(s/GSL_CONST_MKSA_SPEED_OF_LIGHT) << endl;
   }
   file.close();
   cout << "* Wrote " << filename  << endl;

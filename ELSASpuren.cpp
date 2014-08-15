@@ -9,15 +9,26 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
-#include "constants.hpp"
 #include "types.hpp"
-#include "ELSAimport.hpp"
+#include "ELSASpuren.hpp"
 
 using namespace std;
 
 
+ELSASpuren::ELSASpuren(string _spurenFolder)
+{
+  read(_spurenFolder);
+}
+
+void ELSASpuren::read(string _spurenFolder)
+{
+  spurenFolder = _spurenFolder;
+  import_bpms();
+  import_vcorrs();
+}
+
 // Write BPM data from files to bpms
-int ELSAimport_bpms(BPM *ELSAbpms, const char *spurenFolder)
+void ELSASpuren::import_bpms()
 {
   int i;
   char filename[1024];
@@ -26,41 +37,40 @@ int ELSAimport_bpms(BPM *ELSAbpms, const char *spurenFolder)
   fstream file;
  
   // Read Monitor positions from "bpms_spos.dat"
-  snprintf(filename, 1024, "%s/bpms_spos.dat", spurenFolder);
+  snprintf(filename, 1024, "%s/bpms_spos.dat", spurenFolder.c_str());
   file.open(filename, ios::in);
   if (!file.is_open()) {
-    printf("ERROR: ELSAimport.cpp: Cannot open %s\n", filename);
-    return 1;
+    printf("ERROR: ELSASpuren::import_bpms(): Cannot open %s\n", filename);
+    exit(1);
   }
   for (i=0; i<NBPMS; i++) {
-    file >> ELSAbpms[i].pos;
+    file >> bpms[i].pos;
   }
   file.close();
   
   // Read BPM Data from "bpmXX.dat" (all BPMs)
   for (i=0; i<NBPMS; i++) {
-    snprintf(filename, 1024, "%s/bpm%02i.dat", spurenFolder, i+1);
+    snprintf(filename, 1024, "%s/bpm%02i.dat", spurenFolder.c_str(), i+1);
     file.open(filename, ios::in);
     if (!file.is_open()) {
-      printf("! ELSAimport.cpp: Cannot open %s\n", filename);
+      printf("! ELSASpuren::import_bpms(): Cannot open %s\n", filename);
       continue;
     }
     while(!file.eof()) {
       file >> tmptime.ms >> tmptime.x >> tmptime.z >> tmp;
-      ELSAbpms[i].time.push_back(tmptime); 
+      bpms[i].time.push_back(tmptime); 
     }
     file.close();
   }
 
-  return 0;
 }
 
 
 
 
 
-// Write corrector data from files to ELSAvcorrs
-int ELSAimport_vcorrs(CORR *ELSAvcorrs, const char *spurenFolder)
+// Write corrector data from files to vcorrs
+void ELSASpuren::import_vcorrs()
 {
   int i, j, tmp;
   char filename[1024];
@@ -69,23 +79,23 @@ int ELSAimport_vcorrs(CORR *ELSAvcorrs, const char *spurenFolder)
   fstream file;
  
   // Read corrector positions from "VCORRS.SPOS"
-  snprintf(filename, 1024, "%s/correctors/VCORRS.SPOS", spurenFolder);
+  snprintf(filename, 1024, "%s/correctors/VCORRS.SPOS", spurenFolder.c_str());
   file.open(filename, ios::in);
   if (!file.is_open()) {
-    printf("ERROR: ELSAimport.cpp: Cannot open %s\n", filename);
-    return 1;
+    printf("ERROR: ELSASpuren::import_vcorrs(): Cannot open %s\n", filename);
+    exit(1);
   }
   for (i=0; i<NVCORRS; i++) {
-    file >> tmp >> ELSAvcorrs[i].pos;
+    file >> tmp >> vcorrs[i].pos;
   }
   file.close();
   
   //Read corrector kickangles [mrad] from "VCxx.KICK"
-  for (i=0; i<NVCORRS; i++) {
-    snprintf(filename, 1024, "%s/correctors/VC%02d.KICK", spurenFolder, i+1);
+for (i=0; i<NVCORRS; i++) {
+    snprintf(filename, 1024, "%s/correctors/VC%02d.KICK", spurenFolder.c_str(), i+1);
     file.open(filename, ios::in);
     if (!file.is_open()) {
-      printf("! ELSAimport.cpp: Cannot open %s\n", filename);
+      printf("! ELSASpuren::import_vcorrs(): Cannot open %s\n", filename);
       continue;
     }
     //read Headline
@@ -96,9 +106,9 @@ int ELSAimport_vcorrs(CORR *ELSAvcorrs, const char *spurenFolder)
     for (j=0; j<tmpA.ms; j++) {
       tmpB.ms = j;
       tmpB.kick=0.0;
-      ELSAvcorrs[i].time.push_back(tmpB);
+      vcorrs[i].time.push_back(tmpB);
     }
-    ELSAvcorrs[i].time.push_back(tmpA);
+    vcorrs[i].time.push_back(tmpA);
     //now continue normally
     while (!file.eof()) {
       file >> tmpB.ms >> tmpB.kick;
@@ -107,15 +117,14 @@ int ELSAimport_vcorrs(CORR *ELSAvcorrs, const char *spurenFolder)
 	tmpC.ms = j;
 	//linear interpolation of kicks
 	tmpC.kick = tmpA.kick + (tmpB.kick-tmpA.kick)/(tmpB.ms-tmpA.ms)*(j-tmpA.ms);
-	ELSAvcorrs[i].time.push_back(tmpC);
+	vcorrs[i].time.push_back(tmpC);
       }
-      ELSAvcorrs[i].time.push_back(tmpB);
+      vcorrs[i].time.push_back(tmpB);
       tmpA.ms = tmpB.ms;
       tmpA.kick = tmpB.kick;
     }
     file.close();
   }
   
-  return 0;
 }
 

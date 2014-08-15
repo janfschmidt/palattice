@@ -14,8 +14,6 @@
 #include <iomanip>
 #include <stdexcept>
 #include "AccLattice.hpp"
-#include "constants.hpp"
-#include "metadata.hpp"
 #include "gitversion.hpp"
 
 
@@ -744,7 +742,7 @@ void AccLattice::elegantimport(const char *elegantParamFile)
 
 
 // change quad&sext strengths to values from "ELSA-Spuren"
-void AccLattice::setELSAoptics(const char *spurenFolder)
+void AccLattice::setELSAoptics(string spurenFolder)
 {
   char filename[1024];
   string tmp;
@@ -754,7 +752,7 @@ void AccLattice::setELSAoptics(const char *spurenFolder)
   AccIterator it;
 
  // Read "optics.dat"
-  snprintf(filename, 1024, "%s/optics.dat", spurenFolder);
+  snprintf(filename, 1024, "%s/optics.dat", spurenFolder.c_str());
   f_magnets.open(filename, ios::in);
   if (!f_magnets.is_open()) {
     msg << "ERROR: AccLattice::setELSAoptics(): Cannot open " << filename;
@@ -805,7 +803,7 @@ void AccLattice::setELSAoptics(const char *spurenFolder)
 
 // change corrector pos&strength to values from "ELSA-Spuren" at time t/ms
 // return number of correctors, where set
-unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
+unsigned int AccLattice::setELSACorrectors(ELSASpuren &spuren, unsigned int t)
 {
   unsigned int i, n=0;
  AccElement* corrTmp;
@@ -819,11 +817,11 @@ unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
 
  
  for (i=0; i<NVCORRS; i++) {
-   if (ELSAvcorrs[i].pos==0.0) {   //inactive correctors have pos=0 in VCORRS.SPOS
+   if (spuren.vcorrs[i].pos==0.0) {   //inactive correctors have pos=0 in VCORRS.SPOS
      continue;
    }
-   else if (t > ELSAvcorrs[i].time.size()) {
-     cout << ELSAvcorrs[i].time[ELSAvcorrs[i].time.size()-1].ms << endl;
+   else if (t > spuren.vcorrs[i].time.size()) {
+     cout << spuren.vcorrs[i].time[spuren.vcorrs[i].time.size()-1].ms << endl;
      snprintf(msg, 1024, "ERROR: AccLattice::setELSACorrectors(): No ELSA VC%02d corrector data available for %d ms.\n", i+1, t);
      throw std::invalid_argument(msg);
    }
@@ -838,17 +836,17 @@ unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
      throw std::runtime_error(strMsg.str());
    }
    //...check by position
-   diff = ELSAvcorrs[i].pos - locate(it,center);
+   diff = spuren.vcorrs[i].pos - locate(it,center);
    if (fabs(diff) > VCPOS_WARNDIFF) {
      cout << "! Position of " <<name2<< " differs by " <<diff<< "m in Mad-X and ELSA-Spuren. Use ELSA-Spuren." << endl;
    }
    
    corrTmp = it->second->clone();
 
-   corrTmp->strength = ELSAvcorrs[i].time[t].kick/1000.0/corrTmp->length;   //unit 1/m
+   corrTmp->strength = spuren.vcorrs[i].time[t].kick/1000.0/corrTmp->length;   //unit 1/m
    it_next = nextIt(corrector,it,H);  // only vertical correctors (H)!
    elements.erase(it);   // erase "old" corrector (madx) to be able to mount new one
-   endPos = ELSAvcorrs[i].pos + corrTmp->length/2;
+   endPos = spuren.vcorrs[i].pos + corrTmp->length/2;
    this->set(endPos, *(corrTmp));
    delete corrTmp;
 
