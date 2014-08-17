@@ -150,6 +150,10 @@ void FunctionOfPos<AccPair>::madxClosedOrbit(const char *madxTwissFile)
 	this->set(otmp, pos);
     }
   }
+
+  //metadata
+  info.add("Closed Orbit from", "MAD-X");
+  info.add("Source file", madxTwissFile);
 }
 
 
@@ -253,7 +257,12 @@ void FunctionOfPos<AccPair>::madxTrajectory(string path, unsigned int particle)
     madxFile.open(trajectoryFile(path,madx,obs,particle).c_str(), ios::in);
   }
   this->hide_last_turn();
-    
+
+  //metadata
+  info.add("Trajectory from", "MAD-X");
+  info.add("Source file path", path);
+  info.add("particle number", particle);
+  info.add("number of obs. points", obs);
 }
 
 
@@ -296,6 +305,9 @@ void FunctionOfPos<AccPair>::elegantClosedOrbit(const char *elegantCloFile)
 	this->set(otmp, pos);
     }
   }
+  //metadata
+  info.add("Closed Orbit from", "Elegant");
+  info.add("Source file", elegantCloFile);
 }
 
 
@@ -352,6 +364,11 @@ void FunctionOfPos<AccPair>::elegantTrajectory(string path, unsigned int particl
   }
   this->hide_last_turn();
 
+  //metadata
+  info.add("Trajectory from", "Elegant");
+  info.add("Source file path", path);
+  info.add("particle number", particle);
+  info.add("number of watch points", watch);
 }
 
 
@@ -378,6 +395,11 @@ void FunctionOfPos<AccPair>::elsaClosedOrbit(ELSASpuren &spuren, unsigned int t)
     otmp.z = spuren.bpms[i].time[t].z / 1000;
     this->set(otmp, spuren.bpms[i].pos);
   }
+
+ //metadata
+ stringstream spureninfo;
+ spureninfo << t << "ms in "<<spuren.spurenFolder;
+ info.add("ELSA Closed Orbit from", spureninfo.str());
 }
 
 

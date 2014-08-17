@@ -232,8 +232,8 @@ int main (int argc, char *argv[])
 
 
   // initialize Lattice
-  AccLattice lattice(circumference, end); // refPos=end used by MAD-X
-  AccLattice Ref_lattice(circumference, end);
+  AccLattice lattice("Bsupply Lattice", circumference, end); // refPos=end used by MAD-X
+  AccLattice Ref_lattice("Bsupply Reference Lattice", circumference, end);
   // ignoreFile
   if (ignoreFile != "NULL") {
     lattice.setIgnoreList(ignoreFile);

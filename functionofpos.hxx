@@ -340,6 +340,7 @@ void FunctionOfPos<T>::out(const char *filename) const
    return;
  }
 
+ file << info.out("#");
  file <<"#"<<setw(w)<<"pos / m"<<setw(w)<<"posInTurn"<<setw(w)<<"turn"<<"\t"<< this->header() << endl;
  file <<setprecision(3);
  
