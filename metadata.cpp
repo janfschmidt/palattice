@@ -14,43 +14,15 @@
 using namespace std;
 
 
-/* constructor with entries for project, mode & spuren */
-METADATA::METADATA(string path, bool elsa, simulationTool s, bool diff, char *spuren, char *Reference)
+METADATA::METADATA()
 {
-  METADATA::add("created at", timestamp());
-  METADATA::add("by pole version", gitversion());
-  METADATA::add("Project path", path.c_str());
-
-  if (elsa) {
-    if (diff) {
-      METADATA::add("Program Mode", "elsa + difference");
-      METADATA::add("Referenz-Spuren", Reference);
-    }
-    else {
-      METADATA::add("Program Mode", "elsa");
-    }
-    METADATA::add("Spuren", spuren);
-  }
-  else {
-    if (diff) {
-      if (s==madx)
-	METADATA::add("Program Mode", "madx + difference");
-      else
-	METADATA::add("Program Mode", "elegant + difference");
-      METADATA::add("Referenz-MadXfile", Reference);
-    }
-    else {
-      if (s==madx)
-	METADATA::add("Program Mode", "madx");
-      else
-	METADATA::add("Program Mode", "elegant");
-    }
-  }  
+  add("created at", timestamp());
+  add("by libAccLattice version", gitversion());
 }
 
 
 /* add metadata from madx-outputfile. returns number of read values */
-int METADATA::madximport(char *madxLabels, const char *madxfile)
+int METADATA::madximport(char *madxLabels, const char* madxfile)
 {
   unsigned int i, n=0;
   unsigned int newStart;
@@ -61,9 +33,12 @@ int METADATA::madximport(char *madxLabels, const char *madxfile)
 
   madx.open(madxfile, ios::in);
   if (!madx.is_open()) {
-    cout << "ERROR: metadata.madximport(): Cannot open " << madxfile << endl;
+    cout << "ERROR: METADATA::madximport(): Cannot open " << madxfile << endl;
     return -1;
   }
+
+  add("Imported from", "MAD-X");
+  add("Source file", madxfile);
 
   //read Labels from madxLabels
   p = strtok(madxLabels, ", ");
@@ -72,10 +47,8 @@ int METADATA::madximport(char *madxLabels, const char *madxfile)
     tmpLabel.push_back(tmp);
     p = strtok(NULL, ", ");
   }
-
   while(!madx.eof()) {
     madx >> tmp;
-
     for (i=0; i<tmpLabel.size(); i++) {
       if(tmp==tmpLabel[i]) {
 	madx >> tmp;
@@ -85,12 +58,10 @@ int METADATA::madximport(char *madxLabels, const char *madxfile)
 	if (newStart != string::npos)
 	  tmpEntry = tmpEntry.substr(newStart);	
 	//add to metadata
-	label.push_back(tmpLabel[i]);
-	entry.push_back(tmpEntry);
+	add(tmpLabel[i],tmpEntry);
 	n++;
       }
     }
-
   }
 
   madx.close();
@@ -101,7 +72,7 @@ int METADATA::madximport(char *madxLabels, const char *madxfile)
 
 //  add metadata from elegant .param ascii file (written with subprocess command).
 // returns number of read values
-int METADATA::elegantimport(char *elegantLabels, const char *elegantfile)
+int METADATA::elegantimport(char *elegantLabels, const char* elegantfile)
 {
   unsigned int i, n=0;
   string tmp, tmpEntry;
@@ -111,9 +82,12 @@ int METADATA::elegantimport(char *elegantLabels, const char *elegantfile)
 
   elegant.open(elegantfile, ios::in);
   if (!elegant.is_open()) {
-    cout << "ERROR: metadata.elegantimport(): Cannot open " << elegantfile << endl;
+    cout << "ERROR: METADATA::elegantimport(): Cannot open " << elegantfile << endl;
     return -1;
   }
+
+  add("Imported from", "Elegant");
+  add("Source file", elegantfile);
 
   //read Labels from elegantLabels
   p = strtok(elegantLabels, ", ");
@@ -122,7 +96,6 @@ int METADATA::elegantimport(char *elegantLabels, const char *elegantfile)
     tmpLabel.push_back(tmp);
     p = strtok(NULL, ", ");
   }
-
   //read corresponding entries 
   while(!elegant.eof()) {
     elegant >> tmp;
@@ -151,16 +124,6 @@ void METADATA::add(string inLabel, string inEntry)
 }
 
 
-/* get number of entries. (-1) if not consistent */
-unsigned int METADATA::size() const
-{
-  unsigned int equalSize;
-  if ((equalSize=label.size()) != entry.size()) {
-    return 1;
-  }
-
-  return equalSize;
-}
 
 /* get i-th value */
 string METADATA::getLabel(unsigned int i) const
@@ -209,33 +172,16 @@ void METADATA::setbyLabel(string inLabel, string inEntry)
 
 
 // formated output of all metadata to be written to a file.
-// Additional metadata for Spectrum spec are added to output.
-string METADATA::get(Spectrum spec, string tag) const
+string METADATA::out(string delimiter) const
 {
-  METADATA tmpMeta = *this; // Spectrum metadata should not be added permanently
-  char tmp[30];
-
-  // add tag to metadata
-  if (!tag.empty())
-    tmpMeta.add("Field Component", tag);
-  // add fmax to metadata
-  snprintf(tmp, 30, "%d", spec.fMax());
-  tmpMeta.add("max. frequency", tmp);
-  // add ampcut to metadata
-  snprintf(tmp, 30, "%.2e (%d cutted)", spec.getAmpcut(), spec.fMax()+1-spec.size());
-  tmpMeta.add("cutted Amp <", tmp);
-  // add phase-warning for harmcorr
-  if (tag=="harmcorr" || tag=="resonances") {
-    tmpMeta.add("WARNING:", "Phase NOT equal harmcorr in ELSA-CCS! (sign in cos)");
-  }
-
-  unsigned int w = tmpMeta.columnwidth();
+  unsigned int w = this->columnwidth();
+  unsigned int w_del = delimiter.length();
 
   //write metadata to string
   ostringstream out;
-  for (unsigned int i=0; i<tmpMeta.size(); i++) {
+  for (unsigned int i=0; i<this->size(); i++) {
     out << setiosflags(ios::left);
-    out <<setw(2)<<"#";
+    out <<setw(w_del+1)<< delimiter;
     out <<setw(w)<< tmpMeta.getLabel(i) << tmpMeta.getEntry(i) <<endl;
   }
 
@@ -277,4 +223,3 @@ string timestamp()
 
   return timestamp;
 }
-

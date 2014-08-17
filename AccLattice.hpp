@@ -29,6 +29,7 @@ enum Anchor{begin,center,end};
 class AccLattice {
 
 protected:
+  double circumference;
   std::map<double,AccElement*> elements;                  // first: position in lattice / m
   const Drift* empty_space;
   vector<string> ignoreList;                              // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted (set) in this lattice
@@ -41,13 +42,15 @@ protected:
 
 public:
   const Anchor refPos;
-  const double circumference;
+  Metadata info;
 
-  AccLattice(double _circumference, Anchor _refPos=begin);
+  AccLattice(string _name, double _circumference, Anchor _refPos=begin);
+  AccLattice(string _name, simulationTool s, string file, Anchor _refPos=end); //direct madx/elegant import (from file)
   AccLattice(const AccLattice &other);
   ~AccLattice();
   AccLattice& operator= (const AccLattice other);
 
+  double circumference() const {return circumference;}
   const_AccIterator getIt(double pos) const;                           // get const_Iterator to element, if pos is inside it
   const_AccIterator getItBegin() const;                                // get iterator to begin (first Element)
   const_AccIterator getItEnd() const;                                  // get iterator to end (after last Element)

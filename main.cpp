@@ -211,39 +211,6 @@ int main (int argc, char *argv[])
   FILENAMES file(argv[1], simTool, elsa, diff, sgt_access, spuren, Reference);
 
 
-  //metadata for spectrum files
-  METADATA metadata(file.path, elsa, simTool, diff, spuren, Reference);
-  //metadata.add("POLE version", gitversion());
-  char tmp[100];
-  if (simTool == madx) {
-    snprintf(tmp, 100, "TITLE,LENGTH,ORIGIN,PARTICLE");
-    metadata.madximport(tmp, file.lattice.c_str());
-    circumference = strtod(metadata.getbyLabel("LENGTH").c_str(), NULL);
-  }
-  else {
-    metadata.add("ORIGIN", "Elegant");
-    snprintf(tmp, 100, "circumference,pCentral/m_e*c,tune:Qx,tune:Qz");
-    metadata.elegantimport(tmp, file.lattice.c_str());
-    circumference = strtod(metadata.getbyLabel("circumference").c_str(), NULL);
-  }
-  if (circumference == 0) {
-    cout << "ERROR: metadata: cannot read accelerator circumference from "<< file.lattice << endl;
-    return 1;
-  }
-  // add revolution freq. to metadata
-  stringstream frev;
-  frev << GSL_CONST_MKSA_SPEED_OF_LIGHT/circumference;
-  metadata.add("rev.frequency/Hz", frev.str());
-
-  // calculate default sampling points along ring (n_samp)
-  double stepwidth = 0.001;  // in m
-  if (default_n_samp) n_samp = circumference/stepwidth;
-  
-  // check fmax and n_samp
-  if (fmax_x >= n_samp/2 || fmax_z >= n_samp/2) {
-    cout << "ERROR: The maximum frequency is to large to be calculated with "<<n_samp<<" sampling points." << endl;
-    return 1;
-  }
   
   // write n_samp to metadata
   snprintf(tmp, 100, "%d points per turn", n_samp);
@@ -251,7 +218,7 @@ int main (int argc, char *argv[])
   
 
 
-   // output
+  // output
   cout << endl;
   cout << "--------------------------------------------" << endl;
   cout << "Bsupply: calculate magnetic field & spectrum" << endl;
@@ -259,7 +226,6 @@ int main (int argc, char *argv[])
   if (diff) cout << "         harmcorr analysis (difference-mode)" << endl;
   cout << "                    version:" <<endl<<gitversion() << endl;
   cout << "--------------------------------------------" << endl;
-  cout << "* "<<n_samp<<" sampling points along ring" << endl;
   cout << "* maximum frequency used for B-field evaluation:  Bx->"<<fmax_x <<", Bz->"<<fmax_z << endl;
   cout << "* frequency components cutted if amplitude below: Bx->"<<ampcut_x<<" 1/m, Bz->"<<ampcut_z<< " 1/m" << endl;
 
@@ -293,6 +259,7 @@ int main (int argc, char *argv[])
     //lattice.madximportMisalignments(file.misalign_dip.c_str());
     bpmorbit.elegantClosedOrbit(file.orbit.c_str());
   }
+
 
   // elsa=true: quad-&sext-strengths, BPM- & corrector-data from ELSA "Spuren"
   if (elsa) {
@@ -330,6 +297,15 @@ int main (int argc, char *argv[])
   cout << "--------------------------------------------" << endl;
 
 
+
+  // calculate default sampling points along ring (n_samp)
+  double stepwidth = 0.001;  // in m
+  if (default_n_samp) n_samp = circumference/stepwidth;  
+  // check fmax and n_samp
+  if (fmax_x >= n_samp/2 || fmax_z >= n_samp/2) {
+    cout << "ERROR: The maximum frequency is to large to be calculated with "<<n_samp<<" sampling points." << endl;
+    return 1;
+  }
 
   // magnetic field along ring, [B]=1/m (factor gamma*m*c/e multiplied in TBMTsolver)
   Field B(circumference, n_samp, trajectory.turns());

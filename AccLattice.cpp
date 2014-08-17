@@ -28,10 +28,29 @@ string removeQuote(string s)
 
 
 //constructor
-AccLattice::AccLattice(double _circumference, Anchor _refPos)
+AccLattice::AccLattice(string _name, double _circumference, Anchor _refPos)
   : ignoreCounter(0), refPos(_refPos), circumference(_circumference)
 {
   empty_space = new Drift;
+
+  info.add("Lattice name", _name);
+  info.add("Reference pos.", this->refPos_string());
+  stringstream frev;
+  frev << GSL_CONST_MKSA_SPEED_OF_LIGHT/circumference;
+  info.add("rev. frequency / Hz", frev.str());
+}
+
+AccLattice::AccLattice(string _name, simulationTool s, string file, Anchor _refPos=end)
+  : ignoreCounter(0), refPos(_refPos)
+{
+  empty_space = new Drift;
+
+  info.add("Lattice name", _name);
+  info.add("Reference pos.", this->refPos_string());
+  if (s == madx)
+    this->madximport(file.c_str());
+  else //elegant
+    this->elegantimport(file.c_str());
 }
 
 //copy constructor
@@ -414,6 +433,9 @@ void AccLattice::setIgnoreList(string ignoreFile)
     exit(1);
   }
 
+  //metadata
+  info.add("ignore list", ignoreFile);
+
   while (!f.eof()) {
     f >> tmp;
     ignoreList.push_back(tmp);
@@ -431,6 +453,18 @@ void AccLattice::setIgnoreList(string ignoreFile)
 // ===================================================
 void AccLattice::madximport(const char *madxTwissFile)
 {
+  //get metadata and set circumference&frev
+  info.madximport("TITLE,LENGTH,ORIGIN,PARTICLE", madxTwissFile);
+  circumference = strtod(info.getbyLabel("LENGTH").c_str(), NULL);
+  if (circumference == 0) {
+    strigstream msg;
+    msg << "AccLattice::madximport(): Cannot read circumference from " << madxTwissFile;
+    throw std::runtime_error(msg.str());
+  }
+  stringstream frev;
+  frev << GSL_CONST_MKSA_SPEED_OF_LIGHT/circumference;
+  info.setbyLabel("rev. frequency / Hz", frev.str());
+
   // madx column variables
   string tmp, tmpName;
   string expectedColumns[11] = {"KEYWORD","NAME","S","X","Y","L","ANGLE","K1L","K2L","VKICK","HKICK"};
@@ -609,9 +643,9 @@ void AccLattice::madximportMisalignments(const char *madxEalignFile)
 	}
       }
     }
-
   }
-
+  //metadata
+  info.add("MAD-X misalignments from", madxEalignFile);
 }
 
 
@@ -635,6 +669,18 @@ void AccLattice::elegantimport(const char *elegantParamFile)
   string tmp;
 
   pos=l=k1=k2=angle=kick=tilt=0.;   // initialize param. values
+
+  //get metadata and set circumference&frev
+  info.elegantimport("circumference,pCentral/m_e*c,tune:Qx,tune:Qz", file.lattice.c_str());
+  circumference = strtod(info.getbyLabel("circumference").c_str(), NULL);
+  if (circumference == 0) {
+    strigstream msg;
+    msg << "AccLattice::madximport(): Cannot read circumference from " << madxTwissFile;
+    throw std::runtime_error(msg.str());
+  }
+  stringstream frev;
+  frev << GSL_CONST_MKSA_SPEED_OF_LIGHT/circumference;
+  info.setbyLabel("rev. frequency / Hz", frev.str());
 
   //AccElements
   Dipole hDip("defaultName", 0., 0., H);
@@ -796,7 +842,9 @@ void AccLattice::setELSAoptics(string spurenFolder)
       it->second->strength = -md;
     }
   }
-  
+
+ //metadata
+ info.add("ELSA optics from", spurenFolder);
 }
 
 
@@ -859,6 +907,11 @@ unsigned int AccLattice::setELSACorrectors(ELSASpuren &spuren, unsigned int t)
  
  if (n != this->size(corrector,V)) // only vertical correctors (V)!
    cout << "WARNING: Not all correctors overwritten by ELSA-Spuren" << endl;
+
+ //metadata
+ stringstream spureninfo;
+ spureninfo << t << "ms in "<<spuren.spurenFolder;
+ info.add("ELSA VCs from", spureninfo.str());
  
  return n;
 }
@@ -901,6 +954,8 @@ void AccLattice::subtractCorrectorStrengths(const AccLattice &other)
     otherIt=nextCIt(corrector,otherIt);
   }
 
+  //metadata
+  info.add("subtracted corrector strengths", other.info.getbyLabel("Lattice name"));
 }
 
 
@@ -939,6 +994,8 @@ void AccLattice::subtractMisalignments(const AccLattice &other)
     otherIt++;
   }
 
+  //metadata
+  info.add("subtracted misalignments", other.info.getbyLabel("Lattice name"));
 }
 
 
@@ -985,7 +1042,7 @@ void AccLattice::print(const char *filename) const
   fstream file;
 
   //write text to s
-  s << "# Reference Position: " << refPos_string() << endl;
+  s << info.out("#");
   s <<"# (* unit of Strength depends on magnet type! e.g. Quad: k1, Sext: k2, Dipole: 1/R)" <<endl;
   s <<"#"<< std::setw(w) << "Ref.Pos/m" << it->second->printHeader();
 
@@ -1020,7 +1077,7 @@ void AccLattice::print(element_type _type, const char *filename) const
   fstream file;
 
   //write text to s
-  s << "# Reference Position: " << refPos_string() << endl;
+  s << info.out("#");
   s << "# List of " << it->second->type_string() << "s only!" << endl;
   s <<"# (* unit of Strength depends on magnet type! e.g. Quad: k1, Sext: k2, Dipole: 1/R)" <<endl;
   s <<"#"<< std::setw(w) << "Ref.Pos/m" << it->second->printHeader();
@@ -1161,9 +1218,7 @@ void AccLattice::simToolExport(simulationTool tool, const char *filename, madxLa
     s << "! Lattice for ELEGANT" << endl;
   else
     s << "! Lattice for MAD-X" << endl;
-  s << "!" << endl<<"! created at " << timestamp() << endl;
-  s << "! by pole/Bsupply, version " << gitversion() << endl
-    << endl;
+  s << info.out("!") << endl;
 
 
   //element definitions
@@ -1212,8 +1267,7 @@ void AccLattice::latexexport(const char *filename) const
   //write text to s
   s << "% Lattice for LaTeX" << endl
     << "%" << endl;
-  s << "% created at " << timestamp() << endl;
-  s << "% by pole/Bsupply, version " << gitversion() << endl
+  s << info.out("%")
     << endl;
 
   //preamble
