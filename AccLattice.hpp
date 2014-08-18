@@ -63,6 +63,7 @@ public:
 
 
   const AccElement* operator[](double pos) const;                  // get element (any position, Drift returned if not inside any element)
+  const_AccIterator operator[](string name) const;                 // get iterator by name (first match in lattice, Drift returned otherwise)
   void mount(double pos, const AccElement &obj, bool verbose=false); // mount an element (throws eNoFreeSpace if no free space for obj)
   void dismount(double pos);                                          // dismount element at Ref.position pos (if no element at pos: do nothing)
 

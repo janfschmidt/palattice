@@ -303,6 +303,17 @@ const AccElement* AccLattice::operator[](double pos) const
   }
 }
 
+// get iterator by name, returns lattice end, if name is not found
+// ! name can be ambiguous! always returns it. to first matching element
+const_AccIterator AccLattice::operator[](string _name) const
+{
+  for (const_AccIterator it=elements.begin(); it!=elements.end(); it++) {
+    if (it->second->name == _name )
+      return it;
+  }
+  // otherwise name does not match any element:
+  return elements.end();
+}
 
 
 // mount element (replace if key (pos) already used; check for "free space" to insert element)
