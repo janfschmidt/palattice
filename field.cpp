@@ -17,6 +17,8 @@
 // set all magnetic field values from lattice and orbit
 void Field::set(AccLattice &lattice, FunctionOfPos<AccPair>& orbit, double n_samples)
 {
+  // info =.....
+
   unsigned int i, t;
   double _pos, _pos_tot;
   stringstream msg;

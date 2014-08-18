@@ -14,14 +14,13 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
-#include "constants.hpp"
 #include "types.hpp"
 #include "AccLattice.hpp"
 #include "timetag.hpp"
 #include "filenames.hpp"
 #include "resonances.hpp"
 #include "metadata.hpp"
-#include "ELSAimport.hpp"
+#include "ELSASpuren.hpp"
 #include "spectrum.hpp"
 #include "field.hpp"
 #include "functionofpos.hpp"
@@ -65,7 +64,7 @@ void usage()
 int main (int argc, char *argv[])
 {
   //-----------------------------
-  bool sgt_access=true;       //special option for elsa-mode:
+  bool sgt_access=false;       //special option for elsa-mode:
                                //if 1, spuren are read from /sgt/elsa/data/bpm/ instead of [project]/ELSA-Spuren/
   //-----------------------------
   unsigned int n_samp;         // number of sampling points along ring for magn. field strengths
@@ -90,10 +89,8 @@ int main (int argc, char *argv[])
   double ampcut_z = 1e-6;     // be carefull: ampcut_z can change spin tune !
   double ampcut_res=0;          // minimum amplitude for resonance spectrum (option -c)
   double dtheta = -1;           // spin phaseadvance stepwidth (option -r)
-  BPM ELSAbpms[NBPMS];         // ELSAbpms[0]=BPM01, ELSAbpms[31]=BPM32
-  CORR ELSAvcorrs[NVCORRS];    // ELSAvcorrs[0]=VC01, ELSAvcorrs[31]=VC32
-  BPM Ref_ELSAbpms[NBPMS];
-  CORR Ref_ELSAvcorrs[NVCORRS];
+  ELSASpuren ELSA;
+  ELSASpuren Ref_ELSA;
   FunctionOfPos<AccPair> *orbit;
   simulationTool simTool = madx;  // lattice/orbit/tracking from madx or elegant? (option -s)
 
@@ -214,39 +211,6 @@ int main (int argc, char *argv[])
   FILENAMES file(argv[1], simTool, elsa, diff, sgt_access, spuren, Reference);
 
 
-  //metadata for spectrum files
-  METADATA metadata(file.path, elsa, simTool, diff, spuren, Reference);
-  //metadata.add("POLE version", gitversion());
-  char tmp[100];
-  if (simTool == madx) {
-    snprintf(tmp, 100, "TITLE,LENGTH,ORIGIN,PARTICLE");
-    metadata.madximport(tmp, file.lattice.c_str());
-    circumference = strtod(metadata.getbyLabel("LENGTH").c_str(), NULL);
-  }
-  else {
-    metadata.add("ORIGIN", "Elegant");
-    snprintf(tmp, 100, "circumference,pCentral/m_e*c,tune:Qx,tune:Qz");
-    metadata.elegantimport(tmp, file.lattice.c_str());
-    circumference = strtod(metadata.getbyLabel("circumference").c_str(), NULL);
-  }
-  if (circumference == 0) {
-    cout << "ERROR: metadata: cannot read accelerator circumference from "<< file.lattice << endl;
-    return 1;
-  }
-  // add revolution freq. to metadata
-  stringstream frev;
-  frev << GSL_CONST_MKSA_SPEED_OF_LIGHT/circumference;
-  metadata.add("rev.frequency/Hz", frev.str());
-
-  // calculate default sampling points along ring (n_samp)
-  double stepwidth = 0.001;  // in m
-  if (default_n_samp) n_samp = circumference/stepwidth;
-  
-  // check fmax and n_samp
-  if (fmax_x >= n_samp/2 || fmax_z >= n_samp/2) {
-    cout << "ERROR: The maximum frequency is to large to be calculated with "<<n_samp<<" sampling points." << endl;
-    return 1;
-  }
   
   // write n_samp to metadata
   snprintf(tmp, 100, "%d points per turn", n_samp);
@@ -254,7 +218,7 @@ int main (int argc, char *argv[])
   
 
 
-   // output
+  // output
   cout << endl;
   cout << "--------------------------------------------" << endl;
   cout << "Bsupply: calculate magnetic field & spectrum" << endl;
@@ -262,15 +226,14 @@ int main (int argc, char *argv[])
   if (diff) cout << "         harmcorr analysis (difference-mode)" << endl;
   cout << "                    version:" <<endl<<gitversion() << endl;
   cout << "--------------------------------------------" << endl;
-  cout << "* "<<n_samp<<" sampling points along ring" << endl;
   cout << "* maximum frequency used for B-field evaluation:  Bx->"<<fmax_x <<", Bz->"<<fmax_z << endl;
   cout << "* frequency components cutted if amplitude below: Bx->"<<ampcut_x<<" 1/m, Bz->"<<ampcut_z<< " 1/m" << endl;
 
 
 
   // initialize Lattice
-  AccLattice lattice(circumference, end); // refPos=end used by MAD-X
-  AccLattice Ref_lattice(circumference, end);
+  AccLattice lattice("Bsupply Lattice", circumference, end); // refPos=end used by MAD-X
+  AccLattice Ref_lattice("Bsupply Reference Lattice", circumference, end);
   // ignoreFile
   if (ignoreFile != "NULL") {
     lattice.setIgnoreList(ignoreFile);
@@ -297,20 +260,19 @@ int main (int argc, char *argv[])
     bpmorbit.elegantClosedOrbit(file.orbit.c_str());
   }
 
+
   // elsa=true: quad-&sext-strengths, BPM- & corrector-data from ELSA "Spuren"
   if (elsa) {
     try {
-      lattice.setELSAoptics(file.spuren.c_str());
+      lattice.setELSAoptics(file.spuren);
 	} catch (std::runtime_error &e) {
       cout << e.what() << endl;
       return 1; 
     }
     // get orbit and vcorrs from ELSA "Spuren" (for all times t) 
-    ELSAimport_bpms(ELSAbpms, file.spuren.c_str());
-    ELSAimport_vcorrs(ELSAvcorrs, file.spuren.c_str());
+    ELSA.read(file.spuren);
     if (diff) {
-      ELSAimport_bpms(Ref_ELSAbpms, file.orbit_ref.c_str());
-      ELSAimport_vcorrs(Ref_ELSAvcorrs, file.lattice_ref.c_str());
+      Ref_ELSA.read(file.spuren_ref);
       Ref_lattice = lattice; // take names,positions,lengths
     }
   }
@@ -326,15 +288,24 @@ int main (int argc, char *argv[])
 
   if (tracking) {
     if (simTool == madx)
-      trajectory.madxTrajectory(file, particle);
+      trajectory.madxTrajectory(file.path_simTool, particle);
     else //elegant
-      trajectory.elegantTrajectory(file, particle);
+      trajectory.elegantTrajectory(file.path_simTool, particle);
     cout << "* trajectory of particle "<<particle<<" read at "<<trajectory.samples()
 	 <<" observation points for "<<trajectory.turns()<<" turns"<<endl;
   }
   cout << "--------------------------------------------" << endl;
 
 
+
+  // calculate default sampling points along ring (n_samp)
+  double stepwidth = 0.001;  // in m
+  if (default_n_samp) n_samp = circumference/stepwidth;  
+  // check fmax and n_samp
+  if (fmax_x >= n_samp/2 || fmax_z >= n_samp/2) {
+    cout << "ERROR: The maximum frequency is to large to be calculated with "<<n_samp<<" sampling points." << endl;
+    return 1;
+  }
 
   // magnetic field along ring, [B]=1/m (factor gamma*m*c/e multiplied in TBMTsolver)
   Field B(circumference, n_samp, trajectory.turns());
@@ -362,21 +333,21 @@ int main (int argc, char *argv[])
       }
       metadata.setbyLabel("Time in cycle", t.label(i));
       try {
-	bpmorbit.elsaClosedOrbit(ELSAbpms, t.get(i));
-	lattice.setELSACorrectors(ELSAvcorrs, t.get(i));
+	bpmorbit.elsaClosedOrbit(ELSA, t.get(i));
+	lattice.setELSACorrectors(ELSA, t.get(i));
       } catch (exception &e) {
 	cout << e.what();
 	exit(1);
       }
-      cout << "* "<<t.label(i)<<": "<<lattice.size(corrector)<<" correctors and "
+      cout << "* "<<t.label(i)<<": "<<lattice.size(corrector,H)<<" vertical correctors and "
 	   <<bpmorbit.samples()<<" BPMs read"<<endl<<"  from "<<file.spuren << endl;
     }
 
     // difference-mode: read reference orbit & corrector data
     if (diff) {
       if (elsa) {
-	Ref_bpmorbit.elsaClosedOrbit(Ref_ELSAbpms, t.get(i));
-	Ref_lattice.setELSACorrectors(Ref_ELSAvcorrs, t.get(i));
+	Ref_bpmorbit.elsaClosedOrbit(Ref_ELSA, t.get(i));
+	Ref_lattice.setELSACorrectors(Ref_ELSA, t.get(i));
 	cout << "* "<<t.label(i)<<": ";
 	  }
       else {

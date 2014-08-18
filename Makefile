@@ -2,7 +2,7 @@ CC=g++
 cflags = -Wall #-g -O0 #last 2 for valgrind
 INSTALL_PATH=/usr/local/bin/
 PROG_NAME=Bsupply
-ALL_O=main.o ELSAimport.o metadata.o timetag.o filenames.o resonances.o spectrum.o interpolate.o functionofpos.o field.o AccElements.o AccLattice.o
+ALL_O=main.o ELSASpuren.o metadata.o timetag.o filenames.o resonances.o spectrum.o interpolate.o functionofpos.o field.o AccElements.o AccLattice.o
 
 
 all: $(PROG_NAME) strom2kick new_strom2kick
@@ -11,10 +11,10 @@ all: $(PROG_NAME) strom2kick new_strom2kick
 $(PROG_NAME): $(ALL_O)
 	$(CC) $(cflags) -o $(PROG_NAME) $(ALL_O) -lgsl -lgslcblas -lm
 
-main.o: main.cpp constants.hpp types.hpp spectrum.hpp  metadata.hpp timetag.hpp filenames.hpp resonances.hpp interpolate.hpp interpolate.hxx functionofpos.hpp functionofpos.hxx field.hpp AccElements.hpp AccLattice.hpp gitversion.hpp
+main.o: main.cpp types.hpp spectrum.hpp  metadata.hpp timetag.hpp filenames.hpp resonances.hpp interpolate.hpp interpolate.hxx functionofpos.hpp functionofpos.hxx field.hpp AccElements.hpp AccLattice.hpp gitversion.hpp ELSASpuren.hpp
 	$(CC) $(cflags) -c main.cpp
-ELSAimport.o: ELSAimport.cpp constants.hpp types.hpp functionofpos.hpp functionofpos.hxx
-	$(CC) $(cflags) -c ELSAimport.cpp
+ELSASpuren.o: ELSASpuren.cpp types.hpp
+	$(CC) $(cflags) -c ELSASpuren.cpp
 metadata.o: metadata.cpp gitversion.hpp
 	$(CC) $(cflags) -c metadata.cpp
 timetag.o: timetag.cpp
@@ -23,17 +23,17 @@ filenames.o: filenames.cpp filenames.hpp types.hpp
 	$(CC) $(cflags) -c filenames.cpp
 resonances.o: resonances.cpp resonances.hpp types.hpp functionofpos.hpp functionofpos.hxx AccLattice.hpp spectrum.hpp
 	$(CC) $(cflags) -c resonances.cpp
-spectrum.o: spectrum.cpp spectrum.hpp constants.hpp
+spectrum.o: spectrum.cpp spectrum.hpp config.hpp
 	$(CC) $(cflags) -c spectrum.cpp
 interpolate.o: interpolate.cpp interpolate.hpp interpolate.hxx types.hpp
 	$(CC) $(cflags) -c interpolate.cpp
-functionofpos.o: functionofpos.cpp functionofpos.hpp functionofpos.hxx interpolate.hpp interpolate.hxx spectrum.hpp filenames.hpp types.hpp
+functionofpos.o: functionofpos.cpp functionofpos.hpp functionofpos.hxx interpolate.hpp interpolate.hxx spectrum.hpp ELSASpuren.hpp types.hpp
 	$(CC) $(cflags) -c functionofpos.cpp
 field.o: field.cpp field.hpp functionofpos.hpp functionofpos.hxx types.hpp AccLattice.hpp
 	$(CC) $(cflags) -c field.cpp
 AccElements.o: AccElements.cpp AccElements.hpp types.hpp
 	$(CC) $(cflags) -c AccElements.cpp
-AccLattice.o: AccLattice.cpp AccLattice.hpp AccElements.hpp
+AccLattice.o: AccLattice.cpp AccLattice.hpp AccElements.hpp ELSASpuren.hpp metadata.hpp config.hpp types.hpp
 	$(CC) $(cflags) -c AccLattice.cpp
 
 gitversion.hpp: ../.git/HEAD ../.git/index

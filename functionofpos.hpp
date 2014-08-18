@@ -14,7 +14,8 @@
 #include <stdexcept>
 #include "interpolate.hpp"
 #include "spectrum.hpp"
-#include "filenames.hpp"
+#include "ELSASpuren.hpp"
+#include "metadata.hpp"
 #include "types.hpp"
 
 
@@ -30,6 +31,10 @@ protected:
   unsigned int n_turns;                       //number of turns (initialized as 1)
   unsigned int n_samples;                     //number of samples per turn (initialized as zero)
 
+  // returns filename for trajectory files of particle p from madx or elegant at observation point obs:
+  string trajectoryFile(string path, simulationTool s, unsigned int obs, unsigned int p) const;
+
+
 
 private:
   unsigned int index(unsigned int i, unsigned int turn) const; //get index for pos[] & value[] from index(1turn) and turn
@@ -39,6 +44,7 @@ private:
 
 public:
   const double circ;                          //circumference of accelerator
+  METADATA info;
 
   FunctionOfPos(double circIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
   FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
@@ -74,10 +80,10 @@ public:
 
   // orbit import
   void madxClosedOrbit(const char *madxTwissFile);                   //import closed orbit from madx twiss file
-  void madxTrajectory(const FILENAMES files, unsigned int particle); //import single particle trajectory from madx tracking "obs" files at each quadrupole
+  void madxTrajectory(string path, unsigned int particle); //import single particle trajectory from madx tracking "obs" files at each quadrupole
   void elegantClosedOrbit(const char *elegantCloFile);               //import closed orbit from elegant .clo file
-  void elegantTrajectory(const FILENAMES files, unsigned int particle); //import single particle trajectory from elegant tracking "watch" files at each quadrupole
-  void elsaClosedOrbit(BPM *ELSAbpms, unsigned int t);               //import closed orbit from ELSA measurement at time t/ms
+  void elegantTrajectory(string path, unsigned int particle); //import single particle trajectory from elegant tracking "watch" files at each quadrupole
+  void elsaClosedOrbit(ELSASpuren &spuren, unsigned int t);               //import closed orbit from ELSA measurement at time t/ms
 
   // tests
   bool exists(double pos, unsigned int turn=1) const; // is there data at pos?

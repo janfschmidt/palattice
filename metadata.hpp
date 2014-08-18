@@ -3,14 +3,9 @@
 
 #include <vector>
 #include <string>
-#include "types.hpp"
-#include "spectrum.hpp"
 #include "gitversion.hpp"
 
 using namespace std;
-
-string timestamp();
-
 
 class METADATA {
 private:
@@ -18,23 +13,20 @@ private:
   vector<string> entry;
 
 public:
-  METADATA() {METADATA::add("created at", timestamp());}
-  METADATA(string path, bool elsa, simulationTool s, bool diff, char *spuren, char *Ref_spuren);
+  METADATA();
   ~METADATA() {}
-  int madximport(char *madxLabels, const char *madxfile);
-  int elegantimport(char *elegantLabels, const char *elegantfile);
+  int madximport(char *madxLabels, string madxfile);
+  int elegantimport(char *elegantLabels, string elegantfile);
   void add(string inLabel, string inEntry);
-  unsigned int size() const;
+  unsigned int size() const {return label.size();}
   string getLabel(unsigned int i) const;
   string getEntry(unsigned int i) const;
   string getbyLabel(string inLabel) const;
   void setbyLabel(string inLabel, string inEntry);
 
-  string get(Spectrum s, string tag="") const;
+  string out(string delimiter) const; //formatted output, each line starting with delimiter
   unsigned int columnwidth() const;
-
-// private:
-//   string timestamp() const;
+  string timestamp() const;
 };
 
 #endif

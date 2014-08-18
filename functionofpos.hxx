@@ -340,6 +340,7 @@ void FunctionOfPos<T>::out(const char *filename) const
    return;
  }
 
+ file << info.out("#");
  file <<"#"<<setw(w)<<"pos / m"<<setw(w)<<"posInTurn"<<setw(w)<<"turn"<<"\t"<< this->header() << endl;
  file <<setprecision(3);
  
@@ -495,7 +496,7 @@ void FunctionOfPos<T>::madxClosedOrbit(const char *madxTwissFile)
 }
 
 template <class T>
-void FunctionOfPos<T>::madxTrajectory(const FILENAMES files, unsigned int particle)
+void FunctionOfPos<T>::madxTrajectory(string path, unsigned int particle)
 {
   stringstream s;
   s << "FunctionOfPos<T>::madxTrajectory() is not implemented for data type " << typeid(T).name()
@@ -513,10 +514,35 @@ void FunctionOfPos<T>::elegantClosedOrbit(const char *elegantCloFile)
 }
 
 template <class T>
-void FunctionOfPos<T>::elsaClosedOrbit(BPM *ELSAbpms, unsigned int t)
+void FunctionOfPos<T>::elegantTrajectory(string path, unsigned int particle)
+{
+  stringstream s;
+  s << "FunctionOfPos<T>::elegantTrajectory() is not implemented for data type " << typeid(T).name()
+    << ". It is only defined for T=AccPair (x,z).";
+  throw logic_error(s.str());
+}
+
+template <class T>
+void FunctionOfPos<T>::elsaClosedOrbit(ELSASpuren &spuren, unsigned int t)
 {
   stringstream s;
   s << "FunctionOfPos<T>::elsaClosedOrbit() is not implemented for data type " << typeid(T).name()
     << ". It is only defined for T=AccPair (x,z).";
   throw logic_error(s.str());
+}
+
+
+// returns filename for trajectory files of particle p from madx or elegant at observation point obs
+template <class T>
+string FunctionOfPos<T>::trajectoryFile(string path, simulationTool s, unsigned int obs, unsigned int p) const
+{
+  char tmp[512];
+  string out;
+  if (s == madx)
+    sprintf(tmp, "%s/madx.obs%04d.p%04d", path.c_str(), obs, p);
+  else // elegant
+    sprintf(tmp, "%s/elegant.w%03d.p%d", path.c_str(), obs, p);
+  out = tmp;
+
+  return out;
 }

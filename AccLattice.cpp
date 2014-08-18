@@ -14,8 +14,6 @@
 #include <iomanip>
 #include <stdexcept>
 #include "AccLattice.hpp"
-#include "constants.hpp"
-#include "metadata.hpp"
 #include "gitversion.hpp"
 
 
@@ -30,10 +28,29 @@ string removeQuote(string s)
 
 
 //constructor
-AccLattice::AccLattice(double _circumference, Anchor _refPos)
+AccLattice::AccLattice(string _name, double _circumference, Anchor _refPos)
   : ignoreCounter(0), refPos(_refPos), circumference(_circumference)
 {
   empty_space = new Drift;
+
+  info.add("Lattice name", _name);
+  info.add("Reference pos.", this->refPos_string());
+  stringstream frev;
+  frev << GSL_CONST_MKSA_SPEED_OF_LIGHT/circumference;
+  info.add("rev. frequency / Hz", frev.str());
+}
+
+AccLattice::AccLattice(string _name, simulationTool s, string file, Anchor _refPos=end)
+  : ignoreCounter(0), refPos(_refPos)
+{
+  empty_space = new Drift;
+
+  info.add("Lattice name", _name);
+  info.add("Reference pos.", this->refPos_string());
+  if (s == madx)
+    this->madximport(file.c_str());
+  else //elegant
+    this->elegantimport(file.c_str());
 }
 
 //copy constructor
@@ -137,24 +154,22 @@ bool AccLattice::inside(const_AccIterator it, double here) const
 
 // get first element of given type
 // returns iterator to end if there is none
-AccIterator AccLattice::firstIt(element_type _type)
+AccIterator AccLattice::firstIt(element_type _type, element_plane p, element_family f)
 {
   for (AccIterator it=elements.begin(); it!=elements.end(); ++it) {
-    if (it->second->type == _type)
+    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it;
   }
-
   return elements.end();
 }
 
 
-const_AccIterator AccLattice::firstCIt(element_type _type) const
+const_AccIterator AccLattice::firstCIt(element_type _type, element_plane p, element_family f) const
 {
   for (const_AccIterator it=elements.begin(); it!=elements.end(); ++it) {
-    if (it->second->type == _type)
+    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it;
   }
-
   return elements.end();
 }
 
@@ -162,24 +177,24 @@ const_AccIterator AccLattice::firstCIt(element_type _type) const
 
 // get last element of given type
 // returns iterator to end if there is none
-AccIterator AccLattice::lastIt(element_type _type) 
+AccIterator AccLattice::lastIt(element_type _type, element_plane p, element_family f) 
 {
   AccIterator it = elements.end();
   it--;
   for (; it!=elements.begin(); it--) {
-    if (it->second->type == _type)
+    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it;
   }
 
   return elements.end();  
 }
 
-const_AccIterator AccLattice::lastCIt(element_type _type)  const
+const_AccIterator AccLattice::lastCIt(element_type _type, element_plane p, element_family f)  const
 {
   const_AccIterator it = elements.end();
   it--;
   for (; it!=elements.begin(); it--) {
-    if (it->second->type == _type)
+    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it;
   }
 
@@ -188,21 +203,21 @@ const_AccIterator AccLattice::lastCIt(element_type _type)  const
 
 // get next element of given type after it
 // returns iterator to end if there is none
-AccIterator AccLattice::nextIt(element_type _type, AccIterator it)
+AccIterator AccLattice::nextIt(element_type _type, AccIterator it, element_plane p, element_family f)
 {
   it++; // check only elements AFTER it
  for (; it!=elements.end(); ++it) {
-    if (it->second->type == _type)
+   if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it;
   }
 
   return elements.end();  
 }
-const_AccIterator AccLattice::nextCIt(element_type _type, const_AccIterator it) const
+const_AccIterator AccLattice::nextCIt(element_type _type, const_AccIterator it, element_plane p, element_family f) const
 {
   it++; // check only elements AFTER it
  for (; it!=elements.end(); ++it) {
-    if (it->second->type == _type)
+   if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it;
   }
 
@@ -212,7 +227,7 @@ const_AccIterator AccLattice::nextCIt(element_type _type, const_AccIterator it) 
 
 // get first element of given type
 // returns Drift if there is none
-const AccElement* AccLattice::first(element_type _type)
+const AccElement* AccLattice::first(element_type _type, element_plane p, element_family f)
 {
   AccIterator it = this->firstIt(_type);
   if (it == elements.end()) return empty_space;
@@ -221,7 +236,7 @@ const AccElement* AccLattice::first(element_type _type)
 
 // get last element of given type
 // returns Drift if there is none
-const AccElement* AccLattice::last(element_type _type)
+const AccElement* AccLattice::last(element_type _type, element_plane p, element_family f)
 {
   AccIterator it = lastIt(_type);
   if (it == elements.end()) return empty_space;
@@ -230,10 +245,10 @@ const AccElement* AccLattice::last(element_type _type)
 
 // get next element of given type after pos
 // returns Drift if there is none
-const AccElement* AccLattice::next(element_type _type, double pos)
+const AccElement* AccLattice::next(element_type _type, double pos, element_plane p, element_family f)
 {
   for (const_AccIterator it=getIt(pos); it!=elements.end(); ++it) {
-    if (it->second->type == _type)
+    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it->second;
   }
 
@@ -429,6 +444,9 @@ void AccLattice::setIgnoreList(string ignoreFile)
     exit(1);
   }
 
+  //metadata
+  info.add("ignore list", ignoreFile);
+
   while (!f.eof()) {
     f >> tmp;
     ignoreList.push_back(tmp);
@@ -446,6 +464,18 @@ void AccLattice::setIgnoreList(string ignoreFile)
 // ===================================================
 void AccLattice::madximport(const char *madxTwissFile)
 {
+  //get metadata and set circumference&frev
+  info.madximport("TITLE,LENGTH,ORIGIN,PARTICLE", madxTwissFile);
+  circumference = strtod(info.getbyLabel("LENGTH").c_str(), NULL);
+  if (circumference == 0) {
+    strigstream msg;
+    msg << "AccLattice::madximport(): Cannot read circumference from " << madxTwissFile;
+    throw std::runtime_error(msg.str());
+  }
+  stringstream frev;
+  frev << GSL_CONST_MKSA_SPEED_OF_LIGHT/circumference;
+  info.setbyLabel("rev. frequency / Hz", frev.str());
+
   // madx column variables
   string tmp, tmpName;
   string expectedColumns[11] = {"KEYWORD","NAME","S","X","Y","L","ANGLE","K1L","K2L","VKICK","HKICK"};
@@ -456,12 +486,12 @@ void AccLattice::madximport(const char *madxTwissFile)
   fstream madxTwiss;
 
   //AccElements
-  Dipole vDip("defaultName", 0., 0., V);
-  Dipole hDip("defaultName", 0., 0., H);
-  Corrector vCorr("defaultName", 0., 0., H); // vertical kicker has HORIZONTAL field
-  Corrector hCorr("defaultName", 0., 0., V);
-  RFdipole vRFdip("defaultName", 0., 0., H); // vertical kicker has HORIZONTAL field
-  RFdipole hRFdip("defaultName", 0., 0., V);
+  Dipole hDip("defaultName", 0., 0., H); // horizontally bending dipole
+  Dipole vDip("defaultName", 0., 0., V); // vertically bending dipole
+  Corrector vCorr("defaultName", 0., 0., V); // vertical kicker has HORIZONTAL field
+  Corrector hCorr("defaultName", 0., 0., H);
+  RFdipole vRFdip("defaultName", 0., 0., V); // vertical kicker has HORIZONTAL field
+  RFdipole hRFdip("defaultName", 0., 0., H);
   Quadrupole Quad("defaultName", 0., 0., F); // madx uses negative sign "strength" for D magnets,
   Sextupole Sext("defaultName", 0., 0., F);  // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
   Cavity Cav("defaultName");
@@ -493,12 +523,12 @@ void AccLattice::madximport(const char *madxTwissFile)
     // --------------------------------------------------------------------------
   
     if (tmp == "\"SBEND\"" || tmp == "\"RBEND\"") {  //vertical Dipole (assume all bends have vertical field)
-      madxTwiss >> tmpName >> s >> x >> y >> vDip.length >> angle;
-      vDip.name = removeQuote(tmpName);
-      vDip.strength = angle/vDip.length;   // 1/R (!!! assuming l is arclength (along ref. orbit) !!!)
-      if (refPos == begin) s -= vDip.length;
-      else if (refPos == center) s -= vDip.length/2;
-      this->mount(s, vDip);
+      madxTwiss >> tmpName >> s >> x >> y >> hDip.length >> angle;
+      hDip.name = removeQuote(tmpName);
+      hDip.strength = angle/hDip.length;   // 1/R (!!! assuming l is arclength (along ref. orbit) !!!)
+      if (refPos == begin) s -= hDip.length;
+      else if (refPos == center) s -= hDip.length/2;
+      this->mount(s, hDip);
     }
     else if (tmp == "\"QUADRUPOLE\"") {
       madxTwiss >> tmpName >> s >> x >> y >> Quad.length >> angle >> k1l;
@@ -624,9 +654,9 @@ void AccLattice::madximportMisalignments(const char *madxEalignFile)
 	}
       }
     }
-
   }
-
+  //metadata
+  info.add("MAD-X misalignments from", madxEalignFile);
 }
 
 
@@ -651,11 +681,23 @@ void AccLattice::elegantimport(const char *elegantParamFile)
 
   pos=l=k1=k2=angle=kick=tilt=0.;   // initialize param. values
 
+  //get metadata and set circumference&frev
+  info.elegantimport("circumference,pCentral/m_e*c,tune:Qx,tune:Qz", file.lattice.c_str());
+  circumference = strtod(info.getbyLabel("circumference").c_str(), NULL);
+  if (circumference == 0) {
+    strigstream msg;
+    msg << "AccLattice::madximport(): Cannot read circumference from " << madxTwissFile;
+    throw std::runtime_error(msg.str());
+  }
+  stringstream frev;
+  frev << GSL_CONST_MKSA_SPEED_OF_LIGHT/circumference;
+  info.setbyLabel("rev. frequency / Hz", frev.str());
+
   //AccElements
-  Dipole vDip("defaultName", 0., 0., V);
   Dipole hDip("defaultName", 0., 0., H);
-  Corrector vCorr("defaultName", 0., 0., H); // vertical kicker has HORIZONTAL field
-  Corrector hCorr("defaultName", 0., 0., V);
+  Dipole vDip("defaultName", 0., 0., V);
+  Corrector vCorr("defaultName", 0., 0., V); // vertical kicker has HORIZONTAL field
+  Corrector hCorr("defaultName", 0., 0., H);
   Quadrupole Quad("defaultName", 0., 0., F); // elegant uses negative sign "strength" for D magnets,
   Sextupole Sext("defaultName", 0., 0., F);  // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
   Cavity Cav("defaultName", 0.);
@@ -690,7 +732,7 @@ void AccLattice::elegantimport(const char *elegantParamFile)
     if (row.name != row_old.name) {
 
      if (row_old.type=="CSBEND" || row_old.type=="CSRCSBEND" || row_old.type=="KSBEND" || row_old.type=="NIBEND" || row_old.type=="TUBEND") {
-       element = &vDip;
+       element = &hDip;
        element->strength = angle / l;
      }
      else if (row_old.type=="QUAD") {
@@ -757,7 +799,7 @@ void AccLattice::elegantimport(const char *elegantParamFile)
 
 
 // change quad&sext strengths to values from "ELSA-Spuren"
-void AccLattice::setELSAoptics(const char *spurenFolder)
+void AccLattice::setELSAoptics(string spurenFolder)
 {
   char filename[1024];
   string tmp;
@@ -767,7 +809,7 @@ void AccLattice::setELSAoptics(const char *spurenFolder)
   AccIterator it;
 
  // Read "optics.dat"
-  snprintf(filename, 1024, "%s/optics.dat", spurenFolder);
+  snprintf(filename, 1024, "%s/optics.dat", spurenFolder.c_str());
   f_magnets.open(filename, ios::in);
   if (!f_magnets.is_open()) {
     msg << "ERROR: AccLattice::setELSAoptics(): Cannot open " << filename;
@@ -811,14 +853,16 @@ void AccLattice::setELSAoptics(const char *spurenFolder)
       it->second->strength = -md;
     }
   }
-  
+
+ //metadata
+ info.add("ELSA optics from", spurenFolder);
 }
 
 
 
 // change corrector pos&strength to values from "ELSA-Spuren" at time t/ms
 // return number of correctors, where set
-unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
+unsigned int AccLattice::setELSACorrectors(ELSASpuren &spuren, unsigned int t)
 {
   unsigned int i, n=0;
  AccElement* corrTmp;
@@ -827,16 +871,16 @@ unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
  stringstream strMsg;
  double diff=0;
  double endPos;
- AccIterator it = firstIt(corrector);
+ AccIterator it = firstIt(corrector,V); // only vertical correctors (V)!
  AccIterator it_next;
 
  
  for (i=0; i<NVCORRS; i++) {
-   if (ELSAvcorrs[i].pos==0.0) {   //inactive correctors have pos=0 in VCORRS.SPOS
+   if (spuren.vcorrs[i].pos==0.0) {   //inactive correctors have pos=0 in VCORRS.SPOS
      continue;
    }
-   else if (t > ELSAvcorrs[i].time.size()) {
-     cout << ELSAvcorrs[i].time[ELSAvcorrs[i].time.size()-1].ms << endl;
+   else if (t > spuren.vcorrs[i].time.size()) {
+     cout << spuren.vcorrs[i].time[spuren.vcorrs[i].time.size()-1].ms << endl;
      snprintf(msg, 1024, "ERROR: AccLattice::setELSACorrectors(): No ELSA VC%02d corrector data available for %d ms.\n", i+1, t);
      throw std::invalid_argument(msg);
    }
@@ -847,21 +891,20 @@ unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
    snprintf(name2, 20, "VC%02i", i+1); // new madx-lattice (2014): VCxx
    if (it->second->name != name1 && it->second->name != name2) {
      strMsg << "ERROR: AccLattice::setELSACorrectors(): Unexpected corrector name. Mad-X lattice does not fit to ELSA." << endl;
-     strMsg << "       Mad-X: " <<it->second->name<< " -- expected: " <<name2<< " (" <<name1<< ")";
+     strMsg << "       Mad-X: " <<it->second->name<< " -- expected: " <<name2<< " (" <<name1<< ")" << endl;
      throw std::runtime_error(strMsg.str());
    }
    //...check by position
-   diff = ELSAvcorrs[i].pos - locate(it,center);
+   diff = spuren.vcorrs[i].pos - locate(it,center);
    if (fabs(diff) > VCPOS_WARNDIFF) {
      cout << "! Position of " <<name2<< " differs by " <<diff<< "m in Mad-X and ELSA-Spuren. Use ELSA-Spuren." << endl;
    }
    
    corrTmp = it->second->clone();
-
-   corrTmp->strength = ELSAvcorrs[i].time[t].kick/1000.0/corrTmp->length;   //unit 1/m
-   it_next = nextIt(corrector,it);
-   elements.erase(it);   // dismount "old" corrector (madx) to be able to mount new one
-   endPos = ELSAvcorrs[i].pos + corrTmp->length/2;
+   corrTmp->strength = spuren.vcorrs[i].time[t].kick/1000.0/corrTmp->length;   //unit 1/m
+   it_next = nextIt(corrector,it,V);  // only vertical correctors (V)!
+   elements.erase(it);   // erase "old" corrector (madx) to be able to mount new one
+   endPos = spuren.vcorrs[i].pos + corrTmp->length/2;
    this->mount(endPos, *(corrTmp));
    delete corrTmp;
 
@@ -872,8 +915,13 @@ unsigned int AccLattice::setELSACorrectors(CORR *ELSAvcorrs, unsigned int t)
      break;
  }
  
- if (n != this->size(corrector))
+ if (n != this->size(corrector,V)) // only vertical correctors (V)!
    cout << "WARNING: Not all correctors overwritten by ELSA-Spuren" << endl;
+
+ //metadata
+ stringstream spureninfo;
+ spureninfo << t << "ms in "<<spuren.spurenFolder;
+ info.add("ELSA VCs from", spureninfo.str());
  
  return n;
 }
@@ -916,6 +964,8 @@ void AccLattice::subtractCorrectorStrengths(const AccLattice &other)
     otherIt=nextCIt(corrector,otherIt);
   }
 
+  //metadata
+  info.add("subtracted corrector strengths", other.info.getbyLabel("Lattice name"));
 }
 
 
@@ -954,17 +1004,19 @@ void AccLattice::subtractMisalignments(const AccLattice &other)
     otherIt++;
   }
 
+  //metadata
+  info.add("subtracted misalignments", other.info.getbyLabel("Lattice name"));
 }
 
 
 
 // ------------------ "information" -----------------------
 // returns number of elements of a type in this lattice
-unsigned int AccLattice::size(element_type _type) const
+unsigned int AccLattice::size(element_type _type, element_plane p, element_family f) const
 {
   unsigned int n=0;
   for (const_AccIterator it=elements.begin(); it!=elements.end(); ++it) {
-    if (it->second->type == _type)
+    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       n++;
   }
 
@@ -1000,7 +1052,7 @@ void AccLattice::print(const char *filename) const
   fstream file;
 
   //write text to s
-  s << "# Reference Position: " << refPos_string() << endl;
+  s << info.out("#");
   s <<"# (* unit of Strength depends on magnet type! e.g. Quad: k1, Sext: k2, Dipole: 1/R)" <<endl;
   s <<"#"<< std::setw(w) << "Ref.Pos/m" << it->second->printHeader();
 
@@ -1035,7 +1087,7 @@ void AccLattice::print(element_type _type, const char *filename) const
   fstream file;
 
   //write text to s
-  s << "# Reference Position: " << refPos_string() << endl;
+  s << info.out("#");
   s << "# List of " << it->second->type_string() << "s only!" << endl;
   s <<"# (* unit of Strength depends on magnet type! e.g. Quad: k1, Sext: k2, Dipole: 1/R)" <<endl;
   s <<"#"<< std::setw(w) << "Ref.Pos/m" << it->second->printHeader();
@@ -1176,9 +1228,7 @@ void AccLattice::simToolExport(simulationTool tool, const char *filename, madxLa
     s << "! Lattice for ELEGANT" << endl;
   else
     s << "! Lattice for MAD-X" << endl;
-  s << "!" << endl<<"! created at " << timestamp() << endl;
-  s << "! by pole/Bsupply, version " << gitversion() << endl
-    << endl;
+  s << info.out("!") << endl;
 
 
   //element definitions
@@ -1227,8 +1277,7 @@ void AccLattice::latexexport(const char *filename) const
   //write text to s
   s << "% Lattice for LaTeX" << endl
     << "%" << endl;
-  s << "% created at " << timestamp() << endl;
-  s << "% by pole/Bsupply, version " << gitversion() << endl
+  s << info.out("%")
     << endl;
 
   //preamble

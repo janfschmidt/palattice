@@ -8,6 +8,23 @@
  */
 
 
+
+//SPECTRUM: 
+  // add tag to metadata
+  // if (!tag.empty())
+  //   tmpMeta.add("Field Component", tag);
+  // // add fmax to metadata
+  // snprintf(tmp, 30, "%d", spec.fMax());
+  // tmpMeta.add("max. frequency", tmp);
+  // // add ampcut to metadata
+  // snprintf(tmp, 30, "%.2e (%d cutted)", spec.getAmpcut(), spec.fMax()+1-spec.size());
+  // tmpMeta.add("cutted Amp <", tmp);
+  // // add phase-warning for harmcorr
+  // if (tag=="harmcorr" || tag=="resonances") {
+  //   tmpMeta.add("WARNING:", "Phase NOT equal harmcorr in ELSA-CCS! (sign in cos)");
+  // }
+
+
 #ifndef __BSUPPLY_SPECTRUM_HPP_
 #define __BSUPPLY_SPECTRUM_HPP_
 
@@ -15,7 +32,7 @@
 #include <string>
 #include <gsl/gsl_fft_complex.h>
 #include <gsl/gsl_const_mksa.h>
-#include "constants.hpp"
+#include "config.hpp"
 
 using namespace std;
 
