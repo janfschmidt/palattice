@@ -125,6 +125,12 @@ void RESONANCES::set(AccLattice &lattice, FunctionOfPos<AccPair> &orbit)
 
   clear(); //delete data from previous time t
 
+ // copy metadata from lattice and orbit to RESONANCES
+  for (unsigned int i=2; i<lattice.info.size(); i++)
+    this->info.add(lattice.info.getLabel(i), lattice.info.getEntry(i));
+  for (unsigned int i=2; i<orbit.info.size(); i++)
+    this->info.add(orbit.info.getLabel(i), orbit.info.getEntry(i));
+ 
   for (t=1; t<=orbit.turns(); t++) {
     for(it=lattice.getItBegin(); it !=lattice.getItEnd(); ++it) {
 
@@ -150,7 +156,7 @@ Spectrum RESONANCES::getSpectrum(unsigned int fmaxrevIn, double ampcutIn) const
   // construct spectrum from kick-vector
   // (unit=degree, circumference=360)
   // Resonances spectrum is normalized to number of bending dipoles ndip
-  Spectrum s(this->getkickVector(), 360, n_turns, ndip*n_turns, fmaxrevIn, ampcutIn, degree);
+  Spectrum s("resonances", this->getkickVector(), 360, n_turns, ndip*n_turns, fmaxrevIn, ampcutIn, degree);
 
   return s;
 }
@@ -158,7 +164,7 @@ Spectrum RESONANCES::getSpectrum(unsigned int fmaxrevIn, double ampcutIn) const
 
 
 //output of kicks as function of spin phaseadvance theta (total, vcorr, quad)
-void RESONANCES::out(const char *filename) const
+void RESONANCES::out(string filename) const
 {
  unsigned int i=0;
  int w=14;
@@ -167,11 +173,13 @@ void RESONANCES::out(const char *filename) const
 
  if (!on) return;  //write output only, if Resonances are used
 
- file.open(filename, ios::out);
+ file.open(filename.c_str(), ios::out);
  if (!file.is_open()) {
    msg << "ERROR: RESONANCES::out: Cannot open " << filename << ".";
    throw std::runtime_error(msg.str());
  }
+
+ file << info.out("#");
 
  file <<setw(w)<< "theta [°]" <<setw(w)<<  "tot.kick [mrad]" <<setw(w)<< "corrs [mrad]"
       <<setw(w)<< "quads [mrad]"<<setw(w)<< "corrs+quads" << endl;

@@ -35,9 +35,6 @@ AccLattice::AccLattice(string _name, double _circumference, Anchor _refPos)
 
   info.add("Lattice name", _name);
   info.add("Reference pos.", this->refPos_string());
-  stringstream frev;
-  frev << GSL_CONST_MKSA_SPEED_OF_LIGHT/circumference;
-  info.add("rev. frequency / Hz", frev.str());
 }
 
 AccLattice::AccLattice(string _name, simulationTool s, string file, Anchor _refPos=end)
@@ -464,7 +461,7 @@ void AccLattice::setIgnoreList(string ignoreFile)
 // ===================================================
 void AccLattice::madximport(const char *madxTwissFile)
 {
-  //get metadata and set circumference&frev
+  //get metadata and set circumference
   info.madximport("TITLE,LENGTH,ORIGIN,PARTICLE", madxTwissFile);
   circumference = strtod(info.getbyLabel("LENGTH").c_str(), NULL);
   if (circumference == 0) {
@@ -472,9 +469,6 @@ void AccLattice::madximport(const char *madxTwissFile)
     msg << "AccLattice::madximport(): Cannot read circumference from " << madxTwissFile;
     throw std::runtime_error(msg.str());
   }
-  stringstream frev;
-  frev << GSL_CONST_MKSA_SPEED_OF_LIGHT/circumference;
-  info.setbyLabel("rev. frequency / Hz", frev.str());
 
   // madx column variables
   string tmp, tmpName;
@@ -681,7 +675,7 @@ void AccLattice::elegantimport(const char *elegantParamFile)
 
   pos=l=k1=k2=angle=kick=tilt=0.;   // initialize param. values
 
-  //get metadata and set circumference&frev
+  //get metadata and set circumference
   info.elegantimport("circumference,pCentral/m_e*c,tune:Qx,tune:Qz", file.lattice.c_str());
   circumference = strtod(info.getbyLabel("circumference").c_str(), NULL);
   if (circumference == 0) {
@@ -689,9 +683,6 @@ void AccLattice::elegantimport(const char *elegantParamFile)
     msg << "AccLattice::madximport(): Cannot read circumference from " << madxTwissFile;
     throw std::runtime_error(msg.str());
   }
-  stringstream frev;
-  frev << GSL_CONST_MKSA_SPEED_OF_LIGHT/circumference;
-  info.setbyLabel("rev. frequency / Hz", frev.str());
 
   //AccElements
   Dipole hDip("defaultName", 0., 0., H);

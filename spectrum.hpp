@@ -8,23 +8,6 @@
  */
 
 
-
-//SPECTRUM: 
-  // add tag to metadata
-  // if (!tag.empty())
-  //   tmpMeta.add("Field Component", tag);
-  // // add fmax to metadata
-  // snprintf(tmp, 30, "%d", spec.fMax());
-  // tmpMeta.add("max. frequency", tmp);
-  // // add ampcut to metadata
-  // snprintf(tmp, 30, "%.2e (%d cutted)", spec.getAmpcut(), spec.fMax()+1-spec.size());
-  // tmpMeta.add("cutted Amp <", tmp);
-  // // add phase-warning for harmcorr
-  // if (tag=="harmcorr" || tag=="resonances") {
-  //   tmpMeta.add("WARNING:", "Phase NOT equal harmcorr in ELSA-CCS! (sign in cos)");
-  // }
-
-
 #ifndef __BSUPPLY_SPECTRUM_HPP_
 #define __BSUPPLY_SPECTRUM_HPP_
 
@@ -32,6 +15,7 @@
 #include <string>
 #include <gsl/gsl_fft_complex.h>
 #include <gsl/gsl_const_mksa.h>
+#include "metadata.hpp"
 #include "config.hpp"
 
 using namespace std;
@@ -69,8 +53,10 @@ private:
   double imag(unsigned int i, double *halfcomplex, unsigned int n) const;
 
 public:
-  Spectrum(unsigned int fmaxrevIn=30, double ampcut=0);
-  Spectrum(vector<double> In, double circ, unsigned int turns, int _norm=-1, unsigned int fmaxrevIn=30, double ampcut=0, unit u=meter);
+  METADATA info;
+
+  Spectrum(string _name, unsigned int fmaxrevIn=30, double ampcut=0);
+  Spectrum(string _name, vector<double> In, double circ, unsigned int turns, int _norm=-1, unsigned int fmaxrevIn=30, double ampcut=0, unit u=meter);
   ~Spectrum() {}
   
   inline FREQCOMP get(unsigned int i) const {return b[i];}
@@ -92,9 +78,9 @@ public:
   void push_back(FREQCOMP tmp);      // add FREQCOMP manually
   void clear() {b.clear();}
 
-  void out(const char *filename="", string metadata="") const;
-  void eval_out(double stepwidth, double max, const char *filename) const;
-
+  void out(string filename="") const;
+  void eval_out(double stepwidth, double max, string filename) const;
+  void updateMetadata();
 };
 
 

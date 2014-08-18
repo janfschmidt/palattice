@@ -24,29 +24,18 @@ using namespace std;
 // -------- constructors -----------
 
 
-Spectrum::Spectrum(unsigned int fmaxrevIn, double ampcutIn)
+Spectrum::Spectrum(string _name, unsigned int fmaxrevIn, double ampcutIn)
   : fMax_rev(fmaxrevIn), ampcut(ampcutIn), turns(1), circ(1), norm(1), circUnit(meter)
 {
+  info.add("Spectrum name", _name);
 }
 
 
-/*
-Spectrum::Spectrum(RESONANCES &In, unsigned int fmaxrevIn, double ampcutIn)
-  : fMax_rev(fmaxrevIn), ampcut(ampcutIn), turns(In.n_turns), circ(360), norm(In.ndipols()*In.n_turns), circUnit(degree)
-{
-  if (fMax() > In.size()/2.) {
-    cout << "WARNING: Spectrum constructor: fmax = " <<fMax_rev<< " is to large." << endl
-	 << "The " <<In.size()<< " given datapoints allow fmax = " <<  In.size()/2. << ", which is used instead." << endl;
-    fMax_rev =  In.size()/2./turns;
-  }
-
-  fft(In.getkickVector());
-}
-*/
-
-Spectrum::Spectrum(vector<double> In, double c, unsigned int t, int _norm, unsigned int fmaxrevIn, double ampcutIn, unit u)
+Spectrum::Spectrum(string _name, vector<double> In, double c, unsigned int t, int _norm, unsigned int fmaxrevIn, double ampcutIn, unit u)
    : fMax_rev(fmaxrevIn), ampcut(ampcutIn), turns(t), circ(c), norm(_norm), circUnit(u)
 {
+  info.add("Spectrum name", _name);
+
   if (_norm == -1) norm = In.size(); // default normaization
 
   if (fMax() > In.size()/2.) {
@@ -58,7 +47,6 @@ Spectrum::Spectrum(vector<double> In, double c, unsigned int t, int _norm, unsig
   fft(In);
 }
 
-// ---------------------------------
 
 
 
@@ -255,14 +243,15 @@ double Spectrum::eval(double t) const
 
 
 
-void Spectrum::out(const char *filename, string metadata) const
+void Spectrum::out(string filename) const
 {
   fstream file;
   stringstream s;
   const int w = 14;
 
- // write metadata
- s << metadata << endl;
+ //metadata
+  updateMetadata();
+  s << info.out("#");
 
  // write spectrum data
  if (circUnit == degree)
@@ -280,10 +269,10 @@ void Spectrum::out(const char *filename, string metadata) const
 
 
  // output of s
- if (string(filename) == "")
+ if (filename == "")
    cout << s.str();
  else {
-   file.open(filename, ios::out);
+   file.open(filename.c_str(), ios::out);
    if (!file.is_open()) {
      cout << "ERROR: Spectrum:out(): Cannot open " << filename << "." << endl;
      return;
@@ -299,7 +288,7 @@ void Spectrum::out(const char *filename, string metadata) const
 
 
 // create output file with evaluated field data (stepwitdh & max given for position s / m)
-void Spectrum::eval_out(double stepwidth, double max, const char *filename) const
+void Spectrum::eval_out(double stepwidth, double max, string filename) const
 {
   double s;
   int w=12;
@@ -310,11 +299,15 @@ void Spectrum::eval_out(double stepwidth, double max, const char *filename) cons
     return;
   }
  
-  file.open(filename, ios::out);
+  file.open(filename.c_str(), ios::out);
   if (!file.is_open()) {
     cout << "ERROR: Spectrum::eval_out(): Cannot open " << filename << "." << endl;
     return;
   }
+
+  //metadata
+  updateMetadata();
+  s << info.out("#");
 
   file <<"# "<<setw(w)<< "s [m]" <<setw(w)<< "t [s]" <<setw(w)<< "B [1/m]"  << endl;
   for (s=0.0; s<=max; s+=stepwidth) {
@@ -325,4 +318,21 @@ void Spectrum::eval_out(double stepwidth, double max, const char *filename) cons
   cout << "* Wrote " << filename  << endl;
   
   return;
+}
+
+
+void Spectrum::updateMetadata()
+{
+  char tmp[30];
+  if (circUnit != degree) {
+    snprintf(tmp, 30, "%.3e", this->f_rev());
+    info.add("rev. frequency / Hz", tmp);
+  }
+  snprintf(tmp, 30, "%d", this->fMax());
+  info.add("max. frequency", tmp);
+  snprintf(tmp, 30, "%.2e (%d cutted)", this->getAmpcut(), this->fMax()+1-this->size());
+  info.add("cutted Amp <", tmp);
+  if (info.getbyLabel("Spectrum name")=="harmcorr" || info.getbyLabel("Spectrum name")=="resonances") {
+    info.add("WARNING:", "Phase NOT equal harmcorr in ELSA-CCS! (sign in cos)");
+  }
 }

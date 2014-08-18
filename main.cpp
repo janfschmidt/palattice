@@ -212,11 +212,6 @@ int main (int argc, char *argv[])
 
 
   
-  // write n_samp to metadata
-  snprintf(tmp, 100, "%d points per turn", n_samp);
-  metadata.add("Field sampling", tmp);
-  
-
 
   // output
   cout << endl;
@@ -331,7 +326,6 @@ int main (int argc, char *argv[])
 	cout << "ERROR: t = "<<t.get(i)<<" < 0 is no valid moment of ELSA cycle." << endl;
 	return 1;
       }
-      metadata.setbyLabel("Time in cycle", t.label(i));
       try {
 	bpmorbit.elsaClosedOrbit(ELSA, t.get(i));
 	lattice.setELSACorrectors(ELSA, t.get(i));
@@ -380,8 +374,8 @@ int main (int argc, char *argv[])
     // ======= most important feature: =======
     // calculate field distribution & spectrum
 
-    // if tracking is used (tracking-mode), orbit = trajectory + closed orbit
-    // else, orbit = closed orbit
+    // if tracking is used (tracking-mode), set "orbit = trajectory + closed orbit"
+    // else set "orbit = closed orbit"
     if (tracking) {
       trajectory += bpmorbit; // add closed orbit for every turn (trajectory coord. relative to C.O.)
       orbit = &trajectory;
@@ -434,14 +428,14 @@ int main (int argc, char *argv[])
     }
 
     //export spectrum files for polarization-calculation (TBMTsolver)
-    bx.out( file.spec("horizontal", t.tag(i)).c_str(), metadata.get(bx, "horizontal") );
-    bz.out( file.spec("vertical", t.tag(i)).c_str(), metadata.get(bz, "vertical") );
-    bs.out( file.spec("longitudinal", t.tag(i)).c_str(), metadata.get(bs, "longitudinal") );
+    bx.out( file.spec("horizontal", t.tag(i)) );
+    bz.out( file.spec("vertical", t.tag(i)) );
+    bs.out( file.spec("longitudinal", t.tag(i)) );
     if (Res.on) {
       //resonance spectrum (=resonance strengths)
-      res.out( file.spec("resonances", t.tag(i)).c_str(), metadata.get(res, "resonances") );
+      res.out( file.spec("resonances", t.tag(i)) );
       //kicks as function of spin phaseadvance theta (total, vcorr, quad)
-      Res.out(file.out("resonances", t.tag(i)).c_str());
+      Res.out( file.out("resonances", t.tag(i)) );
     }
 
 

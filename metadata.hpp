@@ -15,14 +15,15 @@ private:
 public:
   METADATA();
   ~METADATA() {}
+
+  void add(string inLabel, string inEntry);         //add an entry. if label already exists, update entry
   int madximport(char *madxLabels, string madxfile);
   int elegantimport(char *elegantLabels, string elegantfile);
-  void add(string inLabel, string inEntry);
+
   unsigned int size() const {return label.size();}
   string getLabel(unsigned int i) const;
   string getEntry(unsigned int i) const;
   string getbyLabel(string inLabel) const;
-  void setbyLabel(string inLabel, string inEntry);
 
   string out(string delimiter) const; //formatted output, each line starting with delimiter
   unsigned int columnwidth() const;

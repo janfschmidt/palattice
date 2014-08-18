@@ -17,7 +17,10 @@
 // set all magnetic field values from lattice and orbit
 void Field::set(AccLattice &lattice, FunctionOfPos<AccPair>& orbit, double n_samples)
 {
-  // info =.....
+  this->info = lattice.info;
+  stringstream stmp;
+  stmp << n_samples << " points per turn";
+  this->info.add("Field sampling", stmp.str());
 
   unsigned int i, t;
   double _pos, _pos_tot;
@@ -73,7 +76,9 @@ int Field::magnetlengths(AccLattice &lattice, const char *filename) const
     return 1;
   }
   file << "deviation of start/end/length of stepwise field from lattice (field - lattice)" << endl;
-  file << "n_samp = " << this->samples() << " sampling points per turn" << endl << endl;
+  file << "n_samp = " << this->samples() << " sampling points per turn" << endl;
+  file << "lattice metadata:" << endl;
+  file << lattice.info.out("") << endl;
   file <<setw(w)<< "Name" <<setw(w)<< "start/mm" <<setw(w) << "end/mm" <<setw(w)<< "length/mm" << endl;
 
 

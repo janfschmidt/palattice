@@ -116,9 +116,17 @@ int METADATA::elegantimport(char *elegantLabels, const char* elegantfile)
 }
 
 
-/* add one line manually */
+// add an entry. if label already exists, update entry
 void METADATA::add(string inLabel, string inEntry)
 {
+  //change existing entry
+  for(unsigned int i=0; i<label.size(); i++) {
+    if (label[i] == inLabel) {
+      entry[i] = inEntry;
+      return;
+    }
+  }
+  //add new entry
   label.push_back(inLabel);
   entry.push_back(inEntry);
 }
@@ -155,19 +163,6 @@ string METADATA::getbyLabel(string inLabel) const
   return "NA";
 }
 
-
-/* re-set entry with input-label. add entry if label not found */
-void METADATA::setbyLabel(string inLabel, string inEntry)
-{
-  unsigned int i;
-  for(i=0; i<label.size(); i++) {
-    if (label[i] == inLabel) {
-      entry[i] = inEntry;
-      return;
-    }
-  }
-  METADATA::add(inLabel, inEntry);
-}
 
 
 

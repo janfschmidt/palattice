@@ -5,6 +5,7 @@
 #include "types.hpp"
 #include "functionofpos.hpp"
 #include "AccLattice.hpp"
+#include "metadata.hpp"
 #include "spectrum.hpp"
 
 using namespace std;
@@ -27,6 +28,7 @@ private:
 public:
   bool on;
   const unsigned int n_turns;
+  METADATA info;
 
   RESONANCES() :  dtheta(-1), n(0), ndip(0), on(false), n_turns(1) {}
   RESONANCES(double thetastep, unsigned int n_dip, unsigned int turns);
@@ -45,7 +47,7 @@ public:
 
   Spectrum getSpectrum(unsigned int fmaxrevIn=30, double ampcut=0) const;
 
-  void out(const char *filename) const; //output of kicks as function of theta (total, vcorr, quad)
+  void out(string filename) const; //output of kicks as function of theta (total, vcorr, quad)
  
 };
 

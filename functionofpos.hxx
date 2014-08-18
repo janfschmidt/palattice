@@ -466,7 +466,10 @@ template <class T>
 Spectrum FunctionOfPos<T>::getSpectrum(AccAxis axis, unsigned int fmaxrevIn, double ampcutIn) const
 {
   vector<double> data = this->getVector(axis);
-  Spectrum s(data, circ, turns(), data.size(), fmaxrevIn, ampcutIn);
+  Spectrum s(axis_string(axis), data, circ, turns(), data.size(), fmaxrevIn, ampcutIn);
+  // copy metadata to Spectrum
+  for (unsigned int i=2; i<this->info.size(); i++)
+    s.info.add(this->info.getLabel(i), this->info.getEntry(i));
   return s;
 }
 
