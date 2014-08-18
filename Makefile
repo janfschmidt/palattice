@@ -9,32 +9,35 @@ all: $(PROG_NAME) strom2kick new_strom2kick
 .PHONY: all
 
 $(PROG_NAME): $(ALL_O)
-	$(CC) $(cflags) -o $(PROG_NAME) $(ALL_O) -lgsl -lgslcblas -lm
+	$(CC) $(cflags) -o $@ $(ALL_O) -lgsl -lgslcblas -lm
 
 main.o: main.cpp types.hpp spectrum.hpp  metadata.hpp timetag.hpp filenames.hpp resonances.hpp interpolate.hpp interpolate.hxx functionofpos.hpp functionofpos.hxx field.hpp AccElements.hpp AccLattice.hpp gitversion.hpp ELSASpuren.hpp
-	$(CC) $(cflags) -c main.cpp
-ELSASpuren.o: ELSASpuren.cpp types.hpp
-	$(CC) $(cflags) -c ELSASpuren.cpp
-metadata.o: metadata.cpp gitversion.hpp
-	$(CC) $(cflags) -c metadata.cpp
+	$(CC) $(cflags) -c $<
+
 timetag.o: timetag.cpp
-	$(CC) $(cflags) -c timetag.cpp
+	$(CC) $(cflags) -c $<
 filenames.o: filenames.cpp filenames.hpp types.hpp
-	$(CC) $(cflags) -c filenames.cpp
+	$(CC) $(cflags) -c $<
 resonances.o: resonances.cpp resonances.hpp types.hpp functionofpos.hpp functionofpos.hxx AccLattice.hpp spectrum.hpp
-	$(CC) $(cflags) -c resonances.cpp
+	$(CC) $(cflags) -c $<
+
+
 spectrum.o: spectrum.cpp spectrum.hpp config.hpp
-	$(CC) $(cflags) -c spectrum.cpp
+	$(CC) $(cflags) -c $<
 interpolate.o: interpolate.cpp interpolate.hpp interpolate.hxx types.hpp
-	$(CC) $(cflags) -c interpolate.cpp
+	$(CC) $(cflags) -c $<
 functionofpos.o: functionofpos.cpp functionofpos.hpp functionofpos.hxx interpolate.hpp interpolate.hxx spectrum.hpp ELSASpuren.hpp types.hpp
-	$(CC) $(cflags) -c functionofpos.cpp
+	$(CC) $(cflags) -c $<
 field.o: field.cpp field.hpp functionofpos.hpp functionofpos.hxx types.hpp AccLattice.hpp
-	$(CC) $(cflags) -c field.cpp
+	$(CC) $(cflags) -c $<
+ELSASpuren.o: ELSASpuren.cpp types.hpp
+	$(CC) $(cflags) -c $<
+metadata.o: metadata.cpp gitversion.hpp
+	$(CC) $(cflags) -c $<
 AccElements.o: AccElements.cpp AccElements.hpp types.hpp
-	$(CC) $(cflags) -c AccElements.cpp
+	$(CC) $(cflags) -c $<
 AccLattice.o: AccLattice.cpp AccLattice.hpp AccElements.hpp ELSASpuren.hpp metadata.hpp config.hpp types.hpp
-	$(CC) $(cflags) -c AccLattice.cpp
+	$(CC) $(cflags) -c $<
 
 gitversion.hpp: ../.git/HEAD ../.git/index
 	echo "#ifndef __BSUPPLY__GITVERSION_HPP_" > $@
@@ -44,10 +47,10 @@ gitversion.hpp: ../.git/HEAD ../.git/index
 
 
 strom2kick: strom2kick.c
-	gcc $(cflags) strom2kick.c -lm -o strom2kick
+	gcc $(cflags) $< -lm -o $@
 
 new_strom2kick: new_strom2kick.c
-	gcc $(cflags) new_strom2kick.c -lm -o new_strom2kick
+	gcc $(cflags) $< -lm -o $@
 
 
 clean: 
