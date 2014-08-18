@@ -39,7 +39,7 @@ AccLattice.o: AccLattice.cpp AccLattice.hpp AccElements.hpp ELSASpuren.hpp metad
 gitversion.hpp: ../.git/HEAD ../.git/index
 	echo "#ifndef __BSUPPLY__GITVERSION_HPP_" > $@
 	echo "#define __BSUPPLY__GITVERSION_HPP_" >> $@
-	echo "inline const string gitversion() {return \"$(shell git log -n 1 --date=iso --pretty=format:"%h from %ad")\";}" >> $@
+	echo "inline const std::string gitversion() {return \"$(shell git log -n 1 --date=iso --pretty=format:"%h from %ad")\";}" >> $@
 	echo "#endif" >> $@
 
 

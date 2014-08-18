@@ -14,39 +14,44 @@
 using namespace std;
 
 
-METADATA::METADATA()
+Metadata::Metadata()
 {
   add("created at", timestamp());
   add("by libAccLattice version", gitversion());
 }
 
+//add other Metadata, without first 2 entries ("default" metadata)
+void Metadata::operator+=(Metadata &other)
+{
+  for (unsigned int i=2; i<other.size(); i++)
+    this->add(other.getLabel(i), other.getEntry(i));
+}
+
 
 /* add metadata from madx-outputfile. returns number of read values */
-int METADATA::madximport(char *madxLabels, const char* madxfile)
+int Metadata::madximport(string madxLabels, string madxfile)
 {
   unsigned int i, n=0;
   unsigned int newStart;
   string tmp, tmpEntry;
   fstream madx;
-  char *p;
   vector<string> tmpLabel;
 
-  madx.open(madxfile, ios::in);
+  madx.open(madxfile.c_str(), ios::in);
   if (!madx.is_open()) {
-    cout << "ERROR: METADATA::madximport(): Cannot open " << madxfile << endl;
+    cout << "ERROR: Metadata::madximport(): Cannot open " << madxfile << endl;
     return -1;
   }
 
   add("Imported from", "MAD-X");
-  add("Source file", madxfile);
+  add("Lattice Source file", madxfile);
 
   //read Labels from madxLabels
-  p = strtok(madxLabels, ", ");
-  while(p != NULL) {
-    tmp=p;
+  istringstream s(madxLabels);
+  while(  std::getline(s, tmp, ',') ) {
     tmpLabel.push_back(tmp);
-    p = strtok(NULL, ", ");
   }
+
   while(!madx.eof()) {
     madx >> tmp;
     for (i=0; i<tmpLabel.size(); i++) {
@@ -72,30 +77,28 @@ int METADATA::madximport(char *madxLabels, const char* madxfile)
 
 //  add metadata from elegant .param ascii file (written with subprocess command).
 // returns number of read values
-int METADATA::elegantimport(char *elegantLabels, const char* elegantfile)
+int Metadata::elegantimport(string elegantLabels, string elegantfile)
 {
   unsigned int i, n=0;
   string tmp, tmpEntry;
   fstream elegant;
-  char *p;
   vector<string> tmpLabel;
 
-  elegant.open(elegantfile, ios::in);
+  elegant.open(elegantfile.c_str(), ios::in);
   if (!elegant.is_open()) {
-    cout << "ERROR: METADATA::elegantimport(): Cannot open " << elegantfile << endl;
+    cout << "ERROR: Metadata::elegantimport(): Cannot open " << elegantfile << endl;
     return -1;
   }
 
   add("Imported from", "Elegant");
-  add("Source file", elegantfile);
+  add("Lattice Source file", elegantfile);
 
-  //read Labels from elegantLabels
-  p = strtok(elegantLabels, ", ");
-  while(p != NULL) {
-    tmp=p;
+ //read Labels from madxLabels
+  istringstream s(elegantLabels);
+  while(  std::getline(s, tmp, ',') ) {
     tmpLabel.push_back(tmp);
-    p = strtok(NULL, ", ");
   }
+
   //read corresponding entries 
   while(!elegant.eof()) {
     elegant >> tmp;
@@ -117,7 +120,7 @@ int METADATA::elegantimport(char *elegantLabels, const char* elegantfile)
 
 
 // add an entry. if label already exists, update entry
-void METADATA::add(string inLabel, string inEntry)
+void Metadata::add(string inLabel, string inEntry)
 {
   //change existing entry
   for(unsigned int i=0; i<label.size(); i++) {
@@ -134,26 +137,26 @@ void METADATA::add(string inLabel, string inEntry)
 
 
 /* get i-th value */
-string METADATA::getLabel(unsigned int i) const
+string Metadata::getLabel(unsigned int i) const
 {
   string tmpLabel="no valid label";
-  if (i < METADATA::size())
+  if (i < Metadata::size())
     tmpLabel = label[i];
 
   return tmpLabel;
 }
 
-string METADATA::getEntry(unsigned int i) const
+string Metadata::getEntry(unsigned int i) const
 {
   string tmpEntry="no valid entry";
-  if (i < METADATA::size())
+  if (i < Metadata::size())
     tmpEntry = entry[i];
 
   return tmpEntry;
 }
 
 /* get entry for input-label. returns "NA" if input-label is not found */
-string METADATA::getbyLabel(string inLabel) const
+string Metadata::getbyLabel(string inLabel) const
 {
   unsigned int i;
   for(i=0; i<label.size(); i++) {
@@ -167,7 +170,7 @@ string METADATA::getbyLabel(string inLabel) const
 
 
 // formated output of all metadata to be written to a file.
-string METADATA::out(string delimiter) const
+string Metadata::out(string delimiter) const
 {
   unsigned int w = this->columnwidth();
   unsigned int w_del = delimiter.length();
@@ -177,7 +180,7 @@ string METADATA::out(string delimiter) const
   for (unsigned int i=0; i<this->size(); i++) {
     out << setiosflags(ios::left);
     out <<setw(w_del+1)<< delimiter;
-    out <<setw(w)<< tmpMeta.getLabel(i) << tmpMeta.getEntry(i) <<endl;
+    out <<setw(w)<< this->getLabel(i) << this->getEntry(i) <<endl;
   }
 
   return out.str();
@@ -186,7 +189,7 @@ string METADATA::out(string delimiter) const
 
 
 // set column width to maximum label-length + 2
-unsigned int METADATA::columnwidth() const
+unsigned int Metadata::columnwidth() const
 {
   unsigned  int i;
   unsigned int width=0;
@@ -204,7 +207,7 @@ unsigned int METADATA::columnwidth() const
 
 
 /* get date&time */
-string timestamp()
+string Metadata::timestamp() const
 {
   time_t rawtime;
   struct tm *t;

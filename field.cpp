@@ -17,10 +17,12 @@
 // set all magnetic field values from lattice and orbit
 void Field::set(AccLattice &lattice, FunctionOfPos<AccPair>& orbit, double n_samples)
 {
-  this->info = lattice.info;
+  //metadata
   stringstream stmp;
   stmp << n_samples << " points per turn";
   this->info.add("Field sampling", stmp.str());
+  this->info += lattice.info;
+  this->info += orbit.info;
 
   unsigned int i, t;
   double _pos, _pos_tot;

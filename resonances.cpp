@@ -126,10 +126,8 @@ void RESONANCES::set(AccLattice &lattice, FunctionOfPos<AccPair> &orbit)
   clear(); //delete data from previous time t
 
  // copy metadata from lattice and orbit to RESONANCES
-  for (unsigned int i=2; i<lattice.info.size(); i++)
-    this->info.add(lattice.info.getLabel(i), lattice.info.getEntry(i));
-  for (unsigned int i=2; i<orbit.info.size(); i++)
-    this->info.add(orbit.info.getLabel(i), orbit.info.getEntry(i));
+  this->info += lattice.info;
+  this->info += orbit.info;
  
   for (t=1; t<=orbit.turns(); t++) {
     for(it=lattice.getItBegin(); it !=lattice.getItEnd(); ++it) {

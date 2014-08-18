@@ -14,16 +14,16 @@ FILENAMES::FILENAMES(string pathIn, simulationTool _simTool, bool elsa, bool dif
   if (simTool == madx) {
     file_lattice = "/madx/madx.twiss";
     file_orbit = "/madx/madx.twiss";
-    file_misalign_dip = "/madx/dipols.ealign";
-    file_misalign_dip_ref = "/madx/dipols_ref.ealign";
+    file_misalign_dip = "/madx/madx.dipealign";
+    file_misalign_dip_ref = "/madx/madx_ref.dipealign";
     file_lattice_ref = "/madx_ref.twiss";
     file_orbit_ref = "/madx_ref.twiss";
   }
   else {
     file_lattice = "/elegant/elegant.param";
     file_orbit = "/elegant/elegant.clo";
-    file_misalign_dip = "/elegant/dipols.ealign";      //not needed for elegant
-    file_misalign_dip_ref = "/madx/dipols_ref.ealign"; //not needed for elegant
+    file_misalign_dip = "";     //not needed for elegant
+    file_misalign_dip_ref = ""; //not needed for elegant
     file_lattice_ref = "/elegant_ref.param";
     file_orbit_ref = "/elegant_ref.clo";
   }
@@ -63,8 +63,9 @@ FILENAMES::FILENAMES(string pathIn, simulationTool _simTool, bool elsa, bool dif
   }
   else { // not elsa
     if (simTool == madx) {
-      orbit_ref = path+"/madx/"+refIn;
-      lattice_ref = path+"/madx/"+refIn;
+      orbit_ref = path+"/madx/"+refIn+".twiss";
+      lattice_ref = path+"/madx/"+refIn+".twiss";
+      misalign_dip_ref = path+"/madx/"+refIn+".dipealign";
     }
     else {
       orbit_ref = path+"/elegant/"+refIn+".clo";

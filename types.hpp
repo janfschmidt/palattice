@@ -14,19 +14,6 @@ enum simulationTool{madx,elegant};
 enum madxLatticeType{line,sequence};
 enum AccAxis {x,z,s};
 
-//AccAxis string output
-string axis_string(AccAxis a) {
-  switch (a) {
-  case x:
-    return "horizontal";
-  case z:
-    return "vertical";
-  case s:
-    return "longitudinal";
-  }
-  return "Please implement this AccAxis in axis_string() in types.hpp.";
-}
-
 
 // ----- accelerator coordinates (2D "Pair" & 3D "Triple") -----
 

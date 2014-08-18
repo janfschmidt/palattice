@@ -29,7 +29,7 @@ enum Anchor{begin,center,end};
 class AccLattice {
 
 protected:
-  double circumference;
+  double circ;
   std::map<double,AccElement*> elements;                  // first: position in lattice / m
   const Drift* empty_space;
   vector<string> ignoreList;                              // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted (set) in this lattice
@@ -50,7 +50,7 @@ public:
   ~AccLattice();
   AccLattice& operator= (const AccLattice other);
 
-  double circumference() const {return circumference;}
+  double circumference() const {return circ;}
   const_AccIterator getIt(double pos) const;                           // get const_Iterator to element, if pos is inside it
   const_AccIterator getItBegin() const;                                // get iterator to begin (first Element)
   const_AccIterator getItEnd() const;                                  // get iterator to end (after last Element)
@@ -74,10 +74,10 @@ public:
   void dismount(double pos);                                          // dismount element at Ref.position pos (if no element at pos: do nothing)
 
   void setIgnoreList(string ignoreFile);         // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted in this lattice
-  void madximport(const char *madxTwissFile);              // mount elements from MAD-X Lattice (read from twiss-output)
-  void madximportMisalignments(const char *madxEalignFile);// set misalignments from MAD-X Lattice (read ealign-output)
+  void madximport(string madxTwissFile);              // mount elements from MAD-X Lattice (read from twiss-output)
+  void madximportMisalignments(string madxEalignFile);// set misalignments from MAD-X Lattice (read ealign-output)
                                                      // !! currently only rotation (dpsi) around beam axis (s) is implemented!
-  void elegantimport(const char *elegantParamFile);        // mount elements from elegant Lattice (read from ascii parameter file ".param")
+  void elegantimport(string elegantParamFile);        // mount elements from elegant Lattice (read from ascii parameter file ".param")
   void setELSAoptics(string spurenFolder);                    // change quad&sext strengths to values from "ELSA-Spuren"
   unsigned int setELSACorrectors(ELSASpuren &spuren, unsigned int t);// change corrector pos&strength to values from "ELSA-Spuren" at time t
   void subtractCorrectorStrengths(const AccLattice &other);    // subtract other corrector strengths from the ones of this lattice

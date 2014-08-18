@@ -7,18 +7,20 @@
 
 using namespace std;
 
-class METADATA {
+class Metadata {
 private:
   vector<string> label;
   vector<string> entry;
 
 public:
-  METADATA();
-  ~METADATA() {}
+  Metadata();
+  ~Metadata() {}
 
   void add(string inLabel, string inEntry);         //add an entry. if label already exists, update entry
-  int madximport(char *madxLabels, string madxfile);
-  int elegantimport(char *elegantLabels, string elegantfile);
+  int madximport(string madxLabels, string madxfile);
+  int elegantimport(string elegantLabels, string elegantfile);
+
+  void operator+=(Metadata &other);       //add other Metadata, without first 2 entries ("default" metadata)
 
   unsigned int size() const {return label.size();}
   string getLabel(unsigned int i) const;

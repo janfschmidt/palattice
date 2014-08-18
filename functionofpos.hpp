@@ -44,7 +44,7 @@ private:
 
 public:
   const double circ;                          //circumference of accelerator
-  METADATA info;
+  Metadata info;
 
   FunctionOfPos(double circIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
   FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
@@ -102,6 +102,8 @@ public:
 };
 
 
+
+string axis_string(AccAxis a);
 
 
 // exceptions

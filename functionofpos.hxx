@@ -435,6 +435,11 @@ void FunctionOfPos<T>::operator+=(FunctionOfPos<T> &other)
   }
 
   this->reset();  // reset interpolation
+
+  string tmp = other.info.getbyLabel("Orbit Source file");
+  if (tmp != "NA") {
+    this->info.add("added Orbit", tmp);
+  }
 }
 
 template <class T>
@@ -453,6 +458,11 @@ void FunctionOfPos<T>::operator-=(FunctionOfPos<T> &other)
   }
   
   this->reset();  // reset interpolation
+
+  string tmp = other.info.getbyLabel("Orbit Source file");
+  if (tmp != "NA") {
+    this->info.add("subtracted Orbit", tmp);
+  }
 }
 
 

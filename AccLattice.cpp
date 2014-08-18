@@ -29,7 +29,7 @@ string removeQuote(string s)
 
 //constructor
 AccLattice::AccLattice(string _name, double _circumference, Anchor _refPos)
-  : ignoreCounter(0), refPos(_refPos), circumference(_circumference)
+  : circ(_circumference), ignoreCounter(0), refPos(_refPos)
 {
   empty_space = new Drift;
 
@@ -37,7 +37,7 @@ AccLattice::AccLattice(string _name, double _circumference, Anchor _refPos)
   info.add("Reference pos.", this->refPos_string());
 }
 
-AccLattice::AccLattice(string _name, simulationTool s, string file, Anchor _refPos=end)
+AccLattice::AccLattice(string _name, simulationTool s, string file, Anchor _refPos)
   : ignoreCounter(0), refPos(_refPos)
 {
   empty_space = new Drift;
@@ -52,7 +52,7 @@ AccLattice::AccLattice(string _name, simulationTool s, string file, Anchor _refP
 
 //copy constructor
 AccLattice::AccLattice(const AccLattice &other)
-  : refPos(other.refPos), circumference(other.circumference)
+  : circ(other.circumference()), refPos(other.refPos)
 {
   empty_space = new Drift;
 
@@ -80,9 +80,9 @@ AccLattice& AccLattice::operator= (const AccLattice other)
 	<< refPos_string() <<"/"<< other.refPos_string() <<")";
     throw logic_error(msg.str());
   }
-  if (circumference != other.circumference) {
+  if (circumference() != other.circumference()) {
     msg << "ERROR: AccLattice::operator=(): Cannot assign Lattice - different circumferences ("
-	<< circumference <<"/"<< other.circumference <<")";
+	<< circumference() <<"/"<< other.circumference() <<")";
     throw logic_error(msg.str());
   }
 
@@ -300,9 +300,9 @@ const_AccIterator AccLattice::getItEnd() const
 // get element
 const AccElement* AccLattice::operator[](double pos) const
 {
-  if (pos > circumference) {
+  if (pos > circumference()) {
     stringstream msg;
-    msg << pos << " m is larger than lattice circumference " << circumference << " m.";
+    msg << pos << " m is larger than lattice circumference " << circumference() << " m.";
     throw std::out_of_range(msg.str());
   }
 
@@ -338,9 +338,9 @@ void AccLattice::mount(double pos, const AccElement& obj, bool verbose)
     return;
   }
 
- if (pos > circumference) {
+  if (pos > circumference()) {
     stringstream msg;
-    msg << pos << " m is larger than lattice circumference " << circumference << " m.";
+    msg << pos << " m is larger than lattice circumference " << circumference() << " m.";
     throw std::out_of_range(msg.str());
   }
 
@@ -397,8 +397,8 @@ void AccLattice::mount(double pos, const AccElement& obj, bool verbose)
 	<< previous->second->name << " ("<< locate(previous,begin) <<" - "<<locate(previous,end) << "m)";
     throw eNoFreeSpace(msg.str());
   }
-  else if (newEnd > circumference) {
-    msg << objPtr->name << " (" << newBegin <<" - "<< newEnd <<  "m) cannot be inserted --- overlap with lattice end at " << circumference << "m";
+  else if (newEnd > circumference()) {
+    msg << objPtr->name << " (" << newBegin <<" - "<< newEnd <<  "m) cannot be inserted --- overlap with lattice end at " << circumference() << "m";
     throw eNoFreeSpace(msg.str());
   }
   else if (!last_element && newEnd > locate(next,begin)) {
@@ -459,13 +459,13 @@ void AccLattice::setIgnoreList(string ignoreFile)
 // "FamilyMagnets" (Quad,Sext) all of type F, because
 // MAD-X uses different signs of strengths (k,m)
 // ===================================================
-void AccLattice::madximport(const char *madxTwissFile)
+void AccLattice::madximport(string madxTwissFile)
 {
   //get metadata and set circumference
   info.madximport("TITLE,LENGTH,ORIGIN,PARTICLE", madxTwissFile);
-  circumference = strtod(info.getbyLabel("LENGTH").c_str(), NULL);
-  if (circumference == 0) {
-    strigstream msg;
+  circ = strtod(info.getbyLabel("LENGTH").c_str(), NULL);
+  if (circ == 0) {
+    stringstream msg;
     msg << "AccLattice::madximport(): Cannot read circumference from " << madxTwissFile;
     throw std::runtime_error(msg.str());
   }
@@ -494,7 +494,7 @@ void AccLattice::madximport(const char *madxTwissFile)
     cout << "WARNING: AccLattice::madximport(): The input file (MAD-X twiss) uses element end as positions." << endl
 	 << "They are transformed to the current Anchor set for this lattice: " << refPos_string() << endl;
 
-  madxTwiss.open(madxTwissFile, ios::in);
+  madxTwiss.open(madxTwissFile.c_str(), ios::in);
   if (!madxTwiss.is_open()) {
     cout << "ERROR: AccLattice::madximport(): Cannot open " << madxTwissFile << endl;
     exit(1);
@@ -604,7 +604,7 @@ void AccLattice::madximport(const char *madxTwissFile)
 // Bsupply and elegant use clockwise definition, so sign is changed here
 // to get the correct signs for the magnetic fields calculated from dpsi
 // *********************************************************************************
-void AccLattice::madximportMisalignments(const char *madxEalignFile)
+void AccLattice::madximportMisalignments(string madxEalignFile)
 {
   string tmp;
   unsigned int j, column=0;
@@ -612,7 +612,7 @@ void AccLattice::madximportMisalignments(const char *madxEalignFile)
   fstream madxEalign;
   AccIterator it=elements.begin();
 
-  madxEalign.open(madxEalignFile, ios::in);
+  madxEalign.open(madxEalignFile.c_str(), ios::in);
   if (!madxEalign.is_open()) {
     cout << "ERROR: AccLattice::madximportMisalignments(): Cannot open " << madxEalignFile << endl;
     exit(1);
@@ -663,7 +663,7 @@ void AccLattice::madximportMisalignments(const char *madxEalignFile)
 // "FamilyMagnets" (Quad,Sext) all of type F, because
 // elegant uses different signs of strengths (k,m)
 // ===================================================
-void AccLattice::elegantimport(const char *elegantParamFile)
+void AccLattice::elegantimport(string elegantParamFile)
 {
   double s, pos;
   double l, k1, k2, angle, kick, tilt; //parameter values
@@ -676,11 +676,11 @@ void AccLattice::elegantimport(const char *elegantParamFile)
   pos=l=k1=k2=angle=kick=tilt=0.;   // initialize param. values
 
   //get metadata and set circumference
-  info.elegantimport("circumference,pCentral/m_e*c,tune:Qx,tune:Qz", file.lattice.c_str());
-  circumference = strtod(info.getbyLabel("circumference").c_str(), NULL);
-  if (circumference == 0) {
-    strigstream msg;
-    msg << "AccLattice::madximport(): Cannot read circumference from " << madxTwissFile;
+  info.elegantimport("circumference,pCentral/m_e*c,tune:Qx,tune:Qz", elegantParamFile);
+  circ = strtod(info.getbyLabel("circumference").c_str(), NULL);
+  if (circ == 0) {
+    stringstream msg;
+    msg << "AccLattice::elegantParamFile(): Cannot read circumference from " << elegantParamFile;
     throw std::runtime_error(msg.str());
   }
 
@@ -698,7 +698,7 @@ void AccLattice::elegantimport(const char *elegantParamFile)
     cout << "WARNING: AccLattice::elegantimport(): The input file (elegant parameter) uses element end as positions." << endl
 	 << "They are transformed to the current Anchor set for this lattice: " << refPos_string() << endl;
 
-  elegantParam.open(elegantParamFile, ios::in);
+  elegantParam.open(elegantParamFile.c_str(), ios::in);
   if (!elegantParam.is_open()) {
     cout << "ERROR: AccLattice::elegantimport(): Cannot open " << elegantParamFile << endl;
     exit(1);
@@ -956,7 +956,11 @@ void AccLattice::subtractCorrectorStrengths(const AccLattice &other)
   }
 
   //metadata
-  info.add("subtracted corrector strengths", other.info.getbyLabel("Lattice name"));
+  string tmp = other.info.getbyLabel("Lattice Source file");
+  if (tmp != "NA")
+    info.add("subtracted corrector strengths", tmp);
+  else
+    info.add("subtracted corrector strengths", other.info.getbyLabel("Lattice name"));
 }
 
 
@@ -996,7 +1000,11 @@ void AccLattice::subtractMisalignments(const AccLattice &other)
   }
 
   //metadata
-  info.add("subtracted misalignments", other.info.getbyLabel("Lattice name"));
+  string tmp = other.info.getbyLabel("Lattice Source file");
+  if (tmp != "NA")
+    info.add("subtracted misalignments", tmp);
+  else
+    info.add("subtracted misalignments", other.info.getbyLabel("Lattice name"));
 }
 
 
@@ -1163,13 +1171,13 @@ string AccLattice::getLine(simulationTool tool) const
     line <<", "<< it->second->name; //insert element in line
   }
   //final drift to end
-  if ( (circumference - lastend) > ZERO_DISTANCE ) { //ignore very short drift
+  if ( (circumference() - lastend) > ZERO_DISTANCE ) { //ignore very short drift
     s << "DRIFT_" << n << " : ";
     if (tool==elegant)
       s << "DRIF, l=";
     else
       s << "DRIFT, L=";
-    s << this->circumference - lastend <<";"<<endl;
+    s << this->circumference() - lastend <<";"<<endl;
     line << ", DRIFT_" << n;   // drift to end
   }
 
@@ -1193,14 +1201,14 @@ string AccLattice::getSequence(Anchor refer) const
     s << "ENTRY, ";
   else if (refer==end)
     s << "EXIT, ";
-  s << "L=" << this->circumference <<";"<< endl;
+  s << "L=" << this->circumference() <<";"<< endl;
 
   s << "BEGIN : MARKER, AT=0.0;" << endl;
   const_AccIterator it=elements.begin();
   for (; it!=elements.end(); ++it) {
     s << it->second->name << ", AT=" << this->locate(it, refer) << ";" << endl;
   }
-  s << "END : MARKER, AT=" <<this->circumference <<";"<< endl;
+  s << "END : MARKER, AT=" <<this->circumference() <<";"<< endl;
   s << "ENDSEQUENCE;";
 
   return s.str();
@@ -1294,7 +1302,7 @@ void AccLattice::latexexport(const char *filename) const
   }
 
   //drift to end
-  driftlength = circumference - lastend;
+  driftlength = circumference() - lastend;
   s << getLaTeXDrift(driftlength);
 
   s << "\\end{lattice}" << endl << "\\end{document}" << endl;

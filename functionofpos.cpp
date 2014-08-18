@@ -13,6 +13,21 @@
 
 
 
+//AccAxis string output
+string axis_string(AccAxis a) {
+  switch (a) {
+  case x:
+    return "horizontal";
+  case z:
+    return "vertical";
+  case s:
+    return "longitudinal";
+  }
+  return "Please implement this AccAxis in axis_string() in types.hpp.";
+}
+
+
+
 // =========== template specialization ============
 
 
@@ -153,7 +168,7 @@ void FunctionOfPos<AccPair>::madxClosedOrbit(const char *madxTwissFile)
 
   //metadata
   info.add("Closed Orbit from", "MAD-X");
-  info.add("Source file", madxTwissFile);
+  info.add("Orbit Source file", madxTwissFile);
 }
 
 
@@ -260,9 +275,13 @@ void FunctionOfPos<AccPair>::madxTrajectory(string path, unsigned int particle)
 
   //metadata
   info.add("Trajectory from", "MAD-X");
-  info.add("Source file path", path);
-  info.add("particle number", particle);
-  info.add("number of obs. points", obs);
+  info.add("Tr. Source path", path);
+  stringstream stmp;
+  stmp << particle;
+  info.add("particle number", stmp.str());
+  stmp.str(std::string());
+  stmp << obs;
+  info.add("number of obs. points", stmp.str());
 }
 
 
@@ -307,7 +326,7 @@ void FunctionOfPos<AccPair>::elegantClosedOrbit(const char *elegantCloFile)
   }
   //metadata
   info.add("Closed Orbit from", "Elegant");
-  info.add("Source file", elegantCloFile);
+  info.add("Orbit Source file", elegantCloFile);
 }
 
 
@@ -366,9 +385,13 @@ void FunctionOfPos<AccPair>::elegantTrajectory(string path, unsigned int particl
 
   //metadata
   info.add("Trajectory from", "Elegant");
-  info.add("Source file path", path);
-  info.add("particle number", particle);
-  info.add("number of watch points", watch);
+  info.add("Tr. Source path", path);
+  stringstream stmp;
+  stmp << particle;
+  info.add("particle number", stmp.str());
+  stmp.str(std::string());
+  stmp << watch;
+  info.add("number of watch points", stmp.str());
 }
 
 

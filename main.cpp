@@ -50,7 +50,7 @@ void usage()
   cout << "* -a enables all output files (orbit, fields, correctors, ...)" << endl;
   cout << "* -d [reference] enables difference-mode, where a reference orbit and corrector kicks are subtracted:"  << endl;
   cout << "     in ELSA-mode [reference] are Spuren ([project]/ELSA-Spuren/)," << endl;
-  cout << "     else a MadX-twiss file ([project]/madx/[reference])" << endl;
+  cout << "     else the names of MadX output files ([project]/madx/[reference].twiss & [project]/madx/[reference].dipealign)" << endl;
   cout << "     or the name of elegant output files ([project]/elegant/[reference].clo & [project]/elegant/[reference].param)." << endl;
   cout << "     MadX or elegant is chosen by -s option." << endl;
   cout << "* -x Additionally creates elegant/madx compliant lattice ([project]/inout/lattice.lte/madx)." << endl;
@@ -84,7 +84,6 @@ int main (int argc, char *argv[])
   char spuren[20] = "dummy";
   char Reference[50] = "dummy";
   string ignoreFile = "NULL";
-  double circumference=0;
   double ampcut_x = 1e-5;     // minimum amplitudes for magnetic field spectra
   double ampcut_z = 1e-6;     // be carefull: ampcut_z can change spin tune !
   double ampcut_res=0;          // minimum amplitude for resonance spectrum (option -c)
@@ -227,31 +226,32 @@ int main (int argc, char *argv[])
 
 
   // initialize Lattice
-  AccLattice lattice("Bsupply Lattice", circumference, end); // refPos=end used by MAD-X
-  AccLattice Ref_lattice("Bsupply Reference Lattice", circumference, end);
+  double circ_dummy=0; // correct circumference is set by madx/elegant import
+  AccLattice lattice("Bsupply Lattice", circ_dummy, end); // refPos=end used by MAD-X
+  AccLattice Ref_lattice("Bsupply Reference Lattice", circ_dummy, end);
   // ignoreFile
   if (ignoreFile != "NULL") {
     lattice.setIgnoreList(ignoreFile);
     Ref_lattice.setIgnoreList(ignoreFile);
   }
-
-  // initialize orbit
-  FunctionOfPos<AccPair> bpmorbit(circumference, gsl_interp_akima_periodic, circumference);
-  FunctionOfPos<AccPair> Ref_bpmorbit(circumference, gsl_interp_akima_periodic, circumference);
-  FunctionOfPos<AccPair> trajectory(circumference, gsl_interp_akima);
-
- 
-
-
-  // read lattice (magnet positions,strengths,misalignments) and  particle orbit
+  // import lattice (magnet positions,strengths,misalignments)
   if (simTool == madx) {
     lattice.madximport(file.lattice.c_str());
     lattice.madximportMisalignments(file.misalign_dip.c_str());
-    bpmorbit.madxClosedOrbit(file.orbit.c_str());
   }
   else { //elegant
     lattice.elegantimport(file.lattice.c_str());
-    //lattice.madximportMisalignments(file.misalign_dip.c_str());
+  }
+
+  // initialize orbit
+  FunctionOfPos<AccPair> bpmorbit(lattice.circumference(), gsl_interp_akima_periodic, lattice.circumference());
+  FunctionOfPos<AccPair> Ref_bpmorbit(lattice.circumference(), gsl_interp_akima_periodic, lattice.circumference());
+  FunctionOfPos<AccPair> trajectory(lattice.circumference(), gsl_interp_akima);
+  // read particle orbit
+  if (simTool == madx) {
+    bpmorbit.madxClosedOrbit(file.orbit.c_str());
+  }
+  else { //elegant
     bpmorbit.elegantClosedOrbit(file.orbit.c_str());
   }
 
@@ -275,9 +275,10 @@ int main (int argc, char *argv[])
   cout << "* "<<lattice.size(dipole)<<" dipoles, "<<lattice.size(quadrupole)<<" quadrupoles, "
        <<lattice.size(sextupole)<<" sextupoles, "<<lattice.size(corrector)<<" kickers, "
        <<lattice.size(rfdipole)<<" rfdipoles, "<<lattice.size(cavity)<<" cavities read"<<endl
-       <<"  as " <<lattice.circumference << "m lattice from " <<file.lattice<<endl;
-  if (ignoreFile!="NULL")
+       <<"  as " <<lattice.circumference() << "m lattice from " <<file.lattice<<endl;
+  if (ignoreFile!="NULL") {
     cout <<"* "<<lattice.ignoredElements()<<" elements ignored due to match with " << ignoreFile<<endl;
+  }
   cout  << "* "<<bpmorbit.samples()<<" BPMs(@Quad) read"<<endl
 	<<"  from "<<file.orbit << endl;
 
@@ -295,7 +296,7 @@ int main (int argc, char *argv[])
 
   // calculate default sampling points along ring (n_samp)
   double stepwidth = 0.001;  // in m
-  if (default_n_samp) n_samp = circumference/stepwidth;  
+  if (default_n_samp) n_samp = lattice.circumference()/stepwidth;  
   // check fmax and n_samp
   if (fmax_x >= n_samp/2 || fmax_z >= n_samp/2) {
     cout << "ERROR: The maximum frequency is to large to be calculated with "<<n_samp<<" sampling points." << endl;
@@ -303,7 +304,7 @@ int main (int argc, char *argv[])
   }
 
   // magnetic field along ring, [B]=1/m (factor gamma*m*c/e multiplied in TBMTsolver)
-  Field B(circumference, n_samp, trajectory.turns());
+  Field B(lattice.circumference(), n_samp, trajectory.turns());
 
   // resonance strengths
   RESONANCES Res(dtheta, lattice.size(dipole), trajectory.turns());
@@ -358,9 +359,11 @@ int main (int argc, char *argv[])
       }
       cout <<Ref_lattice.size(dipole)<<" dipoles, "<<Ref_lattice.size(quadrupole)<<" quadrupoles, "
 	   <<Ref_lattice.size(sextupole)<<" sextupoles, "<<Ref_lattice.size(corrector)<<" kickers read"<<endl
-	   <<"  from "<<file.lattice_ref<<endl
-	   <<"* "<<Ref_lattice.ignoredElements()<<" elements ignored due to match with " << ignoreFile<<endl
-	   <<"* "<<Ref_bpmorbit.samples()<<" BPMs(@Quad) read"<<endl
+	   <<"  from "<<file.lattice_ref<<endl;
+      if (ignoreFile!="NULL") {
+	cout <<"* "<<Ref_lattice.ignoredElements()<<" elements ignored due to match with " << ignoreFile<<endl;
+      }
+	  cout <<"* "<<Ref_bpmorbit.samples()<<" BPMs(@Quad) read"<<endl
 	   <<"  from "<< file.orbit_ref << endl;
     }
     

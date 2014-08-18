@@ -28,7 +28,7 @@ private:
 public:
   bool on;
   const unsigned int n_turns;
-  METADATA info;
+  Metadata info;
 
   RESONANCES() :  dtheta(-1), n(0), ndip(0), on(false), n_turns(1) {}
   RESONANCES(double thetastep, unsigned int n_dip, unsigned int turns);

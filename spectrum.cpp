@@ -243,7 +243,7 @@ double Spectrum::eval(double t) const
 
 
 
-void Spectrum::out(string filename) const
+void Spectrum::out(string filename)
 {
   fstream file;
   stringstream s;
@@ -288,7 +288,7 @@ void Spectrum::out(string filename) const
 
 
 // create output file with evaluated field data (stepwitdh & max given for position s / m)
-void Spectrum::eval_out(double stepwidth, double max, string filename) const
+void Spectrum::eval_out(double stepwidth, double max, string filename)
 {
   double s;
   int w=12;
@@ -307,7 +307,7 @@ void Spectrum::eval_out(double stepwidth, double max, string filename) const
 
   //metadata
   updateMetadata();
-  s << info.out("#");
+  file << info.out("#");
 
   file <<"# "<<setw(w)<< "s [m]" <<setw(w)<< "t [s]" <<setw(w)<< "B [1/m]"  << endl;
   for (s=0.0; s<=max; s+=stepwidth) {

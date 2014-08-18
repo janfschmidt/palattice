@@ -53,7 +53,7 @@ private:
   double imag(unsigned int i, double *halfcomplex, unsigned int n) const;
 
 public:
-  METADATA info;
+  Metadata info;
 
   Spectrum(string _name, unsigned int fmaxrevIn=30, double ampcut=0);
   Spectrum(string _name, vector<double> In, double circ, unsigned int turns, int _norm=-1, unsigned int fmaxrevIn=30, double ampcut=0, unit u=meter);
@@ -78,8 +78,8 @@ public:
   void push_back(FREQCOMP tmp);      // add FREQCOMP manually
   void clear() {b.clear();}
 
-  void out(string filename="") const;
-  void eval_out(double stepwidth, double max, string filename) const;
+  void out(string filename="");
+  void eval_out(double stepwidth, double max, string filename);
   void updateMetadata();
 };
 
