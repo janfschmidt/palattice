@@ -14,7 +14,6 @@
 #include <iomanip>
 #include <typeinfo>
 
-#define ACCURACY 1e-10
 
 using namespace std;
 
@@ -92,7 +91,7 @@ unsigned int FunctionOfPos<T>::index(double posIn, unsigned int turnIn) const
   double tmpPos = posTotal(posIn,turnIn);
 
   for (j=0; j<size(); j++) {
-    if (abs(pos[j] - tmpPos) < ACCURACY)
+    if (abs(pos[j] - tmpPos) < ZERO_DISTANCE)
       return j;
     else if (pos[j] > tmpPos)
       throw eNoData(j);
@@ -107,13 +106,13 @@ unsigned int FunctionOfPos<T>::index(double posIn, unsigned int turnIn) const
 template <class T>
 unsigned int FunctionOfPos<T>::turn_by_index(unsigned int i) const
 {
-  return int(i/samples() + ACCURACY) + 1; // ensure return of next turn for i=samples
+  return int(i/samples() + ZERO_DISTANCE) + 1; // ensure return of next turn for i=samples
 }
 
 template <class T>
 unsigned int FunctionOfPos<T>::turn(double posIn) const
 {
-  return int(posIn/circ + ACCURACY) + 1; // ensure return of next turn for pos=circ
+  return int(posIn/circ + ZERO_DISTANCE) + 1; // ensure return of next turn for pos=circ
 }
 
 
@@ -133,7 +132,7 @@ template <class T>
 double FunctionOfPos<T>::posInTurn(double pos) const
 {
   double tmp = fmod(pos,circ);
-  if ( abs(tmp-circ) < ACCURACY ) return 0.0; // pos=circ is always returned as pos=0 in next turn
+  if ( abs(tmp-circ) < ZERO_DISTANCE ) return 0.0; // pos=circ is always returned as pos=0 in next turn
   else return tmp;
 }
 
@@ -403,7 +402,7 @@ bool FunctionOfPos<T>::compatible(FunctionOfPos<T> &o, bool verbose) const
   }
 
   // for (unsigned int i=0; i<samples(); i++) {
-  //   if (abs(getPos(i) - o.getPos(i)) > ACCURACY) {
+  //   if (abs(getPos(i) - o.getPos(i)) > ZERO_DISTANCE) {
   //     if (verbose) {
   // 	cout <<endl<< "=== FunctionOfPos<T> objects are not compatible! ===" << endl;
   // 	cout << "Positions at sample "<<i<<" are not equal(" << getPos(i) <<"/"<< o.getPos(i) <<")." << endl;
@@ -504,7 +503,7 @@ void FunctionOfPos<T>::madxClosedOrbit(const char *madxTwissFile)
 {
   stringstream s;
   s << "FunctionOfPos<T>::madxClosedOrbit() is not implemented for data type " << typeid(T).name()
-    << ". It is only defined for T=AccPair (x,z).";
+    << ". It is only defined for T=AccPair.";
   throw logic_error(s.str());
 }
 
@@ -513,7 +512,7 @@ void FunctionOfPos<T>::madxTrajectory(string path, unsigned int particle)
 {
   stringstream s;
   s << "FunctionOfPos<T>::madxTrajectory() is not implemented for data type " << typeid(T).name()
-    << ". It is only defined for T=AccPair (x,z).";
+    << ". It is only defined for T=AccPair.";
   throw logic_error(s.str());
 }
 
@@ -522,7 +521,7 @@ void FunctionOfPos<T>::elegantClosedOrbit(const char *elegantCloFile)
 {
   stringstream s;
   s << "FunctionOfPos<T>::elegantClosedOrbit() is not implemented for data type " << typeid(T).name()
-    << ". It is only defined for T=AccPair (x,z).";
+    << ". It is only defined for T=AccPair.";
   throw logic_error(s.str());
 }
 
@@ -531,7 +530,7 @@ void FunctionOfPos<T>::elegantTrajectory(string path, unsigned int particle)
 {
   stringstream s;
   s << "FunctionOfPos<T>::elegantTrajectory() is not implemented for data type " << typeid(T).name()
-    << ". It is only defined for T=AccPair (x,z).";
+    << ". It is only defined for T=AccPair.";
   throw logic_error(s.str());
 }
 
@@ -540,7 +539,7 @@ void FunctionOfPos<T>::elsaClosedOrbit(ELSASpuren &spuren, unsigned int t)
 {
   stringstream s;
   s << "FunctionOfPos<T>::elsaClosedOrbit() is not implemented for data type " << typeid(T).name()
-    << ". It is only defined for T=AccPair (x,z).";
+    << ". It is only defined for T=AccPair.";
   throw logic_error(s.str());
 }
 

@@ -17,6 +17,7 @@
 #include "ELSASpuren.hpp"
 #include "Metadata.hpp"
 #include "types.hpp"
+#include "config.hpp"
 
 
 
@@ -99,8 +100,22 @@ public:
 
   // construct Spectrum (FFT) from this FunctionOfPos (for 1D values, chosen by axis)
   Spectrum getSpectrum(AccAxis axis=x, unsigned int fmaxrevIn=30, double ampcut=0.) const;
+
 };
 
+
+// template function specializations
+template<> vector<double> FunctionOfPos<double>::getVector(AccAxis axis) const;
+template<> vector<double> FunctionOfPos<int>::getVector(AccAxis axis) const;
+template<> vector<double> FunctionOfPos<AccPair>::getVector(AccAxis axis) const;
+template<> vector<double> FunctionOfPos<AccTriple>::getVector(AccAxis axis) const;
+template<> void FunctionOfPos<AccPair>::madxClosedOrbit(const char *madxTwissFile);
+template<> void FunctionOfPos<AccPair>::madxTrajectory(string path, unsigned int particle);
+template<> void FunctionOfPos<AccPair>::elegantClosedOrbit(const char *elegantCloFile);
+template<> void FunctionOfPos<AccPair>::elegantTrajectory(string path, unsigned int particle);
+template<> void FunctionOfPos<AccPair>::elsaClosedOrbit(ELSASpuren &spuren, unsigned int t);
+template<> string FunctionOfPos<AccPair>::header() const;
+template<> string FunctionOfPos<AccTriple>::header() const;
 
 
 string axis_string(AccAxis a);

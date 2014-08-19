@@ -1,5 +1,5 @@
-#ifndef __POLSIM__CONFIG_HPP_
-#define __POLSIM__CONFIG_HPP_
+#ifndef __LIBPAL__CONFIG_HPP_
+#define __LIBPAL__CONFIG_HPP_
 
 
 /* acclattice options */
@@ -10,4 +10,4 @@
 
 #endif
 
-/*__POLSIM__CONFIG_HPP_*/
+/*__LIBPAL__CONFIG_HPP_*/

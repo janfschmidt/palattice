@@ -24,6 +24,5 @@
 #include "types.hpp"         // type definitions. e.g. accelerator coordinates: 2D "Pair" (x,z) & 3D "Triple" (x,z,s)
 
 
-
 #endif
 /*__LIBPAL_HPP_*/
