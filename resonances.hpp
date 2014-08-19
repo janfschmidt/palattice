@@ -2,11 +2,7 @@
 #define __BSUPPLY__RESONANCES_HPP_
 
 #include <vector>
-#include "types.hpp"
-#include "functionofpos.hpp"
-#include "AccLattice.hpp"
-#include "metadata.hpp"
-#include "spectrum.hpp"
+#include "libpal.hpp"
 
 using namespace std;
 

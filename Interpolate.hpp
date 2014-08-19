@@ -5,8 +5,8 @@
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
  */
 
-#ifndef __INTERPOLATE_HPP_
-#define __INTERPOLATE_HPP_
+#ifndef __LIBPAL_INTERPOLATE_HPP_
+#define __LIBPAL_INTERPOLATE_HPP_
 
 #include <vector>
 #include <string>
@@ -80,7 +80,7 @@ template<> void Interpolate<AccTriple>::initThis();
 template<> AccTriple Interpolate<AccTriple>::interpThis(double xIn);
 
 
-#include "interpolate.hxx"
+#include "Interpolate.hxx"
 
 #endif
-/*__INTERPOLATE_HPP_*/
+/*__LIBPAL_INTERPOLATE_HPP_*/

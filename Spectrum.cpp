@@ -15,7 +15,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <gsl/gsl_fft_real.h>
-#include "spectrum.hpp"
+#include "Spectrum.hpp"
 
 using namespace std;
 

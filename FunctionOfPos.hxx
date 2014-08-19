@@ -468,7 +468,7 @@ void FunctionOfPos<T>::operator-=(FunctionOfPos<T> &other)
 
 
 
-// ----------- defaults for template specialization (functionofpos.cpp)
+// ----------- defaults for template specialization (FunctionOfPos.cpp)
 
 // construct Spectrum (FFT) from this FunctionOfPos
 // uses getVector() to generate 1D input data

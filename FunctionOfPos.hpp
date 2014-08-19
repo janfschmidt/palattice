@@ -7,15 +7,15 @@
  *
  */
 
-#ifndef __FUNCTIONOFPOS_HPP_
-#define __FUNCTIONOFPOS_HPP_
+#ifndef __LIBPAL_FUNCTIONOFPOS_HPP_
+#define __LIBPAL_FUNCTIONOFPOS_HPP_
 
 #include <exception>
 #include <stdexcept>
-#include "interpolate.hpp"
-#include "spectrum.hpp"
+#include "Interpolate.hpp"
+#include "Spectrum.hpp"
 #include "ELSASpuren.hpp"
-#include "metadata.hpp"
+#include "Metadata.hpp"
 #include "types.hpp"
 
 
@@ -117,7 +117,7 @@ public:
 
 
 
-#include "functionofpos.hxx"
+#include "FunctionOfPos.hxx"
 
 #endif
-/*__FUNCTIONOFPOS_HPP_*/
+/*__LIBPAL_FUNCTIONOFPOS_HPP_*/

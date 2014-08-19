@@ -1,5 +1,5 @@
-#ifndef __POLSIM__METADATA_HPP_
-#define __POLSIM__METADATA_HPP_
+#ifndef __LIBPAL__METADATA_HPP_
+#define __LIBPAL__METADATA_HPP_
 
 #include <vector>
 #include <string>
@@ -34,4 +34,4 @@ public:
 
 #endif
 
-/*__POLSIM__METADATA_HPP_*/
+/*__LIBPAL__METADATA_HPP_*/

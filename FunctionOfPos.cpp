@@ -9,7 +9,7 @@
 
 #include <string>
 #include <sstream>
-#include "functionofpos.hpp"
+#include "FunctionOfPos.hpp"
 
 
 
@@ -354,7 +354,7 @@ void FunctionOfPos<AccPair>::elegantTrajectory(string path, unsigned int particl
 	elegantFile >> s;
       }
       if (elegantFile.eof()) {
-	cout << "ERROR: functionofpos::elegantTrajectory(): Wrong data format in " << trajectoryFile(path,elegant,watch,particle) << endl;
+	cout << "ERROR: FunctionOfPos::elegantTrajectory(): Wrong data format in " << trajectoryFile(path,elegant,watch,particle) << endl;
 	exit(1);
       }
     }
@@ -367,7 +367,7 @@ void FunctionOfPos<AccPair>::elegantTrajectory(string path, unsigned int particl
       if (elegantFile.eof()) break;
 
       if (p != particle) {
-	cout << "ERROR: functionofpos::elegantTrajectory(): particleID in " << trajectoryFile(path,elegant,watch,particle) 
+	cout << "ERROR: FunctionOfPos::elegantTrajectory(): particleID in " << trajectoryFile(path,elegant,watch,particle) 
 	     << " does not match the input particle ("<<p<<"/"<<particle<<")"<< endl;
 	exit(1);
       }

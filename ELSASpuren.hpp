@@ -1,5 +1,5 @@
-#ifndef __POLSIM__ELSASPUREN_HPP_
-#define __POLSIM__ELSASPUREN_HPP_
+#ifndef __LIBPAL__ELSASPUREN_HPP_
+#define __LIBPAL__ELSASPUREN_HPP_
 
 #include <string>
 
@@ -7,6 +7,46 @@
 #define NVCORRS 32      // Number of VCs for ELSA-Import (Spuren)
 
 using namespace std;
+
+
+
+// ELSA: Closed Orbit
+class BPM_MS {
+public:
+  int ms;
+  double x;
+  double z;
+
+  BPM_MS() : ms(0), x(0), z(0) {}
+};
+
+class BPM {
+public:
+  std::vector<BPM_MS> time;
+  double pos;
+
+  BPM() : pos(0) {}
+};
+
+// ELSA Corrector-Kicks
+class CORR_MS {
+public:
+  int ms;
+  double kick;
+
+  CORR_MS() : ms(0), kick(0) {}
+};
+
+class CORR {
+public:
+  std::vector<CORR_MS> time;
+  double pos;
+
+  CORR() : pos(0) {}
+};
+
+
+
 
 class ELSASpuren {
 public:
@@ -26,4 +66,4 @@ public:
 
 #endif
 
-/*__POLSIM__ELSASPUREN_HPP_*/
+/*__LIBPAL__ELSASPUREN_HPP_*/

@@ -6,11 +6,11 @@
  */
 
 
-#ifndef __BSUPPLY__FIELD_HPP_
-#define __BSUPPLY__FIELD_HPP_
+#ifndef __LIBPAL__FIELD_HPP_
+#define __LIBPAL__FIELD_HPP_
 
 #include "types.hpp"
-#include "functionofpos.hpp"
+#include "FunctionOfPos.hpp"
 #include "AccLattice.hpp"
 
 
@@ -32,4 +32,4 @@ public:
 };
 
 #endif
-/*__BSUPPLY__FIELD_HPP_*/
+/*__LIBPAL__FIELD_HPP_*/

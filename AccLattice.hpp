@@ -6,8 +6,8 @@
  */
 
 
-#ifndef __ACCLATTICE_HPP_
-#define __ACCLATTICE_HPP_
+#ifndef __LIBPAL_ACCLATTICE_HPP_
+#define __LIBPAL_ACCLATTICE_HPP_
 
 #include <map>
 #include <stdexcept>
@@ -15,7 +15,7 @@
 #include <vector>
 #include "AccElements.hpp"
 #include "ELSASpuren.hpp"
-#include "metadata.hpp"
+#include "Metadata.hpp"
 #include "config.hpp"
 #include "types.hpp"
 
@@ -135,4 +135,4 @@ public:
 string removeQuote(string s); //remove quotation marks ("" or '') from begin&end of string
 
 #endif
-/*__ACCLATTICE_HPP_*/
+/*__LIBPAL_ACCLATTICE_HPP_*/

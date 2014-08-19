@@ -14,16 +14,10 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
-#include "types.hpp"
-#include "AccLattice.hpp"
 #include "timetag.hpp"
 #include "filenames.hpp"
 #include "resonances.hpp"
-#include "metadata.hpp"
-#include "ELSASpuren.hpp"
-#include "spectrum.hpp"
-#include "field.hpp"
-#include "functionofpos.hpp"
+#include "libpal.hpp"
 #include "gitversion.hpp"
 
 using namespace std;

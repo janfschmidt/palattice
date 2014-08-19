@@ -313,7 +313,7 @@ void Interpolate<T>::interp_out(double stepwidth, const char *filename)
 
 
 
-// ---- "defaults" for not implemented data types (see interpolate.cpp for specialization) ----
+// ---- "defaults" for not implemented data types (see Interpolate.cpp for specialization) ----
 
 template <class T>
 void Interpolate<T>::initThis()

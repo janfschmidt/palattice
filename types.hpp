@@ -1,5 +1,5 @@
-#ifndef __POLSIM__TYPES_HPP_
-#define __POLSIM__TYPES_HPP_
+#ifndef __LIBPAL__TYPES_HPP_
+#define __LIBPAL__TYPES_HPP_
 
 #include <string>
 #include <vector>
@@ -158,47 +158,7 @@ inline std::ostream &operator<<(std::ostream &out, const AccTriple &A)
 }
 
 
-// -------------------------------------------------------------
-
-
-
-
-// ELSA: Closed Orbit & Corrector-Kicks
-class BPM_MS {
-public:
-  int ms;
-  double x;
-  double z;
-
-  BPM_MS() : ms(0), x(0), z(0) {}
-};
-
-class BPM {
-public:
-  std::vector<BPM_MS> time;
-  double pos;
-
-  BPM() : pos(0) {}
-};
-
-class CORR_MS {
-public:
-  int ms;
-  double kick;
-
-  CORR_MS() : ms(0), kick(0) {}
-};
-
-class CORR {
-public:
-  std::vector<CORR_MS> time;
-  double pos;
-
-  CORR() : pos(0) {}
-};
-
 
 
 #endif
-
-/*__POLSIM__TYPES_HPP_*/
+/*__LIBPAL__TYPES_HPP_*/

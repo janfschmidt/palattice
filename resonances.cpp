@@ -8,7 +8,6 @@
 #include <cstring>
 #include <sstream>
 #include <stdexcept>
-#include "types.hpp"
 #include "resonances.hpp"
 
 

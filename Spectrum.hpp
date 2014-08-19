@@ -8,14 +8,14 @@
  */
 
 
-#ifndef __BSUPPLY_SPECTRUM_HPP_
-#define __BSUPPLY_SPECTRUM_HPP_
+#ifndef __LIBPAL_SPECTRUM_HPP_
+#define __LIBPAL_SPECTRUM_HPP_
 
 #include <vector>
 #include <string>
 #include <gsl/gsl_fft_complex.h>
 #include <gsl/gsl_const_mksa.h>
-#include "metadata.hpp"
+#include "Metadata.hpp"
 #include "config.hpp"
 
 using namespace std;
@@ -87,4 +87,4 @@ public:
 
 
 #endif
-/*__BSUPPLY_SPECTRUM_HPP_*/
+/*__LIBPAL_SPECTRUM_HPP_*/

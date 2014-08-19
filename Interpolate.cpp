@@ -6,7 +6,7 @@
  */
 
 
-#include "interpolate.hpp"
+#include "Interpolate.hpp"
 
 
 // =========== template function specialization ============

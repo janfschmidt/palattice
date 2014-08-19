@@ -1,43 +1,43 @@
 CC=g++
-cflags = -Wall #-g -O0 #last 2 for valgrind
+ccflags = -Wall #-g -O0 #last 2 for valgrind
 INSTALL_PATH=/usr/local/bin/
 PROG_NAME=Bsupply
-ALL_O=main.o ELSASpuren.o metadata.o timetag.o filenames.o resonances.o spectrum.o interpolate.o functionofpos.o field.o AccElements.o AccLattice.o
+ALL_O=main.o ELSASpuren.o Metadata.o timetag.o filenames.o resonances.o Spectrum.o Interpolate.o FunctionOfPos.o Field.o AccElements.o AccLattice.o
 
 
 all: $(PROG_NAME) strom2kick new_strom2kick
 .PHONY: all
 
 $(PROG_NAME): $(ALL_O)
-	$(CC) $(cflags) -o $@ $(ALL_O) -lgsl -lgslcblas -lm
+	$(CC) $(ccflags) -o $@ $(ALL_O) -lgsl -lgslcblas -lm
 
-main.o: main.cpp types.hpp spectrum.hpp  metadata.hpp timetag.hpp filenames.hpp resonances.hpp interpolate.hpp interpolate.hxx functionofpos.hpp functionofpos.hxx field.hpp AccElements.hpp AccLattice.hpp gitversion.hpp ELSASpuren.hpp
-	$(CC) $(cflags) -c $<
+main.o: main.cpp types.hpp Spectrum.hpp  Metadata.hpp timetag.hpp filenames.hpp resonances.hpp Interpolate.hpp Interpolate.hxx FunctionOfPos.hpp FunctionOfPos.hxx Field.hpp AccElements.hpp AccLattice.hpp gitversion.hpp ELSASpuren.hpp
+	$(CC) $(ccflags) -c $<
 
 timetag.o: timetag.cpp
-	$(CC) $(cflags) -c $<
+	$(CC) $(ccflags) -c $<
 filenames.o: filenames.cpp filenames.hpp types.hpp
-	$(CC) $(cflags) -c $<
-resonances.o: resonances.cpp resonances.hpp types.hpp functionofpos.hpp functionofpos.hxx AccLattice.hpp spectrum.hpp
-	$(CC) $(cflags) -c $<
+	$(CC) $(ccflags) -c $<
+resonances.o: resonances.cpp resonances.hpp types.hpp FunctionOfPos.hpp FunctionOfPos.hxx AccLattice.hpp Spectrum.hpp
+	$(CC) $(ccflags) -c $<
 
 
-spectrum.o: spectrum.cpp spectrum.hpp config.hpp
-	$(CC) $(cflags) -c $<
-interpolate.o: interpolate.cpp interpolate.hpp interpolate.hxx types.hpp
-	$(CC) $(cflags) -c $<
-functionofpos.o: functionofpos.cpp functionofpos.hpp functionofpos.hxx interpolate.hpp interpolate.hxx spectrum.hpp ELSASpuren.hpp types.hpp
-	$(CC) $(cflags) -c $<
-field.o: field.cpp field.hpp functionofpos.hpp functionofpos.hxx types.hpp AccLattice.hpp
-	$(CC) $(cflags) -c $<
+Spectrum.o: Spectrum.cpp Spectrum.hpp config.hpp
+	$(CC) $(ccflags) -c $<
+Interpolate.o: Interpolate.cpp Interpolate.hpp Interpolate.hxx types.hpp
+	$(CC) $(ccflags) -c $<
+FunctionOfPos.o: FunctionOfPos.cpp FunctionOfPos.hpp FunctionOfPos.hxx Interpolate.hpp Interpolate.hxx Spectrum.hpp ELSASpuren.hpp types.hpp
+	$(CC) $(ccflags) -c $<
+Field.o: Field.cpp Field.hpp FunctionOfPos.hpp FunctionOfPos.hxx types.hpp AccLattice.hpp
+	$(CC) $(ccflags) -c $<
 ELSASpuren.o: ELSASpuren.cpp types.hpp
-	$(CC) $(cflags) -c $<
-metadata.o: metadata.cpp gitversion.hpp
-	$(CC) $(cflags) -c $<
+	$(CC) $(ccflags) -c $<
+Metadata.o: Metadata.cpp gitversion.hpp
+	$(CC) $(ccflags) -c $<
 AccElements.o: AccElements.cpp AccElements.hpp types.hpp
-	$(CC) $(cflags) -c $<
-AccLattice.o: AccLattice.cpp AccLattice.hpp AccElements.hpp ELSASpuren.hpp metadata.hpp config.hpp types.hpp
-	$(CC) $(cflags) -c $<
+	$(CC) $(ccflags) -c $<
+AccLattice.o: AccLattice.cpp AccLattice.hpp AccElements.hpp ELSASpuren.hpp Metadata.hpp config.hpp types.hpp
+	$(CC) $(ccflags) -c $<
 
 gitversion.hpp: ../.git/HEAD ../.git/index
 	echo "#ifndef __BSUPPLY__GITVERSION_HPP_" > $@
@@ -47,10 +47,10 @@ gitversion.hpp: ../.git/HEAD ../.git/index
 
 
 strom2kick: strom2kick.c
-	gcc $(cflags) $< -lm -o $@
+	gcc $(ccflags) $< -lm -o $@
 
 new_strom2kick: new_strom2kick.c
-	gcc $(cflags) $< -lm -o $@
+	gcc $(ccflags) $< -lm -o $@
 
 
 clean: 
