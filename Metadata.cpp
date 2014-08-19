@@ -17,7 +17,7 @@ using namespace std;
 Metadata::Metadata()
 {
   add("created at", timestamp());
-  add("by libAccLattice version", gitversion());
+  add("by libAccLattice version", libpalGitversion());
 }
 
 //add other Metadata, without first 2 entries ("default" metadata)

@@ -11,7 +11,7 @@ all: $(PROG_NAME) strom2kick new_strom2kick
 $(PROG_NAME): $(ALL_O)
 	$(CC) $(ccflags) -o $@ $(ALL_O) -lgsl -lgslcblas -lm
 
-main.o: main.cpp types.hpp Spectrum.hpp  Metadata.hpp timetag.hpp filenames.hpp resonances.hpp Interpolate.hpp Interpolate.hxx FunctionOfPos.hpp FunctionOfPos.hxx Field.hpp AccElements.hpp AccLattice.hpp gitversion.hpp ELSASpuren.hpp
+main.o: main.cpp types.hpp Spectrum.hpp  Metadata.hpp timetag.hpp filenames.hpp resonances.hpp Interpolate.hpp Interpolate.hxx FunctionOfPos.hpp FunctionOfPos.hxx Field.hpp AccElements.hpp AccLattice.hpp bsupplyGitversion.hpp libpalGitversion.hpp ELSASpuren.hpp
 	$(CC) $(ccflags) -c $<
 
 timetag.o: timetag.cpp
@@ -32,17 +32,23 @@ Field.o: Field.cpp Field.hpp FunctionOfPos.hpp FunctionOfPos.hxx types.hpp AccLa
 	$(CC) $(ccflags) -c $<
 ELSASpuren.o: ELSASpuren.cpp types.hpp
 	$(CC) $(ccflags) -c $<
-Metadata.o: Metadata.cpp gitversion.hpp
+Metadata.o: Metadata.cpp libpalGitversion.hpp
 	$(CC) $(ccflags) -c $<
 AccElements.o: AccElements.cpp AccElements.hpp types.hpp
 	$(CC) $(ccflags) -c $<
 AccLattice.o: AccLattice.cpp AccLattice.hpp AccElements.hpp ELSASpuren.hpp Metadata.hpp config.hpp types.hpp
 	$(CC) $(ccflags) -c $<
 
-gitversion.hpp: ../.git/HEAD ../.git/index
+bsupplyGitversion.hpp: ../.git/HEAD ../.git/index
 	echo "#ifndef __BSUPPLY__GITVERSION_HPP_" > $@
 	echo "#define __BSUPPLY__GITVERSION_HPP_" >> $@
-	echo "inline const std::string gitversion() {return \"$(shell git log -n 1 --date=iso --pretty=format:"%h from %ad")\";}" >> $@
+	echo "inline const std::string bsupplyGitversion() {return \"$(shell git log -n 1 --date=iso --pretty=format:"%h from %ad")\";}" >> $@
+	echo "#endif" >> $@
+
+libpalGitversion.hpp: ../.git/HEAD ../.git/index
+	echo "#ifndef __LIBPAL__GITVERSION_HPP_" > $@
+	echo "#define __LIBPAL__GITVERSION_HPP_" >> $@
+	echo "inline const std::string libpalGitversion() {return \"$(shell git log -n 1 --date=iso --pretty=format:"%h from %ad")\";}" >> $@
 	echo "#endif" >> $@
 
 
@@ -54,7 +60,7 @@ new_strom2kick: new_strom2kick.c
 
 
 clean: 
-	rm $(PROG_NAME) $(ALL_O) strom2kick new_strom2kick gitversion.hpp
+	rm $(PROG_NAME) $(ALL_O) strom2kick new_strom2kick bsupplyGitversion.hpp libpalGitversion.hpp
 
 install:
 	install -m 755 -p -v $(PROG_NAME) $(INSTALL_PATH)

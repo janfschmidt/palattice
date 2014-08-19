@@ -14,7 +14,6 @@
 #include <iomanip>
 #include <stdexcept>
 #include "AccLattice.hpp"
-#include "gitversion.hpp"
 
 
 //remove quotation marks ("" or '') from begin&end of string

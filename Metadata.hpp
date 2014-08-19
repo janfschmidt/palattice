@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <string>
-#include "gitversion.hpp"
+#include "libpalGitversion.hpp"
 
 using namespace std;
 

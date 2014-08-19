@@ -14,11 +14,11 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
+#include "libpal.hpp"
 #include "timetag.hpp"
 #include "filenames.hpp"
 #include "resonances.hpp"
-#include "libpal.hpp"
-#include "gitversion.hpp"
+#include "bsupplyGitversion.hpp"
 
 using namespace std;
 
@@ -49,7 +49,7 @@ void usage()
   cout << "     MadX or elegant is chosen by -s option." << endl;
   cout << "* -x Additionally creates elegant/madx compliant lattice ([project]/inout/lattice.lte/madx)." << endl;
   cout << "* -h displays this help" << endl;
-  cout << "Bsupply version:" <<endl<<gitversion() << endl << endl;
+  cout << "Bsupply version:" <<endl<<bsupplyGitversion() << endl << endl;
 }
 
 
@@ -212,7 +212,7 @@ int main (int argc, char *argv[])
   cout << "Bsupply: calculate magnetic field & spectrum" << endl;
   if (elsa) cout << "         ELSA-mode" << endl;
   if (diff) cout << "         harmcorr analysis (difference-mode)" << endl;
-  cout << "                    version:" <<endl<<gitversion() << endl;
+  cout << "                    version:" <<endl<<bsupplyGitversion() << endl;
   cout << "--------------------------------------------" << endl;
   cout << "* maximum frequency used for B-field evaluation:  Bx->"<<fmax_x <<", Bz->"<<fmax_z << endl;
   cout << "* frequency components cutted if amplitude below: Bx->"<<ampcut_x<<" 1/m, Bz->"<<ampcut_z<< " 1/m" << endl;
