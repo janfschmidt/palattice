@@ -29,7 +29,7 @@ AccElements.o: AccElements.cpp AccElements.hpp types.hpp
 AccLattice.o: AccLattice.cpp AccLattice.hpp AccElements.hpp ELSASpuren.hpp Metadata.hpp config.hpp types.hpp
 	$(CC) $(lib_ccflags) -c $<
 
-libpalGitversion.hpp: ../../.git/HEAD ../../.git/index
+libpalGitversion.hpp: .git/HEAD .git/index
 	echo "#ifndef __LIBPAL__GITVERSION_HPP_" > $@
 	echo "#define __LIBPAL__GITVERSION_HPP_" >> $@
 	echo "namespace pal {" >> $@
