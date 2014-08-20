@@ -2,7 +2,7 @@
 #define __POLSIM__FILENAMES_HPP_
 
 #include <string>
-#include "libpal.hpp"
+#include "libpal/libpal.hpp"
 
 using namespace std;
 

@@ -2,7 +2,7 @@
 #define __BSUPPLY__RESONANCES_HPP_
 
 #include <vector>
-#include "libpal.hpp"
+#include "libpal/libpal.hpp"
 
 using namespace std;
 

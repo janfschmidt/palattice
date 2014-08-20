@@ -14,7 +14,7 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
-#include "libpal.hpp"
+#include "libpal/libpal.hpp"
 #include "timetag.hpp"
 #include "filenames.hpp"
 #include "resonances.hpp"
