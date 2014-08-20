@@ -10,7 +10,7 @@ class FILENAMES {
 
 public:
   FILENAMES() : path("uninitialized") {}
-  FILENAMES(string pathIn, simulationTool _simTool, bool elsa, bool diff, bool sgt_access, string spurenIn, string refIn);
+  FILENAMES(string pathIn, pal::simulationTool _simTool, bool elsa, bool diff, bool sgt_access, string spurenIn, string refIn);
   ~FILENAMES() {}
   string out(string name, string t) const {return (path+"/inout/"+name+t+difftag+".dat");}
   string spec(string name, string t) const {return (path+"/inout/"+name+t+difftag+".spectrum");}
@@ -25,7 +25,7 @@ public:
   string misalign_dip_ref;
   string orbit_ref;
   string difftag;
-  simulationTool simTool;
+  pal::simulationTool simTool;
 
 
 private:

@@ -9,6 +9,8 @@
 #include <gsl/gsl_vector.h>
 
 
+namespace pal
+{
 
 enum simulationTool{madx,elegant};
 enum madxLatticeType{line,sequence};
@@ -145,13 +147,17 @@ public:
 
 };
 
+
+} //namespace pal
+
+
 // overload << for output of "Acc" data types
-inline std::ostream &operator<<(std::ostream &out, const AccPair &A)
+inline std::ostream &operator<<(std::ostream &out, const pal::AccPair &A)
 {
   out << A.x << "\t" << A.z;
   return out;
 }
-inline std::ostream &operator<<(std::ostream &out, const AccTriple &A)
+inline std::ostream &operator<<(std::ostream &out, const pal::AccTriple &A)
 {
   out << A.x << "\t" << A.z << "\t" << A.s;
   return out;

@@ -5,6 +5,8 @@
 #define __LIBPAL_HPP_
 
 
+// namespace pal
+
 #include "AccLattice.hpp"    // particle accelerator lattice, including madx&elegant import/export
 
 #include "AccElements.hpp"   // particle accelerator elements (e.g. dipole,quadrupole). used by AccLattice.

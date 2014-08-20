@@ -20,6 +20,8 @@
 
 using namespace std;
 
+namespace pal
+{
 
 enum unit{meter, second, degree};
 
@@ -83,7 +85,7 @@ public:
   void updateMetadata();
 };
 
-
+} //namespace pal
 
 
 #endif

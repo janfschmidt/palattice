@@ -16,6 +16,7 @@
 
 
 using namespace std;
+using namespace pal;
 
 
 // constructor (set circumference[default 164.4] & interpolation)

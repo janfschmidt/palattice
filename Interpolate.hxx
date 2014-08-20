@@ -12,7 +12,7 @@
 #include <sstream>
 
 using namespace std;
-
+using namespace pal;
 
 // constructor
 // ! user must provide appropriate _x and f(_x): !

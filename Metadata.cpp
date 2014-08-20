@@ -12,6 +12,7 @@
 #include "Metadata.hpp"
 
 using namespace std;
+using namespace pal;
 
 
 Metadata::Metadata()

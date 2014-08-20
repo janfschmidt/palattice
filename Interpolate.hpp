@@ -15,7 +15,8 @@
 #include <gsl/gsl_spline.h>
 #include "types.hpp"
 
-
+namespace pal
+{
 
 template <class T=double>
 class Interpolate {
@@ -78,7 +79,10 @@ template<> void Interpolate<AccPair>::initThis();
 template<> AccPair Interpolate<AccPair>::interpThis(double xIn);
 template<> void Interpolate<AccTriple>::initThis();
 template<> AccTriple Interpolate<AccTriple>::interpThis(double xIn);
+template<> std::string Interpolate<AccPair>::header() const;
+template<> std::string Interpolate<AccTriple>::header() const;
 
+} //namespace pal
 
 #include "Interpolate.hxx"
 

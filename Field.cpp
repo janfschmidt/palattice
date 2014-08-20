@@ -12,6 +12,7 @@
 #include <iomanip>
 #include "Field.hpp"
 
+using namespace pal;
 
 
 // set all magnetic field values from lattice and orbit

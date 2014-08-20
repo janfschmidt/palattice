@@ -7,11 +7,11 @@
 
 
 //constructor
-FILENAMES::FILENAMES(string pathIn, simulationTool _simTool, bool elsa, bool diff, bool sgt_access, string spurenIn, string refIn)
+FILENAMES::FILENAMES(string pathIn, pal::simulationTool _simTool, bool elsa, bool diff, bool sgt_access, string spurenIn, string refIn)
   : simTool(_simTool)
 {
   //======default filenames (private)=====
-  if (simTool == madx) {
+  if (simTool == pal::madx) {
     file_lattice = "/madx/madx.twiss";
     file_orbit = "/madx/madx.twiss";
     file_misalign_dip = "/madx/madx.dipealign";
@@ -39,7 +39,7 @@ FILENAMES::FILENAMES(string pathIn, simulationTool _simTool, bool elsa, bool dif
 
   //public filenames (including path):
   path = pathIn;  //project-path
-  if (simTool == madx)
+  if (simTool == pal::madx)
     path_simTool = path + "/madx/";
   else
     path_simTool = path + "/elegant/";

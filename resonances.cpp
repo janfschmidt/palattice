@@ -29,7 +29,7 @@ RESONANCES::RESONANCES(double thetastep, unsigned int n_dip, unsigned int turns)
 
 
 // only dipoles all of same length!!! (equidistant global sampling)
-void RESONANCES::addDip(const AccElement* dip)
+void RESONANCES::addDip(const pal::AccElement* dip)
 {
   //interval_samp as approximation for sampling
   unsigned int i;
@@ -49,7 +49,7 @@ void RESONANCES::addDip(const AccElement* dip)
 
 
 
-void RESONANCES::addOther(const AccElement* magnet, AccPair orbit)
+void RESONANCES::addOther(const pal::AccElement* magnet, AccPair orbit)
 {
   //------Fehler abfangen ??--------
   double tmpKick = magnet->hKick_mrad(orbit);
@@ -114,11 +114,11 @@ void RESONANCES::clear()
 
 
 
-void RESONANCES::set(AccLattice &lattice, FunctionOfPos<AccPair> &orbit)
+void RESONANCES::set(pal::AccLattice &lattice, pal::FunctionOfPos<pal::AccPair> &orbit)
 {
   unsigned int t;
   double pos_tot;
-  const_AccIterator it;
+  pal::const_AccIterator it;
 
   if (!on) return; // calculate only if Resonance calculation is switched on
 
@@ -148,7 +148,7 @@ void RESONANCES::set(AccLattice &lattice, FunctionOfPos<AccPair> &orbit)
 
 
 
-Spectrum RESONANCES::getSpectrum(unsigned int fmaxrevIn, double ampcutIn) const
+pal::Spectrum RESONANCES::getSpectrum(unsigned int fmaxrevIn, double ampcutIn) const
 {
   // construct spectrum from kick-vector
   // (unit=degree, circumference=360)

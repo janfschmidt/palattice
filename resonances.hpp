@@ -24,7 +24,7 @@ private:
 public:
   bool on;
   const unsigned int n_turns;
-  Metadata info;
+  pal::Metadata info;
 
   RESONANCES() :  dtheta(-1), n(0), ndip(0), on(false), n_turns(1) {}
   RESONANCES(double thetastep, unsigned int n_dip, unsigned int turns);
@@ -39,9 +39,9 @@ public:
   double theta_max() const {return 360*n_turns;}
 
   void clear();
-  void set(AccLattice &lattice, FunctionOfPos<AccPair> &orbit);
+  void set(pal::AccLattice &lattice, FunctionOfPos<AccPair> &orbit);
 
-  Spectrum getSpectrum(unsigned int fmaxrevIn=30, double ampcut=0) const;
+  pal::Spectrum getSpectrum(unsigned int fmaxrevIn=30, double ampcut=0) const;
 
   void out(string filename) const; //output of kicks as function of theta (total, vcorr, quad)
  

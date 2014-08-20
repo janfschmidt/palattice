@@ -15,14 +15,14 @@ all: $(PROG_NAME) strom2kick new_strom2kick
 $(PROG_NAME): $(ALL_O)
 	$(CC) $(ccflags) -L. -o $@ $(ALL_O) -lpal -lgsl -lgslcblas -lm
 
-main.o: main.cpp timetag.hpp filenames.hpp resonances.hpp bsupplyGitversion.hpp libpal.hpp
+main.o: main.cpp timetag.hpp filenames.hpp resonances.hpp bsupplyGitversion.hpp
 	$(CC) $(ccflags) -c $<
 
 timetag.o: timetag.cpp
 	$(CC) $(ccflags) -c $<
-filenames.o: filenames.cpp filenames.hpp libpal.hpp
+filenames.o: filenames.cpp filenames.hpp
 	$(CC) $(ccflags) -c $<
-resonances.o: resonances.cpp resonances.hpp libpal.hpp
+resonances.o: resonances.cpp resonances.hpp
 	$(CC) $(ccflags) -c $<
 
 
@@ -55,7 +55,8 @@ bsupplyGitversion.hpp: ../.git/HEAD ../.git/index
 libpalGitversion.hpp: ../.git/HEAD ../.git/index
 	echo "#ifndef __LIBPAL__GITVERSION_HPP_" > $@
 	echo "#define __LIBPAL__GITVERSION_HPP_" >> $@
-	echo "inline const std::string libpalGitversion() {return \"$(shell git log -n 1 --date=iso --pretty=format:"%h from %ad")\";}" >> $@
+	echo "namespace pal {" >> $@
+	echo "inline const std::string libpalGitversion() {return \"$(shell git log -n 1 --date=iso --pretty=format:"%h from %ad")\";} }" >> $@
 	echo "#endif" >> $@
 
 

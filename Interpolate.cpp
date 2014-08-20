@@ -8,6 +8,8 @@
 
 #include "Interpolate.hpp"
 
+using namespace pal;
+
 
 // =========== template function specialization ============
 
@@ -86,12 +88,13 @@ AccTriple Interpolate<AccTriple>::interpThis(double xIn)
 
 // headline entry for "value" in output file
 template <>
-string Interpolate<AccPair>::header() const
+std::string Interpolate<AccPair>::header() const
 {
   return this->f[0].header();
 }
+
 template <>
-string Interpolate<AccTriple>::header() const
+std::string Interpolate<AccTriple>::header() const
 {
   return this->f[0].header();
 }

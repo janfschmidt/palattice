@@ -82,10 +82,10 @@ int main (int argc, char *argv[])
   double ampcut_z = 1e-6;     // be carefull: ampcut_z can change spin tune !
   double ampcut_res=0;          // minimum amplitude for resonance spectrum (option -c)
   double dtheta = -1;           // spin phaseadvance stepwidth (option -r)
-  ELSASpuren ELSA;
-  ELSASpuren Ref_ELSA;
-  FunctionOfPos<AccPair> *orbit;
-  simulationTool simTool = madx;  // lattice/orbit/tracking from madx or elegant? (option -s)
+  pal::ELSASpuren ELSA;
+  pal::ELSASpuren Ref_ELSA;
+  pal::FunctionOfPos<pal::AccPair> *orbit;
+  pal::simulationTool simTool = madx;  // lattice/orbit/tracking from madx or elegant? (option -s)
 
   //for getopt():
   int opt, warnflg=0, conflictflg=0;
@@ -221,8 +221,8 @@ int main (int argc, char *argv[])
 
   // initialize Lattice
   double circ_dummy=0; // correct circumference is set by madx/elegant import
-  AccLattice lattice("Bsupply Lattice", circ_dummy, end); // refPos=end used by MAD-X
-  AccLattice Ref_lattice("Bsupply Reference Lattice", circ_dummy, end);
+  pal::AccLattice lattice("Bsupply Lattice", circ_dummy, pal::end); // refPos=end used by MAD-X
+  pal::AccLattice Ref_lattice("Bsupply Reference Lattice", circ_dummy, pal::end);
   // ignoreFile
   if (ignoreFile != "NULL") {
     lattice.setIgnoreList(ignoreFile);
@@ -238,11 +238,11 @@ int main (int argc, char *argv[])
   }
 
   // initialize orbit
-  FunctionOfPos<AccPair> bpmorbit(lattice.circumference(), gsl_interp_akima_periodic, lattice.circumference());
-  FunctionOfPos<AccPair> Ref_bpmorbit(lattice.circumference(), gsl_interp_akima_periodic, lattice.circumference());
-  FunctionOfPos<AccPair> trajectory(lattice.circumference(), gsl_interp_akima);
+  pal::FunctionOfPos<pal::AccPair> bpmorbit(lattice.circumference(), gsl_interp_akima_periodic, lattice.circumference());
+  pal::FunctionOfPos<pal::AccPair> Ref_bpmorbit(lattice.circumference(), gsl_interp_akima_periodic, lattice.circumference());
+  pal::FunctionOfPos<pal::AccPair> trajectory(lattice.circumference(), gsl_interp_akima);
   // read particle orbit
-  if (simTool == madx) {
+  if (simTool == pal::madx) {
     bpmorbit.madxClosedOrbit(file.orbit.c_str());
   }
   else { //elegant
@@ -277,7 +277,7 @@ int main (int argc, char *argv[])
 	<<"  from "<<file.orbit << endl;
 
   if (tracking) {
-    if (simTool == madx)
+    if (simTool == pal::madx)
       trajectory.madxTrajectory(file.path_simTool, particle);
     else //elegant
       trajectory.elegantTrajectory(file.path_simTool, particle);
@@ -298,7 +298,7 @@ int main (int argc, char *argv[])
   }
 
   // magnetic field along ring, [B]=1/m (factor gamma*m*c/e multiplied in TBMTsolver)
-  Field B(lattice.circumference(), n_samp, trajectory.turns());
+  pal::Field B(lattice.circumference(), n_samp, trajectory.turns());
 
   // resonance strengths
   RESONANCES Res(dtheta, lattice.size(dipole), trajectory.turns());
@@ -386,10 +386,10 @@ int main (int argc, char *argv[])
     Res.set(lattice, *orbit);      // calculate Resonances (theta)
 
     cout << "Calculate spectra (FFT)..." << endl;
-    Spectrum bx = B.getSpectrum(x, fmax_x, ampcut_x);
-    Spectrum bz = B.getSpectrum(z, fmax_z, ampcut_z);
-    Spectrum bs = B.getSpectrum(s, fmax_s);
-    Spectrum res = Res.getSpectrum(fmax_res, ampcut_res);
+    pal::Spectrum bx = B.getSpectrum(pal::x, fmax_x, ampcut_x);
+    pal::Spectrum bz = B.getSpectrum(pal::z, fmax_z, ampcut_z);
+    pal::Spectrum bs = B.getSpectrum(pal::s, fmax_s);
+    pal::Spectrum res = Res.getSpectrum(fmax_res, ampcut_res);
     cout << "--------------------------------------------" << endl;
     // =======================================
 

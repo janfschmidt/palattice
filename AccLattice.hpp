@@ -19,6 +19,9 @@
 #include "config.hpp"
 #include "types.hpp"
 
+namespace pal
+{
+
 
 typedef std::map<double,AccElement*>::iterator AccIterator;
 typedef std::map<double,AccElement*>::const_iterator const_AccIterator;
@@ -133,6 +136,8 @@ public:
 
 
 string removeQuote(string s); //remove quotation marks ("" or '') from begin&end of string
+
+} //namespace pal
 
 #endif
 /*__LIBPAL_ACCLATTICE_HPP_*/

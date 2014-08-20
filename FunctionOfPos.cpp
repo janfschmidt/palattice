@@ -11,10 +11,11 @@
 #include <sstream>
 #include "FunctionOfPos.hpp"
 
-
+using namespace std;
+using namespace pal;
 
 //AccAxis string output
-string axis_string(AccAxis a) {
+string pal::axis_string(AccAxis a) {
   switch (a) {
   case x:
     return "horizontal";

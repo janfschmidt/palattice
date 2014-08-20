@@ -7,6 +7,9 @@
 
 using namespace std;
 
+namespace pal
+{
+
 class Metadata {
 private:
   vector<string> label;
@@ -32,6 +35,7 @@ public:
   string timestamp() const;
 };
 
-#endif
+} //namespace pal
 
+#endif
 /*__LIBPAL__METADATA_HPP_*/

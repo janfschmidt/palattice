@@ -10,6 +10,9 @@
 #include <vector>
 #include "AccElements.hpp"
 
+
+using namespace pal;
+
 // static member definition
 AccPair AccElement::zeroPair;
 AccTriple AccElement::zeroTriple;
@@ -444,7 +447,7 @@ string Sextupole::printLaTeX() const
 
 // Drift element for LaTeX (used by Drift::printLaTeX and AccLattice::latexexport)
 //maximum drift length 2.9m in lattice package -> split longer drifts
-string getLaTeXDrift(double driftlength)
+string pal::getLaTeXDrift(double driftlength)
 {
   if (fabs(driftlength) < 1e-6)
     return "";

@@ -13,6 +13,7 @@
 #include "ELSASpuren.hpp"
 
 using namespace std;
+using namespace pal;
 
 
 ELSASpuren::ELSASpuren(string _spurenFolder)

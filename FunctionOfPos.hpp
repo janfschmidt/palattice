@@ -19,7 +19,8 @@
 #include "types.hpp"
 #include "config.hpp"
 
-
+namespace pal
+{
 
 template <class T=double>
 class FunctionOfPos : public Interpolate<T> {
@@ -129,7 +130,7 @@ public:
   eNoData(unsigned int In) : index(In) {};
 };
 
-
+} //namespace pal
 
 
 #include "FunctionOfPos.hxx"

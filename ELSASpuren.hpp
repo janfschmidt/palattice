@@ -8,7 +8,8 @@
 
 using namespace std;
 
-
+namespace pal
+{
 
 // ELSA: Closed Orbit
 class BPM_MS {
@@ -64,6 +65,7 @@ public:
 
 };
 
-#endif
+} //namespace pal
 
+#endif
 /*__LIBPAL__ELSASPUREN_HPP_*/

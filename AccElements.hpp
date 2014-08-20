@@ -17,6 +17,8 @@
 
 using namespace std;
 
+namespace pal
+{
 
 enum element_type{dipole, quadrupole, corrector, rfdipole, sextupole, cavity, drift}; //! keep dipole as first and drift as last
 enum element_plane{H,V,L,noplane};    //horizontal,vertical,longitudinal
@@ -228,7 +230,7 @@ public:
 
 string getLaTeXDrift(double driftlength); // Drift element for LaTeX (used by Drift::printLaTeX and AccLattice::latexexport)
 
-
+} //namespace pal
 
 #endif
 /*__LIBPAL_ACCELEMENTS_HPP_*/

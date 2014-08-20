@@ -15,9 +15,10 @@
 #include <stdexcept>
 #include "AccLattice.hpp"
 
+using namespace pal;
 
 //remove quotation marks ("" or '') from begin&end of string
-string removeQuote(string s)
+string pal::removeQuote(string s)
 {
   if ( (s.compare(0,1,"\"") && s.compare(s.length()-1,1,"\"")) || (s.compare(0,1,"\'") && s.compare(s.length()-1,1,"\'")) )
     return s.substr(1,s.length()-2);

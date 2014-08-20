@@ -18,7 +18,7 @@
 #include "Spectrum.hpp"
 
 using namespace std;
-
+using namespace pal;
 
 
 // -------- constructors -----------
