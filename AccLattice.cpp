@@ -13,6 +13,7 @@
 #include <iostream>
 #include <iomanip>
 #include <stdexcept>
+#include <limits>
 #include "AccLattice.hpp"
 
 using namespace pal;
@@ -471,15 +472,14 @@ void AccLattice::madximport(string madxTwissFile)
   }
 
   // madx column variables
-  string tmp, tmpName;
-  string expectedColumns[11] = {"KEYWORD","NAME","S","X","Y","L","ANGLE","K1L","K2L","VKICK","HKICK"};
-  unsigned int j;
-  double s, angle, k1l, k2l, vkick, hkick; 
+  string tmp, name, key;
+  double s, l, angle, k1l, k2l, vkick, hkick; 
   string x, y;
 
   fstream madxTwiss;
 
   //AccElements
+  AccElement *element;
   Dipole hDip("defaultName", 0., 0., H); // horizontally bending dipole
   Dipole vDip("defaultName", 0., 0., V); // vertically bending dipole
   Corrector vCorr("defaultName", 0., 0., V); // vertical kicker has HORIZONTAL field
@@ -489,107 +489,122 @@ void AccLattice::madximport(string madxTwissFile)
   Quadrupole Quad("defaultName", 0., 0., F); // madx uses negative sign "strength" for D magnets,
   Sextupole Sext("defaultName", 0., 0., F);  // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
   Cavity Cav("defaultName");
+  Drift empty_space("defaultName", 0.);
 
   if (refPos != end)
     cout << "WARNING: AccLattice::madximport(): The input file (MAD-X twiss) uses element end as positions." << endl
 	 << "They are transformed to the current Anchor set for this lattice: " << refPos_string() << endl;
-
+  
   madxTwiss.open(madxTwissFile.c_str(), ios::in);
   if (!madxTwiss.is_open()) {
     cout << "ERROR: AccLattice::madximport(): Cannot open " << madxTwissFile << endl;
     exit(1);
   }
-
-  while (!madxTwiss.eof()) {
-    madxTwiss >> tmp;
-
-    // --- check correct column order by comparing headline ---------------------
-    if (tmp == "*") {
-      for (j=0; j<11; j++) {
-	madxTwiss >> tmp;
-	//cout << "debug: madx=>" <<tmp<< " expected=>" <<expectedColumns[j] << endl; //debug
-	if (tmp != expectedColumns[j]) {
-	  cout << "ERROR: AccLattice::madximport(): Unexpected columns (or column order) in " << madxTwissFile << endl;
-	  exit(1);
-	}
-      }
-    }
-    // --------------------------------------------------------------------------
   
-    if (tmp == "\"SBEND\"" || tmp == "\"RBEND\"") {  //vertical Dipole (assume all bends have vertical field)
-      madxTwiss >> tmpName >> s >> x >> y >> hDip.length >> angle;
-      hDip.name = removeQuote(tmpName);
-      hDip.strength = angle/hDip.length;   // 1/R (!!! assuming l is arclength (along ref. orbit) !!!)
-      if (refPos == begin) s -= hDip.length;
-      else if (refPos == center) s -= hDip.length/2;
-      this->mount(s, hDip);
-    }
-    else if (tmp == "\"QUADRUPOLE\"") {
-      madxTwiss >> tmpName >> s >> x >> y >> Quad.length >> angle >> k1l;
-      Quad.name = removeQuote(tmpName);
-      Quad.strength = k1l/Quad.length;   // k
-      if (refPos == begin) s -= Quad.length;
-      else if (refPos == center) s -= Quad.length/2;
-      this->mount(s, Quad);
-      // BPMs at quads - Closed orbit not included in lattice, read in separate function of Orbit-class
-    }
-    else if (tmp == "\"SEXTUPOLE\"") {
-      madxTwiss >> tmpName >> s >> x >> y >> Sext.length >> angle >> k1l >> k2l;
-      Sext.name = removeQuote(tmpName);
-      Sext.strength = k2l/Sext.length;
-      if (refPos == begin) s -= Sext.length;
-      else if (refPos == center) s -= Sext.length/2;
-      this->mount(s, Sext);
-    }
-    else if (tmp == "\"VKICKER\"") {
-      madxTwiss >> tmpName >> s >> x >> y >> vCorr.length >> angle >> k1l >> k2l >> vkick;
-      vCorr.name = removeQuote(tmpName);
-      vCorr.strength = sin(vkick)/vCorr.length;   // 1/R from kick-angle
-      if (refPos == begin) s -= vCorr.length;
-      else if (refPos == center) s -= vCorr.length/2;
-      //RF dipole:
-      if (vCorr.name.substr(0,6) == "RFDIP.") {
-	vRFdip.name = vCorr.name;
-	vRFdip.length = vCorr.length;
-	vRFdip.strength = vCorr.strength;
-	//vRFdip.Qrf0 = 0.625;              // !! hardcoded RF-tune values !!
-	//vRFdip.dQrf = 5.402e-6;
-	this->mount(s, vRFdip);
+  // read column names (=> column order)
+  vector<string> columnNames;
+  madxTwiss >> tmp;
+  while (!madxTwiss.eof()) {
+    if (tmp == "*") {       // begin of headline
+      while (tmp != "$") {  // end of headline
+	madxTwiss >> tmp;
+	columnNames.push_back(tmp);
       }
-      //Corrector:
+      madxTwiss.ignore(numeric_limits<streamsize>::max(), '\n'); // skip line
+      break;
+    }
+  }
+  if (madxTwiss.eof()) {
+    cout << "ERROR: AccLattice::madximport(): " << madxTwissFile << " is not a valid MadX twiss file. No column headline found.";
+    exit(1);
+  }
+  // ---now begin of 1. line of data -----------------------------------------------------------
+  unsigned int n_columnsNeeded = 9; // number of columns with needed data
+  unsigned int col = 0;
+  while (!madxTwiss.eof()) {
+    for (unsigned int i=0; i<columnNames.size(); i++) {
+      col++;
+      if (columnNames[i] == "KEYWORD")
+	madxTwiss >> key;
+      else if (columnNames[i] == "NAME")
+	madxTwiss >> name;
+      else if (columnNames[i] == "S")
+	madxTwiss >> s;
+      else if (columnNames[i] == "L")
+	madxTwiss >> l;
+      else if (columnNames[i] == "ANGLE")
+	madxTwiss >> angle;
+      else if (columnNames[i] == "K1L")
+	madxTwiss >> k1l;
+      else if (columnNames[i] == "K2L")
+	madxTwiss >> k2l;
+      else if (columnNames[i] == "VKICK")
+	madxTwiss >> vkick;
+      else if (columnNames[i] == "HKICK")
+	madxTwiss >> hkick;
       else {
-	this->mount(s, vCorr);
+	madxTwiss >> tmp;
+	col--;
+      }
+      if (col == n_columnsNeeded)
+	break;
+      if (madxTwiss.eof()) {
+	cout << "ERROR: AccLattice::madximport(): " << n_columnsNeeded - col << "column(s) are missing in " << madxTwissFile << endl
+	     << "The needed columns are KEYWORD, NAME, S, L, ANGLE, K1L, K2L, VKICK, HKICK";
+	exit(1);
       }
     }
-    else if (tmp == "\"HKICKER\"") {
-      madxTwiss >> tmpName >> s >> x >> y >> hCorr.length >> angle >> k1l >> k2l >> vkick >> hkick;
-      hCorr.name = removeQuote(tmpName);
-      hCorr.strength = sin(hkick)/hCorr.length;   // 1/R from kick-angle
-      if (refPos == begin) s -= hCorr.length;
-      else if (refPos == center) s -= hCorr.length/2;
-      //RF dipole:
-      if (hCorr.name.substr(0,6) == "RFDIP.") {
-	hRFdip.name = hCorr.name;
-	hRFdip.length = hCorr.length;
-	hRFdip.strength = hCorr.strength;
-	//hRFdip.Qrf0 = 0.625;              // !! hardcoded RF-tune values !!
-	//hRFdip.dQrf = 5.402e-6;
-	this->mount(s, hRFdip);
-      }
-      //Corrector:
-      else {
-	this->mount(s, hCorr);
-      }
+    
+    // end of line: mount element
+    if (key == "\"SBEND\"" || key == "\"RBEND\"") {  //vertical Dipole (assume all bends have vertical field)
+      element = &hDip;
+      element->strength = angle/l;   // 1/R (!!! assuming l is arclength (along ref. orbit) !!!)
     }
-    else if (tmp == "\"RFCAVITY\"") {
-      madxTwiss >> tmpName >> s >> x >> y >> Cav.length;
-      Cav.name = removeQuote(tmpName);
-      if (refPos == begin) s -= Cav.length;
-      else if (refPos == center) s -= Cav.length/2;
-      this->mount(s, Cav);
+    else if (key == "\"QUADRUPOLE\"") {
+      element = &Quad;
+      element->strength = k1l/l;   // k1
     }
-
-
+    else if (key == "\"SEXTUPOLE\"") {
+      element = &Sext;
+      element->strength = k2l/l;
+    }
+    else if (key == "\"VKICKER\"") {
+      if (name.substr(0,6) == "RFDIP.") { //RF dipole
+	element = &vRFdip;
+	//element->Qrf0 = 0.625;          // !! hardcoded RF-tune values !!
+	//element->dQrf = 5.402e-6;
+      }
+      else {                              //Corrector
+	element = &vCorr;
+      }
+      element->strength = sin(vkick)/l;   // 1/R from kick-angle
+    }
+    else if (key == "\"HKICKER\"") {
+      if (name.substr(0,6) == "RFDIP.") { //RF dipole
+	element = &hRFdip;
+	//element->Qrf0 = 0.625;          // !! hardcoded RF-tune values !!
+	//element->dQrf = 5.402e-6;
+      }
+      else {                              //Corrector
+	element = &hCorr;
+      }
+      element->strength = sin(hkick)/l;   // 1/R from kick-angle
+    }
+    else if (key == "\"RFCAVITY\"") {
+      element = &Cav;
+      element->strength = 0.;
+    }
+    else
+      element = &empty_space;
+    
+    if (element->type != drift) {
+      element->name = removeQuote(name);
+      element->length = l;
+      if (refPos == begin) s -= l;
+      else if (refPos == center) s -= l/2;
+      this->mount(s, *element);
+      s=l=angle=k1l=k2l=vkick=hkick=0;
+    }
   }
   madxTwiss.close();
 }

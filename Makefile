@@ -36,7 +36,7 @@ libpalGitversion.hpp: .git/HEAD .git/index
 	echo "#ifndef __LIBPAL__GITVERSION_HPP_" > $@
 	echo "#define __LIBPAL__GITVERSION_HPP_" >> $@
 	echo "namespace pal {" >> $@
-	echo "inline const std::string libpalGitversion() {return \"$(shell git log -n 1 --date=iso --pretty=format:"%h from %ad")\";} }" >> $@
+	echo "inline const std::string libpalGitversion() {return \"$(Vmajor).$(Vminor), git ID $(shell git log -n 1 --date=iso --pretty=format:"%h from %ad")\";} }" >> $@
 	echo "#endif" >> $@
 
 clean: 
