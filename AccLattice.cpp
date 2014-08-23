@@ -448,20 +448,33 @@ void AccLattice::setIgnoreList(string ignoreFile)
   while (!f.eof()) {
     f >> tmp;
     ignoreList.push_back(tmp);
-    // cout << "* ignore magnets named " << tmp << endl;
   }
+
+  //metadata
+  info.add("ignore list", ignoreFile);
 }
 
 
 
 
 // mount elements from MAD-X Lattice (read from twiss-output)
+// - arbitrary column order
+// - error if needed column(s) missing
 // ====== ATTENTION ==================================
 // "FamilyMagnets" (Quad,Sext) all of type F, because
 // MAD-X uses different signs of strengths (k,m)
 // ===================================================
-void AccLattice::madximport(string madxTwissFile)
+void AccLattice::madximport(string madxFile, simToolMode mode)
 {
+  string madxTwissFile;
+
+  // run MAD-X
+  if (mode == online) {
+    madxTwissFile = runMadX(madxFile);
+  }
+  else
+    madxTwissFile = madxFile;
+
   //get metadata and set circumference
   info.madximport("TITLE,LENGTH,ORIGIN,PARTICLE", madxTwissFile);
   circ = strtod(info.getbyLabel("LENGTH").c_str(), NULL);
@@ -505,11 +518,13 @@ void AccLattice::madximport(string madxTwissFile)
   vector<string> columnNames;
   madxTwiss >> tmp;
   while (!madxTwiss.eof()) {
+    madxTwiss >> tmp;
     if (tmp == "*") {       // begin of headline
       while (tmp != "$") {  // end of headline
 	madxTwiss >> tmp;
 	columnNames.push_back(tmp);
       }
+      columnNames.pop_back(); //delete last element "$"
       madxTwiss.ignore(numeric_limits<streamsize>::max(), '\n'); // skip line
       break;
     }
@@ -518,10 +533,13 @@ void AccLattice::madximport(string madxTwissFile)
     cout << "ERROR: AccLattice::madximport(): " << madxTwissFile << " is not a valid MadX twiss file. No column headline found.";
     exit(1);
   }
-  // ---now begin of 1. line of data -----------------------------------------------------------
+
+  // read lines of data
   unsigned int n_columnsNeeded = 9; // number of columns with needed data
   unsigned int col = 0;
   while (!madxTwiss.eof()) {
+    col=0;
+    s=l=angle=k1l=k2l=vkick=hkick=0.;
     for (unsigned int i=0; i<columnNames.size(); i++) {
       col++;
       if (columnNames[i] == "KEYWORD")
@@ -546,15 +564,15 @@ void AccLattice::madximport(string madxTwissFile)
 	madxTwiss >> tmp;
 	col--;
       }
-      if (col == n_columnsNeeded)
-	break;
-      if (madxTwiss.eof()) {
-	cout << "ERROR: AccLattice::madximport(): " << n_columnsNeeded - col << "column(s) are missing in " << madxTwissFile << endl
-	     << "The needed columns are KEYWORD, NAME, S, L, ANGLE, K1L, K2L, VKICK, HKICK";
-	exit(1);
-      }
+      if (madxTwiss.eof()) break;
     }
-    
+    if (madxTwiss.eof()) break;
+    if (col != n_columnsNeeded) {
+      cout << "ERROR: AccLattice::madximport(): " << n_columnsNeeded - col << "column(s) missing in " << madxTwissFile << endl
+	   << "The needed columns are KEYWORD, NAME, S, L, ANGLE, K1L, K2L, VKICK, HKICK";
+      exit(1);
+    }
+
     // end of line: mount element
     if (key == "\"SBEND\"" || key == "\"RBEND\"") {  //vertical Dipole (assume all bends have vertical field)
       element = &hDip;
@@ -603,11 +621,20 @@ void AccLattice::madximport(string madxTwissFile)
       if (refPos == begin) s -= l;
       else if (refPos == center) s -= l/2;
       this->mount(s, *element);
-      s=l=angle=k1l=k2l=vkick=hkick=0;
     }
+    // cout << "new line, mounted:" << element->name << endl;
   }
   madxTwiss.close();
+
+  //info stdout
+  cout << this->sizeSummary() << " read" << endl
+       <<"  as " <<this->circumference() << "m lattice from " <<madxTwissFile<<endl;
+  if (this->ignoreList.size() > 0) {
+    cout <<"* "<<this->ignoredElements()<<" elements ignored due to match with ignore list."<<endl;
+  }
 }
+
+
 
 
 // set misalignments from MAD-X Lattice (read ealign-output)
@@ -1038,6 +1065,15 @@ unsigned int AccLattice::size(element_type _type, element_plane p, element_famil
 }
 
 
+string AccLattice::sizeSummary() const
+{
+  stringstream s;
+  s << "* "<<this->size(dipole)<<" dipoles, "<<this->size(quadrupole)<<" quadrupoles, "
+    <<this->size(sextupole)<<" sextupoles, "<<this->size(corrector)<<" kickers, "
+    <<this->size(rfdipole)<<" rfdipoles, "<<this->size(cavity)<<" cavities";
+  return s.str();
+}
+
 string AccLattice::refPos_string() const
 {
   switch (refPos) {
@@ -1057,13 +1093,20 @@ string AccLattice::refPos_string() const
 // ----------- output (stdout or file) ----------------------
 
 // print lattice. If no filename is given, print to stdout
-void AccLattice::print(const char *filename) const
+void AccLattice::print(const char *filename)
 {
   const_AccIterator it=elements.begin();
   const int w = 12;
   std::stringstream s;
   std::stringstream msg;
   fstream file;
+
+  //metadata
+  if (ignoreList.size() > 0) {
+    stringstream ignore;
+    ignore << ignoreCounter;
+    info.add("ignored elements", ignore.str());
+  }
 
   //write text to s
   s << info.out("#");

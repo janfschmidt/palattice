@@ -18,6 +18,7 @@
 #include "Metadata.hpp"
 #include "config.hpp"
 #include "types.hpp"
+#include "runSimTools.hpp"
 
 namespace pal
 {
@@ -77,7 +78,7 @@ public:
   void dismount(double pos);                                          // dismount element at Ref.position pos (if no element at pos: do nothing)
 
   void setIgnoreList(string ignoreFile);         // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted in this lattice
-  void madximport(string madxTwissFile);              // mount elements from MAD-X Lattice (read from twiss-output)
+  void madximport(string madxTwissFile, simToolMode m=online);  // mount elements from MAD-X Lattice (read from twiss-output, m=online: autom. madx run)
   void madximportMisalignments(string madxEalignFile);// set misalignments from MAD-X Lattice (read ealign-output)
                                                      // !! currently only rotation (dpsi) around beam axis (s) is implemented!
   void elegantimport(string elegantParamFile);        // mount elements from elegant Lattice (read from ascii parameter file ".param")
@@ -89,6 +90,7 @@ public:
   // "information"
   unsigned int size(element_type _type,element_plane p=noplane,element_family f=nofamily) const;        // returns number of elements of a type in this lattice
   unsigned int size() const {return elements.size();} // returns total number of elements
+  string sizeSummary() const; //formated "size" output for all element types
 
   vector<string> getIgnoreList() const {return ignoreList;}
   unsigned int ignoredElements() const {return ignoreCounter;}
@@ -100,7 +102,7 @@ public:
 
   // output (stdout or file)
   // If no filename is given, print to stdout.
-  void print(const char *filename="") const;                     // print lattice.
+  void print(const char *filename="");                           // print lattice.
   void print(element_type _type, const char *filename="") const; // print all elements of one type.
   void simToolExport(simulationTool tool, const char *filename="", madxLatticeType ltype=sequence) const; // print lattice readable by elegant or madx
   void latexexport(const char *filename="") const;             // print lattice readable by LaTeX (using lattice package by Jan Schmidt <schmidt@physik.uni-bonn.de>)

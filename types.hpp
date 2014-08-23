@@ -13,6 +13,7 @@ namespace pal
 {
 
 enum simulationTool{madx,elegant};
+enum simToolMode{online,offline};
 enum madxLatticeType{line,sequence};
 enum AccAxis {x,z,s};
 
