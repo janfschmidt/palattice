@@ -1,0 +1,164 @@
+&run_setup
+! -----------------------------------
+	lattice = "test.lte",
+!	use_beamline = 
+! -----------------------------------
+!	magnets = "%s.mag",
+	parameters = "%s.param",
+	combine_bunch_statistics = 1,
+	wrap_around = 0,
+	final_pass = 0,
+	default_order = 2,
+	concat_order = 0,
+	print_statistics = 0,
+	correction_iterations = 3,
+	p_central_mev = 2300,
+	tracking_updates = 1,
+	always_change_p0 = 0, ! re-establish pCentral after each element (match new energy,fiducializing)
+	echo_lattice = 0,
+	element_divisions = 0,
+	load_balancing_on = 0,
+	random_number_seed = 91,
+&end
+
+
+
+! load parameters for elements from an SDDS file (e.g. misalignments)
+! ----------------------------------------------
+! &load_parameters
+!          filename = "dipole.errors"
+!          verbose = 1
+! &end
+
+! modify the value of a parameter for one or more elements
+! --------------------------------------------------------
+! &alter_elements
+! 	name=KV01
+! 	item=KICK
+! 	value=0.00
+! &end	
+
+
+
+
+! WATCH element at every BPM
+! needed for POLE single particle trajectories
+! -------------------------------------------------------------
+&insert_elements
+	name = BEGIN,
+	element_def = "wbeg: watch,filename="%s00.w",mode="coord"",
+	add_at_end = 0,
+&end
+&insert_elements
+	name = BPM??,
+	element_def = "w1: watch,filename="%s%02ld.w",mode="coord"",
+	add_at_end = 1,
+&end
+! -------------------------------------------------------------
+
+
+
+
+
+&run_control
+	n_steps = 1,
+	n_passes = 1,             ! number of turns
+	bunch_frequency = 0,
+	reset_rf_for_each_step = 0, ! If 1, time reference is discarded after each bunch
+	first_is_fiducial = 0,      ! 1. bunch is taken to establish fiducial phases and momentum profile
+&end
+
+
+
+
+
+! random error defintions for any elements
+! (fixed by random_number_seed in &run_setup)
+! ------------------------------------------
+  ! &error_control
+  ! 	clear_error_settings = 1,
+  ! &end
+  ! &error_element
+  ! 	name = M*,
+  ! 	element_type = CSBEND,
+  ! 	item = ETILT,
+  ! 	type = "gaussian",
+  ! 	amplitude = 0.001,
+  ! &end
+  ! &error_control
+  ! 	summarize_error_settings = 1,
+  ! &end
+! ------------------------------------------
+
+
+
+&twiss_output
+	filename = "%s.twi",
+	final_values_only = 0,
+        statistics=1,
+	radiation_integrals=1,
+	concat_order = 3,
+	cavities_are_drifts_if_matched = 0,
+	local_dispersion = 1,
+	matched=1,
+&end
+
+&closed_orbit
+	output = "%s.clo"
+    	output_monitors_only = 0,
+	start_from_centroid = 1,
+   	start_from_dp_centroid = 1,
+    	closed_orbit_accuracy = 1e-12,
+    	closed_orbit_iterations = 10,
+    	iteration_fraction = 1,
+    	fixed_length = 0,
+    	start_from_recirc = 0,
+    	verbosity = 1,
+&end
+
+&rf_setup
+	! if no name given, all RFCA elements used
+	harmonic = 274,
+	over_voltage = 5
+&end
+
+
+
+
+! TRACKING
+! -------------------------------------------------
+&bunched_beam
+       bunch = "%s.bun",
+       sigma_dp = 0.0005,    ! "Energiebreite"
+       sigma_s = 0.05,        ! "Bunch Länge"
+       use_twiss_command_values = 1,
+       n_particles_per_bunch = 1,
+       enforce_rms_values[0] = 3*0,
+       emit_x = 5e-7        ! deutlich größer als Gleichgewicht (~5e-7) um Dämpfung zu sehen 
+       emit_y = 1e-7,
+       distribution_type[0] = 3*gaussian,
+       distribution_cutoff[0] = 3*3,
+       symmetrize = 1,
+       first_is_fiducial = 0, ! generate a first bunch with 1 particle (for first_is_fiducial in &run_control)
+       !centroid[5]=1e-4
+&end
+
+&track 
+       center_on_orbit = 1,
+       center_momentum_also = 1,
+       soft_failure = 1,
+&end
+! -------------------------------------------------
+
+
+
+! execute shell script with SDDS commands
+! to generate ascii output for POLE:
+! - closed orbit (elegant.clo), 
+! - lattice (elegant.param),
+! - trajectory (elegant.wXXX.pX) --> choose particleID for export
+  &subprocess
+	command="elegant2libpal %s 1" ! <--- particleID is number at end of line
+  &end
+! ---------------------
+

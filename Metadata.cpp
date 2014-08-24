@@ -18,7 +18,7 @@ using namespace pal;
 Metadata::Metadata()
 {
   add("created at", timestamp());
-  add("by libAccLattice version", libpalGitversion());
+  add("by libpal version", libpalGitversion());
 }
 
 //add other Metadata, without first 2 entries ("default" metadata)

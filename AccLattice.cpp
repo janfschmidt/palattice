@@ -13,6 +13,7 @@
 #include <iostream>
 #include <iomanip>
 #include <stdexcept>
+#include <limits>
 #include "AccLattice.hpp"
 
 using namespace pal;
@@ -447,20 +448,33 @@ void AccLattice::setIgnoreList(string ignoreFile)
   while (!f.eof()) {
     f >> tmp;
     ignoreList.push_back(tmp);
-    // cout << "* ignore magnets named " << tmp << endl;
   }
+
+  //metadata
+  info.add("ignore list", ignoreFile);
 }
 
 
 
 
 // mount elements from MAD-X Lattice (read from twiss-output)
+// - arbitrary column order
+// - error if needed column(s) missing
 // ====== ATTENTION ==================================
 // "FamilyMagnets" (Quad,Sext) all of type F, because
 // MAD-X uses different signs of strengths (k,m)
 // ===================================================
-void AccLattice::madximport(string madxTwissFile)
+void AccLattice::madximport(string madxFile, simToolMode mode)
 {
+  string madxTwissFile;
+
+  // run MAD-X
+  if (mode == online) {
+    madxTwissFile = runMadX(madxFile);
+  }
+  else
+    madxTwissFile = madxFile;
+
   //get metadata and set circumference
   info.madximport("TITLE,LENGTH,ORIGIN,PARTICLE", madxTwissFile);
   circ = strtod(info.getbyLabel("LENGTH").c_str(), NULL);
@@ -471,15 +485,14 @@ void AccLattice::madximport(string madxTwissFile)
   }
 
   // madx column variables
-  string tmp, tmpName;
-  string expectedColumns[11] = {"KEYWORD","NAME","S","X","Y","L","ANGLE","K1L","K2L","VKICK","HKICK"};
-  unsigned int j;
-  double s, angle, k1l, k2l, vkick, hkick; 
+  string tmp, name, key;
+  double s, l, angle, k1l, k2l, vkick, hkick; 
   string x, y;
 
   fstream madxTwiss;
 
   //AccElements
+  AccElement *element;
   Dipole hDip("defaultName", 0., 0., H); // horizontally bending dipole
   Dipole vDip("defaultName", 0., 0., V); // vertically bending dipole
   Corrector vCorr("defaultName", 0., 0., V); // vertical kicker has HORIZONTAL field
@@ -489,110 +502,139 @@ void AccLattice::madximport(string madxTwissFile)
   Quadrupole Quad("defaultName", 0., 0., F); // madx uses negative sign "strength" for D magnets,
   Sextupole Sext("defaultName", 0., 0., F);  // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
   Cavity Cav("defaultName");
+  Drift empty_space("defaultName", 0.);
 
   if (refPos != end)
     cout << "WARNING: AccLattice::madximport(): The input file (MAD-X twiss) uses element end as positions." << endl
 	 << "They are transformed to the current Anchor set for this lattice: " << refPos_string() << endl;
-
+  
   madxTwiss.open(madxTwissFile.c_str(), ios::in);
   if (!madxTwiss.is_open()) {
     cout << "ERROR: AccLattice::madximport(): Cannot open " << madxTwissFile << endl;
     exit(1);
   }
-
+  
+  // read column names (=> column order)
+  vector<string> columnNames;
+  madxTwiss >> tmp;
   while (!madxTwiss.eof()) {
     madxTwiss >> tmp;
-
-    // --- check correct column order by comparing headline ---------------------
-    if (tmp == "*") {
-      for (j=0; j<11; j++) {
+    if (tmp == "*") {       // begin of headline
+      while (tmp != "$") {  // end of headline
 	madxTwiss >> tmp;
-	//cout << "debug: madx=>" <<tmp<< " expected=>" <<expectedColumns[j] << endl; //debug
-	if (tmp != expectedColumns[j]) {
-	  cout << "ERROR: AccLattice::madximport(): Unexpected columns (or column order) in " << madxTwissFile << endl;
-	  exit(1);
-	}
+	columnNames.push_back(tmp);
       }
+      columnNames.pop_back(); //delete last element "$"
+      madxTwiss.ignore(numeric_limits<streamsize>::max(), '\n'); // skip line
+      break;
     }
-    // --------------------------------------------------------------------------
-  
-    if (tmp == "\"SBEND\"" || tmp == "\"RBEND\"") {  //vertical Dipole (assume all bends have vertical field)
-      madxTwiss >> tmpName >> s >> x >> y >> hDip.length >> angle;
-      hDip.name = removeQuote(tmpName);
-      hDip.strength = angle/hDip.length;   // 1/R (!!! assuming l is arclength (along ref. orbit) !!!)
-      if (refPos == begin) s -= hDip.length;
-      else if (refPos == center) s -= hDip.length/2;
-      this->mount(s, hDip);
-    }
-    else if (tmp == "\"QUADRUPOLE\"") {
-      madxTwiss >> tmpName >> s >> x >> y >> Quad.length >> angle >> k1l;
-      Quad.name = removeQuote(tmpName);
-      Quad.strength = k1l/Quad.length;   // k
-      if (refPos == begin) s -= Quad.length;
-      else if (refPos == center) s -= Quad.length/2;
-      this->mount(s, Quad);
-      // BPMs at quads - Closed orbit not included in lattice, read in separate function of Orbit-class
-    }
-    else if (tmp == "\"SEXTUPOLE\"") {
-      madxTwiss >> tmpName >> s >> x >> y >> Sext.length >> angle >> k1l >> k2l;
-      Sext.name = removeQuote(tmpName);
-      Sext.strength = k2l/Sext.length;
-      if (refPos == begin) s -= Sext.length;
-      else if (refPos == center) s -= Sext.length/2;
-      this->mount(s, Sext);
-    }
-    else if (tmp == "\"VKICKER\"") {
-      madxTwiss >> tmpName >> s >> x >> y >> vCorr.length >> angle >> k1l >> k2l >> vkick;
-      vCorr.name = removeQuote(tmpName);
-      vCorr.strength = sin(vkick)/vCorr.length;   // 1/R from kick-angle
-      if (refPos == begin) s -= vCorr.length;
-      else if (refPos == center) s -= vCorr.length/2;
-      //RF dipole:
-      if (vCorr.name.substr(0,6) == "RFDIP.") {
-	vRFdip.name = vCorr.name;
-	vRFdip.length = vCorr.length;
-	vRFdip.strength = vCorr.strength;
-	//vRFdip.Qrf0 = 0.625;              // !! hardcoded RF-tune values !!
-	//vRFdip.dQrf = 5.402e-6;
-	this->mount(s, vRFdip);
-      }
-      //Corrector:
+  }
+  if (madxTwiss.eof()) {
+    cout << "ERROR: AccLattice::madximport(): " << madxTwissFile << " is not a valid MadX twiss file. No column headline found.";
+    exit(1);
+  }
+
+  // read lines of data
+  unsigned int n_columnsNeeded = 9; // number of columns with needed data
+  unsigned int col = 0;
+  while (!madxTwiss.eof()) {
+    col=0;
+    s=l=angle=k1l=k2l=vkick=hkick=0.;
+    for (unsigned int i=0; i<columnNames.size(); i++) {
+      col++;
+      if (columnNames[i] == "KEYWORD")
+	madxTwiss >> key;
+      else if (columnNames[i] == "NAME")
+	madxTwiss >> name;
+      else if (columnNames[i] == "S")
+	madxTwiss >> s;
+      else if (columnNames[i] == "L")
+	madxTwiss >> l;
+      else if (columnNames[i] == "ANGLE")
+	madxTwiss >> angle;
+      else if (columnNames[i] == "K1L")
+	madxTwiss >> k1l;
+      else if (columnNames[i] == "K2L")
+	madxTwiss >> k2l;
+      else if (columnNames[i] == "VKICK")
+	madxTwiss >> vkick;
+      else if (columnNames[i] == "HKICK")
+	madxTwiss >> hkick;
       else {
-	this->mount(s, vCorr);
+	madxTwiss >> tmp;
+	col--;
       }
+      if (madxTwiss.eof()) break;
     }
-    else if (tmp == "\"HKICKER\"") {
-      madxTwiss >> tmpName >> s >> x >> y >> hCorr.length >> angle >> k1l >> k2l >> vkick >> hkick;
-      hCorr.name = removeQuote(tmpName);
-      hCorr.strength = sin(hkick)/hCorr.length;   // 1/R from kick-angle
-      if (refPos == begin) s -= hCorr.length;
-      else if (refPos == center) s -= hCorr.length/2;
-      //RF dipole:
-      if (hCorr.name.substr(0,6) == "RFDIP.") {
-	hRFdip.name = hCorr.name;
-	hRFdip.length = hCorr.length;
-	hRFdip.strength = hCorr.strength;
-	//hRFdip.Qrf0 = 0.625;              // !! hardcoded RF-tune values !!
-	//hRFdip.dQrf = 5.402e-6;
-	this->mount(s, hRFdip);
-      }
-      //Corrector:
-      else {
-	this->mount(s, hCorr);
-      }
-    }
-    else if (tmp == "\"RFCAVITY\"") {
-      madxTwiss >> tmpName >> s >> x >> y >> Cav.length;
-      Cav.name = removeQuote(tmpName);
-      if (refPos == begin) s -= Cav.length;
-      else if (refPos == center) s -= Cav.length/2;
-      this->mount(s, Cav);
+    if (madxTwiss.eof()) break;
+    if (col != n_columnsNeeded) {
+      cout << "ERROR: AccLattice::madximport(): " << n_columnsNeeded - col << "column(s) missing in " << madxTwissFile << endl
+	   << "The needed columns are KEYWORD, NAME, S, L, ANGLE, K1L, K2L, VKICK, HKICK";
+      exit(1);
     }
 
-
+    // end of line: mount element
+    if (key == "\"SBEND\"" || key == "\"RBEND\"") {  //vertical Dipole (assume all bends have vertical field)
+      element = &hDip;
+      element->strength = angle/l;   // 1/R (!!! assuming l is arclength (along ref. orbit) !!!)
+    }
+    else if (key == "\"QUADRUPOLE\"") {
+      element = &Quad;
+      element->strength = k1l/l;   // k1
+    }
+    else if (key == "\"SEXTUPOLE\"") {
+      element = &Sext;
+      element->strength = k2l/l;
+    }
+    else if (key == "\"VKICKER\"") {
+      if (name.substr(0,6) == "RFDIP.") { //RF dipole
+	element = &vRFdip;
+	//element->Qrf0 = 0.625;          // !! hardcoded RF-tune values !!
+	//element->dQrf = 5.402e-6;
+      }
+      else {                              //Corrector
+	element = &vCorr;
+      }
+      element->strength = sin(vkick)/l;   // 1/R from kick-angle
+    }
+    else if (key == "\"HKICKER\"") {
+      if (name.substr(0,6) == "RFDIP.") { //RF dipole
+	element = &hRFdip;
+	//element->Qrf0 = 0.625;          // !! hardcoded RF-tune values !!
+	//element->dQrf = 5.402e-6;
+      }
+      else {                              //Corrector
+	element = &hCorr;
+      }
+      element->strength = sin(hkick)/l;   // 1/R from kick-angle
+    }
+    else if (key == "\"RFCAVITY\"") {
+      element = &Cav;
+      element->strength = 0.;
+    }
+    else
+      element = &empty_space;
+    
+    if (element->type != drift) {
+      element->name = removeQuote(name);
+      element->length = l;
+      if (refPos == begin) s -= l;
+      else if (refPos == center) s -= l/2;
+      this->mount(s, *element);
+    }
+    // cout << "new line, mounted:" << element->name << endl;
   }
   madxTwiss.close();
+
+  //info stdout
+  cout << this->sizeSummary() << " read" << endl
+       <<"  as " <<this->circumference() << "m lattice from " <<madxTwissFile<<endl;
+  if (this->ignoreList.size() > 0) {
+    cout <<"* "<<this->ignoredElements()<<" elements ignored due to match with ignore list."<<endl;
+  }
 }
+
+
 
 
 // set misalignments from MAD-X Lattice (read ealign-output)
@@ -663,8 +705,17 @@ void AccLattice::madximportMisalignments(string madxEalignFile)
 // "FamilyMagnets" (Quad,Sext) all of type F, because
 // elegant uses different signs of strengths (k,m)
 // ===================================================
-void AccLattice::elegantimport(string elegantParamFile)
+void AccLattice::elegantimport(string elegantFile, simToolMode mode)
 {
+  string elegantParamFile;
+
+  // run Elegant
+  if (mode == online) {
+    elegantParamFile = runElegant(elegantFile);
+  }
+  else
+    elegantParamFile = elegantFile;
+
   double s, pos;
   double l, k1, k2, angle, kick, tilt; //parameter values
   paramRow row, row_old;
@@ -761,7 +812,6 @@ void AccLattice::elegantimport(string elegantParamFile)
      }
     }
 
-
     //read parameter in row (if needed)
     if (row.param == "L") {    //element length L used to get position (s)
       l = row.value;
@@ -779,8 +829,14 @@ void AccLattice::elegantimport(string elegantParamFile)
    row_old = row;
   }
   
-
   elegantParam.close();
+
+  //info stdout
+  cout << this->sizeSummary() << " read" << endl
+       <<"  as " <<this->circumference() << "m lattice from " <<elegantParamFile<<endl;
+  if (this->ignoreList.size() > 0) {
+    cout <<"* "<<this->ignoredElements()<<" elements ignored due to match with ignore list."<<endl;
+  }
 }
 
 
@@ -1023,6 +1079,15 @@ unsigned int AccLattice::size(element_type _type, element_plane p, element_famil
 }
 
 
+string AccLattice::sizeSummary() const
+{
+  stringstream s;
+  s << "* "<<this->size(dipole)<<" dipoles, "<<this->size(quadrupole)<<" quadrupoles, "
+    <<this->size(sextupole)<<" sextupoles, "<<this->size(corrector)<<" kickers, "
+    <<this->size(rfdipole)<<" rfdipoles, "<<this->size(cavity)<<" cavities";
+  return s.str();
+}
+
 string AccLattice::refPos_string() const
 {
   switch (refPos) {
@@ -1042,13 +1107,20 @@ string AccLattice::refPos_string() const
 // ----------- output (stdout or file) ----------------------
 
 // print lattice. If no filename is given, print to stdout
-void AccLattice::print(const char *filename) const
+void AccLattice::print(const char *filename)
 {
   const_AccIterator it=elements.begin();
   const int w = 12;
   std::stringstream s;
   std::stringstream msg;
   fstream file;
+
+  //metadata
+  if (ignoreList.size() > 0) {
+    stringstream ignore;
+    ignore << ignoreCounter;
+    info.add("ignored elements", ignore.str());
+  }
 
   //write text to s
   s << info.out("#");

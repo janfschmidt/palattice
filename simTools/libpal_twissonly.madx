@@ -1,0 +1,29 @@
+! ****************************************
+! execute MAD-X via this file to provide 
+! correct input files for pole/Bsupply
+! ****************************************
+
+
+! insert your MAD-X file here:
+call, file="elsa.madx"
+
+
+
+! ********************
+! misalignment output
+! ********************
+select, flag=error, clear=true;
+select, flag=error, class=sbend;
+select, flag=error, class=rbend;
+esave, file="madx.dipealign";
+select, flag=error, clear=true;
+select, flag=error, class=quadrupole;
+esave, file="madx.quadealign";
+
+! ***************
+! twiss output
+! ***************
+select, flag=twiss, column=keyword, name, s, x, y, l, angle, k1l, k2l, vkick, hkick, betx, bety;
+twiss, chrom, file="madx.twiss";
+
+EMIT;
