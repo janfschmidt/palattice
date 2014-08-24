@@ -49,7 +49,7 @@ public:
   Metadata info;
 
   AccLattice(string _name, double _circumference, Anchor _refPos=begin);
-  AccLattice(string _name, simulationTool s, string file, Anchor _refPos=end); //direct madx/elegant import (from file)
+  AccLattice(string _name, simulationTool s, string file, simToolMode m=online, Anchor _refPos=end); //direct madx/elegant import (from file)
   AccLattice(const AccLattice &other);
   ~AccLattice();
   AccLattice& operator= (const AccLattice other);

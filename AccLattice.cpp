@@ -38,7 +38,7 @@ AccLattice::AccLattice(string _name, double _circumference, Anchor _refPos)
   info.add("Reference pos.", this->refPos_string());
 }
 
-AccLattice::AccLattice(string _name, simulationTool s, string file, Anchor _refPos)
+AccLattice::AccLattice(string _name, simulationTool s, string file, simToolMode m, Anchor _refPos)
   : ignoreCounter(0), refPos(_refPos)
 {
   empty_space = new Drift;
@@ -46,9 +46,9 @@ AccLattice::AccLattice(string _name, simulationTool s, string file, Anchor _refP
   info.add("Lattice name", _name);
   info.add("Reference pos.", this->refPos_string());
   if (s == madx)
-    this->madximport(file.c_str());
+    this->madximport(file.c_str(), m);
   else //elegant
-    this->elegantimport(file.c_str());
+    this->elegantimport(file.c_str(), m);
 }
 
 //copy constructor
@@ -460,6 +460,9 @@ void AccLattice::setIgnoreList(string ignoreFile)
 // mount elements from MAD-X Lattice (read from twiss-output)
 // - arbitrary column order
 // - error if needed column(s) missing
+// madxFile is:
+// * a file that can be executed with madx (mode=online)
+// * a madx twiss file (mode=offline)
 // ====== ATTENTION ==================================
 // "FamilyMagnets" (Quad,Sext) all of type F, because
 // MAD-X uses different signs of strengths (k,m)
