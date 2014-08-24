@@ -10,9 +10,9 @@ using namespace std;
 
 namespace pal
 {
+  string runSimTool(simulationTool t, string latticeFile);
   string runMadX(string latticeFile);
-  void runElegant(string latticeFile);
-  void runSimTool(simulationTool t, string file);
+  string runElegant(string latticeFile);
 }
 
 #endif

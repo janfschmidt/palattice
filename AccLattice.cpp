@@ -705,8 +705,17 @@ void AccLattice::madximportMisalignments(string madxEalignFile)
 // "FamilyMagnets" (Quad,Sext) all of type F, because
 // elegant uses different signs of strengths (k,m)
 // ===================================================
-void AccLattice::elegantimport(string elegantParamFile)
+void AccLattice::elegantimport(string elegantFile, simToolMode mode)
 {
+  string elegantParamFile;
+
+  // run Elegant
+  if (mode == online) {
+    elegantParamFile = runElegant(elegantFile);
+  }
+  else
+    elegantParamFile = elegantFile;
+
   double s, pos;
   double l, k1, k2, angle, kick, tilt; //parameter values
   paramRow row, row_old;
@@ -803,7 +812,6 @@ void AccLattice::elegantimport(string elegantParamFile)
      }
     }
 
-
     //read parameter in row (if needed)
     if (row.param == "L") {    //element length L used to get position (s)
       l = row.value;
@@ -821,8 +829,14 @@ void AccLattice::elegantimport(string elegantParamFile)
    row_old = row;
   }
   
-
   elegantParam.close();
+
+  //info stdout
+  cout << this->sizeSummary() << " read" << endl
+       <<"  as " <<this->circumference() << "m lattice from " <<elegantParamFile<<endl;
+  if (this->ignoreList.size() > 0) {
+    cout <<"* "<<this->ignoredElements()<<" elements ignored due to match with ignore list."<<endl;
+  }
 }
 
 

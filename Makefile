@@ -62,6 +62,7 @@ install: $(LIB_FILE).$(Vmajor).$(Vminor)
 	mkdir -p $(SIMTOOL_PATH)                                         #simTool files
 	install -m 664 -p -v simTools/*.madx $(SIMTOOL_PATH)
 	install -m 664 -p -v simTools/*.ele $(SIMTOOL_PATH)
+	install -m 755 -p -v simTools/elegant2libpal.sh $(INSTALL_PATH)/bin/elegant2libpal
 
 uninstall:
 	rm -f $(INSTALL_PATH)/lib/$(LIB_FILE)*

@@ -4,12 +4,24 @@
 
 using namespace std;
 
-string pal::runMadX(string latticeFile)
+string pal::runMadX(string l) {return pal::runSimTool(madx,l);}
+string pal::runElegant(string l) {return pal::runSimTool(elegant,l);}
+
+string pal::runSimTool(simulationTool t, string latticeFile)
 {
-  string madxFile = "libpal.madx";
+  string simToolFile;
+  string log;
+  if (t == madx) {
+    simToolFile = "libpal.madx";
+    log = "madx.log";
+  }
+  else {
+    simToolFile = "libpal.ele";
+    log = "elegant.log";
+  }
+
   string inoutPath;
   stringstream cmd;
-  string log = "madx.log";
 
   // latticeFile path:
   unsigned int f = latticeFile.find_last_of("/");
@@ -18,47 +30,50 @@ string pal::runMadX(string latticeFile)
   else
     inoutPath = "./";
 
-  // copy madx file (if not existing)
-  cmd << "cp -n "<< pal::simToolPath() << "/" << madxFile << " " << inoutPath;
+  // copy madx/elegant file (if not existing)
+  cmd << "cp -n "<< pal::simToolPath() << "/" << simToolFile << " " << inoutPath;
   system(cmd.str().c_str());
 
-  // set lattice filename in madxFile:
+  // set lattice filename in simToolFile:
   cmd.str(std::string());
-  cmd << "cd "<< inoutPath << "; "<<
-    "sed -i 's!^call, file=.*!call, file=\"" << latticeFile << "\";!' " << madxFile;
+  cmd << "cd "<< inoutPath << "; ";
+  if (t == madx) {
+    cmd << "sed -i 's!^call, file=.*!call, file=\""; 
+  }
+  else {
+    cmd << "sed -i 's!^lattice =.*!lattice = \"";
+  }
+  cmd << latticeFile << "\";!' " << simToolFile;
   system(cmd.str().c_str());
   
-  //run madx:
+  //run madx/elegant:
   stringstream runcmd;
-  runcmd << "cd "<< inoutPath << "; "<< MADXCOMMAND << " < " << madxFile << " >> " << log;
-  cout << "Run MadX... (log: " <<inoutPath << log << ")" << endl;
+  runcmd << "cd "<< inoutPath << "; ";
+  if (t == madx) {
+    runcmd << MADXCOMMAND;
+    cout << "Run MadX...";
+  }
+  else {
+    runcmd << ELEGANTCOMMAND;
+    cout << "Run Elegant...";
+  }
+  runcmd << " < " << simToolFile << " >> " << log;
+  cout << " (log: " <<inoutPath << log << ")" << endl;
   system(runcmd.str().c_str());
 
-  //write BPMs as observation points to madx.observe
-  cmd.str(std::string());
-  cmd << "cd "<< inoutPath << "; "
-      << "grep BPM " << "madx.twiss | awk '{gsub(\"\\\"\",\"\",$2); print \"ptc_observe, place=\"$2\";\"}' > " 
-      << "madx.observe";
-  system(cmd.str().c_str());
+  if (t == madx) {
+    //write BPMs as observation points to madx.observe
+    cmd.str(std::string());
+    cmd << "cd "<< inoutPath << "; "
+	<< "grep BPM " << "madx.twiss | awk '{gsub(\"\\\"\",\"\",$2); print \"ptc_observe, place=\"$2\";\"}' > " 
+	<< "madx.observe";
+    system(cmd.str().c_str());
+    
+    // 2. madx run -> using madx.observe
+    cout << "Run MadX... (log: " <<inoutPath << log << ")" << endl;
+    system(runcmd.str().c_str());
+  }
 
-  // 2. madx run -> using madx.observe
-  cout << "Run MadX... (log: " <<inoutPath << log << ")" << endl;
-  system(runcmd.str().c_str());
-
-  return inoutPath+"madx.twiss";
-}
-
-
-void pal::runElegant(string latticeFile)
-{
-
-}
-
-
-void pal::runSimTool(simulationTool t, string file)
-{
-  if (t == madx)
-    runMadX(file);
-  else //elegant
-    runElegant(file);
+  if (t == madx)  return inoutPath+"madx.twiss";
+  else  return inoutPath+"elegant.param";
 }
