@@ -104,11 +104,11 @@ public:
   // If no filename is given, print to stdout.
   void print(const char *filename="");                           // print lattice.
   void print(element_type _type, const char *filename="") const; // print all elements of one type.
-  void simToolExport(simulationTool tool, const char *filename="", madxLatticeType ltype=sequence) const; // print lattice readable by elegant or madx
-  void latexexport(const char *filename="") const;             // print lattice readable by LaTeX (using lattice package by Jan Schmidt <schmidt@physik.uni-bonn.de>)
+  void simToolExport(simulationTool tool, string filename="", madxLatticeType ltype=sequence) const; // print lattice readable by elegant or madx
+  void latexexport(string filename="") const;             // print lattice readable by LaTeX (using lattice package by Jan Schmidt <schmidt@physik.uni-bonn.de>)
   // "shortcuts:"
-  void elegantexport(const char *file="") const {simToolExport(elegant,file);}
-  void madxexport(const char *file="",madxLatticeType t=sequence) const {simToolExport(madx,file,t);}
+  void elegantexport(string file="") const {simToolExport(elegant,file);}
+  void madxexport(string file="",madxLatticeType t=sequence) const {simToolExport(madx,file,t);}
 
 };
 

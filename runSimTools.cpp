@@ -24,9 +24,11 @@ string pal::runSimTool(simulationTool t, string latticeFile)
   stringstream cmd;
 
   // latticeFile path:
-  unsigned int f = latticeFile.find_last_of("/");
-  if (f != string::npos)
+  string::size_type f = latticeFile.find_last_of("/");
+  if (f != string::npos) {
     inoutPath = latticeFile.substr(0,f+1);
+    cout << latticeFile<< " f=" << f <<  " npos=" <<string::npos << endl;
+  }
   else
     inoutPath = "./";
 
@@ -38,26 +40,26 @@ string pal::runSimTool(simulationTool t, string latticeFile)
   cmd.str(std::string());
   cmd << "cd "<< inoutPath << "; ";
   if (t == madx) {
-    cmd << "sed -i 's!^call, file=.*!call, file=\""; 
+    cmd << "sed -i 's!^call, file=\".*\"!call, file=\"";
   }
   else {
-    cmd << "sed -i 's!^lattice =.*!lattice = \"";
+    cmd << "sed -i 's!lattice = \".*\"!lattice = \"";
   }
-  cmd << latticeFile << "\";!' " << simToolFile;
+  cmd << latticeFile << "\"!' " << simToolFile;
   system(cmd.str().c_str());
   
   //run madx/elegant:
   stringstream runcmd;
   runcmd << "cd "<< inoutPath << "; ";
   if (t == madx) {
-    runcmd << MADXCOMMAND;
+    runcmd << MADXCOMMAND << " < "; 
     cout << "Run MadX...";
   }
   else {
-    runcmd << ELEGANTCOMMAND;
+    runcmd << ELEGANTCOMMAND << " ";
     cout << "Run Elegant...";
   }
-  runcmd << " < " << simToolFile << " >> " << log;
+  runcmd << simToolFile << " >> " << log;
   cout << " (log: " <<inoutPath << log << ")" << endl;
   system(runcmd.str().c_str());
 
@@ -70,7 +72,7 @@ string pal::runSimTool(simulationTool t, string latticeFile)
     system(cmd.str().c_str());
     
     // 2. madx run -> using madx.observe
-    cout << "Run MadX... (log: " <<inoutPath << log << ")" << endl;
+    cout << "Run MadX (now can open madx.observe)... (log: " <<inoutPath << log << ")" << endl;
     system(runcmd.str().c_str());
   }
 

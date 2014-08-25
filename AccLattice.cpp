@@ -1291,7 +1291,7 @@ string AccLattice::getSequence(Anchor refer) const
 
 
 // print lattice readable by elegant or madx. If no filename is given, print to stdout
-void AccLattice::simToolExport(simulationTool tool, const char *filename, madxLatticeType ltype) const
+void AccLattice::simToolExport(simulationTool tool, string filename, madxLatticeType ltype) const
 {
   std::stringstream s;
   std::stringstream msg;
@@ -1322,10 +1322,10 @@ void AccLattice::simToolExport(simulationTool tool, const char *filename, madxLa
 
 
   // output of s
-  if (string(filename) == "") 
+  if (filename == "") 
     cout << s.str();
   else {
-    file.open(filename, ios::out);
+    file.open(filename.c_str(), ios::out);
     if (!file.is_open()) {
       msg << "ERROR: AccLattice::elegantexport(): Cannot open " << filename << ".";
       throw std::runtime_error(msg.str());
@@ -1341,7 +1341,7 @@ void AccLattice::simToolExport(simulationTool tool, const char *filename, madxLa
 
 // print lattice readable by LaTeX. If no filename is given, print to stdout
 // (using lattice package by Jan Schmidt <schmidt@physik.uni-bonn.de>)
-void AccLattice::latexexport(const char *filename) const
+void AccLattice::latexexport(string filename) const
 {
   const_AccIterator it=elements.begin();
   std::stringstream s;
@@ -1384,10 +1384,10 @@ void AccLattice::latexexport(const char *filename) const
 
 
   // output of s
-  if (string(filename) == "") 
+  if (filename == "") 
     cout << s.str();
   else {
-    file.open(filename, ios::out);
+    file.open(filename.c_str(), ios::out);
     if (!file.is_open()) {
       msg << "ERROR: AccLattice::latexexport(): Cannot open " << filename << ".";
       throw std::runtime_error(msg.str());

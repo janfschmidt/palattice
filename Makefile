@@ -10,11 +10,15 @@ LIB_FILE=$(LIB_NAME).so
 SIMTOOL_PATH=$(INSTALL_PATH)/lib/libpal_simTools
 
 
-all: $(LIB_NAME)
+all: $(LIB_NAME) programs
 .PHONY: all
 
 $(LIB_NAME): $(ALL_O)
 	$(CC) $(ccflags) -shared -Wl,-soname,$(LIB_FILE).$(Vmajor) -o $(LIB_FILE).$(Vmajor).$(Vminor)  $(ALL_O) -lgsl -lgslcblas -lm
+
+programs: 
+	make -C ./programs
+.PHONY: programs
 
 Spectrum.o: Spectrum.cpp Spectrum.hpp config.hpp
 	$(CC) $(ccflags) -c $<
@@ -51,6 +55,7 @@ simToolPath.hpp: Makefile
 
 clean: 
 	rm $(LIB_FILE)* $(ALL_O) libpalGitversion.hpp
+	make clean ./programs
 
 install: $(LIB_FILE).$(Vmajor).$(Vminor)
 	install -m 755 -p -v $< $(INSTALL_PATH)/lib/                     #library
@@ -63,7 +68,9 @@ install: $(LIB_FILE).$(Vmajor).$(Vminor)
 	install -m 664 -p -v simTools/*.madx $(SIMTOOL_PATH)
 	install -m 664 -p -v simTools/*.ele $(SIMTOOL_PATH)
 	install -m 755 -p -v simTools/elegant2libpal.sh $(INSTALL_PATH)/bin/elegant2libpal
+	make install -C ./programs
 
 uninstall:
 	rm -f $(INSTALL_PATH)/lib/$(LIB_FILE)*
 	rm -rf $(INSTALL_PATH)/include/$(LIB_NAME)*
+	make uninstall -C ./programs
