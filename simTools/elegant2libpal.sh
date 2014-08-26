@@ -23,19 +23,14 @@ cat tmp.param >> elegant.param
 rm tmp.param
 
 # ascii single particle trajectory files ($2=particleID) , e.g. elegant.w02.p1
-# initial coordinates:
-# file_in=$1.bun
-# file_out=`printf "elegant.w%03i.p%i" 0 $2`
-# echo -e "position_s/m\t 0.0" > $file_out
-# sddsprocess $file_in -pipe=out -filter,column,particleID,$2,$2 -define,column,Pass,"1",type=long | sddsprintout -pipe=in -Title='***' -col='(x,xp,y,yp,t,p,particleID,Pass)' >> $file_out
-# other positions from watch-files:
+# from watch-files:
 numfiles=`ls $1*.w | wc -w`
 for (( k=1; k<=$numfiles; k++ ))
 do
     # filenames
     kk=`echo "$k-1" | bc`
     file_in=`ls $1*.w | awk -v k=$k NR==k{print}`
-    file_out=`printf "elegant.w%03i.p%i" $kk $2`
+    file_out=`printf "elegant.w%04i.p%i" $kk $2`
     # position s (as header)
     echo -e "position_s/m\t `sdds2stream $file_in -page=1 -par=s`" > $file_out
     # trajectory data

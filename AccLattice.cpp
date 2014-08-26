@@ -38,7 +38,7 @@ AccLattice::AccLattice(string _name, double _circumference, Anchor _refPos)
   info.add("Reference pos.", this->refPos_string());
 }
 
-AccLattice::AccLattice(string _name, simulationTool s, string file, simToolMode m, Anchor _refPos)
+AccLattice::AccLattice(string _name, SimTool s, string file, SimToolMode m, Anchor _refPos)
   : ignoreCounter(0), refPos(_refPos)
 {
   empty_space = new Drift;
@@ -467,15 +467,15 @@ void AccLattice::setIgnoreList(string ignoreFile)
 // "FamilyMagnets" (Quad,Sext) all of type F, because
 // MAD-X uses different signs of strengths (k,m)
 // ===================================================
-void AccLattice::madximport(string madxFile, simToolMode mode)
+void AccLattice::madximport(string madxFile, SimToolMode mode)
 {
   string madxTwissFile;
 
   // run MAD-X
-  if (mode == online) {
-    madxTwissFile = runMadX(madxFile);
-  }
-  else
+  // if (mode == online) {
+  //   madxTwissFile = runMadX(madxFile);
+  // }
+  //else
     madxTwissFile = madxFile;
 
   //get metadata and set circumference
@@ -708,15 +708,15 @@ void AccLattice::madximportMisalignments(string madxEalignFile)
 // "FamilyMagnets" (Quad,Sext) all of type F, because
 // elegant uses different signs of strengths (k,m)
 // ===================================================
-void AccLattice::elegantimport(string elegantFile, simToolMode mode)
+void AccLattice::elegantimport(string elegantFile, SimToolMode mode)
 {
   string elegantParamFile;
 
   // run Elegant
-  if (mode == online) {
-    elegantParamFile = runElegant(elegantFile);
-  }
-  else
+  // if (mode == online) {
+  //   elegantParamFile = runElegant(elegantFile);
+  // }
+  // else
     elegantParamFile = elegantFile;
 
   double s, pos;
@@ -1189,7 +1189,7 @@ void AccLattice::print(element_type _type, const char *filename) const
 
 
 // return list of elegant or madx compliant element definitions for given type
-string AccLattice::getElementDefs(simulationTool tool, element_type _type) const
+string AccLattice::getElementDefs(SimTool tool, element_type _type) const
 {
   stringstream s;
   const_AccIterator it=firstCIt(_type);
@@ -1208,7 +1208,7 @@ string AccLattice::getElementDefs(simulationTool tool, element_type _type) const
 
 // return lattice in elegant or madx compliant "LINE=(..." format
 // including definition of drifts in-between elements
-string AccLattice::getLine(simulationTool tool) const
+string AccLattice::getLine(SimTool tool) const
 {
   std::stringstream s, line;
   double driftlength, lastend;
@@ -1291,7 +1291,7 @@ string AccLattice::getSequence(Anchor refer) const
 
 
 // print lattice readable by elegant or madx. If no filename is given, print to stdout
-void AccLattice::simToolExport(simulationTool tool, string filename, madxLatticeType ltype) const
+void AccLattice::simToolExport(SimTool tool, string filename, MadxLatticeType ltype) const
 {
   std::stringstream s;
   std::stringstream msg;

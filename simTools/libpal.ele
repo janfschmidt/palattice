@@ -46,12 +46,12 @@
 ! -------------------------------------------------------------
 &insert_elements
 	name = BEGIN,
-	element_def = "wbeg: watch,filename="%s00.w",mode="coord"",
+	element_def = "wbeg: watch,filename="%s000.w",mode="coord"",
 	add_at_end = 0,
 &end
 &insert_elements
 	name = BPM??,
-	element_def = "w1: watch,filename="%s%02ld.w",mode="coord"",
+	element_def = "w1: watch,filename="%s%03ld.w",mode="coord"",
 	add_at_end = 1,
 &end
 ! -------------------------------------------------------------

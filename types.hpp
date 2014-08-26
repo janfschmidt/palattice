@@ -2,19 +2,15 @@
 #define __LIBPAL__TYPES_HPP_
 
 #include <string>
-#include <vector>
 #include <iostream>
+#include <stdexcept>
 #include <cmath>
-#include <gsl/gsl_blas.h>
-#include <gsl/gsl_vector.h>
 
 
 namespace pal
 {
 
-enum simulationTool{madx,elegant};
-enum simToolMode{online,offline};
-enum madxLatticeType{line,sequence};
+enum MadxLatticeType{line,sequence};
 enum AccAxis {x,z,s};
 
 
@@ -147,6 +143,19 @@ public:
   }
 
 };
+
+
+
+  // exceptions
+  class libpalError : public std::runtime_error {
+  public:
+    libpalError(std::string msg) : std::runtime_error(msg) {}
+  };
+
+  class libpalFileError : public libpalError {
+  public:
+    libpalFileError(std::string file) : libpalError("Cannot open "+file) {}
+  };
 
 
 } //namespace pal

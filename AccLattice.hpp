@@ -18,7 +18,7 @@
 #include "Metadata.hpp"
 #include "config.hpp"
 #include "types.hpp"
-#include "runSimTools.hpp"
+#include "SimTools.hpp"
 
 namespace pal
 {
@@ -49,7 +49,7 @@ public:
   Metadata info;
 
   AccLattice(string _name, double _circumference, Anchor _refPos=begin);
-  AccLattice(string _name, simulationTool s, string file, simToolMode m=online, Anchor _refPos=end); //direct madx/elegant import (from file)
+  AccLattice(string _name, SimTool s, string file, SimToolMode m=online, Anchor _refPos=end); //direct madx/elegant import (from file)
   AccLattice(const AccLattice &other);
   ~AccLattice();
   AccLattice& operator= (const AccLattice other);
@@ -78,10 +78,10 @@ public:
   void dismount(double pos);                                          // dismount element at Ref.position pos (if no element at pos: do nothing)
 
   void setIgnoreList(string ignoreFile);         // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted in this lattice
-  void madximport(string madxFile, simToolMode m=online);  // mount elements from MAD-X Lattice (read from twiss-output, m=online: autom. madx run)
+  void madximport(string madxFile, SimToolMode m=online);  // mount elements from MAD-X Lattice (read from twiss-output, m=online: autom. madx run)
   void madximportMisalignments(string madxEalignFile);// set misalignments from MAD-X Lattice (read ealign-output)
                                                      // !! currently only rotation (dpsi) around beam axis (s) is implemented!
-  void elegantimport(string elegantFile, simToolMode m=online);        // mount elements from elegant Lattice (read from ascii parameter file ".param", m=online: autom. elegant run)
+  void elegantimport(string elegantFile, SimToolMode m=online);        // mount elements from elegant Lattice (read from ascii parameter file ".param", m=online: autom. elegant run)
   void setELSAoptics(string spurenFolder);                    // change quad&sext strengths to values from "ELSA-Spuren"
   unsigned int setELSACorrectors(ELSASpuren &spuren, unsigned int t);// change corrector pos&strength to values from "ELSA-Spuren" at time t
   void subtractCorrectorStrengths(const AccLattice &other);    // subtract other corrector strengths from the ones of this lattice
@@ -95,8 +95,8 @@ public:
   vector<string> getIgnoreList() const {return ignoreList;}
   unsigned int ignoredElements() const {return ignoreCounter;}
   string refPos_string() const;
-  string getElementDefs(simulationTool tool,element_type _type) const; // return elegant or madx compliant element definitions for given type
-  string getLine(simulationTool tool) const; // return lattice in elegant or madx compliant "LINE=(..." format
+  string getElementDefs(SimTool tool,element_type _type) const; // return elegant or madx compliant element definitions for given type
+  string getLine(SimTool tool) const; // return lattice in elegant or madx compliant "LINE=(..." format
   string getSequence(Anchor refer=center) const;    // return lattice in madx compliant "SEQUENCE" format
 
 
@@ -104,11 +104,11 @@ public:
   // If no filename is given, print to stdout.
   void print(const char *filename="");                           // print lattice.
   void print(element_type _type, const char *filename="") const; // print all elements of one type.
-  void simToolExport(simulationTool tool, string filename="", madxLatticeType ltype=sequence) const; // print lattice readable by elegant or madx
+  void simToolExport(SimTool tool, string filename="", MadxLatticeType ltype=sequence) const; // print lattice readable by elegant or madx
   void latexexport(string filename="") const;             // print lattice readable by LaTeX (using lattice package by Jan Schmidt <schmidt@physik.uni-bonn.de>)
   // "shortcuts:"
   void elegantexport(string file="") const {simToolExport(elegant,file);}
-  void madxexport(string file="",madxLatticeType t=sequence) const {simToolExport(madx,file,t);}
+  void madxexport(string file="",MadxLatticeType t=sequence) const {simToolExport(madx,file,t);}
 
 };
 

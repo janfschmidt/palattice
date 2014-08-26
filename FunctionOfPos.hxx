@@ -387,13 +387,6 @@ bool FunctionOfPos<T>::compatible(FunctionOfPos<T> &o, bool verbose) const
     }
     return false;
   }
-  // if ( samples()!=o.samples() ) {
-  //   if (verbose) {
-  //     cout <<endl<< "=== FunctionOfPos<T> objects are not compatible! ===" << endl;
-  //     cout << "Number of samples is different ("<<samples() <<"/"<<o.samples() <<")." << endl;
-  //   }
-  //   return false;
-  // }
   if ( turns()!=o.turns() && o.turns()>1 ) { // special case: o.turns=1: use this 1 turn with each turn (e.g. closed orbit)
     if (verbose) {
       cout <<endl<< "=== FunctionOfPos<T> objects are not compatible! ===" << endl;
@@ -402,19 +395,52 @@ bool FunctionOfPos<T>::compatible(FunctionOfPos<T> &o, bool verbose) const
     return false;
   }
 
-  // for (unsigned int i=0; i<samples(); i++) {
-  //   if (abs(getPos(i) - o.getPos(i)) > ZERO_DISTANCE) {
-  //     if (verbose) {
-  // 	cout <<endl<< "=== FunctionOfPos<T> objects are not compatible! ===" << endl;
-  // 	cout << "Positions at sample "<<i<<" are not equal(" << getPos(i) <<"/"<< o.getPos(i) <<")." << endl;
-  //     }
-  //     return false;
-  //   }
-  // }
-
   return true;
 }
 
+
+
+// template <class T>
+// void FunctionOfPos<T>::readSimToolColumn(simulationTool tool, string fileIn, string column, simToolMode m)
+// {
+//   string dataFile;
+
+//   // run Mad-X ?
+
+//   dataFile = fileIn;
+
+//   fstream simToolData;
+//   simToolData.open(simToolDataFile.c_str(), ios::in);
+//   if (!simToolData.is_open()) {
+//     cout << "ERROR: FunctionOfPos<T>::readSimToolColumn(): Cannot open " << dataFile << endl;
+//     exit(1);
+//   }
+
+//   // identify column number to read
+//   string tmp;
+//   unsigned int nCol=0;
+//   while (!simToolData.eof()) {
+//     simToolData >> tmp;
+//     if ((tool==madx && tmp=="*") || (tool==elegant && tmp=="***")) {
+//       getline(simToolData, tmp);
+//       stringstream line(tmp);
+//       while (!line.fail()) {
+// 	line >> tmp;
+// 	if (tmp == column) break;
+// 	else nCol++;
+//       }
+//       break;
+//     }
+//   }
+//   if (simToolData.eof()) {
+//     cout << "ERROR: FunctionOfPos::readSimToolColumn(): no column headline found in " << dataFile << endl;
+//     exit(1);
+//   }
+
+//   // read
+
+
+// }
 
 
 
@@ -547,7 +573,7 @@ void FunctionOfPos<T>::elsaClosedOrbit(ELSASpuren &spuren, unsigned int t)
 
 // returns filename for trajectory files of particle p from madx or elegant at observation point obs
 template <class T>
-string FunctionOfPos<T>::trajectoryFile(string path, simulationTool s, unsigned int obs, unsigned int p) const
+string FunctionOfPos<T>::trajectoryFile(string path, SimTool s, unsigned int obs, unsigned int p) const
 {
   char tmp[512];
   string out;

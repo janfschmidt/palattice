@@ -5,7 +5,7 @@ Vmajor=1
 Vminor=0.0
 INSTALL_PATH=/usr/local/
 
-ALL_O=Interpolate.o Metadata.o ELSASpuren.o FunctionOfPos.o Field.o AccElements.o AccLattice.o Spectrum.o runSimTools.o
+ALL_O=Interpolate.o Metadata.o ELSASpuren.o FunctionOfPos.o Field.o AccElements.o AccLattice.o Spectrum.o SimTools.o
 LIB_FILE=$(LIB_NAME).so
 SIMTOOL_PATH=$(INSTALL_PATH)/lib/libpal_simTools
 
@@ -34,9 +34,9 @@ Metadata.o: Metadata.cpp libpalGitversion.hpp
 	$(CC) $(ccflags) -c $<
 AccElements.o: AccElements.cpp AccElements.hpp types.hpp
 	$(CC) $(ccflags) -c $<
-AccLattice.o: AccLattice.cpp AccLattice.hpp AccElements.hpp ELSASpuren.hpp Metadata.hpp config.hpp types.hpp runSimTools.hpp
+AccLattice.o: AccLattice.cpp AccLattice.hpp AccElements.hpp ELSASpuren.hpp Metadata.hpp config.hpp types.hpp SimTools.hpp
 	$(CC) $(ccflags) -c $<
-runSimTools.o: runSimTools.cpp runSimTools.hpp types.hpp config.hpp simToolPath.hpp
+SimTools.o: SimTools.cpp SimTools.hpp types.hpp config.hpp simToolPath.hpp
 	$(CC) $(ccflags) -c $<
 
 libpalGitversion.hpp: .git/HEAD .git/index

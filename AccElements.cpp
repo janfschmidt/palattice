@@ -260,7 +260,7 @@ AccTriple Sextupole::B(AccPair orbit) const
 
 
 // ============ printSimTool (elegant or madx) ======================
-string Drift::printSimTool(simulationTool t) const
+string Drift::printSimTool(SimTool t) const
 {
   stringstream s;
   string nameInTool;
@@ -274,7 +274,7 @@ string Drift::printSimTool(simulationTool t) const
   return s.str();
 }
 
-string Cavity::printSimTool(simulationTool t) const
+string Cavity::printSimTool(SimTool t) const
 {
   stringstream s;
   string nameInTool;
@@ -293,7 +293,7 @@ string Cavity::printSimTool(simulationTool t) const
 }
 
 
-string Dipole::printSimTool(simulationTool t) const
+string Dipole::printSimTool(SimTool t) const
 {
   stringstream s;
   string nameInTool;
@@ -313,7 +313,7 @@ string Dipole::printSimTool(simulationTool t) const
   return s.str();
 }
 
-string Corrector::printSimTool(simulationTool t) const
+string Corrector::printSimTool(SimTool t) const
 {
   stringstream s;
   string nameInTool;
@@ -332,7 +332,7 @@ string Corrector::printSimTool(simulationTool t) const
   return s.str();
 }
 
-string RFdipole::printSimTool(simulationTool t) const // same as corrector
+string RFdipole::printSimTool(SimTool t) const // same as corrector
 {
   stringstream s;
   string nameInTool;
@@ -351,7 +351,7 @@ string RFdipole::printSimTool(simulationTool t) const // same as corrector
   return s.str();
 }
 
-string Quadrupole::printSimTool(simulationTool t) const
+string Quadrupole::printSimTool(SimTool t) const
 {
   stringstream s;
   string nameInTool;
@@ -373,7 +373,7 @@ string Quadrupole::printSimTool(simulationTool t) const
   return s.str();
 }
 
-string Sextupole::printSimTool(simulationTool t) const
+string Sextupole::printSimTool(SimTool t) const
 {
  stringstream s;
  string nameInTool;

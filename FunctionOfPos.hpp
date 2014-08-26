@@ -17,6 +17,7 @@
 #include "ELSASpuren.hpp"
 #include "Metadata.hpp"
 #include "types.hpp"
+#include "SimTools.hpp"
 #include "config.hpp"
 
 namespace pal
@@ -34,7 +35,7 @@ protected:
   unsigned int n_samples;                     //number of samples per turn (initialized as zero)
 
   // returns filename for trajectory files of particle p from madx or elegant at observation point obs:
-  string trajectoryFile(string path, simulationTool s, unsigned int obs, unsigned int p) const;
+  string trajectoryFile(string path, SimTool s, unsigned int obs, unsigned int p) const;
 
 
 
@@ -79,6 +80,8 @@ public:
   //   !! set() is much slower than modify(). you can initialize equidistant positions by samples&turns in constructor & use modify.
   void clear();
   void pop_back_turn();  // erase data of last turn, reduces turns by 1
+
+  void readSimToolColumn(string file, string column, SimToolMode m=online);
 
   // orbit import
   void madxClosedOrbit(const char *madxTwissFile);                   //import closed orbit from madx twiss file
