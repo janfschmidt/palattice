@@ -757,8 +757,9 @@ void AccLattice::elegantimport(SimToolInstance elegant)
     else if (row.param == "K2") k2 = row.value;
     else if (row.param == "ANGLE") angle = row.value;
     else if (row.param == "KICK") kick = row.value;
-    else if (row.param == "ETILT") tilt = row.value;
-    else if (row.param == "TILT" && row.type!="CSBEND" && row.type!="CSRCSBEND" && row.type!="KSBEND" && row.type!="NIBEND") tilt = row.value;
+    else if (row.param == "ETILT") tilt += row.value;
+    else if (row.param == "TILT") tilt += row.value;
+    //else if (row.param == "TILT" && row.type!="CSBEND" && row.type!="CSRCSBEND" && row.type!="KSBEND" && row.type!="NIBEND") tilt = row.value;
     //... add more parameters here
 
    row_old = row;
