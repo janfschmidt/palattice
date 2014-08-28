@@ -17,6 +17,8 @@
 
 #include "Field.hpp"         // magnetic field (3D) as a function of position (and turn). can be calculated from lattice and trajectory/orbit (FunctionOfPos).
 
+#include "SimTools.hpp"      // run MadX or Elegant, read output files (SimToolTable) and manage their file names
+
 #include "Interpolate.hpp"   // interpolateable data. wrapper for GSL interpolation. used by FunctionOfPos.
 
 #include "Metadata.hpp"      // arbitrary meta-information (strings) as label/entry pairs with formatted output. used by AccLattice, FunctionOfPos and Spectrum.

@@ -111,65 +111,110 @@ vector<double> FunctionOfPos<AccTriple>::getVector(AccAxis axis) const
 
 
 
-
-// ---------------- Orbit import ---------------------
-//import closed orbit from madx twiss file
+// valColumn usually has 1 entry, 2 for AccPair(x,z), 3 for AccTriple(x,z,s)
 template <>
-void FunctionOfPos<AccPair>::madxClosedOrbit(const char *madxTwissFile)
+void FunctionOfPos<AccPair>::readSimToolColumn(SimToolInstance s, string file, string posColumn, vector<string> valColumn)
 {
-  // --------------------------------------------------------------------------------
-  // position of orbit-data at END of quadrupole (according to s in madx twiss file).
-  // Corresponds to BPM behind the Quadrupole
-  // --------------------------------------------------------------------------------
-
-  string tmp;
-  string expectedColumns[11] = {"KEYWORD","NAME","S","X","Y","L","ANGLE","K1L","K2L","VKICK","HKICK"};
-  unsigned int j;
-  double pos, k1l; 
-  string s, x, y;
-  char *p, *pp, *ppp;
-  fstream madxTwiss;
-  AccPair otmp;
-
-  madxTwiss.open(madxTwissFile, ios::in);
-  if (!madxTwiss.is_open()) {
-    cout << "ERROR: FunctionOfPos::madxClosedOrbit(): Cannot open " << madxTwissFile << endl;
-    exit(1);
+  if (valColumn.size() != 2) {
+    stringstream msg;
+    msg << "FunctionOfPos::readSimToolColumn(): valColumn should have 2(not "
+	<<valColumn.size()<<") entries for 2D data type AccPair";
+    throw libpalError(msg.str());
   }
 
-  while (!madxTwiss.eof()) {
-    madxTwiss >> tmp;
+  vector<string> columns;
+  columns.push_back(posColumn);
+  columns.push_back(valColumn[0]);
+  columns.push_back(valColumn[1]);
 
-    // --- check correct column order by comparing headline ---------------------
-    if (tmp == "*") {
-      for (j=0; j<11; j++) {
-	madxTwiss >> tmp;
-	//cout << "debug: madx=>" <<tmp<< " expected=>" <<expectedColumns[j] << endl; //debug
-	if (tmp != expectedColumns[j]) {
-	  cout << "ERROR: FunctionOfPos::madxClosedOrbit(): Unexpected columns (or column order) in " << madxTwissFile << endl;
-	  exit(1);
-	}
-      }
+  SimToolTable tab = s.readTable(file, columns);
+  AccPair pair;
+
+  for (unsigned int i=0; i<tab.rows(); i++) {
+    pair.x = tab.getd(valColumn[0],i);
+    pair.z = tab.getd(valColumn[1],i);
+    this->set(pair, tab.getd(posColumn,i));
+  }
+}
+template <>
+void FunctionOfPos<AccTriple>::readSimToolColumn(SimToolInstance s, string file, string posColumn, vector<string> valColumn)
+{
+  if (valColumn.size() != 3) {
+    stringstream msg;
+    msg << "FunctionOfPos::readSimToolColumn(): valColumn should have 2(not "
+	<<valColumn.size()<<") entries for 3D data type AccTriple";
+    throw libpalError(msg.str());
+  }
+
+  vector<string> columns;
+  columns.push_back(posColumn);
+  columns.push_back(valColumn[0]);
+  columns.push_back(valColumn[1]);
+  columns.push_back(valColumn[2]);
+
+  SimToolTable tab = s.readTable(file, columns);
+  AccTriple triple;
+
+  for (unsigned int i=0; i<tab.rows(); i++) {
+    triple.x = tab.getd(valColumn[0],i);
+    triple.z = tab.getd(valColumn[1],i);
+    triple.s = tab.getd(valColumn[2],i);
+    this->set(triple, tab.getd(posColumn,i));
+  }
+}
+
+
+
+
+
+// ---------------- Orbit import ---------------------
+//import closed orbit from madx twiss file or elegant .clo file
+// --------------------------------------------------------------------------------
+// position of orbit-data at END of quadrupole (according to s in file).
+// Corresponds to BPM behind the Quadrupole
+// --------------------------------------------------------------------------------
+template <>
+void FunctionOfPos<AccPair>::simToolClosedOrbit(SimToolInstance s)
+{
+  string orbitFile=s.orbit();
+
+  //SimTool columns
+  vector<string> columns;
+  if (s.tool == pal::madx) {
+    columns.push_back("S");
+    columns.push_back("KEYWORD");
+    columns.push_back("X");
+    columns.push_back("Y");
+  }
+  else if (s.tool == pal::elegant) {
+    columns.push_back("s");
+    columns.push_back("ElementType");
+    columns.push_back("x");
+    columns.push_back("y");
+  }
+
+  //read columns from file (execute madx if mode=online)
+  SimToolTable oTable;
+  oTable = s.readTable(orbitFile, columns);
+
+  //orbit at quadrupoles
+  AccPair otmp;
+  for (unsigned int i=0; i<oTable.rows(); i++) {
+    if (s.tool==pal::madx && oTable.gets("KEYWORD",i) == "\"QUADRUPOLE\"") {
+      otmp.x = oTable.getd("X",i);
+      otmp.z = oTable.getd("Y",i);
+      this->set(otmp, oTable.getd("S",i));
     }
-    // --------------------------------------------------------------------------
-
-    if (tmp == "\"QUADRUPOLE\"") {
-      madxTwiss >> tmp >> s >> x >> y >> tmp >> tmp >> k1l;
-      pos = strtod(s.c_str(), &p);
-      otmp.x = strtod(x.c_str(), &pp);
-      otmp.z = strtod(y.c_str(), &ppp);
-      if (*p!=0 || *pp!=0 || *ppp!=0) {
-	cout << "WARNING: FunctionOfPos::madxClosedOrbit(): No correct BPM data @ s="
-	     <<s<< "("<<x<<", "<<y<<"). Ignore it and continue." << endl;
-      }
-      else
-	this->set(otmp, pos);
+    else if (s.tool==pal::elegant && oTable.gets("ElementType",i) == "QUAD") {
+      otmp.x = oTable.getd("x",i);
+      otmp.z = oTable.getd("y",i);
+      this->set(otmp, oTable.getd("s",i));
     }
   }
 
   //metadata
-  info.add("Closed Orbit from", "MAD-X");
-  info.add("Orbit Source file", madxTwissFile);
+  info.add("Closed Orbit from", s.tool_string());
+  info.add("Orbit Source file", orbitFile);
 }
 
 
@@ -283,51 +328,6 @@ void FunctionOfPos<AccPair>::madxTrajectory(string path, unsigned int particle)
   stmp.str(std::string());
   stmp << obs;
   info.add("number of obs. points", stmp.str());
-}
-
-
-
-//import closed orbit from elegant .clo file
-template<>
-void FunctionOfPos<AccPair>::elegantClosedOrbit(const char *elegantCloFile)
-{
- // --------------------------------------------------------------------------------
-  // position of orbit-data at END of quadrupole (according to s in elegant .clo file).
-  // Corresponds to BPM behind the Quadrupole
-  // --------------------------------------------------------------------------------
-
-  string tmp;
-  string s, x, y;
-  double pos;
-  char *p, *pp, *ppp;
-  fstream elegantClo;
-  AccPair otmp;
-
-  elegantClo.open(elegantCloFile, ios::in);
-  if (!elegantClo.is_open()) {
-    cout << "ERROR: FunctionOfPos::elegantClosedOrbit(): Cannot open " << elegantCloFile << endl;
-    exit(1);
-  }
-
-  while (!elegantClo.eof()) {
-    elegantClo >> tmp;
-
-    if (tmp == "QUAD") {
-      elegantClo >> s >> x >> y;
-      pos = strtod(s.c_str(), &p);
-      otmp.x = strtod(x.c_str(), &pp);
-      otmp.z = strtod(y.c_str(), &ppp);
-      if (*p!=0 || *pp!=0 || *ppp!=0) {
-	cout << "WARNING: FunctionOfPos::elegantClosedOrbit(): No correct BPM data @ s="
-	     <<s<< "("<<x<<", "<<y<<"). Ignore it and continue." << endl;
-      }
-      else
-	this->set(otmp, pos);
-    }
-  }
-  //metadata
-  info.add("Closed Orbit from", "Elegant");
-  info.add("Orbit Source file", elegantCloFile);
 }
 
 

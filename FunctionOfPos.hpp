@@ -81,14 +81,17 @@ public:
   void clear();
   void pop_back_turn();  // erase data of last turn, reduces turns by 1
 
-  void readSimToolColumn(string file, string column, SimToolMode m=online);
+  void readSimToolColumn(SimToolInstance s, string file, string posColumn, vector<string> valColumn); // import a column of data from a madx/elegant file. valColumn usually has 1 entry, 2 for AccPair(x,z), 3 for AccTriple(x,z,s)
+  void readSimToolColumn(SimTool t, string file, string posColumn, vector<string> valColumn, string latticeFile=""); //if a latticeFile is given, madx/elegant is executed.
 
   // orbit import
-  void madxClosedOrbit(const char *madxTwissFile);                   //import closed orbit from madx twiss file
-  void madxTrajectory(string path, unsigned int particle); //import single particle trajectory from madx tracking "obs" files at each quadrupole
-  void elegantClosedOrbit(const char *elegantCloFile);               //import closed orbit from elegant .clo file
-  void elegantTrajectory(string path, unsigned int particle); //import single particle trajectory from elegant tracking "watch" files at each quadrupole
-  void elsaClosedOrbit(ELSASpuren &spuren, unsigned int t);               //import closed orbit from ELSA measurement at time t/ms
+  void simToolClosedOrbit(SimToolInstance s);                  //import closed orbit from madx (twiss file) or elegant (clo file)
+  void madxClosedOrbit(string madxFile, SimToolMode m=online) {SimToolInstance mad(pal::madx, m, madxFile); simToolClosedOrbit(mad);}
+  void elegantClosedOrbit(string elegantFile, SimToolMode m=online) {SimToolInstance ele(pal::elegant, m, elegantFile); simToolClosedOrbit(ele);}
+  void elsaClosedOrbit(ELSASpuren &spuren, unsigned int t);    //import closed orbit from ELSA measurement at time t/ms
+  // trajectory import
+  void madxTrajectory(string path, unsigned int particle);     //import single particle trajectory from madx tracking "obs" files at each quadrupole
+  void elegantTrajectory(string path, unsigned int particle);  //import single particle trajectory from elegant tracking "watch" files at each quadrupole
 
   // tests
   bool exists(double pos, unsigned int turn=1) const; // is there data at pos?
@@ -103,6 +106,7 @@ public:
   void operator-=(FunctionOfPos<T> &other);
 
   // construct Spectrum (FFT) from this FunctionOfPos (for 1D values, chosen by axis)
+  // axis is ignored for 1D data (int or double)
   Spectrum getSpectrum(AccAxis axis=x, unsigned int fmaxrevIn=30, double ampcut=0.) const;
 
 };
@@ -113,9 +117,10 @@ template<> vector<double> FunctionOfPos<double>::getVector(AccAxis axis) const;
 template<> vector<double> FunctionOfPos<int>::getVector(AccAxis axis) const;
 template<> vector<double> FunctionOfPos<AccPair>::getVector(AccAxis axis) const;
 template<> vector<double> FunctionOfPos<AccTriple>::getVector(AccAxis axis) const;
-template<> void FunctionOfPos<AccPair>::madxClosedOrbit(const char *madxTwissFile);
+template<> void FunctionOfPos<AccPair>::readSimToolColumn(SimToolInstance s, string file, string posColumn, vector<string> valColumn);
+template<> void FunctionOfPos<AccTriple>::readSimToolColumn(SimToolInstance s, string file, string posColumn, vector<string> valColumn);
+template<> void FunctionOfPos<AccPair>::simToolClosedOrbit(SimToolInstance s);
 template<> void FunctionOfPos<AccPair>::madxTrajectory(string path, unsigned int particle);
-template<> void FunctionOfPos<AccPair>::elegantClosedOrbit(const char *elegantCloFile);
 template<> void FunctionOfPos<AccPair>::elegantTrajectory(string path, unsigned int particle);
 template<> void FunctionOfPos<AccPair>::elsaClosedOrbit(ELSASpuren &spuren, unsigned int t);
 template<> string FunctionOfPos<AccPair>::header() const;

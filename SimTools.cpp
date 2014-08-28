@@ -13,7 +13,7 @@ using namespace std;
 
 
 SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string fileIn)
-  : executed(false), tool(toolIn), mode(modeIn), trackingTurns(1)
+  : executed(false), trackingTurns(0), tool(toolIn), mode(modeIn)
 {
 
   //path: path of fileIn
@@ -74,7 +74,7 @@ void SimToolInstance::replaceInFile(string variable, string value, string delim,
   stringstream cmd;
   cmd << "cd "<< path() << "; ";
   cmd << "sed -i 's!"<<variable<<" = .*"<<delim<<"!"<<variable<<" = "<<value<<delim<<"!' "<<file;
-  cout << cmd.str() << endl;
+  //cout << cmd.str() << endl;
   system(cmd.str().c_str());
 }
 
@@ -114,8 +114,8 @@ void SimToolInstance::run()
   //run madx/elegant:
   runcmd << "cd "<< path() << "; ";
   if (tool== madx) {
-    runcmd << "touch madx.observe; "; //avoid fatal error "cannot open input file: madx.observe"
-    runcmd << MADXCOMMAND << " < "; 
+    runcmd << "echo "" > madx.observe; "; //avoid fatal error "cannot open input file: madx.observe"
+    runcmd << MADXCOMMAND << " < ";
     cout << "Run MadX 1...";
   }
   else {

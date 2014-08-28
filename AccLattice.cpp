@@ -467,17 +467,13 @@ void AccLattice::setIgnoreList(string ignoreFile)
 // "FamilyMagnets" (Quad,Sext) all of type F, because
 // MAD-X uses different signs of strengths (k,m)
 // ===================================================
-void AccLattice::madximport(string madxFile, SimToolMode mode)
+void AccLattice::madximport(SimToolInstance madx)
 {
-  string madxTwissFile;
+  if (madx.tool != pal::madx)
+    throw libpalError("AccLattice::madximport() is only allowed for SimToolInstance::tool=madx");
 
-  // run MAD-X
-  // if (mode == online) {
-  //   madxTwissFile = runMadX(madxFile);
-  // }
-  //else
-    madxTwissFile = madxFile;
-
+  string madxTwissFile=madx.lattice();
+  
   //get metadata and set circumference
   info.madximport("TITLE,LENGTH,ORIGIN,PARTICLE", madxTwissFile);
   circ = strtod(info.getbyLabel("LENGTH").c_str(), NULL);
@@ -487,12 +483,26 @@ void AccLattice::madximport(string madxFile, SimToolMode mode)
     throw std::runtime_error(msg.str());
   }
 
-  // madx column variables
-  string tmp, name, key;
-  double s, l, angle, k1l, k2l, vkick, hkick; 
-  string x, y;
+  if (refPos != end)
+    cout << "WARNING: AccLattice::madximport(): The input file (MAD-X twiss) uses element end as positions." << endl
+	 << "They are transformed to the current Anchor set for this lattice: " << refPos_string() << endl;
 
-  fstream madxTwiss;
+
+  // madx columns
+  vector<string> columns;
+  columns.push_back("KEYWORD");
+  columns.push_back("NAME");
+  columns.push_back("S");
+  columns.push_back("L");
+  columns.push_back("ANGLE");
+  columns.push_back("K1L");
+  columns.push_back("K2L");
+  columns.push_back("HKICK");
+  columns.push_back("VKICK");
+
+  //read columns from file (execute madx if mode=online)
+  SimToolTable twi;
+  twi = madx.readTable(madxTwissFile, columns);
 
   //AccElements
   AccElement *element;
@@ -505,92 +515,29 @@ void AccLattice::madximport(string madxFile, SimToolMode mode)
   Quadrupole Quad("defaultName", 0., 0., F); // madx uses negative sign "strength" for D magnets,
   Sextupole Sext("defaultName", 0., 0., F);  // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
   Cavity Cav("defaultName");
-  Drift empty_space("defaultName", 0.);
+  Drift empty_space("defaultName", 0.);  
 
-  if (refPos != end)
-    cout << "WARNING: AccLattice::madximport(): The input file (MAD-X twiss) uses element end as positions." << endl
-	 << "They are transformed to the current Anchor set for this lattice: " << refPos_string() << endl;
-  
-  madxTwiss.open(madxTwissFile.c_str(), ios::in);
-  if (!madxTwiss.is_open()) {
-    cout << "ERROR: AccLattice::madximport(): Cannot open " << madxTwissFile << endl;
-    exit(1);
-  }
-  
-  // read column names (=> column order)
-  vector<string> columnNames;
-  madxTwiss >> tmp;
-  while (!madxTwiss.eof()) {
-    madxTwiss >> tmp;
-    if (tmp == "*") {       // begin of headline
-      while (tmp != "$") {  // end of headline
-	madxTwiss >> tmp;
-	columnNames.push_back(tmp);
-      }
-      columnNames.pop_back(); //delete last element "$"
-      madxTwiss.ignore(numeric_limits<streamsize>::max(), '\n'); // skip line
-      break;
-    }
-  }
-  if (madxTwiss.eof()) {
-    cout << "ERROR: AccLattice::madximport(): " << madxTwissFile << " is not a valid MadX twiss file. No column headline found.";
-    exit(1);
-  }
 
-  // read lines of data
-  unsigned int n_columnsNeeded = 9; // number of columns with needed data
-  unsigned int col = 0;
-  while (!madxTwiss.eof()) {
-    col=0;
-    s=l=angle=k1l=k2l=vkick=hkick=0.;
-    for (unsigned int i=0; i<columnNames.size(); i++) {
-      col++;
-      if (columnNames[i] == "KEYWORD")
-	madxTwiss >> key;
-      else if (columnNames[i] == "NAME")
-	madxTwiss >> name;
-      else if (columnNames[i] == "S")
-	madxTwiss >> s;
-      else if (columnNames[i] == "L")
-	madxTwiss >> l;
-      else if (columnNames[i] == "ANGLE")
-	madxTwiss >> angle;
-      else if (columnNames[i] == "K1L")
-	madxTwiss >> k1l;
-      else if (columnNames[i] == "K2L")
-	madxTwiss >> k2l;
-      else if (columnNames[i] == "VKICK")
-	madxTwiss >> vkick;
-      else if (columnNames[i] == "HKICK")
-	madxTwiss >> hkick;
-      else {
-	madxTwiss >> tmp;
-	col--;
-      }
-      if (madxTwiss.eof()) break;
-    }
-    if (madxTwiss.eof()) break;
-    if (col != n_columnsNeeded) {
-      cout << "ERROR: AccLattice::madximport(): " << n_columnsNeeded - col << "column(s) missing in " << madxTwissFile << endl
-	   << "The needed columns are KEYWORD, NAME, S, L, ANGLE, K1L, K2L, VKICK, HKICK";
-      exit(1);
-    }
+  //mount elements
+  for (unsigned int i=0; i<twi.rows(); i++) {
+    string key = twi.get<string>("KEYWORD",i);
+    double l = twi.getd("L",i);
+    double s = twi.getd("S",i);
 
-    // end of line: mount element
     if (key == "\"SBEND\"" || key == "\"RBEND\"") {  //vertical Dipole (assume all bends have vertical field)
       element = &hDip;
-      element->strength = angle/l;   // 1/R (!!! assuming l is arclength (along ref. orbit) !!!)
+      element->strength = twi.getd("ANGLE",i)/l;   // 1/R (!!! assuming l is arclength (along ref. orbit) !!!)
     }
     else if (key == "\"QUADRUPOLE\"") {
       element = &Quad;
-      element->strength = k1l/l;   // k1
+      element->strength = twi.getd("K1L",i)/l;   // k1
     }
     else if (key == "\"SEXTUPOLE\"") {
       element = &Sext;
-      element->strength = k2l/l;
+      element->strength = twi.getd("K2L",i)/l;
     }
     else if (key == "\"VKICKER\"") {
-      if (name.substr(0,6) == "RFDIP.") { //RF dipole
+      if (twi.gets("NAME",i).substr(0,6) == "RFDIP.") { //RF dipole
 	element = &vRFdip;
 	//element->Qrf0 = 0.625;          // !! hardcoded RF-tune values !!
 	//element->dQrf = 5.402e-6;
@@ -598,10 +545,10 @@ void AccLattice::madximport(string madxFile, SimToolMode mode)
       else {                              //Corrector
 	element = &vCorr;
       }
-      element->strength = sin(vkick)/l;   // 1/R from kick-angle
+      element->strength = sin(twi.getd("VKICK",i))/l;   // 1/R from kick-angle
     }
     else if (key == "\"HKICKER\"") {
-      if (name.substr(0,6) == "RFDIP.") { //RF dipole
+      if (twi.gets("NAME",i).substr(0,6) == "RFDIP.") { //RF dipole
 	element = &hRFdip;
 	//element->Qrf0 = 0.625;          // !! hardcoded RF-tune values !!
 	//element->dQrf = 5.402e-6;
@@ -609,7 +556,7 @@ void AccLattice::madximport(string madxFile, SimToolMode mode)
       else {                              //Corrector
 	element = &hCorr;
       }
-      element->strength = sin(hkick)/l;   // 1/R from kick-angle
+      element->strength = sin(twi.getd("HKICK",i))/l;   // 1/R from kick-angle
     }
     else if (key == "\"RFCAVITY\"") {
       element = &Cav;
@@ -619,7 +566,7 @@ void AccLattice::madximport(string madxFile, SimToolMode mode)
       element = &empty_space;
     
     if (element->type != drift) {
-      element->name = removeQuote(name);
+      element->name = removeQuote(twi.gets("NAME",i));
       element->length = l;
       if (refPos == begin) s -= l;
       else if (refPos == center) s -= l/2;
@@ -627,7 +574,11 @@ void AccLattice::madximport(string madxFile, SimToolMode mode)
     }
     // cout << "new line, mounted:" << element->name << endl;
   }
-  madxTwiss.close();
+
+  // import misalignments
+  this->madximportMisalignments(dipole, madx.outFile("dipealign"));
+  this->madximportMisalignments(quadrupole, madx.outFile("quadealign"));
+
 
   //info stdout
   cout << this->sizeSummary() << " read" << endl
@@ -649,53 +600,32 @@ void AccLattice::madximport(string madxFile, SimToolMode mode)
 // Bsupply and elegant use clockwise definition, so sign is changed here
 // to get the correct signs for the magnetic fields calculated from dpsi
 // *********************************************************************************
-void AccLattice::madximportMisalignments(string madxEalignFile)
+void AccLattice::madximportMisalignments(element_type t, string madxEalignFile)
 {
-  string tmp;
-  unsigned int j, column=0;
-  double _dpsi=0.;
-  fstream madxEalign;
-  AccIterator it=elements.begin();
+  SimToolInstance madx(pal::madx, pal::offline, madxEalignFile);
 
-  madxEalign.open(madxEalignFile.c_str(), ios::in);
-  if (!madxEalign.is_open()) {
-    cout << "ERROR: AccLattice::madximportMisalignments(): Cannot open " << madxEalignFile << endl;
-    exit(1);
-  }
-  
-  while (!madxEalign.eof()) {
-    madxEalign >> tmp;
+  //madx columns
+  vector<string> columns;
+  columns.push_back("NAME");
+  columns.push_back("DPSI");
 
-    if (tmp == "@" || tmp == "$") {    // header lines
-      getline(madxEalign, tmp);
-    }
-    else if (tmp == "*") {             // column headline, check which column is DPSI
-      getline(madxEalign, tmp);
-      stringstream s(tmp);
-      while (!s.eof()) {
-	s >> tmp;
-	if (tmp == "DPSI") break;
-	else column++;
-      }
-    }
-    else {
-      if (column == 0) {
-	cout << "ERROR: AccLattice::madximportMisalignments(): No column header with DPSI in " << madxEalignFile << endl;
-	exit(1);
-      }
-      for (; it!=elements.end(); ++it) {          //madxEalign is sorted by position => loop continued
-	if (it->second->name == removeQuote(tmp)) {
-	  for (j=0; j<column-1; j++) madxEalign >> tmp; //read stupid unnecessary columns
-	  madxEalign >> _dpsi;                    //read & write rotation around s-axis
-	  it->second->dpsi = - _dpsi;    // <<<<<<!!! sign of rotation angle (see comment above)
-	  getline(madxEalign, tmp);
-	  break;
-	}
+  //read columns from file (execute madx if mode=online)
+  SimToolTable ealign;
+  ealign = madx.readTable(madxEalignFile, columns);
+
+  //set misalignments to AccLattice elements
+  AccIterator it=firstIt(t);
+  string type=it->second->type_string();
+  for (; it!=elements.end(); it=nextIt(t,it)) {
+    for (unsigned int i=0; i<ealign.rows(); i++) {
+      if (it->second->name == removeQuote(ealign.gets("NAME",i))) {
+	it->second->dpsi = - ealign.getd("DPSI",i);    // <<<<<<!!! sign of rotation angle (see comment above)
       }
     }
   }
+
   //metadata
-  info.add("MAD-X misalignments from", madxEalignFile);
+  info.add("MAD-X " + type + " misalignments from", madxEalignFile);
 }
 
 
@@ -704,20 +634,23 @@ void AccLattice::madximportMisalignments(string madxEalignFile)
 
 // mount elements from elegant Lattice (read from ascii parameter file ".param")
 // misalignments included (no separate function as for MADX)
+// >> here the file is not read by SimToolInstance::readTable,
+// >> because of different layout of .param file (no column based table!)
 // ====== ATTENTION ==================================
 // "FamilyMagnets" (Quad,Sext) all of type F, because
 // elegant uses different signs of strengths (k,m)
 // ===================================================
-void AccLattice::elegantimport(string elegantFile, SimToolMode mode)
+void AccLattice::elegantimport(SimToolInstance elegant)
 {
-  string elegantParamFile;
+  if (elegant.tool != pal::elegant)
+    throw libpalError("AccLattice::elegantimport() is only allowed for SimToolInstance::tool=elegant");
+
+  string elegantParamFile = elegant.lattice();
 
   // run Elegant
-  // if (mode == online) {
-  //   elegantParamFile = runElegant(elegantFile);
-  // }
-  // else
-    elegantParamFile = elegantFile;
+  if (elegant.mode == pal::online && !elegant.runDone())
+    elegant.run();
+
 
   double s, pos;
   double l, k1, k2, angle, kick, tilt; //parameter values
@@ -734,7 +667,7 @@ void AccLattice::elegantimport(string elegantFile, SimToolMode mode)
   circ = strtod(info.getbyLabel("circumference").c_str(), NULL);
   if (circ == 0) {
     stringstream msg;
-    msg << "AccLattice::elegantParamFile(): Cannot read circumference from " << elegantParamFile;
+    msg << "AccLattice::elegantimport(): Cannot read circumference from " << elegantParamFile;
     throw std::runtime_error(msg.str());
   }
 
@@ -828,11 +761,11 @@ void AccLattice::elegantimport(string elegantFile, SimToolMode mode)
     else if (row.param == "TILT" && row.type!="CSBEND" && row.type!="CSRCSBEND" && row.type!="KSBEND" && row.type!="NIBEND") tilt = row.value;
     //... add more parameters here
 
- 
    row_old = row;
   }
   
   elegantParam.close();
+
 
   //info stdout
   cout << this->sizeSummary() << " read" << endl

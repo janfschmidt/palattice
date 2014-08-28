@@ -27,6 +27,10 @@ namespace pal
     template<class T> T get(string key, unsigned int index);
     unsigned int rows() const {return table.begin()->second.size();}
     unsigned int columns() const {return table.size();}
+
+    //short forms: getd = get<double> and gets = get<string>
+    double getd(string key, unsigned int index) {return get<double>(key,index);}
+    string gets(string key, unsigned int index) {return get<string>(key,index);}
   };
   
 
@@ -36,6 +40,7 @@ namespace pal
   class SimToolInstance {
   protected:
     bool executed;
+    unsigned int trackingTurns;
     string _path;
     string file;     //mode=online: latticeInput, mode=offline: SimTool Output
     string filebase; //output filename without extension
@@ -46,12 +51,14 @@ namespace pal
   public:
     const SimTool tool;
     const SimToolMode mode;
-    unsigned int trackingTurns;
 
     SimToolInstance(SimTool tool, SimToolMode mode, string fileIn);
     ~SimToolInstance() {}
 
     void run();
+    unsigned int turns() const {return trackingTurns;}
+    void setTurns(unsigned int t) {trackingTurns=t; executed=false;}
+    string tool_string() const {if (tool==madx) return "Mad-X"; else if (tool==elegant) return "Elegant"; else return "";}
     SimToolTable readTable(string file, vector<string> columnKeys);
 
     //filenames

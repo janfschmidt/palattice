@@ -400,47 +400,42 @@ bool FunctionOfPos<T>::compatible(FunctionOfPos<T> &o, bool verbose) const
 
 
 
-// template <class T>
-// void FunctionOfPos<T>::readSimToolColumn(simulationTool tool, string fileIn, string column, simToolMode m)
-// {
-//   string dataFile;
+// import a column of data from a madx/elegant file.
+// valColumn usually has 1 entry, 2 for AccPair(x,z), 3 for AccTriple(x,z,s)
+template <class T>
+void FunctionOfPos<T>::readSimToolColumn(SimToolInstance s, string file, string posColumn, vector<string> valColumn)
+{
+  if (valColumn.size() != 1) {
+    stringstream msg;
+    msg << "FunctionOfPos::readSimToolColumn(): valColumn should have 1(not "
+	<<valColumn.size()<<") entry for 1D data type " << typeid(T).name();
+    throw libpalError(msg.str());
+  }
 
-//   // run Mad-X ?
+  vector<string> columns;
+  columns.push_back(posColumn);
+  columns.push_back(valColumn[0]);
 
-//   dataFile = fileIn;
+  SimToolTable tab = s.readTable(file, columns);
 
-//   fstream simToolData;
-//   simToolData.open(simToolDataFile.c_str(), ios::in);
-//   if (!simToolData.is_open()) {
-//     cout << "ERROR: FunctionOfPos<T>::readSimToolColumn(): Cannot open " << dataFile << endl;
-//     exit(1);
-//   }
-
-//   // identify column number to read
-//   string tmp;
-//   unsigned int nCol=0;
-//   while (!simToolData.eof()) {
-//     simToolData >> tmp;
-//     if ((tool==madx && tmp=="*") || (tool==elegant && tmp=="***")) {
-//       getline(simToolData, tmp);
-//       stringstream line(tmp);
-//       while (!line.fail()) {
-// 	line >> tmp;
-// 	if (tmp == column) break;
-// 	else nCol++;
-//       }
-//       break;
-//     }
-//   }
-//   if (simToolData.eof()) {
-//     cout << "ERROR: FunctionOfPos::readSimToolColumn(): no column headline found in " << dataFile << endl;
-//     exit(1);
-//   }
-
-//   // read
+  for (unsigned int i=0; i<tab.rows(); i++)
+    this->set(tab.get<T>(valColumn[0],i), tab.get<double>(posColumn,i));
+}
 
 
-// }
+// import a column of data from a madx/elegant file. if a latticeFile is given, madx/elegant is executed.
+template <class T>
+void FunctionOfPos<T>::readSimToolColumn(SimTool t, string file, string posColumn, vector<string> valColumn, string latticeFile)
+{
+  if (latticeFile=="")
+    SimToolInstance s(t, pal::offline, file);
+  else
+    SimToolInstance s(t, pal::online, latticeFile);
+
+  readSimToolColumn(s, file, posColumn, valColumn);
+}
+
+
 
 
 
@@ -526,10 +521,10 @@ vector<double> FunctionOfPos<T>::getVector(AccAxis axis) const
 
 //orbit import is defined only for T=AccPair (-> template specialization)
 template <class T>
-void FunctionOfPos<T>::madxClosedOrbit(const char *madxTwissFile)
+void FunctionOfPos<T>::simToolClosedOrbit(SimToolInstance sim)
 {
   stringstream s;
-  s << "FunctionOfPos<T>::madxClosedOrbit() is not implemented for data type " << typeid(T).name()
+  s << "FunctionOfPos<T>::simToolClosedOrbit() is not implemented for data type " << typeid(T).name()
     << ". It is only defined for T=AccPair.";
   throw logic_error(s.str());
 }
@@ -543,14 +538,6 @@ void FunctionOfPos<T>::madxTrajectory(string path, unsigned int particle)
   throw logic_error(s.str());
 }
 
-template <class T>
-void FunctionOfPos<T>::elegantClosedOrbit(const char *elegantCloFile)
-{
-  stringstream s;
-  s << "FunctionOfPos<T>::elegantClosedOrbit() is not implemented for data type " << typeid(T).name()
-    << ". It is only defined for T=AccPair.";
-  throw logic_error(s.str());
-}
 
 template <class T>
 void FunctionOfPos<T>::elegantTrajectory(string path, unsigned int particle)
