@@ -36,17 +36,17 @@ namespace pal
   class SimToolInstance {
   protected:
     bool executed;
-    unsigned int trackingTurns;
     string _path;
     string file;     //mode=online: latticeInput, mode=offline: SimTool Output
     string filebase; //output filename without extension
     string runFile;
-    string outCases(string madxExt, string eleExt) const {if(t==madx) return outFile(madxExt); else if(t==elegant) return outFile(eleExt); return "";}
+    string outCases(string madxExt, string eleExt) const {if(tool==madx) return outFile(madxExt); else if(tool==elegant) return outFile(eleExt); return "";}
     void replaceInFile(string variable, string value, string delim, string file);
 
   public:
-    const SimTool t;
-    const SimToolMode m;
+    const SimTool tool;
+    const SimToolMode mode;
+    unsigned int trackingTurns;
 
     SimToolInstance(SimTool tool, SimToolMode mode, string fileIn);
     ~SimToolInstance() {}

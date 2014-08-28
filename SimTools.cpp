@@ -12,8 +12,8 @@ using namespace pal;
 using namespace std;
 
 
-SimToolInstance::SimToolInstance(SimTool tool, SimToolMode mode, string fileIn)
-  : executed(false), trackingTurns(1), t(tool), m(mode)
+SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string fileIn)
+  : executed(false), tool(toolIn), mode(modeIn), trackingTurns(1)
 {
 
   //path: path of fileIn
@@ -28,11 +28,11 @@ SimToolInstance::SimToolInstance(SimTool tool, SimToolMode mode, string fileIn)
     file = fileIn;
   }
 
-  if (m==online && t==madx)
+  if (mode==online && tool==madx)
     filebase = "madx";
-  else if (m==online && t==elegant)
+  else if (mode==online && tool==elegant)
     filebase = "elegant";
-  else if (m==offline) {
+  else if (mode==offline) {
     //filebase: file without extension
     string::size_type f2 = file.find_first_of(".");
     if ( f2 != string::npos)
@@ -42,9 +42,9 @@ SimToolInstance::SimToolInstance(SimTool tool, SimToolMode mode, string fileIn)
   }
 
 
-  if (t==madx)
+  if (tool==madx)
     runFile = "libpal.madx";
-  else if (t==elegant)
+  else if (tool==elegant)
     runFile = "libpal.ele";
 }
 
@@ -56,9 +56,9 @@ string SimToolInstance::trajectory(unsigned int obs, unsigned int particle) cons
   int n = 1024;
   char tmp[n];
   string out;
-  if (t == madx)
+  if (tool == madx)
     snprintf(tmp, n, "%s%s.obs%04d.p%04d", path().c_str(), filebase.c_str(), obs, particle);
-  else if (t == elegant)
+  else if (tool== elegant)
     snprintf(tmp, n, "%s%s.w%04d.p%d", path().c_str(), filebase.c_str(), obs, particle);
   out = tmp;
 
@@ -68,59 +68,53 @@ string SimToolInstance::trajectory(unsigned int obs, unsigned int particle) cons
 
 
 // replace a command in a madx/elegant file via sed.
-// e.g. "[variable] = x[delim]" ---> "[variable] = [value][delim]"
+// "[variable] = x[delim]" ---> "[variable] = [value][delim]"
 void SimToolInstance::replaceInFile(string variable, string value, string delim, string file)
 {
   stringstream cmd;
   cmd << "cd "<< path() << "; ";
-  if (t == madx) {
-    cmd << "sed -i 's!"<<variable<<"=.*"<<delim<<"!"<<variable<<"=";
-  }
-  else if (t==elegant) {
-    cmd << "sed -i 's!"<<variable<<" = .*"<<delim<<"!"<<variable<<" = ";
-  }
-  cmd << value << delim << "!' " << file;
+  cmd << "sed -i 's!"<<variable<<" = .*"<<delim<<"!"<<variable<<" = "<<value<<delim<<"!' "<<file;
   cout << cmd.str() << endl;
   system(cmd.str().c_str());
 }
 
 
 // run madx/elegant (online mode only)
+// single particle tracking is only done if trackingTurns!=0
+//  (elegant does this automatically, for madx it is handled below)
 void SimToolInstance::run()
 {
-  if (m==offline)
+  if (mode==offline)
     throw libpalError("You cannot run madx/elegant from a SimToolInstance in offline mode.");
 
   if (executed) return; // only run madx/elegant once
 
-
-  stringstream cmd, runcmd;
+  stringstream cmd, runcmd, tmp;
 
  // copy madx/elegant file (if not existing)
   cmd << "cp -n "<< pal::simToolPath() << "/" << runFile << " " << path();
   system(cmd.str().c_str());
 
   // set lattice filename in runFile:
-  cmd.str(std::string());
-  cmd << "cd "<< path() << "; ";
-  if (t == madx) {
-    cmd << "sed -i 's!^call, file=\".*\"!call, file=\"";
-  }
-  else if (t==elegant) {
-    cmd << "sed -i 's!lattice = \".*\"!lattice = \"";
-  }
-  cmd << file << "\"!' " << runFile;
-  system(cmd.str().c_str());
+  tmp.str(std::string());
+  tmp << "\""<<file<<"\"";
+  if (tool== madx)
+    replaceInFile("call, file", tmp.str(), ";", runFile);
+  else if (tool== elegant)
+    replaceInFile("lattice", tmp.str(), ",", runFile);
 
   // set tracking turns in runFile:
-  if (t == madx)
-    replaceInFile("turns", "5", ",", runFile);
-  else if (t == elegant)
-    replaceInFile("n_passes", "5", ",", runFile);
+  tmp.str(std::string());
+  tmp << trackingTurns;
+  if (tool== madx)
+    replaceInFile("turns", tmp.str(), ",", runFile);
+  else if (tool== elegant)
+    replaceInFile("n_passes", tmp.str(), ",", runFile);
   
   //run madx/elegant:
   runcmd << "cd "<< path() << "; ";
-  if (t == madx) {
+  if (tool== madx) {
+    runcmd << "touch madx.observe; "; //avoid fatal error "cannot open input file: madx.observe"
     runcmd << MADXCOMMAND << " < "; 
     cout << "Run MadX 1...";
   }
@@ -132,9 +126,11 @@ void SimToolInstance::run()
   cout << " (log: " << log() << ")" << endl;
   system(runcmd.str().c_str());
 
-  if (t == madx) {
+
+  //MadX: additional commands to set tracking observation points at each BPM (element name including BPM)
+  cmd.str(std::string());
+  if (tool== madx && trackingTurns!=0) {
     //write BPMs as observation points to madx.observe
-    cmd.str(std::string());
     cmd << "cd "<< path() << "; "
 	<< "grep BPM " << lattice() << " | awk '{gsub(\"\\\"\",\"\",$2); print \"ptc_observe, place=\"$2\";\"}' > " 
 	<< "madx.observe";
@@ -157,7 +153,7 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
   SimToolTable table;
 
   // run?
-  if (!executed && m==online)
+  if (!executed && mode==online)
     this->run();
 
   fstream tabFile;
@@ -175,8 +171,8 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
   //look for headline:
   while (!tabFile.eof()) {
     // begin of headline:
-    if ((t==madx && tmp=="*") || (t==elegant && tmp=="***")) {
-      if (t==elegant)
+    if ((tool==madx && tmp=="*") || (tool==elegant && tmp=="***")) {
+      if (tool==elegant)
 	getline(tabFile, tmp); //line break ("***" in line above header)
       //read headline:
       getline(tabFile, tmp);
@@ -218,11 +214,11 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
   }
 
   //skip additional headline(s)
-  if (t == madx) {
+  if (tool== madx) {
     while (tmp.substr(0,2) != "$ ")
     getline(tabFile, tmp);
   }
-  else if (t == elegant) {
+  else if (tool== elegant) {
     while (tmp.substr(0,5) != "-----")
       getline(tabFile, tmp);
   }

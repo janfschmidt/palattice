@@ -15,7 +15,6 @@
 	p_central_mev = 2300,
 	tracking_updates = 1,
 	always_change_p0 = 0, ! re-establish pCentral after each element (match new energy,fiducializing)
-	echo_lattice = 0,
 	element_divisions = 0,
 	load_balancing_on = 0,
 	random_number_seed = 91,
