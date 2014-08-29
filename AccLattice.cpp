@@ -661,6 +661,7 @@ void AccLattice::elegantimport(SimToolInstance elegant)
   string tmp;
 
   pos=l=k1=k2=angle=kick=tilt=0.;   // initialize param. values
+  s = 0.;
 
   //get metadata and set circumference
   info.simToolImport(elegant, elegantParamFile, "circumference,pCentral/m_e*c,tune:Qx,tune:Qz");
