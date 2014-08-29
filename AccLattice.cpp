@@ -470,7 +470,7 @@ void AccLattice::setIgnoreList(string ignoreFile)
 // "FamilyMagnets" (Quad,Sext) all of type F, because
 // MAD-X uses different signs of strengths (k,m)
 // ===================================================
-void AccLattice::madximport(SimToolInstance madx)
+void AccLattice::madximport(SimToolInstance &madx)
 {
   if (madx.tool != pal::madx)
     throw libpalError("AccLattice::madximport() is only allowed for SimToolInstance::tool=madx");
@@ -643,7 +643,7 @@ void AccLattice::madximportMisalignments(element_type t, string madxEalignFile)
 // "FamilyMagnets" (Quad,Sext) all of type F, because
 // elegant uses different signs of strengths (k,m)
 // ===================================================
-void AccLattice::elegantimport(SimToolInstance elegant)
+void AccLattice::elegantimport(SimToolInstance &elegant)
 {
   if (elegant.tool != pal::elegant)
     throw libpalError("AccLattice::elegantimport() is only allowed for SimToolInstance::tool=elegant");

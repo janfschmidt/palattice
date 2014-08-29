@@ -78,11 +78,12 @@ public:
   void dismount(double pos);                                          // dismount element at Ref.position pos (if no element at pos: do nothing)
 
   void setIgnoreList(string ignoreFile);                      // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted in this lattice
-  void madximport(SimToolInstance madx);                      // mount elements from MAD-X Lattice (read from twiss-output, m=online: autom. madx run)
+  void simToolImport(SimToolInstance &sim) {if (sim.tool==madx) madximport(sim); else if (sim.tool==elegant) elegantimport(sim);}
+  void madximport(SimToolInstance &madx);                      // mount elements from MAD-X Lattice (read from twiss-output, m=online: autom. madx run)
   void madximport(string madxFile, SimToolMode m=online) {SimToolInstance madx(pal::madx, m, madxFile); madximport(madx);}
   void madximportMisalignments(element_type t, string madxEalignFile);// set misalignments from MAD-X Lattice (read ealign-output)
                                                                       // !! currently only rotation (dpsi) around beam axis (s) is implemented!
-  void elegantimport(SimToolInstance elegant);                // mount elements from elegant Lattice (read from ascii parameter file ".param", m=online: autom. elegant run)
+  void elegantimport(SimToolInstance &elegant);                // mount elements from elegant Lattice (read from ascii parameter file ".param", m=online: autom. elegant run)
   void elegantimport(string elegantFile, SimToolMode m=online) {SimToolInstance e(pal::elegant, m, elegantFile); elegantimport(e);}
   void setELSAoptics(string spurenFolder);                    // change quad&sext strengths to values from "ELSA-Spuren"
   unsigned int setELSACorrectors(ELSASpuren &spuren, unsigned int t);// change corrector pos&strength to values from "ELSA-Spuren" at time t
