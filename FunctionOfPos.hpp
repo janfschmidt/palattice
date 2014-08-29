@@ -34,10 +34,6 @@ protected:
   unsigned int n_turns;                       //number of turns (initialized as 1)
   unsigned int n_samples;                     //number of samples per turn (initialized as zero)
 
-  // returns filename for trajectory files of particle p from madx or elegant at observation point obs:
-  string trajectoryFile(string path, SimTool s, unsigned int obs, unsigned int p) const;
-
-
 
 private:
   unsigned int index(unsigned int i, unsigned int turn) const; //get index for pos[] & value[] from index(1turn) and turn
@@ -91,16 +87,16 @@ public:
   void elsaClosedOrbit(ELSASpuren &spuren, unsigned int t);    //import closed orbit from ELSA measurement at time t/ms
   // trajectory import
   void simToolTrajectory(SimToolInstance &s, unsigned int particle); //import single particle trajectory from madx/elegant tracking "obs"/"watch" files
-  void madxTrajectory(string madxFile, unsigned int particle, SimToolMode m=online) {SimToolInstance mad(pal::madx, m, madxFile); simToolTrajectory(mad,particle);}
+  void madxTrajectory(string madxFile, unsigned int particle, SimToolMode m=online) {SimToolInstance mad(pal::madx, m, madxFile); simToolTrajectory(mad,particle);} //if m=offline, file is only used to get path & output filenames without extension
   void elegantTrajectory(string elegantFile, unsigned int particle, SimToolMode m=online) {SimToolInstance ele(pal::elegant, m, elegantFile); simToolTrajectory(ele,particle);}
 
   // tests
   bool exists(double pos, unsigned int turn=1) const; // is there data at pos?
   bool compatible(FunctionOfPos<T> &other, bool verbose=true) const; // can I add/subract with other? (data at same pos?)
 
-  // output to file
+  // output
   std::string header() const;
-  void out(const char *filename) const;
+  void print(string filename="") const;
 
   // operators
   void operator+=(FunctionOfPos<T> &other);

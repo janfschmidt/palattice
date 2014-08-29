@@ -327,32 +327,37 @@ string FunctionOfPos<T>::header() const
   return "value";
 }
 
-// output to file
+// print FunctionOfPos.  If no filename is given, print to stdout
 template <class T>
-void FunctionOfPos<T>::out(const char *filename) const
+void FunctionOfPos<T>::print(string filename) const
 {
+  stringstream s;
   fstream file;
   const int w = 14;
 
- file.open(filename, ios::out);
- if (!file.is_open()) {
-   cout << "ERROR: FunctionOfPos:out(): Cannot open " << filename << "." << endl;
-   return;
- }
-
- file << info.out("#");
- file <<"#"<<setw(w)<<"pos / m"<<setw(w)<<"posInTurn"<<setw(w)<<"turn"<<"\t"<< this->header() << endl;
- file <<setprecision(3);
+  //write text to s
+ s << info.out("#");
+ s <<"#"<<setw(w)<<"pos / m"<<setw(w)<<"posInTurn"<<setw(w)<<"turn"<<"\t"<< this->header() << endl;
+ s <<setprecision(3);
  
  for (unsigned int i=0; i<size(); i++) {
-   file << resetiosflags(ios::scientific) << setiosflags(ios::fixed);
-   file <<setw(w+1)<< pos[i] <<setw(w)<< getPosInTurn(i) <<setw(w)<< turn_by_index(i);
-   file << resetiosflags(ios::fixed) << setiosflags(ios::scientific);
-   file <<setw(w)<< value[i] << endl;
+   s << resetiosflags(ios::scientific) << setiosflags(ios::fixed);
+   s <<setw(w+1)<< pos[i] <<setw(w)<< getPosInTurn(i) <<setw(w)<< turn_by_index(i);
+   s << resetiosflags(ios::fixed) << setiosflags(ios::scientific);
+   s <<setw(w)<< value[i] << endl;
  }
 
- file.close();
- cout << "* Wrote "<< filename  << endl;
+ //output of s
+ if (filename == "")
+   cout << s.str();
+ else {
+   file.open(filename.c_str(), ios::out);
+   if (!file.is_open())
+     throw libpalFileError(filename);
+   file << s.str();
+   file.close();
+   cout << "* Wrote "<< filename  << endl;
+ }
 }
 
 
@@ -546,20 +551,4 @@ void FunctionOfPos<T>::elsaClosedOrbit(ELSASpuren &spuren, unsigned int t)
   s << "FunctionOfPos<T>::elsaClosedOrbit() is not implemented for data type " << typeid(T).name()
     << ". It is only defined for T=AccPair.";
   throw logic_error(s.str());
-}
-
-
-// returns filename for trajectory files of particle p from madx or elegant at observation point obs
-template <class T>
-string FunctionOfPos<T>::trajectoryFile(string path, SimTool s, unsigned int obs, unsigned int p) const
-{
-  char tmp[512];
-  string out;
-  if (s == madx)
-    sprintf(tmp, "%s/madx.obs%04d.p%04d", path.c_str(), obs, p);
-  else // elegant
-    sprintf(tmp, "%s/elegant.w%03d.p%d", path.c_str(), obs, p);
-  out = tmp;
-
-  return out;
 }

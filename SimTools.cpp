@@ -104,17 +104,23 @@ void SimToolInstance::run()
     replaceInFile("lattice", tmp.str(), ",", runFile);
 
   // set tracking turns in runFile:
-  tmp.str(std::string());
-  tmp << trackingTurns;
-  if (tool== madx)
-    replaceInFile("turns", tmp.str(), ",", runFile);
-  else if (tool== elegant)
-    replaceInFile("n_passes", tmp.str(), ",", runFile);
+  if (trackingTurns != 0) {
+    tmp.str(std::string());
+    tmp << trackingTurns;
+    if (tool== madx)
+      replaceInFile("turns", tmp.str(), ",", runFile);
+    else if (tool== elegant)
+      replaceInFile("n_passes", tmp.str(), ",", runFile);
+  }
   
   //run madx/elegant:
   runcmd << "cd "<< path() << "; ";
   if (tool== madx) {
-    runcmd << "echo "" > madx.observe; "; //avoid fatal error "cannot open input file: madx.observe"
+    //avoid fatal error "cannot open input file: madx.observe"
+    cmd.str(std::string());
+    cmd << "cd "<<path()<<"; echo \"\" > madx.observe";
+    system(cmd.str().c_str());
+    // ---
     runcmd << MADXCOMMAND << " < ";
     cout << "Run MadX 1...";
   }

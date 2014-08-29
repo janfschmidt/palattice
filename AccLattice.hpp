@@ -104,8 +104,8 @@ public:
 
   // output (stdout or file)
   // If no filename is given, print to stdout.
-  void print(const char *filename="");                           // print lattice.
-  void print(element_type _type, const char *filename="") const; // print all elements of one type.
+  void print(string filename="");                           // print lattice.
+  void print(element_type _type, string filename="") const; // print all elements of one type.
   void simToolExport(SimTool tool, string filename="", MadxLatticeType ltype=sequence) const; // print lattice readable by elegant or madx
   void latexexport(string filename="") const;             // print lattice readable by LaTeX (using lattice package by Jan Schmidt <schmidt@physik.uni-bonn.de>)
   // "shortcuts:"

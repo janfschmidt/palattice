@@ -1044,7 +1044,7 @@ string AccLattice::refPos_string() const
 // ----------- output (stdout or file) ----------------------
 
 // print lattice. If no filename is given, print to stdout
-void AccLattice::print(const char *filename)
+void AccLattice::print(string filename)
 {
   const_AccIterator it=elements.begin();
   const int w = 12;
@@ -1069,14 +1069,12 @@ void AccLattice::print(const char *filename)
   }
 
   // output of s
-  if (string(filename) == "") 
+  if (filename == "") 
     cout << s.str();
   else {
-    file.open(filename, ios::out);
-    if (!file.is_open()) {
-      msg << "ERROR: AccLattice::print(): Cannot open " << filename << ".";
-      throw std::runtime_error(msg.str());
-    }
+    file.open(filename.c_str(), ios::out);
+    if (!file.is_open())
+      throw libpalFileError(filename);
     file << s.str();
     file.close();
     cout << "* Wrote " << filename  << endl;
@@ -1086,7 +1084,7 @@ void AccLattice::print(const char *filename)
 
 
 // print all elements of one type If no filename is given, print to stdout
-void AccLattice::print(element_type _type, const char *filename) const
+void AccLattice::print(element_type _type, string filename) const
 {
   const_AccIterator it=firstCIt(_type);
   const int w = 12;
@@ -1105,14 +1103,12 @@ void AccLattice::print(element_type _type, const char *filename) const
   }
 
   // output of s
-  if (string(filename) == "") 
+  if (filename == "") 
     cout << s.str();
   else {
-    file.open(filename, ios::out);
-    if (!file.is_open()) {
-      msg << "ERROR: AccLattice::print(): Cannot open " << filename << ".";
-      throw std::runtime_error(msg.str());
-    }
+    file.open(filename.c_str(), ios::out);
+    if (!file.is_open())
+     throw libpalFileError(filename);
     file << s.str();
     file.close();
     cout << "* Wrote " << filename  << endl;
