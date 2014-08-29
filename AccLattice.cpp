@@ -124,7 +124,10 @@ double AccLattice::locate(double pos, const AccElement *obj, Anchor here) const
 // works for all Reference Anchors (refPos, it->first)
 double AccLattice::locate(const_AccIterator it, Anchor here) const
 {
-  return locate(it->first, it->second, here);
+  if (it == elements.end())
+    return this->circumference();
+  else
+    return locate(it->first, it->second, here);
 }
 
 
