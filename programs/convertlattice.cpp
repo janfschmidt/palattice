@@ -44,8 +44,8 @@ int main (int argc, char *argv[])
   string out = "-";
   bool m,e,l;
   m=e=l=false;
-  pal::simulationTool tool;
-  pal::simToolMode mode = pal::online;
+  pal::SimTool tool;
+  pal::SimToolMode mode = pal::online;
 
   string file;
 

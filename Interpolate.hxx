@@ -168,7 +168,7 @@ template <class T>
 void Interpolate<T>::init()
 {
   if (ready) {
-    cout << "ERROR: Interpolate::init(): Interpolation initialisation called twice. Skip." << endl;
+    cout << "WARNING: Interpolate::init(): Interpolation initialisation called twice. Skip." << endl;
     return;
   }
   if (this->size() < 2) {
@@ -237,9 +237,10 @@ unsigned int Interpolate<T>::size() const
   unsigned int s = _x.size();
 
   if(s != f.size()) {
-    cout << "ERROR: Interpolate::size(): unequal size of x (" << s << ") and f(x) (" << f.size()
-         << ")." << endl;
-    return 0;
+    stringstream msg;
+    msg << "ERROR: Interpolate::size(): unequal size of x (" << s << ") and f(x) (" << f.size()
+         << ").";
+    throw libpalError(msg.str());
   }
   else
     return s;
@@ -286,16 +287,14 @@ void Interpolate<T>::interp_out(double stepwidth, const char *filename)
   fstream file;
   
   if (stepwidth == 0.) {
-    cout << "ERROR: Interpolate<T>::interp_out(): output stepwidth cannot be zero." <<endl;
-    return;
+    throw libpalError("ERROR: Interpolate<T>::interp_out(): output stepwidth cannot be zero.");
   }
   else if (stepwidth < 0.)
     stepwidth = -stepwidth;
  
   file.open(filename, ios::out);
   if (!file.is_open()) {
-    cout << "ERROR: ORBIT::interp_out(): Cannot open " << filename << "." << endl;
-    return;
+    throw libpalFileError(filename);
   }
   
   file <<setw(w)<< "position" <<"\t"<< this->header() << endl;
@@ -318,15 +317,13 @@ void Interpolate<T>::interp_out(double stepwidth, const char *filename)
 template <class T>
 void Interpolate<T>::initThis()
 {
-  cout << "ERROR: Interpolate<>:initThis(): Interpolation is not implemented for this data type." << endl;
-  exit(1);
+  throw libpalError("ERROR: Interpolate<>:initThis(): Interpolation is not implemented for this data type.");
 }
 
 template <class T>
 T Interpolate<T>::interpThis(double xIn)
 {
-  cout << "ERROR: Interpolate<>:interpThis(): Interpolation is not implemented for this data type." << endl;
-  exit(1);
+  throw libpalError("ERROR: Interpolate<>:interpThis(): Interpolation is not implemented for this data type.");
 }
 
 

@@ -79,12 +79,12 @@ AccLattice& AccLattice::operator= (const AccLattice other)
   if (refPos != other.refPos) {
     msg << "ERROR: AccLattice::operator=(): Cannot assign Lattice - different refPos ("
 	<< refPos_string() <<"/"<< other.refPos_string() <<")";
-    throw logic_error(msg.str());
+    throw libpalError(msg.str());
   }
   if (circumference() != other.circumference()) {
     msg << "ERROR: AccLattice::operator=(): Cannot assign Lattice - different circumferences ("
 	<< circumference() <<"/"<< other.circumference() <<")";
-    throw logic_error(msg.str());
+    throw libpalError(msg.str());
   }
 
   for (const_AccIterator it=other.getItBegin(); it!=other.getItEnd(); ++it) {
@@ -353,8 +353,9 @@ void AccLattice::mount(double pos, const AccElement& obj, bool verbose)
   stringstream msg;
   
   if (pos < 0.) {
-    cout << "ERROR: AccLattice::mount(): Position of Lattice elements must be > 0. " << pos << " is not." <<endl;
-    exit(1);
+    stringstream msg;
+    msg << "ERROR: AccLattice::mount(): Position of Lattice elements must be > 0. " << pos << " is not." <<endl;
+    throw libpalError(msg.str());
   }
 
   // empty map (mount first element)
@@ -438,8 +439,7 @@ void AccLattice::setIgnoreList(string ignoreFile)
 
   f.open(ignoreFile.c_str());
   if (!f.is_open()) {
-    cout << "ERROR: AccLattice::setIgnoreList(): Cannot open " << ignoreFile << endl;
-    exit(1);
+    throw libpalFileError(ignoreFile);
   }
 
   //metadata
@@ -687,8 +687,7 @@ void AccLattice::elegantimport(SimToolInstance elegant)
 
   elegantParam.open(elegantParamFile.c_str(), ios::in);
   if (!elegantParam.is_open()) {
-    cout << "ERROR: AccLattice::elegantimport(): Cannot open " << elegantParamFile << endl;
-    exit(1);
+    throw libpalFileError(elegantParamFile);
   }
 
   
@@ -797,7 +796,7 @@ void AccLattice::setELSAoptics(string spurenFolder)
   f_magnets.open(filename, ios::in);
   if (!f_magnets.is_open()) {
     msg << "ERROR: AccLattice::setELSAoptics(): Cannot open " << filename;
-    throw std::runtime_error(msg.str());
+    throw libpalError(msg.str());
   }
   while(!f_magnets.eof()) {
     f_magnets >> tmp;
@@ -813,7 +812,7 @@ void AccLattice::setELSAoptics(string spurenFolder)
       getline(f_magnets, tmp);
     else {
       msg << "ERROR: AccLattice::setELSAoptics(): Unexpected entry in " << filename;
-      throw std::runtime_error(msg.str());
+      throw libpalError(msg.str());
     }
   }
   f_magnets.close();
@@ -864,9 +863,8 @@ unsigned int AccLattice::setELSACorrectors(ELSASpuren &spuren, unsigned int t)
      continue;
    }
    else if (t > spuren.vcorrs[i].time.size()) {
-     cout << spuren.vcorrs[i].time[spuren.vcorrs[i].time.size()-1].ms << endl;
      snprintf(msg, 1024, "ERROR: AccLattice::setELSACorrectors(): No ELSA VC%02d corrector data available for %d ms.\n", i+1, t);
-     throw std::invalid_argument(msg);
+     throw libpalError(msg);
    }
    
    //same corrector in Mad-X and ELSA-Spuren?
@@ -876,7 +874,7 @@ unsigned int AccLattice::setELSACorrectors(ELSASpuren &spuren, unsigned int t)
    if (it->second->name != name1 && it->second->name != name2) {
      strMsg << "ERROR: AccLattice::setELSACorrectors(): Unexpected corrector name. Mad-X lattice does not fit to ELSA." << endl;
      strMsg << "       Mad-X: " <<it->second->name<< " -- expected: " <<name2<< " (" <<name1<< ")" << endl;
-     throw std::runtime_error(strMsg.str());
+     throw libpalError(strMsg.str());
    }
    //...check by position
    diff = spuren.vcorrs[i].pos - locate(it,center);
@@ -922,7 +920,7 @@ void AccLattice::subtractCorrectorStrengths(const AccLattice &other)
   
   if (this->size(corrector) != other.size(corrector)) {
     msg << "ERROR: AccLattice::subtractCorrectorStrengths(): Unequal number of correctors to subtract.";
-    throw std::invalid_argument(msg.str());
+    throw libpalError(msg.str());
   }
   
   otherIt = other.firstCIt(corrector);
@@ -933,13 +931,13 @@ void AccLattice::subtractCorrectorStrengths(const AccLattice &other)
     if (otherIt->second->name != it->second->name) {
       msg << "ERROR: AccLattice::subtractCorrectorStrengths(): Unequal names of correctors to subtract. ("
 	  << it->second->name <<"/"<< otherIt->second->name << ").";
-      throw std::runtime_error(msg.str());
+      throw libpalError(msg.str());
     }
     // check by position
     if (otherIt->first != it->first) {
       msg << "ERROR: AccLattice::subtractCorrectorStrengths(): Unequal positions of correctors to subtract. ("
 	  << it->first <<"/"<< otherIt->first << ").";
-      throw std::runtime_error(msg.str());
+      throw libpalError(msg.str());
     }
 
     // subtract
@@ -966,7 +964,7 @@ void AccLattice::subtractMisalignments(const AccLattice &other)
   
   if (this->size() != other.size()) {
     msg << "ERROR: AccLattice::subtractMissalignments(): Unequal number of elements to subtract.";
-    throw std::invalid_argument(msg.str());
+    throw libpalError(msg.str());
   }
   
   otherIt = other.getItBegin();
@@ -977,13 +975,13 @@ void AccLattice::subtractMisalignments(const AccLattice &other)
     if (otherIt->second->name != it->second->name) {
       msg << "ERROR: AccLattice::subtractMisalignments(): Unequal names of elements to subtract. ("
 	  << it->second->name <<"/"<< otherIt->second->name << ").";
-      throw std::runtime_error(msg.str());
+      throw libpalError(msg.str());
     }
     // check by position
     if (otherIt->first != it->first) {
       msg << "ERROR: AccLattice::subtractMisalignments(): Unequal positions of elements to subtract. ("
 	  << it->first <<"/"<< otherIt->first << ").";
-      throw std::runtime_error(msg.str());
+      throw libpalError(msg.str());
     }
 
     // subtract
@@ -1258,7 +1256,7 @@ void AccLattice::simToolExport(SimTool tool, string filename, MadxLatticeType lt
     file.open(filename.c_str(), ios::out);
     if (!file.is_open()) {
       msg << "ERROR: AccLattice::elegantexport(): Cannot open " << filename << ".";
-      throw std::runtime_error(msg.str());
+      throw libpalError(msg.str());
     }
     file << s.str();
     file.close();
@@ -1320,7 +1318,7 @@ void AccLattice::latexexport(string filename) const
     file.open(filename.c_str(), ios::out);
     if (!file.is_open()) {
       msg << "ERROR: AccLattice::latexexport(): Cannot open " << filename << ".";
-      throw std::runtime_error(msg.str());
+      throw libpalError(msg.str());
     }
     file << s.str();
     file.close();

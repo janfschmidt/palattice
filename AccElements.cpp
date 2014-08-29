@@ -26,7 +26,7 @@ AccElement& AccElement::operator=(const AccElement* other)
   if (type != other->type) {
     msg << "ERROR: AccElement::operator=(): Cannot assign Element of different type ("
 	<< type_string() <<"/"<< other->type_string() <<")";
-    throw logic_error(msg.str());
+    throw libpalError(msg.str());
   }
 
    this->name = other->name;

@@ -41,8 +41,7 @@ void ELSASpuren::import_bpms()
   snprintf(filename, 1024, "%s/bpms_spos.dat", spurenFolder.c_str());
   file.open(filename, ios::in);
   if (!file.is_open()) {
-    printf("ERROR: ELSASpuren::import_bpms(): Cannot open %s\n", filename);
-    exit(1);
+    throw libpalFileError(filename);
   }
   for (i=0; i<NBPMS; i++) {
     file >> bpms[i].pos;
@@ -83,8 +82,7 @@ void ELSASpuren::import_vcorrs()
   snprintf(filename, 1024, "%s/correctors/VCORRS.SPOS", spurenFolder.c_str());
   file.open(filename, ios::in);
   if (!file.is_open()) {
-    printf("ERROR: ELSASpuren::import_vcorrs(): Cannot open %s\n", filename);
-    exit(1);
+    throw libpalFileError(filename);
   }
   for (i=0; i<NVCORRS; i++) {
     file >> tmp >> vcorrs[i].pos;
