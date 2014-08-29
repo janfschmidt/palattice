@@ -22,6 +22,9 @@ sddsprintout $1.param tmp.param -Title='***' -col='(ElementName,ElementParameter
 cat tmp.param >> elegant.param
 rm tmp.param
 
+# ascii twiss file elegant.twi
+sddsprintout $1.twi elegant.twi -Title='***' -width=200 -col='(ElementName,ElementType,s,betax,alphax,psix,etax,etaxp,betay,alphay,psiy)'
+
 # ascii single particle trajectory files ($2=particleID) , e.g. elegant.w02.p1
 # from watch-files:
 numfiles=`ls $1*.w | wc -w`

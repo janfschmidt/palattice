@@ -306,6 +306,7 @@ string Dipole::printSimTool(SimTool t) const
     <<"L="<< length <<", "
     <<"ANGLE="<< strength*length;
   if (t == elegant) {
+    s <<", TILT="<< dpsi;
     s <<", e1=0, e2=0, "   //not implemented
       <<"synch_rad=1, isr=1, use_rad_dist=0";
   }
@@ -327,8 +328,10 @@ string Corrector::printSimTool(SimTool t) const
   else if (plane == H)
     s << name <<" : H"<< nameInTool <<", ";
   s <<"L="<< length <<", "
-    <<"KICK="<< strength
-    <<";"<< endl;
+    <<"KICK="<< strength;
+  if (t == elegant && dpsi!=0.)
+    s <<", TILT="<< dpsi;
+  s  <<";"<< endl;
   return s.str();
 }
 
@@ -346,8 +349,10 @@ string RFdipole::printSimTool(SimTool t) const // same as corrector
   else if (plane == H)
     s << name <<" : H"<< nameInTool <<", ";
   s <<"L="<< length <<", "
-    <<"KICK="<< strength
-    <<"; ! This is a RFDipole in pole/Bsupply"<< endl;
+    <<"KICK="<< strength;
+  if (t == elegant && dpsi!=0.)
+    s <<", TILT="<< dpsi;
+  s <<"; ! This is a RFDipole in pole/Bsupply"<< endl;
   return s.str();
 }
 
@@ -367,6 +372,7 @@ string Quadrupole::printSimTool(SimTool t) const
   else if (family == D)
     s  <<"K1="<< -strength;
   if (t == elegant) {
+    s <<", TILT=" <<dpsi;
     s <<", fringe_type=fixed-strength, ffringe=0";
   }
   s <<";"<< endl;
@@ -388,6 +394,8 @@ string Sextupole::printSimTool(SimTool t) const
     s  <<"K2="<< strength;
   else if (family == D)
     s  <<"K2="<< -strength;
+  if (t == elegant && dpsi!=0.)
+    s <<", TILT="<< dpsi;
   s <<";"<< endl;
   return s.str();
 }

@@ -22,7 +22,7 @@ void usage()
   cout << "convertlattice -m [FILE] [other options]" << endl
        << "convertlattice -e [FILE] [other options]" << endl;
   cout << "[FILE] is:" << endl
-       << "* a file that can be executed with madx or elegant" << endl
+       << "* a lattice file for madx (including BEAM!) or elegant" << endl
        << "* or a madx/elegant output file, if option -o is used (see below)" << endl;
   cout << "options:" << endl
        << "* -m [FILE] input of a MadX file [FILE] => Elegant output (default: convert_[FILE].lte)" << endl
