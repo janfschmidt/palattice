@@ -403,7 +403,7 @@ bool FunctionOfPos<T>::compatible(FunctionOfPos<T> &o, bool verbose) const
 // import a column of data from a madx/elegant file.
 // valColumn usually has 1 entry, 2 for AccPair(x,z), 3 for AccTriple(x,z,s)
 template <class T>
-void FunctionOfPos<T>::readSimToolColumn(SimToolInstance s, string file, string posColumn, vector<string> valColumn)
+void FunctionOfPos<T>::readSimToolColumn(SimToolInstance &s, string file, string posColumn, vector<string> valColumn)
 {
   if (valColumn.size() != 1) {
     stringstream msg;
@@ -521,7 +521,7 @@ vector<double> FunctionOfPos<T>::getVector(AccAxis axis) const
 
 //orbit import is defined only for T=AccPair (-> template specialization)
 template <class T>
-void FunctionOfPos<T>::simToolClosedOrbit(SimToolInstance sim)
+void FunctionOfPos<T>::simToolClosedOrbit(SimToolInstance &sim)
 {
   stringstream s;
   s << "FunctionOfPos<T>::simToolClosedOrbit() is not implemented for data type " << typeid(T).name()
@@ -530,23 +530,14 @@ void FunctionOfPos<T>::simToolClosedOrbit(SimToolInstance sim)
 }
 
 template <class T>
-void FunctionOfPos<T>::madxTrajectory(string path, unsigned int particle)
+void FunctionOfPos<T>::simToolTrajectory(SimToolInstance &sim, unsigned int particle)
 {
   stringstream s;
-  s << "FunctionOfPos<T>::madxTrajectory() is not implemented for data type " << typeid(T).name()
+  s << "FunctionOfPos<T>::simToolTrajectory() is not implemented for data type " << typeid(T).name()
     << ". It is only defined for T=AccPair.";
   throw logic_error(s.str());
 }
 
-
-template <class T>
-void FunctionOfPos<T>::elegantTrajectory(string path, unsigned int particle)
-{
-  stringstream s;
-  s << "FunctionOfPos<T>::elegantTrajectory() is not implemented for data type " << typeid(T).name()
-    << ". It is only defined for T=AccPair.";
-  throw logic_error(s.str());
-}
 
 template <class T>
 void FunctionOfPos<T>::elsaClosedOrbit(ELSASpuren &spuren, unsigned int t)

@@ -147,8 +147,10 @@ void SimToolInstance::run()
 
 
 
-
-SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKeys)
+// read specified columns from a madx/elegant table format output file
+// executes madx/elegant if mode=online and not yet executed
+// if maxRows is given (!=0) reading is stopped after [maxRows] rows.
+SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKeys, unsigned int maxRows)
 {
   SimToolTable table;
 
@@ -230,7 +232,11 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
 
 
   //read data:
-  
+
+  bool stop=false;
+  if (maxRows!=0) stop=true;
+  unsigned int nLines=0;
+
   //iterate lines
   while (!tabFile.eof()) {
     getline(tabFile, tmp);
@@ -245,7 +251,44 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
       if (tabFile.eof()) break;
       table.push_back(it->second, tmp);
     }//iterate requested columns
+    nLines++;
+    if (stop && nLines == maxRows)
+      break;
   }//iterate lines
   
-    return table;
+  return table;
+}
+
+
+
+//specialization for string parameter -> accept space in parameter
+template<>
+string SimToolInstance::readParameter(string file, string label)
+{
+  fstream f;
+  string tmp;
+  string val;
+
+  f.open(file.c_str(), ios::in);
+  if (!f.is_open())
+    throw libpalFileError(file);
+
+  while(!f.eof()) {
+    f >> tmp;
+    if (tmp == label) {
+      if (tool==madx) f >> tmp; //skip type/length info column
+      getline(f, val);
+      //remove leading space in val
+      string::size_type newStart = val.find_first_not_of(" ");
+      if (newStart != string::npos)
+	val = val.substr(newStart);
+	return val;
+    }
+    else if ((tool==madx && tmp=="*") || (tool==elegant && tmp=="***"))
+      break;
+  }
+  stringstream msg;
+  msg << "ERROR: pal::SimToolInstance::readParameter(): No parameter label "
+      << label << "in " << file;
+  throw libpalError(msg.str());
 }

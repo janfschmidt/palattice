@@ -29,95 +29,28 @@ void Metadata::operator+=(Metadata &other)
 }
 
 
-/* add metadata from madx-outputfile. returns number of read values */
-int Metadata::madximport(string madxLabels, string madxfile)
+
+//add metadata from parameters in madx/elegant file
+void Metadata::simToolImport(SimToolInstance &sim, string file, string labels)
 {
-  unsigned int i, n=0;
-  unsigned int newStart;
-  string tmp, tmpEntry;
-  fstream madx;
+  add("Imported from", sim.tool_string());
+  add("Lattice Source file", sim.lattice());
+
+  //read labels
+  string tmp;
   vector<string> tmpLabel;
-
-  madx.open(madxfile.c_str(), ios::in);
-  if (!madx.is_open()) {
-    cout << "ERROR: Metadata::madximport(): Cannot open " << madxfile << endl;
-    return -1;
-  }
-
-  add("Imported from", "MAD-X");
-  add("Lattice Source file", madxfile);
-
-  //read Labels from madxLabels
-  istringstream s(madxLabels);
+  istringstream s(labels);
   while(  std::getline(s, tmp, ',') ) {
     tmpLabel.push_back(tmp);
   }
 
-  while(!madx.eof()) {
-    madx >> tmp;
-    for (i=0; i<tmpLabel.size(); i++) {
-      if(tmp==tmpLabel[i]) {
-	madx >> tmp;
-	getline(madx, tmpEntry);
-	//remove leading space in tmpEntry
-	newStart = tmpEntry.find_first_not_of(" ");
-	if (newStart != string::npos)
-	  tmpEntry = tmpEntry.substr(newStart);	
-	//add to metadata
-	add(tmpLabel[i],tmpEntry);
-	n++;
-      }
-    }
+  for (unsigned int i=0; i<tmpLabel.size(); i++) {
+    tmp = sim.readParameter<string>(file, tmpLabel[i]);
+    add(tmpLabel[i], tmp);
   }
-
-  madx.close();
-  return n;
 }
 
 
-
-//  add metadata from elegant .param ascii file (written with subprocess command).
-// returns number of read values
-int Metadata::elegantimport(string elegantLabels, string elegantfile)
-{
-  unsigned int i, n=0;
-  string tmp, tmpEntry;
-  fstream elegant;
-  vector<string> tmpLabel;
-
-  elegant.open(elegantfile.c_str(), ios::in);
-  if (!elegant.is_open()) {
-    cout << "ERROR: Metadata::elegantimport(): Cannot open " << elegantfile << endl;
-    return -1;
-  }
-
-  add("Imported from", "Elegant");
-  add("Lattice Source file", elegantfile);
-
- //read Labels from madxLabels
-  istringstream s(elegantLabels);
-  while(  std::getline(s, tmp, ',') ) {
-    tmpLabel.push_back(tmp);
-  }
-
-  //read corresponding entries 
-  while(!elegant.eof()) {
-    elegant >> tmp;
-    for (i=0; i<tmpLabel.size(); i++) {
-      if(tmp==tmpLabel[i]) {
-	elegant >> tmpEntry;
-	//add to metadata
-	label.push_back(tmpLabel[i]);
-	entry.push_back(tmpEntry);
-	n++;
-      }
-    }
-    if (tmp == "***") break; //end of header
-  }
-
-  elegant.close();
-  return n;
-}
 
 
 // add an entry. if label already exists, update entry

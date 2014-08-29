@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include "SimTools.hpp"
 #include "libpalGitversion.hpp"
 
 using namespace std;
@@ -20,8 +21,9 @@ public:
   ~Metadata() {}
 
   void add(string inLabel, string inEntry);         //add an entry. if label already exists, update entry
-  int madximport(string madxLabels, string madxfile);
-  int elegantimport(string elegantLabels, string elegantfile);
+  void simToolImport(SimToolInstance &sim, string file, string labels);
+  void madximport(string madxFile, string labels, SimToolMode m=online) {SimToolInstance mad(pal::madx,m,madxFile); simToolImport(mad,madxFile,labels);}
+  void elegantimport(string eleFile, string labels, SimToolMode m=online) {SimToolInstance ele(pal::elegant,m,eleFile); simToolImport(ele,eleFile,labels);}
 
   void operator+=(Metadata &other);       //add other Metadata, without first 2 entries ("default" metadata)
 

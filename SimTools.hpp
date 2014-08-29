@@ -3,6 +3,7 @@
 
 #include <string>
 #include <sstream>
+#include <fstream>
 #include <vector>
 #include <map>
 #include "types.hpp"
@@ -28,7 +29,7 @@ namespace pal
     unsigned int rows() const {return table.begin()->second.size();}
     unsigned int columns() const {return table.size();}
 
-    //short forms: getd = get<double> and gets = get<string>
+    //short forms: getf = get<double> and gets = get<string>
     double getd(string key, unsigned int index) {return get<double>(key,index);}
     string gets(string key, unsigned int index) {return get<string>(key,index);}
   };
@@ -57,9 +58,11 @@ namespace pal
 
     void run();
     unsigned int turns() const {return trackingTurns;}
-    void setTurns(unsigned int t) {trackingTurns=t; executed=false;}
+    void setTurns(unsigned int t) {trackingTurns=t; executed=false;}  // if turns!=0 (default) single particle tracking is performed while madx/elegant run
+    SimToolTable readTable(string file, vector<string> columnKeys, unsigned int maxRows=0); // read specified columns from a madx/elegant table format output file (reading stopped after [maxRows] rows, if !=0)
+    template<class T> T readParameter(string file, string label); // read specified parameter from file header
+
     string tool_string() const {if (tool==madx) return "Mad-X"; else if (tool==elegant) return "Elegant"; else return "";}
-    SimToolTable readTable(string file, vector<string> columnKeys);
 
     //filenames
     string inFile() const {return _path+file;} //mode=online: latticeInput, mode=offline: SimTool Output
@@ -73,8 +76,15 @@ namespace pal
 
     bool runDone() const {return executed;}
   };
+
+
+//SimToolInstance template function specialization
+template<> string SimToolInstance::readParameter(string file, string label);
+
   
 } //namespace pal
+
+
 
 
 
@@ -93,6 +103,34 @@ T pal::SimToolTable::get(string key, unsigned int index)
   T value;
   s >> value;
   return value;
+}
+
+
+//SimToolInstance template function implementation:
+template<class T>
+T pal::SimToolInstance::readParameter(string file, string label)
+{
+  fstream f;
+  string tmp;
+  T val;
+
+  f.open(file.c_str(), ios::in);
+  if (!f.is_open())
+    throw libpalFileError(file);
+
+  while(!f.eof()) {
+    f >> tmp;
+    if (tmp == label) {
+      f >> val;
+      return val;
+    }
+    else if ((tool==madx && tmp=="*") || (tool==elegant && tmp=="***"))
+      break;
+  }
+  stringstream msg;
+  msg << "ERROR: pal::SimToolInstance::readParameter(): No parameter label "
+      << label << "in " << file;
+  throw libpalError(msg.str());
 }
 
 
