@@ -61,7 +61,7 @@
 
 &run_control
 	n_steps = 1,
-	n_passes = 1,             ! number of turns
+	n_passes = 0,             ! number of turns
 	bunch_frequency = 0,
 	reset_rf_for_each_step = 0, ! If 1, time reference is discarded after each bunch
 	first_is_fiducial = 0,      ! 1. bunch is taken to establish fiducial phases and momentum profile
@@ -127,7 +127,7 @@
 ! TRACKING
 ! -------------------------------------------------
 &bunched_beam
-       bunch = "%s.bun",
+!       bunch = "%s.bun",
        sigma_dp = 0.0005,    ! "Energiebreite"
        sigma_s = 0.05,        ! "Bunch Länge"
        use_twiss_command_values = 1,
