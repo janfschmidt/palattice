@@ -14,6 +14,7 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_spline.h>
 #include "types.hpp"
+#include "Metadata.hpp"
 
 namespace pal
 {
@@ -42,6 +43,8 @@ private:
 
 
 public:
+  Metadata info;
+
   // ! user must provide appropriate _x and f(x): !
   // !  - _x[i] corresponding to f(_x)[i]          !
   // !  - sorted by _x, increasing                !
@@ -68,7 +71,7 @@ public:
 
   // output
   virtual std::string header() const;
-  void interp_out(double stepwidth, std::string filename);
+  void interp_out(double stepwidth, std::string filename="");
 };
 
 

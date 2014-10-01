@@ -19,7 +19,7 @@ programs:
 
 Spectrum.o: Spectrum.cpp Spectrum.hpp config.hpp
 	$(CC) $(ccflags) -c $<
-Interpolate.o: Interpolate.cpp Interpolate.hpp Interpolate.hxx types.hpp
+Interpolate.o: Interpolate.cpp Interpolate.hpp Interpolate.hxx types.hpp Metadata.hpp
 	$(CC) $(ccflags) -c $<
 FunctionOfPos.o: FunctionOfPos.cpp FunctionOfPos.hpp FunctionOfPos.hxx Interpolate.hpp Interpolate.hxx Spectrum.hpp ELSASpuren.hpp types.hpp config.hpp SimTools.hpp
 	$(CC) $(ccflags) -c $<

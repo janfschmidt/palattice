@@ -283,8 +283,9 @@ double Interpolate<T>::interpRange() const
 template <class T>
 void Interpolate<T>::interp_out(double stepwidth, string filename)
 {
-  int w=12;
+  stringstream s;
   fstream file;
+  const int w = 14;
   
   if (stepwidth == 0.) {
     throw libpalError("ERROR: Interpolate<T>::interp_out(): output stepwidth cannot be zero.");
@@ -292,21 +293,33 @@ void Interpolate<T>::interp_out(double stepwidth, string filename)
   else if (stepwidth < 0.)
     stepwidth = -stepwidth;
  
-  file.open(filename.c_str(), ios::out);
-  if (!file.is_open()) {
-    throw libpalFileError(filename);
-  }
-  
-  file <<setw(w)<< "position" <<"\t"<< this->header() << endl;
-  file <<setiosflags(ios::fixed)<<showpoint<<setprecision(6);
+  //write text to s
+  s << info.out("#");
+  s <<"#"<<setw(w)<< "position" <<"\t\t"<< this->header() << endl;
+  s <<setprecision(3);
   if (size() > 0) {
-    for (double s=interpMin(); s<=interpMax(); s+=stepwidth) {
-      file <<setw(w)<< s <<setw(w)<< this->interp(s)<< endl;
+    double start;
+    if (interpMin() < 0.) start = 0.;
+    else start = interpMin();
+    for (double pos=start; pos<=interpMax(); pos+=stepwidth) {
+      s << resetiosflags(ios::scientific) << setiosflags(ios::fixed);
+      s <<setw(w+1)<< pos;
+      s << resetiosflags(ios::fixed) << setiosflags(ios::scientific);
+      s <<setw(w)<< this->interp(pos)<< endl;
     }
   }
 
-  file.close();
-  cout << "* Wrote " << filename  << endl;
+  //output of s
+  if (filename == "")
+    cout << s.str();
+  else {
+    file.open(filename.c_str(), ios::out);
+    if (!file.is_open())
+      throw libpalFileError(filename);
+    file << s.str();
+    file.close();
+    cout << "* Wrote "<< filename  << endl;
+  }
 }
 
 

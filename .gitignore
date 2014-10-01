@@ -6,3 +6,5 @@
 *Gitversion*.hpp
 simToolPath.hpp
 programs/convertlattice
+programs/interptwiss
+doc/*

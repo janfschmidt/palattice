@@ -343,7 +343,7 @@ void FunctionOfPos<T>::print(string filename) const
   const int w = 14;
 
   //write text to s
- s << info.out("#");
+ s << this->info.out("#");
  s <<"#"<<setw(w)<<"pos / m"<<setw(w)<<"posInTurn"<<setw(w)<<"turn"<<"\t"<< this->header() << endl;
  s <<setprecision(3);
  
@@ -366,7 +366,6 @@ void FunctionOfPos<T>::print(string filename) const
    cout << "* Wrote "<< filename  << endl;
  }
 }
-
 
 
 // test for existence of data
@@ -440,9 +439,9 @@ void FunctionOfPos<T>::readSimToolColumn(SimToolInstance &s, string file, string
   }
 
   //metadata
-  info.simToolImport(s);
-  info.add("Data Source file", file);
-  info.add("read Parameter", valColumn[0]);
+  this->info.simToolImport(s);
+  this->info.add("Data Source file", file);
+  this->info.add("read Parameter", valColumn[0]);
   this->headerString = valColumn[0];
 
 }
