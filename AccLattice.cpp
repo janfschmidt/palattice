@@ -478,7 +478,7 @@ void AccLattice::madximport(SimToolInstance &madx)
   string madxTwissFile=madx.lattice();
   
   //get metadata and set circumference
-  info.simToolImport(madx, madxTwissFile, "TITLE,LENGTH,ORIGIN,PARTICLE");
+  info.simToolImport(madx);
   circ = strtod(info.getbyLabel("LENGTH").c_str(), NULL);
   if (circ == 0) {
     stringstream msg;
@@ -667,7 +667,7 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
   s = 0.;
 
   //get metadata and set circumference
-  info.simToolImport(elegant, elegantParamFile, "circumference,pCentral/m_e*c,tune:Qx,tune:Qz");
+  info.simToolImport(elegant);
   circ = strtod(info.getbyLabel("circumference").c_str(), NULL);
   if (circ == 0) {
     stringstream msg;

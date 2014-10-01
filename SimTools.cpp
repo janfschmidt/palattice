@@ -275,6 +275,10 @@ string SimToolInstance::readParameter(string file, string label)
   string tmp;
   string val;
 
+  // run?
+  if (!executed && mode==online)
+    this->run();
+
   f.open(file.c_str(), ios::in);
   if (!f.is_open())
     throw libpalFileError(file);
@@ -297,4 +301,35 @@ string SimToolInstance::readParameter(string file, string label)
   msg << "ERROR: pal::SimToolInstance::readParameter(): No parameter label "
       << label << "in " << file;
   throw libpalError(msg.str());
+}
+
+
+
+// readParameter() implementations for some parameters (labels):
+double SimToolInstance::readCircumference()
+{
+  string label;
+  if (tool==madx)
+    label = "LENGTH";
+  else if (tool==elegant)
+    label = "circumference";
+  double c = this->readParameter<double>(this->lattice(), label);
+  return c;
+}
+
+AccPair SimToolInstance::readTune()
+{
+  AccPair q;
+  string xLabel, zLabel;
+  if (tool==madx) {
+    xLabel = "Q1";
+    zLabel = "Q2";
+  }
+  else if (tool==elegant) {
+    xLabel = "tune:Qx";
+    zLabel = "tune:Qz";
+  }
+  q.x = readParameter<double>(lattice(), xLabel);
+  q.z = readParameter<double>(lattice(), zLabel);
+  return q;
 }

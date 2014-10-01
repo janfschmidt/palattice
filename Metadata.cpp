@@ -36,7 +36,17 @@ void Metadata::simToolImport(SimToolInstance &sim, string file, string labels)
   add("Imported from", sim.tool_string());
   add("Lattice Source file", sim.lattice());
 
-  //read labels
+  if (file == "default")
+    file = sim.lattice();
+
+  if (labels == "default") {
+    if (sim.tool==madx)
+      labels = "TITLE,LENGTH,ORIGIN,PARTICLE";
+    else if (sim.tool==elegant)
+      labels = "circumference,pCentral/m_e*c,tune:Qx,tune:Qz";
+  }
+
+  //parse labels from input string
   string tmp;
   vector<string> tmpLabel;
   istringstream s(labels);
@@ -44,6 +54,7 @@ void Metadata::simToolImport(SimToolInstance &sim, string file, string labels)
     tmpLabel.push_back(tmp);
   }
 
+  //read parameters from file
   for (unsigned int i=0; i<tmpLabel.size(); i++) {
     tmp = sim.readParameter<string>(file, tmpLabel[i]);
     add(tmpLabel[i], tmp);

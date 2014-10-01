@@ -18,19 +18,31 @@
 using namespace std;
 using namespace pal;
 
-
-// constructor (set circumference[default 164.4] & interpolation)
 template <class T>
-FunctionOfPos<T>::FunctionOfPos(double circIn, const gsl_interp_type *t, double periodIn)
-  : Interpolate<T>::Interpolate(t,periodIn), pos(this->_x), value(this->f), n_turns(1), n_samples(0), circ(circIn)
+void FunctionOfPos<T>::circCheck()
 {
+  if (this->circ <= 0.) {
+    stringstream msg;
+    msg << "FunctionOfPos: circumference (" << this->circ << ") must be positive.";
+    throw libpalError(msg.str());
+  }
+}
+
+// constructor (set circumference & interpolation)
+template <class T>
+FunctionOfPos<T>::FunctionOfPos(double circIn, const gsl_interp_type *t)
+  : Interpolate<T>::Interpolate(t,circIn), pos(this->_x), value(this->f), n_turns(1), n_samples(0), circ(circIn)
+{
+  circCheck();
 }
 
 // constructor to additionally set EQUIDISTANT positions with given stepwidth for given #turns (increase speed for set())
 template <class T>
-FunctionOfPos<T>::FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, const gsl_interp_type *t, double periodIn)
-  : Interpolate<T>::Interpolate(t,periodIn,samplesIn*turnsIn), pos(this->_x), value(this->f), n_turns(turnsIn), n_samples(samplesIn), circ(circIn)
+FunctionOfPos<T>::FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, const gsl_interp_type *t)
+  : Interpolate<T>::Interpolate(t,circIn,samplesIn*turnsIn), pos(this->_x), value(this->f), n_turns(turnsIn), n_samples(samplesIn), circ(circIn)
 {
+  circCheck();
+
   //initialize positions
   double stepwidth = circ/samples();
   for (unsigned int i=0; i<size(); i++) {
@@ -42,9 +54,11 @@ FunctionOfPos<T>::FunctionOfPos(double circIn, unsigned int samplesIn, unsigned 
 
 // constructor to set positions by vector
 template <class T>
-FunctionOfPos<T>::FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, vector<double> posIn, const gsl_interp_type *t, double periodIn)
-  : Interpolate<T>::Interpolate(t,periodIn, samplesIn*turnsIn), pos(this->_x), value(this->f), n_turns(turnsIn), n_samples(samplesIn), circ(circIn)
+FunctionOfPos<T>::FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, vector<double> posIn, const gsl_interp_type *t)
+  : Interpolate<T>::Interpolate(t,circIn, samplesIn*turnsIn), pos(this->_x), value(this->f), n_turns(turnsIn), n_samples(samplesIn), circ(circIn)
 {
+  circCheck();
+
   if (n_samples != posIn.size()) {
     stringstream msg;
     msg << "Given number of samples (" <<n_samples<< ") does not match number of given positions (" <<posIn.size()<< ")";
@@ -320,13 +334,6 @@ void FunctionOfPos<T>::hide_last_turn()
 
 
 
-// headline entry for "value" in output file (specialization for AccPair & AccTriple)
-template <class T>
-string FunctionOfPos<T>::header() const
-{
-  return "value";
-}
-
 // print FunctionOfPos.  If no filename is given, print to stdout
 template <class T>
 void FunctionOfPos<T>::print(string filename) const
@@ -423,8 +430,21 @@ void FunctionOfPos<T>::readSimToolColumn(SimToolInstance &s, string file, string
 
   SimToolTable tab = s.readTable(file, columns);
 
-  for (unsigned int i=0; i<tab.rows(); i++)
-    this->set(tab.get<T>(valColumn[0],i), tab.get<double>(posColumn,i));
+  for (unsigned int i=0; i<tab.rows(); i++) {
+    double pos = tab.get<double>(posColumn,i);
+    // values at pos=circ are ignored to avoid #turns problem
+    // see simToolTrajectory() for another solution
+    if (fabs(pos-circ) <= ZERO_DISTANCE) continue;
+
+    this->set(tab.get<T>(valColumn[0],i), pos);
+  }
+
+  //metadata
+  info.simToolImport(s);
+  info.add("Data Source file", file);
+  info.add("read Parameter", valColumn[0]);
+  this->headerString = valColumn[0];
+
 }
 
 

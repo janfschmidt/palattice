@@ -36,18 +36,20 @@ protected:
 
 
 private:
+  //string headerString;
   unsigned int index(unsigned int i, unsigned int turn) const; //get index for pos[] & value[] from index(1turn) and turn
   unsigned int index(double pos, unsigned int turn) const; //get index for pos[] & value[] from pos(1turn) and turn
   void hide_last_turn(); // reduce turns by one (only do this, if you need pos=0. value to avoid extrapolation for non-periodic function!)
+  void circCheck();
 
 
 public:
   const double circ;                          //circumference of accelerator
   Metadata info;
 
-  FunctionOfPos(double circIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
-  FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
-  FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, vector<double> posIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
+  FunctionOfPos(double circIn, const gsl_interp_type *t=gsl_interp_akima);
+  FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, const gsl_interp_type *t=gsl_interp_akima);
+  FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, vector<double> posIn, const gsl_interp_type *t=gsl_interp_akima);
   ~FunctionOfPos() {}
 
   unsigned int turns() const {return n_turns;}
@@ -95,7 +97,6 @@ public:
   bool compatible(FunctionOfPos<T> &other, bool verbose=true) const; // can I add/subract with other? (data at same pos?)
 
   // output
-  std::string header() const;
   void print(string filename="") const;
 
   // operators
@@ -119,8 +120,6 @@ template<> void FunctionOfPos<AccTriple>::readSimToolColumn(SimToolInstance &s, 
 template<> void FunctionOfPos<AccPair>::simToolClosedOrbit(SimToolInstance &s);
   template<> void FunctionOfPos<AccPair>::simToolTrajectory(SimToolInstance &s, unsigned int particle);
 template<> void FunctionOfPos<AccPair>::elsaClosedOrbit(ELSASpuren &spuren, unsigned int t);
-template<> string FunctionOfPos<AccPair>::header() const;
-template<> string FunctionOfPos<AccTriple>::header() const;
 
 
 string axis_string(AccAxis a);

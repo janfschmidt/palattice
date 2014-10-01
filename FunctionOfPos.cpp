@@ -15,7 +15,8 @@ using namespace std;
 using namespace pal;
 
 //AccAxis string output
-string pal::axis_string(AccAxis a) {
+string pal::axis_string(AccAxis a)
+{
   switch (a) {
   case x:
     return "horizontal";
@@ -26,7 +27,6 @@ string pal::axis_string(AccAxis a) {
   }
   return "Please implement this AccAxis in axis_string() in types.hpp.";
 }
-
 
 
 // =========== template specialization ============
@@ -131,10 +131,20 @@ void FunctionOfPos<AccPair>::readSimToolColumn(SimToolInstance &s, string file, 
   AccPair pair;
 
   for (unsigned int i=0; i<tab.rows(); i++) {
+    double pos = tab.get<double>(posColumn,i);
+    // values at pos=circ are ignored to avoid #turns problem
+    // see simToolTrajectory() for another solution
+    if (fabs(pos-circ) <= ZERO_DISTANCE) continue;
+
     pair.x = tab.getd(valColumn[0],i);
     pair.z = tab.getd(valColumn[1],i);
-    this->set(pair, tab.getd(posColumn,i));
+    this->set(pair, pos);
   }
+
+ //metadata
+  info.simToolImport(s);
+  info.add("Data Source file", file);
+  info.add("read Parameters", valColumn[0]+", "+valColumn[1]);
 }
 template <>
 void FunctionOfPos<AccTriple>::readSimToolColumn(SimToolInstance &s, string file, string posColumn, vector<string> valColumn)
@@ -156,11 +166,21 @@ void FunctionOfPos<AccTriple>::readSimToolColumn(SimToolInstance &s, string file
   AccTriple triple;
 
   for (unsigned int i=0; i<tab.rows(); i++) {
+    double pos = tab.get<double>(posColumn,i);
+    // values at pos=circ are ignored to avoid #turns problem
+    // see simToolTrajectory() for another solution
+    if (fabs(pos-circ) <= ZERO_DISTANCE) continue;
+
     triple.x = tab.getd(valColumn[0],i);
     triple.z = tab.getd(valColumn[1],i);
     triple.s = tab.getd(valColumn[2],i);
-    this->set(triple, tab.getd(posColumn,i));
+    this->set(triple, pos);
   }
+
+ //metadata
+  info.simToolImport(s);
+  info.add("Data Source file", file);
+  info.add("read Parameters", valColumn[0]+", "+valColumn[1]+", "+valColumn[2]);
 }
 
 
@@ -417,18 +437,6 @@ void FunctionOfPos<AccPair>::elsaClosedOrbit(ELSASpuren &spuren, unsigned int t)
 
 
 
-
-// headline entry for "value" in output file
-template <>
-string FunctionOfPos<AccPair>::header() const
-{
-  return this->value[0].header();
-}
-template <>
-string FunctionOfPos<AccTriple>::header() const
-{
-  return this->value[0].header();
-}
 
 
 

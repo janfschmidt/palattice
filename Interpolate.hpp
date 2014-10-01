@@ -24,6 +24,7 @@ class Interpolate {
 protected:
   std::vector<double> _x;      // _x data
   std::vector<T> f;           // f(_x) data
+  std::string headerString;
 
 private:
   const gsl_interp_type *type;  // type of interpolation used (see GSL manual)
@@ -67,7 +68,7 @@ public:
 
   // output
   virtual std::string header() const;
-  void interp_out(double stepwidth, const char *filename);
+  void interp_out(double stepwidth, std::string filename);
 };
 
 

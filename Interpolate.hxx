@@ -20,7 +20,7 @@ using namespace pal;
 // !  - sorted by _x, increasing                !
 template <class T>
 Interpolate<T>::Interpolate(const gsl_interp_type *t, double periodIn, unsigned int sizeIn)
-  : _x(sizeIn), f(sizeIn), type(t), period(periodIn), ready(false)
+  : _x(sizeIn), f(sizeIn), headerString("value"), type(t), period(periodIn), ready(false)
 {
   acc = gsl_interp_accel_alloc ();
 
@@ -35,7 +35,7 @@ Interpolate<T>::Interpolate(const gsl_interp_type *t, double periodIn, unsigned 
 
 template <class T>
 Interpolate<T>::Interpolate(vector<double> xIn, vector<T> fIn, const gsl_interp_type *t, double periodIn)
-  : _x(xIn), f(fIn), type(t), period(periodIn), ready(false)
+  : _x(xIn), f(fIn), headerString("value"), type(t), period(periodIn), ready(false), headerString("value")
 {
   acc = gsl_interp_accel_alloc ();
 
@@ -52,7 +52,7 @@ Interpolate<T>::Interpolate(vector<double> xIn, vector<T> fIn, const gsl_interp_
 // copy constructor
 template <class T>
 Interpolate<T>::Interpolate(const Interpolate &other)
-  : _x(other._x), f(other.f), type(other.type), period(other.period), ready(false)
+  : _x(other._x), f(other.f), headerString(other.headerString), type(other.type), period(other.period), ready(false), headerString("value")
 {
   // by setting ready=false spline and acc are initialized again before beeing used
 }
@@ -281,7 +281,7 @@ double Interpolate<T>::interpRange() const
 
 // output of interpolated f(_x) to file
 template <class T>
-void Interpolate<T>::interp_out(double stepwidth, const char *filename)
+void Interpolate<T>::interp_out(double stepwidth, string filename)
 {
   int w=12;
   fstream file;
@@ -292,7 +292,7 @@ void Interpolate<T>::interp_out(double stepwidth, const char *filename)
   else if (stepwidth < 0.)
     stepwidth = -stepwidth;
  
-  file.open(filename, ios::out);
+  file.open(filename.c_str(), ios::out);
   if (!file.is_open()) {
     throw libpalFileError(filename);
   }
@@ -332,5 +332,5 @@ T Interpolate<T>::interpThis(double xIn)
 template <class T>
 string Interpolate<T>::header() const
 {
-  return "value";
+  return headerString;
 }

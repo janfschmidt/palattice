@@ -62,6 +62,10 @@ namespace pal
     SimToolTable readTable(string file, vector<string> columnKeys, unsigned int maxRows=0); // read specified columns from a madx/elegant table format output file (reading stopped after [maxRows] rows, if !=0)
     template<class T> T readParameter(string file, string label); // read specified parameter from file header
 
+    // readParameter() implementations for some parameters (labels):
+    double readCircumference();
+    AccPair readTune();
+
     string tool_string() const {if (tool==madx) return "Mad-X"; else if (tool==elegant) return "Elegant"; else return "";}
 
     //filenames
@@ -114,6 +118,10 @@ T pal::SimToolInstance::readParameter(string file, string label)
   string tmp;
   T val;
 
+  // run?
+  if (!executed && mode==online)
+    this->run();
+
   f.open(file.c_str(), ios::in);
   if (!f.is_open())
     throw libpalFileError(file);
@@ -121,6 +129,7 @@ T pal::SimToolInstance::readParameter(string file, string label)
   while(!f.eof()) {
     f >> tmp;
     if (tmp == label) {
+      if (tool==madx) f >> tmp; //skip type/length info column
       f >> val;
       return val;
     }
