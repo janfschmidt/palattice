@@ -14,8 +14,8 @@ echo -e "circumference\t `sdds2stream $file -page=1 -par=PassLength`" > elegant.
 # pCentral from watch file
 echo -e "pCentral/m_e*c\t `sdds2stream $file -page=1 -par=pCentral`" >> elegant.param #append..
 # tunes from watch file
-echo -e "tune:Qx\t\t `sdds2stream $1.twi -par=nux`" >> elegant.param
-echo -e "tune:Qz\t\t `sdds2stream $1.twi -par=nuy`" >> elegant.param
+echo -e "tune:Qx\t `sdds2stream $1.twi -par=nux`" >> elegant.param
+echo -e "tune:Qz\t `sdds2stream $1.twi -par=nuy`" >> elegant.param
 
 # ascii lattice parameter file elegant.param
 sddsprintout $1.param tmp.param -Title='***' -col='(ElementName,ElementParameter,ParameterValue,ElementType)'

@@ -20,7 +20,7 @@ select, flag=error, class=quadrupole;
 esave, file="madx.quadealign";
 
 ! twiss output:
-select, flag=twiss, column=keyword, name, s, x, y, l, angle, k1l, k2l, vkick, hkick;
+select, flag=twiss, column=keyword, name, s, x, y, l, angle, k1l, k2l, vkick, hkick, betx,alfx,mux,dx,dpx,bety,alfy,muy;
 twiss, chrom, file="madx.twiss";
 !-------------------------------------------------
 

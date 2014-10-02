@@ -442,7 +442,7 @@ void FunctionOfPos<T>::readSimToolColumn(SimToolInstance &s, string file, string
     double pos = tab.get<double>(posColumn,i);
     // values at pos=circ are ignored to avoid #turns problem
     // see simToolTrajectory() for another solution
-    if (fabs(pos-circ) <= ZERO_DISTANCE) continue;
+    if (fabs(pos-circ) <= 0.0001) continue;
 
     this->set(tab.get<T>(valColumn[0],i), pos);
   }

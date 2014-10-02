@@ -8,7 +8,6 @@
 
 #include <iostream>
 #include <getopt.h>
-//#include <gsl/gsl_spline.h>
 #include <libpal/libpal.hpp>
 
 using namespace std;
@@ -18,12 +17,12 @@ int main ()
 {
   string out = "interptwiss";
   double step=0.1;                     // interpolation output stepwidth
-  pal::SimTool tool = pal::madx;       // choose madx or elegant
+  pal::SimTool tool = pal::elegant;       // choose madx or elegant
   pal::SimToolMode mode = pal::online; // SimTool is executed automatically
 
 
   // construct SimToolInstance for a lattice file
-  pal::SimToolInstance sim(tool, mode, "/home/schmidt/ELSA/lattice/ELSA/elsa.madx");
+  pal::SimToolInstance sim(tool, mode, "/home/schmidt/ELSA/lattice/ELSA/elsa.lte");
 
   // construct FunctionOfPos container (here used for a twiss variable)
   // it reads the lattice circumference from the SimTool output files (runs SimTool, if mode=online)
@@ -31,12 +30,19 @@ int main ()
 
   //write the name of the twiss variable to a string vector
   //vector, because it allows 2 (3) columns for FunctionOfPos<AccPair> (<AccTriple>)
+  string s;
   vector<string> value;
-  if (tool==madx) value.push_back("BETX");
-  else if (tool==elegant) value.push_back("betax");
+  if (tool==madx) {
+    s = "S";    
+    value.push_back("BETX");
+  }
+  else if (tool==elegant) {
+    s = "s";
+    value.push_back("betax");
+  }
 
   // read a twiss variable from a SimTool output file (runs SimTool, if mode=online and not run before)
-  twiss.readSimToolColumn(sim, sim.twiss(), "S", value);
+  twiss.readSimToolColumn(sim, sim.twiss(), s, value);
 
   // twiss output
   twiss.print(out+".dat");

@@ -214,7 +214,10 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
     stringstream msg;
     msg << "ERROR: SimToolInstance::readTable(): " <<columnPos.size()<< " of " <<columnKeys.size()<< " requested columns found in " << filename;
     if (columnPos.size()>0) {
-      msg <<endl<< "found: ";
+      msg <<endl<< "  -> requested: ";
+	for (unsigned int k=0; k<columnKeys.size(); k++)
+	  msg <<"\""<< columnKeys[k] <<"\" ";
+      msg <<endl<< "  -> found: ";
       for (map<unsigned int,string>::const_iterator it=columnPos.begin(); it!=columnPos.end(); ++it)
 	msg <<"\""<< it->second <<"\"(column "<< it->first <<") ";
     }
