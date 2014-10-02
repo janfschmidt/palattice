@@ -51,16 +51,15 @@ call,file=madx.observe;
 
 ! tracking settings & execution
 !--------------------------------------
-ptc_track,
+ptc_track, file = madx,  			    //filenames
 	icase = 6,
 	deltap = 0.0,
        	element_by_element,			    //small effect on numerical results
        	closed_orbit,                               //coordinates relative to closed orbit
        	//radiation_model1, radiation_energy_loss,  //synchrotron radiation
-       	maxaper = 0.1,0.005,0.05,0.005,0.01,0.005,    //aperture	 
+       	maxaper = 0.1,0.005,0.05,0.005,0.01,0.005,  //aperture	 
        	turns = 1,                                    
-	ffile = 1,			            //output after each [ffile] turns
-       	file = madx;  				    //filenames
+	ffile = 1;			            //output after each [ffile] turns
 !--------------------------------------
 
 ptc_track_end; 

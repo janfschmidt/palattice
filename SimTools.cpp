@@ -12,8 +12,8 @@ using namespace pal;
 using namespace std;
 
 
-SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string fileIn)
-  : executed(false), trackingTurns(0), tool(toolIn), mode(modeIn)
+SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string fileIn, string fileTag)
+  : executed(false), trackingTurns(0), tag(fileTag), tool(toolIn), mode(modeIn)
 {
 
   //path: path of fileIn
@@ -40,6 +40,8 @@ SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string file
     else
       filebase = file;
   }
+  if (mode==online && tag!="")
+    filebase = filebase + "_" + tag;
 
 
   if (tool==madx)
@@ -75,7 +77,24 @@ void SimToolInstance::replaceInFile(string variable, string value, string delim,
   cmd << "cd "<< path() << "; ";
   cmd << "sed -i 's!"<<variable<<" = .*"<<delim<<"!"<<variable<<" = "<<value<<delim<<"!' "<<file;
   //cout << cmd.str() << endl;
-  system(cmd.str().c_str());
+  int ret = system(cmd.str().c_str());
+  if (ret != 0)
+    throw libpalError("SimToolInstance::replaceInFile(): Error executing sed");
+}
+
+// replace a tag in a filename in a madx/elegant file via sed.
+// "[name]_[tag].[extension]", only [tag] is changed
+void SimToolInstance::replaceTagInFile(string name, string extension, string newTag, string file)
+{
+  stringstream cmd;
+  cmd << "cd "<< path() << "; ";
+  cmd << "sed -i 's!"<<name<<".*."<<extension<<"!"<<name;
+  if (newTag != "") cmd <<"_"<<newTag;
+  cmd<<"."<<extension<<"!' "<<file;
+  //cout << cmd.str() << endl;
+  int ret = system(cmd.str().c_str());
+  if (ret != 0)
+    throw libpalError("SimToolInstance::replaceTagInFile(): Error executing sed");
 }
 
 
@@ -102,6 +121,20 @@ void SimToolInstance::run()
     replaceInFile("call, file", tmp.str(), ";", runFile);
   else if (tool== elegant)
     replaceInFile("lattice", tmp.str(), ",", runFile);
+
+  // set output file tag in runFile:
+  if (tool== elegant) {
+    string tmpcmd;
+    if (tag=="") tmpcmd = "\"elegant2libpal none ";
+    else tmpcmd = "\"elegant2libpal " + tag + " ";
+    replaceInFile("command", tmpcmd, "%s", runFile);
+  }
+  else if (tool== madx) {
+    replaceTagInFile("madx", "twiss", tag, runFile);      // twiss file
+    replaceTagInFile("madx", "dipealign", tag, runFile);  // dipealign file
+    replaceTagInFile("madx", "quadealign", tag, runFile); // quadealign file
+    replaceInFile("ptc_track, file", filebase, ",", runFile);        // "obs" files
+  }
 
   // set tracking turns in runFile:
   if (trackingTurns != 0) {

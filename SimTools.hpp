@@ -42,18 +42,23 @@ namespace pal
   protected:
     bool executed;
     unsigned int trackingTurns;
+    string tag;
     string _path;
     string file;     //mode=online: latticeInput, mode=offline: SimTool Output
     string filebase; //output filename without extension
     string runFile;
     string outCases(string madxExt, string eleExt) const {if(tool==madx) return outFile(madxExt); else if(tool==elegant) return outFile(eleExt); return "";}
     void replaceInFile(string variable, string value, string delim, string file);
+    void replaceTagInFile(string name, string extension, string newTag, string file);
 
   public:
     const SimTool tool;
     const SimToolMode mode;
 
-    SimToolInstance(SimTool tool, SimToolMode mode, string fileIn);
+    //SimToolInstance constructor:
+    //-fileIn: mode=online: latticeInput, mode=offline: SimTool Output
+    //-fileTag: added to output files to distinguish "runs". needed for mode=online only.
+    SimToolInstance(SimTool tool, SimToolMode mode, string fileIn, string fileTag="");
     ~SimToolInstance() {}
 
     void run();

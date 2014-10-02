@@ -29,8 +29,8 @@ Interpolate<T>::Interpolate(const gsl_interp_type *t, double periodIn, unsigned 
   else
     periodic = false;
 
-  if ( period!=0. && !periodic )
-    cout << "WARNING: Interpolate::Interpolate(): period not used for non-periodic interpolation type." << endl;
+  // if ( period!=0. && !periodic )
+  //   cout << "WARNING: Interpolate::Interpolate(): period not used for non-periodic interpolation type." << endl;
 }
 
 template <class T>
@@ -44,8 +44,8 @@ Interpolate<T>::Interpolate(vector<double> xIn, vector<T> fIn, const gsl_interp_
   else
     periodic = false;
 
-  if ( period!=0. && !periodic )
-    cout << "WARNING: Interpolate::Interpolate(): period not used for non-periodic interpolation type." << endl;
+  // if ( period!=0. && !periodic )
+  //   cout << "WARNING: Interpolate::Interpolate(): period not used for non-periodic interpolation type." << endl;
 }
 
 
@@ -223,8 +223,8 @@ void Interpolate<T>::reset(vector<double> xIn, vector<T> fIn, double periodIn)
 
   reset();
 
-  if ( period!=0. && !periodic )
-    cout << "WARNING: Interpolate::Interpolate(): period not used for non-periodic interpolation type." << endl;
+  // if ( period!=0. && !periodic )
+  //   cout << "WARNING: Interpolate::Interpolate(): period not used for non-periodic interpolation type." << endl;
 }
 
 
