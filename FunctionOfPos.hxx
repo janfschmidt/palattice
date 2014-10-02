@@ -48,7 +48,7 @@ FunctionOfPos<T>::FunctionOfPos(SimToolInstance &sim, const gsl_interp_type *t)
 // constructor to additionally set EQUIDISTANT positions with given stepwidth for given #turns (increase speed for set())
 template <class T>
 FunctionOfPos<T>::FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, const gsl_interp_type *t)
-  : Interpolate<T>::Interpolate(t,circIn,samplesIn*turnsIn), pos(this->_x), value(this->f), n_turns(turnsIn), n_samples(samplesIn), circ(circIn)
+  : Interpolate<T>::Interpolate(t,circIn*turnsIn,samplesIn*turnsIn), pos(this->_x), value(this->f), n_turns(turnsIn), n_samples(samplesIn), circ(circIn)
 {
   circCheck();
 
@@ -64,7 +64,7 @@ FunctionOfPos<T>::FunctionOfPos(double circIn, unsigned int samplesIn, unsigned 
 // constructor to set positions by vector
 template <class T>
 FunctionOfPos<T>::FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, vector<double> posIn, const gsl_interp_type *t)
-  : Interpolate<T>::Interpolate(t,circIn, samplesIn*turnsIn), pos(this->_x), value(this->f), n_turns(turnsIn), n_samples(samplesIn), circ(circIn)
+  : Interpolate<T>::Interpolate(t,circIn*turnsIn, samplesIn*turnsIn), pos(this->_x), value(this->f), n_turns(turnsIn), n_samples(samplesIn), circ(circIn)
 {
   circCheck();
 
