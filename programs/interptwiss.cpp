@@ -1,4 +1,5 @@
 /* -----interptwiss-----
+ * libpal example program
  * interpolate twiss parameters from madx or elegant using libpal
  * ... and calculate spectrum (FFT)
  * 
