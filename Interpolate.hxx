@@ -20,7 +20,7 @@ using namespace pal;
 // !  - sorted by _x, increasing                !
 template <class T>
 Interpolate<T>::Interpolate(const gsl_interp_type *t, double periodIn, unsigned int sizeIn)
-  : _x(sizeIn), f(sizeIn), headerString("value"), type(t), period(periodIn), ready(false)
+  : _x(sizeIn), f(sizeIn), headerString("value"), period(periodIn), type(t), ready(false)
 {
   acc = gsl_interp_accel_alloc ();
 

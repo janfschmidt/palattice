@@ -36,6 +36,15 @@ FunctionOfPos<T>::FunctionOfPos(double circIn, const gsl_interp_type *t)
   circCheck();
 }
 
+// constructor (set circumference from SimToolInstance)
+template <class T>
+FunctionOfPos<T>::FunctionOfPos(SimToolInstance &sim, const gsl_interp_type *t)
+  : Interpolate<T>::Interpolate(t), pos(this->_x), value(this->f), n_turns(1), n_samples(0), circ(sim.readCircumference())
+{
+  circCheck();
+  this->period = circ; //set period (Interpolate class)
+}
+
 // constructor to additionally set EQUIDISTANT positions with given stepwidth for given #turns (increase speed for set())
 template <class T>
 FunctionOfPos<T>::FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, const gsl_interp_type *t)
@@ -511,24 +520,30 @@ void FunctionOfPos<T>::operator-=(FunctionOfPos<T> &other)
 }
 
 
-
-
-// ----------- defaults for template specialization (FunctionOfPos.cpp)
-
 // construct Spectrum (FFT) from this FunctionOfPos
 // uses getVector() to generate 1D input data
 template <class T>
-Spectrum FunctionOfPos<T>::getSpectrum(AccAxis axis, unsigned int fmaxrevIn, double ampcutIn) const
+Spectrum FunctionOfPos<T>::getSpectrum(AccAxis axis, unsigned int fmaxrevIn, double ampcutIn, string name) const
 {
+  if (name=="") name = axis_string(axis);
   vector<double> data = this->getVector(axis);
-  Spectrum s(axis_string(axis), data, circ, turns(), data.size(), fmaxrevIn, ampcutIn);
+  Spectrum s(name, data, circ, turns(), data.size(), fmaxrevIn, ampcutIn);
   // copy metadata to Spectrum
   for (unsigned int i=2; i<this->info.size(); i++)
     s.info.add(this->info.getLabel(i), this->info.getEntry(i));
   return s;
 }
+template <class T>
+Spectrum FunctionOfPos<T>::getSpectrum(unsigned int fmaxrevIn, double ampcutIn, string name) const
+{
+  if (name=="") name = this->header()+"-spectrum";
+  return getSpectrum(pal::x, fmaxrevIn, ampcutIn, name);
+}
 
 
+
+
+// ----------- defaults for template specialization (FunctionOfPos.cpp)
 
 // get all values as double-vector, axis for multidim. data (-> template specialization)
 template <class T>

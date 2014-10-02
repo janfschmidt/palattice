@@ -26,11 +26,11 @@ protected:
   std::vector<double> _x;      // _x data
   std::vector<T> f;           // f(_x) data
   std::string headerString;
+  double period;
 
 private:
   const gsl_interp_type *type;  // type of interpolation used (see GSL manual)
   bool periodic;
-  double period;
 
   gsl_interp_accel *acc;
   std::vector<gsl_spline*> spline;  //several splines for multidimensional data types

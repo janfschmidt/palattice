@@ -80,7 +80,7 @@ public:
   void push_back(FREQCOMP tmp);      // add FREQCOMP manually
   void clear() {b.clear();}
 
-  void out(string filename="");
+  void print(string filename="");
   void eval_out(double stepwidth, double max, string filename);
   void updateMetadata();
 };

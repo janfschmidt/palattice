@@ -243,7 +243,7 @@ double Spectrum::eval(double t) const
 
 
 
-void Spectrum::out(string filename)
+void Spectrum::print(string filename)
 {
   fstream file;
   stringstream s;

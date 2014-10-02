@@ -45,9 +45,10 @@ private:
 
 public:
   const double circ;                          //circumference of accelerator
-  //Metadata info;
+  //Metadata info -> is inherited from Interpolate
 
   FunctionOfPos(double circIn, const gsl_interp_type *t=gsl_interp_akima);
+  FunctionOfPos(SimToolInstance &sim, const gsl_interp_type *t=gsl_interp_akima_periodic); //get circ from SimToolInstance
   FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, const gsl_interp_type *t=gsl_interp_akima);
   FunctionOfPos(double circIn, unsigned int samplesIn, unsigned int turnsIn, vector<double> posIn, const gsl_interp_type *t=gsl_interp_akima);
   ~FunctionOfPos() {}
@@ -103,9 +104,12 @@ public:
   void operator+=(FunctionOfPos<T> &other);
   void operator-=(FunctionOfPos<T> &other);
 
-  // construct Spectrum (FFT) from this FunctionOfPos (for 1D values, chosen by axis)
+  // construct Spectrum (FFT) from this FunctionOfPos (for 1D values, chosen by axis).
+  // default name is axis_string(axis) (e.g. "horizontal" for x).
   // axis is ignored for 1D data (int or double)
-  Spectrum getSpectrum(AccAxis axis=x, unsigned int fmaxrevIn=30, double ampcut=0.) const;
+  Spectrum getSpectrum(AccAxis axis=x, unsigned int fmaxrev=30, double ampcut=0., string name="") const;
+  //1D version without axis. default name is this->header()
+  Spectrum getSpectrum(unsigned int fmaxrev=30, double ampcut=0., string name="") const;
 
 };
 
