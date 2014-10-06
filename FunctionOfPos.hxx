@@ -356,7 +356,7 @@ void FunctionOfPos<T>::print(string filename) const
  s <<"#"<<setw(w)<<"pos / m"<<setw(w)<<"posInTurn"<<setw(w)<<"turn"<<"\t"<< this->header() << endl;
  s <<setprecision(3);
  
- for (unsigned int i=0; i<size(); i++) {
+ for (unsigned int i=0; i<samples()*turns(); i++) {
    s << resetiosflags(ios::scientific) << setiosflags(ios::fixed);
    s <<setw(w+1)<< pos[i] <<setw(w)<< getPosInTurn(i) <<setw(w)<< turn_by_index(i);
    s << resetiosflags(ios::fixed) << setiosflags(ios::scientific);

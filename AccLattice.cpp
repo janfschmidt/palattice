@@ -38,17 +38,16 @@ AccLattice::AccLattice(string _name, double _circumference, Anchor _refPos)
   info.add("Reference pos.", this->refPos_string());
 }
 
-AccLattice::AccLattice(string _name, SimTool s, string file, SimToolMode m, Anchor _refPos)
+AccLattice::AccLattice(string _name, SimToolInstance &sim, Anchor _refPos, string ignoreFile)
   : ignoreCounter(0), refPos(_refPos)
 {
   empty_space = new Drift;
 
   info.add("Lattice name", _name);
   info.add("Reference pos.", this->refPos_string());
-  if (s == madx)
-    this->madximport(file.c_str(), m);
-  else //elegant
-    this->elegantimport(file.c_str(), m);
+
+  if (ignoreFile != "") this->setIgnoreList(ignoreFile);
+  this->simToolImport(sim);
 }
 
 //copy constructor

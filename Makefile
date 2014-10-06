@@ -1,8 +1,8 @@
 CC=g++
 ccflags = -Wall -fPIC #-g -O0 #last 2 for valgrind
 LIB_NAME=libpal
-Vmajor=1
-Vminor=0.1
+Vmajor=2
+Vminor=0.0
 INSTALL_PATH=/usr/local/
 
 ALL_O=Interpolate.o Metadata.o ELSASpuren.o FunctionOfPos.o Field.o AccElements.o AccLattice.o Spectrum.o SimTools.o
@@ -27,7 +27,7 @@ Field.o: Field.cpp Field.hpp FunctionOfPos.hpp FunctionOfPos.hxx types.hpp AccLa
 	$(CC) $(ccflags) -c $<
 ELSASpuren.o: ELSASpuren.cpp types.hpp
 	$(CC) $(ccflags) -c $<
-Metadata.o: Metadata.cpp libpalGitversion.hpp SimTools.hpp
+Metadata.o: Metadata.cpp Metadata.hpp libpalGitversion.hpp SimTools.hpp
 	$(CC) $(ccflags) -c $<
 AccElements.o: AccElements.cpp AccElements.hpp types.hpp SimTools.hpp
 	$(CC) $(ccflags) -c $<
@@ -64,6 +64,7 @@ install: $(LIB_FILE).$(Vmajor).$(Vminor)
 	install -m 664 -p -v simTools/*.madx $(SIMTOOL_PATH)
 	install -m 664 -p -v simTools/*.ele $(SIMTOOL_PATH)
 	install -m 755 -p -v simTools/elegant2libpal.sh $(INSTALL_PATH)/bin/elegant2libpal
+	ldconfig
 
 install_programs:
 	make install -C ./programs

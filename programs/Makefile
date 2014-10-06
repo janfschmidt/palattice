@@ -18,6 +18,8 @@ clean:
 
 install:
 	install -m 755 -p -v convertlattice $(INSTALL_PATH)/bin/
+	install -m 755 -p -v interptwiss $(INSTALL_PATH)/bin/
 
 uninstall:
 	rm -f $(INSTALL_PATH)/bin/convertlattice
+	rm -f $(INSTALL_PATH)/bin/interptwiss
