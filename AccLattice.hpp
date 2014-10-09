@@ -34,14 +34,16 @@ class AccLattice {
 
 protected:
   double circ;
-  std::map<double,AccElement*> elements;                  // first: position in lattice / m
+  std::map<double,AccElement*> elements;  // first: position in lattice / m
   const Drift* empty_space;
-  vector<string> ignoreList;                              // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted (set) in this lattice
+  vector<string> ignoreList;              // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted (set) in this lattice
   unsigned int ignoreCounter;
 
-  AccIterator firstIt(element_type _type, element_plane p=noplane, element_family f=nofamily);                // get first element of given type
-  AccIterator lastIt(element_type _type, element_plane p=noplane, element_family f=nofamily);                 // get last element of given type
-  AccIterator nextIt(element_type _type, AccIterator it, element_plane p=noplane, element_family f=nofamily); // get next element of given type after it
+  AccIterator firstIt(element_type _type, element_plane p=noplane, element_family f=nofamily); // get iterator to first element of given type
+  AccIterator lastIt(element_type _type, element_plane p=noplane, element_family f=nofamily);  // get iterator to last element of given type
+  AccIterator nextIt(double pos, element_plane p=noplane, element_family f=nofamily);                         // get iterator to next element after pos
+  AccIterator nextIt(double pos, element_type _type, element_plane p=noplane, element_family f=nofamily);     // get iterator to next element of given type after pos
+  AccIterator nextIt(AccIterator it, element_type _type, element_plane p=noplane, element_family f=nofamily); // get iterator to next element of given type after it (for any type just use it++ ;) )
 
 
 public:
@@ -50,44 +52,42 @@ public:
 
   AccLattice(string _name, double _circumference, Anchor _refPos=begin);
   AccLattice(string _name, SimToolInstance &sim, Anchor _refPos=end, string ignoreFile="");    //direct madx/elegant import
-  AccLattice(const AccLattice &other);
+  AccLattice(AccLattice &other);
   ~AccLattice();
-  AccLattice& operator= (const AccLattice other);
+  AccLattice& operator= (AccLattice &other);
 
   double circumference() const {return circ;}
-  const_AccIterator getIt(double pos) const;                           // get const_Iterator to element, if pos is inside it
-  const_AccIterator getItBegin() const;                                // get iterator to begin (first Element)
-  const_AccIterator getItEnd() const;                                  // get iterator to end (after last Element)
+  const_AccIterator getIt(double pos) const;      // get const_Iterator to element, if pos is inside it
+  const_AccIterator getItBegin() const;           // get iterator to begin (first Element)
+  const_AccIterator getItEnd() const;             // get iterator to end (after last Element)
   const_AccIterator firstCIt(element_type _type, element_plane p=noplane, element_family f=nofamily) const; // get iterator to first element of given type
   const_AccIterator lastCIt(element_type _type, element_plane p=noplane, element_family f=nofamily) const;  // get iterator to last element of given type
-  const_AccIterator nextCIt(element_type _type, const_AccIterator it, element_plane p=noplane, element_family f=nofamily) const; // get iterator to next element of given type after it
+  const_AccIterator nextCIt(double pos, element_plane p=noplane, element_family f=nofamily) const;                               // get iterator to next element after pos
+  const_AccIterator nextCIt(double pos, element_type _type, element_plane p=noplane, element_family f=nofamily) const;           // get iterator to next element of given type after pos
+  const_AccIterator nextCIt(const_AccIterator it, element_type _type, element_plane p=noplane, element_family f=nofamily) const; // get iterator to next element of given type after it (for any type just use it++ ;) )
 
   double where(const_AccIterator it) const {return it->first;}          // get position of element with iterator it
   double locate(double pos, const AccElement *obj, Anchor here) const;  // get here=begin/center/end (in meter) of obj at reference-position pos
   bool inside(double pos, const AccElement *obj, double here) const;    // test if "here" is inside obj at position pos
-  double locate(const_AccIterator it, Anchor here) const;        // get here=begin/center/end (in meter)  of lattice element "it"
-  bool inside(const_AccIterator it, double here) const;                 // test if "here" is inside lattice element "it"
-  const AccElement* first(element_type _type, element_plane p=noplane, element_family f=nofamily);             // get first element of given type
-  const AccElement* last(element_type _type, element_plane p=noplane, element_family f=nofamily);              // get last element of given type
-  const AccElement* next(element_type _type, double pos, element_plane p=noplane, element_family f=nofamily);  // get next element of given type after pos
+  double locate(const_AccIterator it, Anchor here) const;               // get here=begin/center/end (in meter)  of lattice element "it"
+  bool inside(const_AccIterator it, double here) const;                 // test if "here" is inside lattice element "it"  
 
-
-  const AccElement* operator[](double pos) const;                  // get element (any position, Drift returned if not inside any element)
-  const_AccIterator operator[](string name) const;                 // get iterator by name (first match in lattice, Drift returned otherwise)
+  const AccElement* operator[](double pos) const;                    // get element (any position, Drift returned if not inside any element)
+  const_AccIterator operator[](string name) const;                   // get iterator by name (first match in lattice, Drift returned otherwise)
   void mount(double pos, const AccElement &obj, bool verbose=false); // mount an element (throws eNoFreeSpace if no free space for obj)
-  void dismount(double pos);                                          // dismount element at Ref.position pos (if no element at pos: do nothing)
+  void dismount(double pos);                                         // dismount element at Ref.position pos (if no element at pos: do nothing)
 
   void setIgnoreList(string ignoreFile);                      // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted in this lattice
   void simToolImport(SimToolInstance &sim) {if (sim.tool==madx) madximport(sim); else if (sim.tool==elegant) elegantimport(sim);}
   void madximport(SimToolInstance &madx);                      // mount elements from MAD-X Lattice (read from twiss-output, m=online: autom. madx run)
   void madximport(string madxFile, SimToolMode m=online) {SimToolInstance madx(pal::madx, m, madxFile); madximport(madx);}
-  void madximportMisalignments(element_type t, string madxEalignFile);// set misalignments from MAD-X Lattice (read ealign-output)
-                                                                      // !! currently only rotation (dpsi) around beam axis (s) is implemented!
+  void madximportMisalignments(element_type t, string madxEalignFile); // set misalignments from MAD-X Lattice (read ealign-output)
+                                                                       // !! currently only rotation (dpsi) around beam axis (s) is implemented!
   void elegantimport(SimToolInstance &elegant);                // mount elements from elegant Lattice (read from ascii parameter file ".param", m=online: autom. elegant run)
   void elegantimport(string elegantFile, SimToolMode m=online) {SimToolInstance e(pal::elegant, m, elegantFile); elegantimport(e);}
   void setELSAoptics(string spurenFolder);                    // change quad&sext strengths to values from "ELSA-Spuren"
-  unsigned int setELSACorrectors(ELSASpuren &spuren, unsigned int t);// change corrector pos&strength to values from "ELSA-Spuren" at time t
-  void subtractCorrectorStrengths(const AccLattice &other);    // subtract other corrector strengths from the ones of this lattice
+  unsigned int setELSACorrectors(ELSASpuren &spuren, unsigned int t); // change corrector pos&strength to values from "ELSA-Spuren" at time t
+  void subtractCorrectorStrengths(AccLattice &other);    // subtract other corrector strengths from the ones of this lattice
   void subtractMisalignments(const AccLattice &other);         // subtract other misalignments from the ones of this lattice
 
   // "information"
@@ -101,6 +101,14 @@ public:
   string getElementDefs(SimTool tool,element_type _type) const; // return elegant or madx compliant element definitions for given type
   string getLine(SimTool tool) const; // return lattice in elegant or madx compliant "LINE=(..." format
   string getSequence(Anchor refer=center) const;    // return lattice in madx compliant "SEQUENCE" format
+
+  //magnetic field, including continuous slope at start/end
+  // - "verlängern" um l_eff - l_metric = d
+  // - l_metric = METRIC_LENGTH_PERCENTAGE * l_eff wenn nicht gegeben ??
+  // - slope: monotone funktion f mit f(l_metric) =: f(a) = 1 und f(l_eff + d) = f(l_metric + 2d) =: f(b) = 0.
+  // - int_a^b f(x) = 1*d -> im vergleich mit rechteck bis l_eff soll sich die fläche NICHT ändern!
+  // test mit Gauss: f(x) = exp(-0.5*(x*0.67449/d)^2), 50% quantil (median) bei 0.67449 sigma.
+  //AccTriple B(double pos, AccPair orbit, unsigned int turn) const;
 
 
   // output (stdout or file)

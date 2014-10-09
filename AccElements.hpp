@@ -31,8 +31,8 @@ protected:
   static AccPair zeroPair;
   static AccTriple zeroTriple;
 
-  // data entries are allowed to be public: AccLattice class uses const AccElement!
-  // (everybody is allowed to modify an Element which is not mounted in a Lattice)
+  // data entries are allowed to be public (everybody is allowed to modify an Element, especially if it is not mounted in a Lattice)
+  // only type,plane,family are const
 public:
   string name;
   double length;

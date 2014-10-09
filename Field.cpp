@@ -97,7 +97,7 @@ int Field::magnetlengths(AccLattice &lattice, const char *filename) const
       file <<setw(w)<< ((tmp_end-tmp_start) - it->second->length)*1000 << endl; 
       
       if (it == lattice.lastCIt(dipole)) break;
-      it=lattice.nextCIt(dipole,it);
+      it=lattice.nextCIt(it, dipole);
     }
   }
 

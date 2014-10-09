@@ -51,7 +51,7 @@ AccLattice::AccLattice(string _name, SimToolInstance &sim, Anchor _refPos, strin
 }
 
 //copy constructor
-AccLattice::AccLattice(const AccLattice &other)
+AccLattice::AccLattice(AccLattice &other)
   : circ(other.circumference()), refPos(other.refPos)
 {
   empty_space = new Drift;
@@ -71,7 +71,7 @@ AccLattice::~AccLattice()
 }
 
 
-AccLattice& AccLattice::operator= (const AccLattice other)
+AccLattice& AccLattice::operator= (AccLattice &other)
 {
   stringstream msg;
 
@@ -152,8 +152,9 @@ bool AccLattice::inside(const_AccIterator it, double here) const
 
 
 
-// get first element of given type
-// returns iterator to end if there is none
+
+
+// get first element of given type (returns iterator to end if there is none)
 AccIterator AccLattice::firstIt(element_type _type, element_plane p, element_family f)
 {
   for (AccIterator it=elements.begin(); it!=elements.end(); ++it) {
@@ -162,22 +163,8 @@ AccIterator AccLattice::firstIt(element_type _type, element_plane p, element_fam
   }
   return elements.end();
 }
-
-
-const_AccIterator AccLattice::firstCIt(element_type _type, element_plane p, element_family f) const
-{
-  for (const_AccIterator it=elements.begin(); it!=elements.end(); ++it) {
-    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
-      return it;
-  }
-  return elements.end();
-}
-
-
-
-// get last element of given type
-// returns iterator to end if there is none
-AccIterator AccLattice::lastIt(element_type _type, element_plane p, element_family f) 
+// get last element of given type (returns iterator to end if there is none)
+AccIterator AccLattice::lastIt(element_type _type, element_plane p, element_family f)
 {
   AccIterator it = elements.end();
   it--;
@@ -185,75 +172,92 @@ AccIterator AccLattice::lastIt(element_type _type, element_plane p, element_fami
     if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it;
   }
-
+  return elements.end();  
+}
+// get iterator to next element after pos (returns iterator to end if there is none)
+AccIterator AccLattice::nextIt(double pos, element_plane p, element_family f)
+{
+  for (AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
+    if ((p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+      return it;
+  }
+  return elements.end();
+}
+// get iterator to next element of given type after pos (returns iterator to end if there is none)
+AccIterator AccLattice::nextIt(double pos, element_type _type, element_plane p, element_family f)
+{
+  for (AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
+    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+      return it;
+  }
+  return elements.end();
+}
+// get iterator to next element of given type after it (returns iterator to end if there is none)
+AccIterator AccLattice::nextIt(AccIterator it, element_type _type, element_plane p, element_family f)
+{
+  it++; // check only elements AFTER it
+ for (; it!=elements.end(); ++it) {
+   if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+      return it;
+  }
   return elements.end();  
 }
 
-const_AccIterator AccLattice::lastCIt(element_type _type, element_plane p, element_family f)  const
+
+// public const_AccIterator versions of first/last/nextIt
+// implemented AGAIN, because:
+// - they are const members (can be used in other const members like print())
+// - the above versions cannot be const (should allow modification)
+// - conversion from const_iterator to iterator is only possible via advance() & distance(), which would be slower
+const_AccIterator AccLattice::firstCIt(element_type t, element_plane p, element_family f) const
 {
-  const_AccIterator it = elements.end();
+  for (const_AccIterator it=elements.begin(); it!=elements.end(); ++it) {
+    if (it->second->type == t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+      return it;
+  }
+  return elements.end();
+}
+const_AccIterator AccLattice::lastCIt(element_type t, element_plane p, element_family f) const
+{
+ const_AccIterator it = elements.end();
   it--;
   for (; it!=elements.begin(); it--) {
-    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+    if (it->second->type == t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it;
   }
-
   return elements.end();  
 }
-
-// get next element of given type after it
-// returns iterator to end if there is none
-AccIterator AccLattice::nextIt(element_type _type, AccIterator it, element_plane p, element_family f)
+const_AccIterator AccLattice::nextCIt(double pos, element_plane p, element_family f) const
+{
+for (const_AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
+    if ((p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+      return it;
+  }
+  return elements.end();
+}
+const_AccIterator AccLattice::nextCIt(double pos, element_type t, element_plane p, element_family f) const
+{
+ for (const_AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
+    if (it->second->type == t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+      return it;
+  }
+  return elements.end();
+}
+const_AccIterator AccLattice::nextCIt(const_AccIterator it, element_type t, element_plane p, element_family f) const
 {
   it++; // check only elements AFTER it
  for (; it!=elements.end(); ++it) {
-   if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+   if (it->second->type == t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it;
   }
-
-  return elements.end();  
-}
-const_AccIterator AccLattice::nextCIt(element_type _type, const_AccIterator it, element_plane p, element_family f) const
-{
-  it++; // check only elements AFTER it
- for (; it!=elements.end(); ++it) {
-   if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
-      return it;
-  }
-
   return elements.end();  
 }
 
 
-// get first element of given type
-// returns Drift if there is none
-const AccElement* AccLattice::first(element_type _type, element_plane p, element_family f)
-{
-  AccIterator it = this->firstIt(_type);
-  if (it == elements.end()) return empty_space;
-  else return it->second;
-}
 
-// get last element of given type
-// returns Drift if there is none
-const AccElement* AccLattice::last(element_type _type, element_plane p, element_family f)
-{
-  AccIterator it = lastIt(_type);
-  if (it == elements.end()) return empty_space;
-  else return it->second;
-}
 
-// get next element of given type after pos
-// returns Drift if there is none
-const AccElement* AccLattice::next(element_type _type, double pos, element_plane p, element_family f)
-{
-  for (const_AccIterator it=getIt(pos); it!=elements.end(); ++it) {
-    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
-      return it->second;
-  }
 
-  return empty_space;  
-}
+
 
 
 
@@ -618,7 +622,7 @@ void AccLattice::madximportMisalignments(element_type t, string madxEalignFile)
   //set misalignments to AccLattice elements
   AccIterator it=firstIt(t);
   string type=it->second->type_string();
-  for (; it!=elements.end(); it=nextIt(t,it)) {
+  for (; it!=elements.end(); it=nextIt(it,t)) {
     for (unsigned int i=0; i<ealign.rows(); i++) {
       if (it->second->name == removeQuote(ealign.gets("NAME",i))) {
 	it->second->dpsi = - ealign.getd("DPSI",i);    // <<<<<<!!! sign of rotation angle (see comment above)
@@ -821,7 +825,7 @@ void AccLattice::setELSAoptics(string spurenFolder)
   f_magnets.close();
 
   //Write strengths to quads
-  for (it=firstIt(quadrupole); it!=elements.end(); it=nextIt(quadrupole,it)) {
+  for (it=firstIt(quadrupole); it!=elements.end(); it=nextIt(it,quadrupole)) {
     if (it->second->name.compare(1,2,"QF") == 0) {
       it->second->strength = kf;
     }
@@ -831,7 +835,7 @@ void AccLattice::setELSAoptics(string spurenFolder)
   }
 
   //Write strengths to sexts
- for (it=firstIt(sextupole); it!=elements.end(); it=nextIt(sextupole,it)) {
+  for (it=firstIt(sextupole); it!=elements.end(); it=nextIt(it,sextupole)) {
     if (it->second->name.compare(1,2,"SF") == 0) {
       it->second->strength = mf;
     }
@@ -887,13 +891,13 @@ unsigned int AccLattice::setELSACorrectors(ELSASpuren &spuren, unsigned int t)
    
    corrTmp = it->second->clone();
    corrTmp->strength = spuren.vcorrs[i].time[t].kick/1000.0/corrTmp->length;   //unit 1/m
-   it_next = nextIt(corrector,it,V);  // only vertical correctors (V)!
+   it_next = nextIt(it,corrector,V);  // only vertical correctors (V)!
    elements.erase(it);   // erase "old" corrector (madx) to be able to mount new one
    endPos = spuren.vcorrs[i].pos + corrTmp->length/2;
    this->mount(endPos, *(corrTmp));
    delete corrTmp;
 
-   //it = nextIt(corrector,it);
+   //it = nextIt(it,corrector);
    it = it_next;
    n++;
    if (it == elements.end())
@@ -915,7 +919,7 @@ unsigned int AccLattice::setELSACorrectors(ELSASpuren &spuren, unsigned int t)
 
 
 // subtract other corrector strengths from the ones of this lattice
-void AccLattice::subtractCorrectorStrengths(const AccLattice &other)
+void AccLattice::subtractCorrectorStrengths(AccLattice &other)
 {
   stringstream msg;
   AccIterator it;
@@ -928,7 +932,7 @@ void AccLattice::subtractCorrectorStrengths(const AccLattice &other)
   
   otherIt = other.firstCIt(corrector);
 
-  for  (it=firstIt(corrector); it!=lastIt(corrector); it=nextIt(corrector,it)) {
+  for  (it=firstIt(corrector); it!=lastIt(corrector); it=nextIt(it,corrector)) {
 
     // check by name
     if (otherIt->second->name != it->second->name) {
@@ -946,7 +950,7 @@ void AccLattice::subtractCorrectorStrengths(const AccLattice &other)
     // subtract
     it->second->strength -= otherIt->second->strength;
     // set otherIt to next corrector
-    otherIt=nextCIt(corrector,otherIt);
+    otherIt=nextCIt(otherIt,corrector);
   }
 
   //metadata
@@ -1042,6 +1046,26 @@ string AccLattice::refPos_string() const
 
 
 
+// magnetic field
+// AccTriple AccLattice::B(double pos, AccPair orbit, unsigned int turn) const
+// {
+//   // try {
+//   //   return getIt(pos)->second->B(orbit,turn);
+//   // }
+//   // catch (eNoElement &e) {
+//   //   //const_AccIterator next = nextCIt()
+//   // }
+
+//   AccElement *obj;
+//   const_AccIterator it;
+//   Anchor a = begin;
+//   double x = fabs(locate(it, a) - pos);
+//   double d; //member of AccElement?
+//   double slope = exp(-0.5*pow(x*0.67449/d,2));
+//   return obj->B(orbit,turn) * slope;
+// }
+
+
 // ----------- output (stdout or file) ----------------------
 
 // print lattice. If no filename is given, print to stdout
@@ -1099,7 +1123,7 @@ void AccLattice::print(element_type _type, string filename) const
   s <<"# (* unit of Strength depends on magnet type! e.g. Quad: k1, Sext: k2, Dipole: 1/R)" <<endl;
   s <<"#"<< std::setw(w) << "Ref.Pos/m" << it->second->printHeader();
 
-  for (; it!=lastCIt(_type); it=nextCIt(_type, it)) {
+  for (; it!=lastCIt(_type); it=nextCIt(it,_type)) {
     s <<std::setw(w+1)<< it->first << it->second->print();
   }
 
@@ -1128,7 +1152,7 @@ string AccLattice::getElementDefs(SimTool tool, element_type _type) const
   if (it == elements.end())
     return "";
   s << "! " << it->second->type_string() << "s" << endl;
-  for (; it!=elements.end(); it=nextCIt(_type, it)) {
+  for (; it!=elements.end(); it=nextCIt(it, _type)) {
     s << it->second->printSimTool(tool);
   }
   s << endl;
