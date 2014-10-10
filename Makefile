@@ -29,7 +29,7 @@ ELSASpuren.o: ELSASpuren.cpp types.hpp
 	$(CC) $(ccflags) -c $<
 Metadata.o: Metadata.cpp Metadata.hpp libpalGitversion.hpp SimTools.hpp
 	$(CC) $(ccflags) -c $<
-AccElements.o: AccElements.cpp AccElements.hpp types.hpp SimTools.hpp
+AccElements.o: AccElements.cpp AccElements.hpp types.hpp SimTools.hpp config.hpp
 	$(CC) $(ccflags) -c $<
 AccLattice.o: AccLattice.cpp AccLattice.hpp AccElements.hpp ELSASpuren.hpp Metadata.hpp config.hpp types.hpp SimTools.hpp
 	$(CC) $(ccflags) -c $<

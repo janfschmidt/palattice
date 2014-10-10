@@ -202,6 +202,16 @@ AccIterator AccLattice::nextIt(AccIterator it, element_type _type, element_plane
   }
   return elements.end();  
 }
+// get iterator to first element, whose begin/center/end is > pos
+AccIterator AccLattice::nextIt(double pos, Anchor anchor)
+{
+  AccIterator b = nextIt(pos);
+  AccIterator a = b; a--;
+  AccIterator c = b; c++;
+  if (locate(a, anchor) > pos) return a;
+  else if (locate(b, anchor) > pos) return b;
+  else return c;
+}
 
 
 // public const_AccIterator versions of first/last/nextIt
@@ -252,6 +262,16 @@ const_AccIterator AccLattice::nextCIt(const_AccIterator it, element_type t, elem
   }
   return elements.end();  
 }
+const_AccIterator AccLattice::nextCIt(double pos, Anchor anchor) const
+{
+  const_AccIterator b = nextCIt(pos);
+  const_AccIterator a = b; a--;
+  const_AccIterator c = b; c++;
+  if (locate(a, anchor) > pos) return a;
+  else if (locate(b, anchor) > pos) return b;
+  else return c;
+}
+
 
 
 
@@ -300,6 +320,16 @@ const_AccIterator AccLattice::getItEnd() const
 
 
 
+// distance from itRef of element it to pos (>0 if pos is after itRef)
+double AccLattice::distance(double pos, const_AccIterator it, Anchor itRef) const
+{
+  // if (pos > circumference()) {
+  //   stringstream msg;
+  //   msg <<"AccLattice::distance(): " << pos << " m is larger than lattice circumference " << circumference() << " m.";
+  //   throw std::out_of_range(msg.str());
+  // }
+  return (pos - locate(it,itRef));
+}
 
 
 
@@ -1045,25 +1075,29 @@ string AccLattice::refPos_string() const
 }
 
 
+double AccLattice::slope(double pos, const_AccIterator it) const
+{
+  double x=1.;
+  double dl = it->second->dl();
+  double distBegin = distance(pos,it,begin) - dl;
+  double distEnd = distance(pos,it,end) - dl;
+  if (distBegin < 0) x = distBegin;
+  else if (distEnd > 0) x = distEnd;
+  else return 1.;
 
-// magnetic field
-// AccTriple AccLattice::B(double pos, AccPair orbit, unsigned int turn) const
-// {
-//   // try {
-//   //   return getIt(pos)->second->B(orbit,turn);
-//   // }
-//   // catch (eNoElement &e) {
-//   //   //const_AccIterator next = nextCIt()
-//   // }
+  return exp(-0.5*pow(x*0.67449/dl,2));
+}
 
-//   AccElement *obj;
-//   const_AccIterator it;
-//   Anchor a = begin;
-//   double x = fabs(locate(it, a) - pos);
-//   double d; //member of AccElement?
-//   double slope = exp(-0.5*pow(x*0.67449/d,2));
-//   return obj->B(orbit,turn) * slope;
-// }
+// magnetic field including edge field (with slope)
+AccTriple AccLattice::B(double pos, AccPair orbit, unsigned int turn) const
+{
+  const_AccIterator it = nextCIt(pos,center); // next magnet with center > pos
+  AccTriple field;
+  field = it->second->B(orbit,turn) * slope(pos, it);
+  it--;                                       // previous magnet (center <= pos)
+  field += it->second->B(orbit,turn) * slope(pos, it);
+  return field;
+}
 
 
 // ----------- output (stdout or file) ----------------------

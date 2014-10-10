@@ -15,6 +15,7 @@
 #include <vector>
 #include "SimTools.hpp"
 #include "types.hpp"
+#include "config.hpp"
 
 using namespace std;
 
@@ -30,25 +31,32 @@ class AccElement {
 protected:
   static AccPair zeroPair;
   static AccTriple zeroTriple;
+  double physLength; // physical length (used for edge field calculation (pal::AccLattice::B()) / m
 
   // data entries are allowed to be public (everybody is allowed to modify an Element, especially if it is not mounted in a Lattice)
   // only type,plane,family are const
 public:
   string name;
-  double length;
+  double length;    // effective length (field length) / m
   const element_type type;
   const element_plane plane;
   const element_family family;
-  double strength;
+  double strength; // magnet strength e.g. dipole: 1/R, quadrupole: k (k1), sextupole m (k2)
   double Qrf0;
   double dQrf;
   
   //alignment errors:
   double dpsi; //rotation around s axis in rad
 
+// physical length (used for edge field calculation (pal::AccLattice::B()) / m
+  void setPhysLength(double l) {physLength = l;}
+  double getPhysLength() const;
+  // difference of (effective) length and physical length / m
+  double dl() const {return fabs(length - getPhysLength());}
+
 
   AccElement(string _name, double _length,element_type _type, double _strength=0., element_plane _plane=noplane, element_family _family=nofamily)
-    : name(_name),length(_length),type(_type),plane(_plane),family(_family),strength(_strength),Qrf0(0.),dQrf(0.),dpsi(0.) {}
+    : physLength(0.),name(_name),length(_length),type(_type),plane(_plane),family(_family),strength(_strength),Qrf0(0.),dQrf(0.),dpsi(0.) {}
   virtual ~AccElement() {};
   virtual AccElement& operator=(const AccElement* other);
 

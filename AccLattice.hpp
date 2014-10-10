@@ -44,6 +44,9 @@ protected:
   AccIterator nextIt(double pos, element_plane p=noplane, element_family f=nofamily);                         // get iterator to next element after pos
   AccIterator nextIt(double pos, element_type _type, element_plane p=noplane, element_family f=nofamily);     // get iterator to next element of given type after pos
   AccIterator nextIt(AccIterator it, element_type _type, element_plane p=noplane, element_family f=nofamily); // get iterator to next element of given type after it (for any type just use it++ ;) )
+  AccIterator nextIt(double pos, Anchor anchor);       // get iterator to first element, whose begin/center/end is > pos
+
+  double slope(double pos, const_AccIterator it) const; // helper function for magnetic field edges
 
 
 public:
@@ -65,12 +68,15 @@ public:
   const_AccIterator nextCIt(double pos, element_plane p=noplane, element_family f=nofamily) const;                               // get iterator to next element after pos
   const_AccIterator nextCIt(double pos, element_type _type, element_plane p=noplane, element_family f=nofamily) const;           // get iterator to next element of given type after pos
   const_AccIterator nextCIt(const_AccIterator it, element_type _type, element_plane p=noplane, element_family f=nofamily) const; // get iterator to next element of given type after it (for any type just use it++ ;) )
+  const_AccIterator nextCIt(double pos, Anchor anchor) const;       // get iterator to first element, whose begin/center/end is > pos
 
-  double where(const_AccIterator it) const {return it->first;}          // get position of element with iterator it
+
+  double pos(const_AccIterator it) const {return it->first;}          // get position of element with iterator it
   double locate(double pos, const AccElement *obj, Anchor here) const;  // get here=begin/center/end (in meter) of obj at reference-position pos
   bool inside(double pos, const AccElement *obj, double here) const;    // test if "here" is inside obj at position pos
   double locate(const_AccIterator it, Anchor here) const;               // get here=begin/center/end (in meter)  of lattice element "it"
   bool inside(const_AccIterator it, double here) const;                 // test if "here" is inside lattice element "it"  
+  double distance(double pos, const_AccIterator it, Anchor itRef) const;// distance from itRef of element it to pos (>0 if pos is after itRef)
 
   const AccElement* operator[](double pos) const;                    // get element (any position, Drift returned if not inside any element)
   const_AccIterator operator[](string name) const;                   // get iterator by name (first match in lattice, Drift returned otherwise)
@@ -104,11 +110,13 @@ public:
 
   //magnetic field, including continuous slope at start/end
   // - "verlängern" um l_eff - l_metric = d
-  // - l_metric = METRIC_LENGTH_PERCENTAGE * l_eff wenn nicht gegeben ??
+  // - l_metric = PHYSICAL_LENGTH_PERCENTAGE * l_eff wenn nicht gegeben ??
   // - slope: monotone funktion f mit f(l_metric) =: f(a) = 1 und f(l_eff + d) = f(l_metric + 2d) =: f(b) = 0.
   // - int_a^b f(x) = 1*d -> im vergleich mit rechteck bis l_eff soll sich die fläche NICHT ändern!
   // test mit Gauss: f(x) = exp(-0.5*(x*0.67449/d)^2), 50% quantil (median) bei 0.67449 sigma.
-  //AccTriple B(double pos, AccPair orbit, unsigned int turn) const;
+  // -> nähert sich 0, ist aber f(b) > 0.
+  // -> problem: integral muss 1 sein (normierter Gauß) UND f(a) = 1 (nicht-normierter Gauß)
+  AccTriple B(double pos, AccPair orbit, unsigned int turn) const;
 
 
   // output (stdout or file)
@@ -116,7 +124,7 @@ public:
   void print(string filename="");                           // print lattice.
   void print(element_type _type, string filename="") const; // print all elements of one type.
   void simToolExport(SimTool tool, string filename="", MadxLatticeType ltype=sequence) const; // print lattice readable by elegant or madx
-  void latexexport(string filename="") const;             // print lattice readable by LaTeX (using lattice package by Jan Schmidt <schmidt@physik.uni-bonn.de>)
+  void latexexport(string filename="") const;               // print lattice readable by LaTeX (using lattice package by Jan Schmidt <schmidt@physik.uni-bonn.de>)
   // "shortcuts:"
   void elegantexport(string file="") const {simToolExport(elegant,file);}
   void madxexport(string file="",MadxLatticeType t=sequence) const {simToolExport(madx,file,t);}

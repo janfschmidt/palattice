@@ -18,6 +18,12 @@ AccPair AccElement::zeroPair;
 AccTriple AccElement::zeroTriple;
 
 
+double AccElement::getPhysLength() const
+{
+  if (physLength!=0.) return physLength;
+  else return length - DEFAULT_LENGTH_DIFFERENCE;
+}
+
 
 AccElement& AccElement::operator=(const AccElement* other)
 {
