@@ -1085,7 +1085,8 @@ double AccLattice::slope(double pos, const_AccIterator it) const
   else if (distEnd > 0) x = distEnd;
   else return 1.;
 
-  return exp(-0.5*pow(x*0.67449/dl,2));
+  double sigma = dl * sqrt(2./M_PI); // dl * 0.797884561
+  return exp(-0.5*pow(x/sigma,2));
 }
 
 // magnetic field including edge field (with slope)

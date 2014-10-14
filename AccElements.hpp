@@ -32,6 +32,7 @@ protected:
   static AccPair zeroPair;
   static AccTriple zeroTriple;
   double physLength; // physical length (used for edge field calculation (pal::AccLattice::B()) / m
+  void checkPhysLength();
 
   // data entries are allowed to be public (everybody is allowed to modify an Element, especially if it is not mounted in a Lattice)
   // only type,plane,family are const
@@ -49,14 +50,13 @@ public:
   double dpsi; //rotation around s axis in rad
 
 // physical length (used for edge field calculation (pal::AccLattice::B()) / m
-  void setPhysLength(double l) {physLength = l;}
-  double getPhysLength() const;
+  void setPhysLength(double l) {physLength = l; this->checkPhysLength();}
+  double getPhysLength() const {return physLength;}
   // difference of (effective) length and physical length / m
   double dl() const {return fabs(length - getPhysLength());}
 
 
-  AccElement(string _name, double _length,element_type _type, double _strength=0., element_plane _plane=noplane, element_family _family=nofamily)
-    : physLength(0.),name(_name),length(_length),type(_type),plane(_plane),family(_family),strength(_strength),Qrf0(0.),dQrf(0.),dpsi(0.) {}
+  AccElement(string _name, double _length,element_type _type, double _strength=0., element_plane _plane=noplane, element_family _family=nofamily);
   virtual ~AccElement() {};
   virtual AccElement& operator=(const AccElement* other);
 

@@ -17,11 +17,32 @@ using namespace pal;
 AccPair AccElement::zeroPair;
 AccTriple AccElement::zeroTriple;
 
-
-double AccElement::getPhysLength() const
+AccElement::AccElement(string _name, double _length,element_type _type, double _strength, element_plane _plane, element_family _family)
+    : physLength(0.),name(_name),length(_length),type(_type),plane(_plane),family(_family),strength(_strength),Qrf0(0.),dQrf(0.),dpsi(0.)
 {
-  if (physLength!=0.) return physLength;
-  else return length - DEFAULT_LENGTH_DIFFERENCE;
+  this->checkPhysLength();
+}
+
+
+
+void AccElement::checkPhysLength()
+{
+  if (physLength==0.) {
+    double pl = length - DEFAULT_LENGTH_DIFFERENCE; //calc. physLength from default setting (config.hpp)
+    if (pl > 0)
+      physLength = pl;
+    else {
+      cout << "WARNING: AccElement::checkPhysLength():"<<endl
+	   <<"DEFAULT_LENGTH_DIFFERENCE (config.hpp) > length for "<< this->name
+	   << ". physical length set to zero." << endl;
+    }
+  }
+  else if (physLength < 0.) {
+    cout << "WARNING: AccElement::checkPhysLength():"<<endl
+	 << "physical length was set to negative value "<<physLength<<" for " <<this->name
+	 << ". sign changed." << endl;
+    physLength *= -1;
+  }
 }
 
 
