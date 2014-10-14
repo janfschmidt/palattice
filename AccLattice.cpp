@@ -1078,9 +1078,9 @@ string AccLattice::refPos_string() const
 double AccLattice::slope(double pos, const_AccIterator it) const
 {
   double x=1.;
-  double dl = it->second->dl();
+  double dl = it->second->dl()/2; // half of dl() at each magnet end
   double distBegin = distance(pos,it,begin) - dl;
-  double distEnd = distance(pos,it,end) - dl;
+  double distEnd = distance(pos,it,end) + dl;
   if (distBegin < 0) x = distBegin;
   else if (distEnd > 0) x = distEnd;
   else return 1.;
