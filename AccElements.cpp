@@ -20,7 +20,14 @@ AccTriple AccElement::zeroTriple;
 AccElement::AccElement(string _name, double _length,element_type _type, double _strength, element_plane _plane, element_family _family)
     : physLength(0.),name(_name),length(_length),type(_type),plane(_plane),family(_family),strength(_strength),Qrf0(0.),dQrf(0.),dpsi(0.)
 {
-  this->checkPhysLength();
+  if (length < 0) {
+    stringstream msg;
+    msg << "invalid length "<<length<<"<0 for AccElement " << name;
+    throw libpalError(msg.str());
+  }
+  else if (length > 0)
+    this->checkPhysLength();
+  // dont check physLength if length=0 (e.g. for AccLattice import default Elements, where length is not set by constructor)
 }
 
 
@@ -32,9 +39,9 @@ void AccElement::checkPhysLength()
     if (pl > 0)
       physLength = pl;
     else {
-      cout << "WARNING: AccElement::checkPhysLength():"<<endl
-	   <<"DEFAULT_LENGTH_DIFFERENCE (config.hpp) > length for "<< this->name
+      cout <<"WARNING: DEFAULT_LENGTH_DIFFERENCE (config.hpp) > length for AccElement "<< this->name
 	   << ". physical length set to zero." << endl;
+      physLength = 0.;
     }
   }
   else if (physLength < 0.) {

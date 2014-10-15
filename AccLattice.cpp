@@ -604,6 +604,7 @@ void AccLattice::madximport(SimToolInstance &madx)
     if (element->type != drift) {
       element->name = removeQuote(twi.gets("NAME",i));
       element->length = l;
+      element->setPhysLength();
       if (refPos == begin) s -= l;
       else if (refPos == center) s -= l/2;
       this->mount(s, *element);
@@ -774,6 +775,7 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
 
      if (element->type != drift) {
        element->length = l;
+       element->setPhysLength();
        element->name = row_old.name;
        element->dpsi = tilt;
        if (refPos == begin) pos = s-l;
@@ -795,7 +797,6 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
     else if (row.param == "KICK") kick = row.value;
     else if (row.param == "ETILT") tilt += row.value;
     else if (row.param == "TILT") tilt += row.value;
-    //else if (row.param == "TILT" && row.type!="CSBEND" && row.type!="CSRCSBEND" && row.type!="KSBEND" && row.type!="NIBEND") tilt = row.value;
     //... add more parameters here
 
    row_old = row;
