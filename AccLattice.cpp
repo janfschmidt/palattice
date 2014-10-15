@@ -267,7 +267,7 @@ const_AccIterator AccLattice::nextCIt(double pos, Anchor anchor) const
   const_AccIterator b = nextCIt(pos);
   const_AccIterator a = b; a--;
   const_AccIterator c = b; c++;
-  if (locate(a, anchor) > pos) return a;
+  if (b!=elements.begin() && locate(a, anchor) > pos) return a;
   else if (locate(b, anchor) > pos) return b;
   else return c;
 }
