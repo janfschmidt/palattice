@@ -1,5 +1,5 @@
 CC=g++
-ccflags = -Wall -fPIC #-g -O0 #last 2 for valgrind
+ccflags = -Wall -fPIC -g #-O0
 LIB_NAME=libpal
 Vmajor=2
 Vminor=0.0

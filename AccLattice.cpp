@@ -203,14 +203,20 @@ AccIterator AccLattice::nextIt(AccIterator it, element_type _type, element_plane
   return elements.end();  
 }
 // get iterator to first element, whose begin/center/end is > pos
-AccIterator AccLattice::nextIt(double pos, Anchor anchor)
+// circulating: "next" after "last" is "first", pos > circumference allowed
+AccIterator AccLattice::nextIt(double posIn, Anchor anchor)
 {
+  double pos = fmod(posIn,circ);
   AccIterator b = nextIt(pos);
   AccIterator a = b; a--;
-  AccIterator c = b; c++;
-  if (locate(a, anchor) > pos) return a;
-  else if (locate(b, anchor) > pos) return b;
-  else return c;
+  if (b == elements.end()) b = elements.begin(); // circulating (a="end--" is last element -> correct)
+  if (distanceRing(pos,a,anchor) < 0.) return a;
+  else if (distanceRing(pos,b,anchor) < 0.) return b;
+  else {
+    AccIterator c = b; c++;
+    if (c == elements.end()) c = elements.begin(); // circulating
+    return c;
+  }
 }
 
 
@@ -262,14 +268,19 @@ const_AccIterator AccLattice::nextCIt(const_AccIterator it, element_type t, elem
   }
   return elements.end();  
 }
-const_AccIterator AccLattice::nextCIt(double pos, Anchor anchor) const
+const_AccIterator AccLattice::nextCIt(double posIn, Anchor anchor) const
 {
+  double pos = fmod(posIn,circ);
   const_AccIterator b = nextCIt(pos);
   const_AccIterator a = b; a--;
-  const_AccIterator c = b; c++;
-  if (b!=elements.begin() && locate(a, anchor) > pos) return a;
-  else if (locate(b, anchor) > pos) return b;
-  else return c;
+  if (b == elements.end()) b = elements.begin(); // circulating (a="end--" is last element -> correct)
+  if (distanceRing(pos,a,anchor) < 0.) return a;
+  else if (distanceRing(pos,b,anchor) < 0.) return b;
+  else {
+    const_AccIterator c = b; c++;
+    if (c == elements.end()) c = elements.begin(); // circulating
+    return c;
+  }
 }
 
 
@@ -323,12 +334,20 @@ const_AccIterator AccLattice::getItEnd() const
 // distance from itRef of element it to pos (>0 if pos is after itRef)
 double AccLattice::distance(double pos, const_AccIterator it, Anchor itRef) const
 {
-  // if (pos > circumference()) {
-  //   stringstream msg;
-  //   msg <<"AccLattice::distance(): " << pos << " m is larger than lattice circumference " << circumference() << " m.";
-  //   throw std::out_of_range(msg.str());
-  // }
   return (pos - locate(it,itRef));
+}
+// distance from itRef of element it to pos (>0 if pos is after itRef) for a ring.
+// both directions are checked, shorter distance is returned.
+double AccLattice::distanceRing(double pos, const_AccIterator it, Anchor itRef) const
+{
+  double d_normal = distance(pos,it,itRef);
+  double d_other = circ - abs(d_normal);
+  if ( d_other >= 0.5*circ ) // regular direction shorter
+    return d_normal;
+  else {
+    if (d_normal>0) return - d_other;
+    else return d_other;
+  }
 }
 
 
@@ -1080,8 +1099,8 @@ double AccLattice::slope(double pos, const_AccIterator it) const
 {
   double x=1.;
   double dl = it->second->dl()/2; // half of dl() at each magnet end
-  double distBegin = distance(pos,it,begin) - dl;
-  double distEnd = distance(pos,it,end) + dl;
+  double distBegin = distanceRing(pos,it,begin) - dl; // distance to phys. begin of it
+  double distEnd = distanceRing(pos,it,end) + dl;     // distance to phys. end of it
   if (distBegin < 0) x = distBegin;
   else if (distEnd > 0) x = distEnd;
   else return 1.;
@@ -1093,11 +1112,15 @@ double AccLattice::slope(double pos, const_AccIterator it) const
 // magnetic field including edge field (with slope)
 AccTriple AccLattice::B(double pos, AccPair orbit, unsigned int turn) const
 {
-  const_AccIterator it = nextCIt(pos,center); // next magnet with center > pos
+  // next magnet with center > pos:
+  const_AccIterator it = nextCIt(pos,center);
   AccTriple field;
   field = it->second->B(orbit,turn) * slope(pos, it);
-  it--;                                       // previous magnet (center <= pos)
+  // previous magnet (center <= pos):
+  if (it == elements.begin()) it = elements.end();
+  it--;                                       
   field += it->second->B(orbit,turn) * slope(pos, it);
+
   return field;
 }
 
