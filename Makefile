@@ -2,7 +2,7 @@ CC=g++
 ccflags = -Wall -fPIC -g #-O0
 LIB_NAME=libpal
 Vmajor=2
-Vminor=0.0
+Vminor=0.1
 INSTALL_PATH=/usr/local/
 
 ALL_O=Interpolate.o Metadata.o ELSASpuren.o FunctionOfPos.o Field.o AccElements.o AccLattice.o Spectrum.o SimTools.o

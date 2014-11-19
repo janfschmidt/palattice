@@ -57,7 +57,7 @@ void Field::set(AccLattice &lattice, FunctionOfPos<AccPair>& orbit, double n_sam
        }
 
        //Btmp = lattice[_pos]->B(otmp,t);
-       Btmp = lattice.B(_pos,otmp,t);
+       Btmp = lattice.B(_pos_tot,otmp);
        this->modify(Btmp, i, t);
      }
    }

@@ -72,6 +72,8 @@ public:
 
 
   double pos(const_AccIterator it) const {return it->first;}          // get position of element with iterator it
+  double posMod(double posIn) const {return fmod(posIn,circ);}           // get position modulo circumference
+  unsigned int turn(double posIn) const {return int(posIn/circ + ZERO_DISTANCE) + 1;} // get turn from position
   double locate(double pos, const AccElement *obj, Anchor here) const;  // get here=begin/center/end (in meter) of obj at reference-position pos
   bool inside(double pos, const AccElement *obj, double here) const;    // test if "here" is inside obj at position pos
   double locate(const_AccIterator it, Anchor here) const;               // get here=begin/center/end (in meter)  of lattice element "it"
@@ -117,7 +119,7 @@ public:
   // test mit Gauss: f(x) = exp(-0.5*(x*0.67449/d)^2), 50% quantil (median) bei 0.67449 sigma.
   // -> nähert sich 0, ist aber f(b) > 0.
   // -> problem: integral muss 1 sein (normierter Gauß) UND f(a) = 1 (nicht-normierter Gauß)
-  AccTriple B(double pos, AccPair orbit, unsigned int turn) const;
+  AccTriple B(double pos, AccPair orbit) const;
 
 
   // output (stdout or file)

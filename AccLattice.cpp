@@ -175,8 +175,9 @@ AccIterator AccLattice::lastIt(element_type _type, element_plane p, element_fami
   return elements.end();  
 }
 // get iterator to next element after pos (returns iterator to end if there is none)
-AccIterator AccLattice::nextIt(double pos, element_plane p, element_family f)
+AccIterator AccLattice::nextIt(double posIn, element_plane p, element_family f)
 {
+  double pos = posMod(posIn);
   for (AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
     if ((p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it;
@@ -184,8 +185,9 @@ AccIterator AccLattice::nextIt(double pos, element_plane p, element_family f)
   return elements.end();
 }
 // get iterator to next element of given type after pos (returns iterator to end if there is none)
-AccIterator AccLattice::nextIt(double pos, element_type _type, element_plane p, element_family f)
+AccIterator AccLattice::nextIt(double posIn, element_type _type, element_plane p, element_family f)
 {
+  double pos = posMod(posIn);
   for (AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
     if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it;
@@ -206,7 +208,7 @@ AccIterator AccLattice::nextIt(AccIterator it, element_type _type, element_plane
 // circulating: "next" after "last" is "first", pos > circumference allowed
 AccIterator AccLattice::nextIt(double posIn, Anchor anchor)
 {
-  double pos = fmod(posIn,circ);
+  double pos = posMod(posIn);
   AccIterator b = nextIt(pos);
   AccIterator a = b; a--;
   if (b == elements.end()) b = elements.begin(); // circulating (a="end--" is last element -> correct)
@@ -243,16 +245,18 @@ const_AccIterator AccLattice::lastCIt(element_type t, element_plane p, element_f
   }
   return elements.end();  
 }
-const_AccIterator AccLattice::nextCIt(double pos, element_plane p, element_family f) const
+const_AccIterator AccLattice::nextCIt(double posIn, element_plane p, element_family f) const
 {
-for (const_AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
+  double pos = posMod(posIn);
+  for (const_AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
     if ((p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it;
   }
   return elements.end();
 }
-const_AccIterator AccLattice::nextCIt(double pos, element_type t, element_plane p, element_family f) const
+const_AccIterator AccLattice::nextCIt(double posIn, element_type t, element_plane p, element_family f) const
 {
+  double pos = posMod(posIn);
  for (const_AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
     if (it->second->type == t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
       return it;
@@ -270,7 +274,7 @@ const_AccIterator AccLattice::nextCIt(const_AccIterator it, element_type t, elem
 }
 const_AccIterator AccLattice::nextCIt(double posIn, Anchor anchor) const
 {
-  double pos = fmod(posIn,circ);
+  double pos = posMod(posIn);
   const_AccIterator b = nextCIt(pos);
   const_AccIterator a = b; a--;
   if (b == elements.end()) b = elements.begin(); // circulating (a="end--" is last element -> correct)
@@ -1110,16 +1114,18 @@ double AccLattice::slope(double pos, const_AccIterator it) const
 }
 
 // magnetic field including edge field (with slope)
-AccTriple AccLattice::B(double pos, AccPair orbit, unsigned int turn) const
+AccTriple AccLattice::B(double posIn, AccPair orbit) const
 {
+  double pos = posMod(posIn);
+  unsigned int t = turn(posIn);
   // next magnet with center > pos:
   const_AccIterator it = nextCIt(pos,center);
   AccTriple field;
-  field = it->second->B(orbit,turn) * slope(pos, it);
+  field = it->second->B(orbit,t) * slope(pos, it);
   // previous magnet (center <= pos):
   if (it == elements.begin()) it = elements.end();
   it--;                                       
-  field += it->second->B(orbit,turn) * slope(pos, it);
+  field += it->second->B(orbit,t) * slope(pos, it);
 
   return field;
 }
