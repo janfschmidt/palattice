@@ -236,6 +236,11 @@ void FunctionOfPos<AccPair>::simToolClosedOrbit(SimToolInstance &s)
   info.add("Closed Orbit from", s.tool_string());
   info.add("Orbit Source file", orbitFile);
 
+  //init interpolation
+    if (!this->ready) {
+    this->init();
+  }
+
   //stdout info
   cout  << "* "<<samples()<<" BPMs read"<<endl
 	<<"  from "<<orbitFile << endl;

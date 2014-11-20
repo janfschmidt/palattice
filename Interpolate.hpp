@@ -27,6 +27,7 @@ protected:
   std::vector<T> f;           // f(_x) data
   std::string headerString;
   double period;
+  bool ready;
 
 private:
   const gsl_interp_type *type;  // type of interpolation used (see GSL manual)
@@ -34,12 +35,11 @@ private:
 
   gsl_interp_accel *acc;
   std::vector<gsl_spline*> spline;  //several splines for multidimensional data types
-  bool ready;
 
   gsl_spline* getSpline(std::vector<double> f_single);
-  double evalSpline(gsl_spline *s, double xIn);
+  double evalSpline(gsl_spline *s, double xIn) const;
   void initThis();
-  T interpThis(double xIn);
+  T interpThis(double xIn) const;
 
 
 public:
@@ -55,6 +55,7 @@ public:
 
   void init();
   T interp(double xIn);
+  T interp(double xIn) const;
   void reset();                                // new initialization (for child-classes that can change _x and f)
   void reset(std::vector<double> xIn, std::vector<T> fIn, double periodIn=0.); // new initialization and new external data
 
@@ -78,11 +79,11 @@ public:
 // template function specializations
 // interpolation is only implemented for these data types
 template<> void Interpolate<double>::initThis();
-template<> double Interpolate<double>::interpThis(double xIn);
+template<> double Interpolate<double>::interpThis(double xIn) const;
 template<> void Interpolate<AccPair>::initThis();
-template<> AccPair Interpolate<AccPair>::interpThis(double xIn);
+template<> AccPair Interpolate<AccPair>::interpThis(double xIn) const;
 template<> void Interpolate<AccTriple>::initThis();
-template<> AccTriple Interpolate<AccTriple>::interpThis(double xIn);
+template<> AccTriple Interpolate<AccTriple>::interpThis(double xIn) const;
 template<> std::string Interpolate<AccPair>::header() const;
 template<> std::string Interpolate<AccTriple>::header() const;
 

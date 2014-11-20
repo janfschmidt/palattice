@@ -22,7 +22,7 @@ void Interpolate<double>::initThis()
 
 //double
 template <>
-double Interpolate<double>::interpThis(double xIn)
+double Interpolate<double>::interpThis(double xIn) const
 {
   double tmp;
   tmp = evalSpline(spline[0], xIn);
@@ -47,7 +47,7 @@ void Interpolate<AccPair>::initThis()
 
 //AccPair
 template <>
-AccPair Interpolate<AccPair>::interpThis(double xIn)
+AccPair Interpolate<AccPair>::interpThis(double xIn) const
 {
   AccPair tmp;
   tmp.x = evalSpline(spline[0], xIn);  // x: spline[0]
@@ -75,7 +75,7 @@ void Interpolate<AccTriple>::initThis()
 
 //AccTriple
 template <>
-AccTriple Interpolate<AccTriple>::interpThis(double xIn)
+AccTriple Interpolate<AccTriple>::interpThis(double xIn) const
 {
   AccTriple tmp;
   tmp.x = evalSpline(spline[0], xIn);  // x: spline[0]

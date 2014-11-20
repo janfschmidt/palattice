@@ -20,7 +20,7 @@ using namespace pal;
 // !  - sorted by _x, increasing                !
 template <class T>
 Interpolate<T>::Interpolate(const gsl_interp_type *t, double periodIn, unsigned int sizeIn)
-  : _x(sizeIn), f(sizeIn), headerString("value"), period(periodIn), type(t), ready(false)
+  : _x(sizeIn), f(sizeIn), headerString("value"), period(periodIn), ready(false), type(t)
 {
   acc = gsl_interp_accel_alloc ();
 
@@ -140,7 +140,7 @@ gsl_spline* Interpolate<T>::getSpline(vector<double> f_single)
 
 // evaluate spline s at xIn (double type result)
 template <class T>
-double Interpolate<T>::evalSpline(gsl_spline *s, double xIn)
+double Interpolate<T>::evalSpline(gsl_spline *s, double xIn) const
 {
   double tmp;
   stringstream msg;
@@ -193,6 +193,16 @@ T Interpolate<T>::interp(double xIn)
     init();
   }
 
+  return interpThis(xIn);
+}
+
+template <class T>
+T Interpolate<T>::interp(double xIn) const
+{
+  if (!ready) {
+    throw libpalError("ERROR: Interpolate<>:interp_const(): Interpolation cannot be initialized by this const (!) function.");
+  }
+  
   return interpThis(xIn);
 }
 
@@ -334,7 +344,7 @@ void Interpolate<T>::initThis()
 }
 
 template <class T>
-T Interpolate<T>::interpThis(double xIn)
+T Interpolate<T>::interpThis(double xIn) const
 {
   throw libpalError("ERROR: Interpolate<>:interpThis(): Interpolation is not implemented for this data type.");
 }
