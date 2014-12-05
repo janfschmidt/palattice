@@ -202,7 +202,7 @@ public:
 class Sextupole : public Multipole {
 public:
   Sextupole(string _name, double _length, element_family _family=F, double _k2=0.)
-    : Multipole(quadrupole,_name,_length) {family=_family; k2=_k2;}
+    : Multipole(sextupole,_name,_length) {family=_family; k2=_k2;}
   ~Sextupole() {}
 
   virtual Sextupole* clone() const {return new Sextupole(*this);}

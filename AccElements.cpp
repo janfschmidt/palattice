@@ -22,12 +22,12 @@ AccElement::AccElement(element_type _type, string _name, double _length)
 {
   physLength = k0 = k1 = k2 = Qrf1 = dQrf = dpsi = 0;
 
-  if (length < 0) {
+  if (length < 0.) {
     stringstream msg;
     msg << "invalid length "<<length<<"<0 for AccElement " << name;
     throw libpalError(msg.str());
   }
-  else
+  else if (length > 0.)
     this->checkPhysLength();
 }
 
