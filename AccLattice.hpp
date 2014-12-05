@@ -119,7 +119,7 @@ public:
   // test mit Gauss: f(x) = exp(-0.5*(x*0.67449/d)^2), 50% quantil (median) bei 0.67449 sigma.
   // -> nähert sich 0, ist aber f(b) > 0.
   // -> problem: integral muss 1 sein (normierter Gauß) UND f(a) = 1 (nicht-normierter Gauß)
-  AccTriple B(double pos, AccPair orbit) const;
+  AccTriple B(double pos, const AccPair &orbit) const;
 
 
   // output (stdout or file)

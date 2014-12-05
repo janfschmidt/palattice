@@ -31,59 +31,60 @@ class AccElement {
 protected:
   static AccPair zeroPair;
   static AccTriple zeroTriple;
-  double physLength; // physical length (used for edge field calculation (pal::AccLattice::B()) / m
+  double physLength;      // physical length (used for edge field calculation (pal::AccLattice::B()) / m
   void checkPhysLength(); // check for valid value and (re-)calculate physLength from default (config.hpp)
+  string nameInTool(string madx, string elegant, SimTool t) const;
+  string rfComment() const;
 
-  // data entries are allowed to be public (everybody is allowed to modify an Element, especially if it is not mounted in a Lattice)
-  // only type,plane,family are const
+  // following data can be accessed and modified. Only type and length of an element must not be changed.
 public:
-  string name;
-  double length;    // effective length (field length) / m
   const element_type type;
-  const element_plane plane;
-  const element_family family;
-  double strength; // magnet strength e.g. dipole: 1/R, quadrupole: k (k1), sextupole m (k2)
-  double Qrf0;
-  double dQrf;
+  string name;
+  const double length;    // effective length (field length) / m
+  element_plane plane;
+  element_family family;
+  double k0;             // magnet strength. 1/R
+  double k1;             // magnet strength. k
+  double k2;             // magnet strength. m
+  double Qrf1;           // RF magnet tune for turn=1
+  double dQrf;           // RF magnet tune change per turn (linear frequency sweep)
   
   //alignment errors:
-  double dpsi; //rotation around s axis in rad
+  double dpsi;           //rotation around s axis in rad
 
-// physical length (used for edge field calculation (pal::AccLattice::B()) / m
+  AccElement(element_type _type, string _name, double _length);
+  virtual ~AccElement() {};
+  virtual AccElement& operator=(const AccElement* other);
+  virtual AccElement* clone() const =0;
+
+  // physical length (used for edge field calculation (pal::AccLattice::B()) / m
   void setPhysLength(double pl) {physLength = pl; this->checkPhysLength();}
   void setPhysLength() {physLength = 0.; this->checkPhysLength();}
   double getPhysLength() const {return physLength;}
   double dl() const {return fabs(length - getPhysLength());}  // difference of (effective) length and physical length / m
 
+  // magnetic field
+  virtual AccTriple B() const =0;
+  virtual AccTriple B(const AccPair &orbit) const =0;
 
-  AccElement(string _name, double _length, element_type _type, double _strength=0., element_plane _plane=noplane, element_family _family=nofamily);
-  virtual ~AccElement() {};
-  virtual AccElement& operator=(const AccElement* other);
+  //RF magnets (oscillating fields)
+  double rfFactor(unsigned int turn) const; // Magnetic field amplitude factor for oscillating fields
+  AccTriple B_rf(unsigned int turn) const {return B() * rfFactor(turn);}
+  AccTriple B_rf(unsigned int turn, const AccPair &orbit) const {return B(orbit) * rfFactor(turn);}
 
-  virtual AccElement* clone() const =0;
-
-  // magnetic field with all arguments, has to be implemented in each derived class
-  virtual AccTriple B(AccPair orbit, unsigned int turn) const =0;
-
-  // magnetic field defaults with less arguments. throws exception.
-  // => implement the "wanted" cases in derived classes
-  virtual AccTriple B() const;
-  virtual AccTriple B(AccPair orbit) const;
-  virtual AccTriple B(unsigned int turn) const;
-
-  double hKick_mrad() const {return 1000 * B().x * length;}
-  double hKick_mrad(AccPair orbit) const {return 1000 * B(orbit).x * length;}
+  // magnetic field kick angle
+  AccTriple kick_mrad() const {return B() * 1000 * length;}
+  AccTriple kick_mrad(const AccPair &orbit) const {return B(orbit) * 1000 * length;}
 
   bool nameMatch(vector<string> &nameList) const; // true if element name matches entry in List (can include 1 wildcard *)
-  bool nameMatch(string &pattern) const;           // true if element name matches pattern (can include 1 wildcard *)
+  bool nameMatch(string &pattern) const;          // true if element name matches pattern (can include 1 wildcard *)
 
   string type_string() const;    // string output of element type
 
   string print() const;          // string output of (some) element properties
+  string printHeader() const;    // string output of header-line(s) for print()
   virtual string printSimTool(SimTool t) const =0;  // string output of element definition in elegant or madx format
   virtual string printLaTeX() const =0;  // string output of element definition in LaTeX format (using lattice package by Jan Schmidt <schmidt@physik.uni-bonn.de>)
-  string printHeader() const;    // string output of header-line(s) for print()
-
 };
 
 
@@ -91,18 +92,16 @@ public:
 // drift
 class Drift : public AccElement {
 public:
-  Drift(string _name="nothing", double _length=0.)
-    : AccElement(_name,_length,drift) {}
+  Drift(string _name="drift", double _length=0.)
+    : AccElement(drift,_name,_length) {}
   ~Drift() {}
   
   virtual Drift* clone() const {return new Drift(*this);}
 
-  virtual AccTriple B() const;
-  virtual AccTriple B(AccPair orbit) const {return B();}
-  virtual AccTriple B(unsigned int turn) const {return B();}
-  virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B();}
-  string printSimTool(SimTool t) const;
-  string printLaTeX() const;
+  virtual AccTriple B() const {return zeroTriple;}
+  virtual AccTriple B(const AccPair &orbit) const {return B();}
+  virtual string printSimTool(SimTool t) const;
+  virtual string printLaTeX() const;
 };
 
 
@@ -110,131 +109,108 @@ public:
 // cavity (no B-field)
 class Cavity : public AccElement {
 public:
-  Cavity(string _name, double _length=0.)
-    : AccElement(_name,_length,cavity) {}
+  Cavity(string _name, double _length)
+    : AccElement(cavity,_name,_length) {}
   ~Cavity() {}
 
   virtual Cavity* clone() const {return new Cavity(*this);}
   
-  virtual AccTriple B() const;
-  virtual AccTriple B(AccPair orbit) const {return B();}
-  virtual AccTriple B(unsigned int turn) const {return B();}
-  virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B();}
-  string printSimTool(SimTool t) const;
-  string printLaTeX() const;
+  virtual AccTriple B() const {return zeroTriple;}
+  virtual AccTriple B(const AccPair &orbit) const {return B();}
+  virtual string printSimTool(SimTool t) const;
+  virtual string printLaTeX() const;
 };
 
 
+  // magnet (abstract, due to export)
+  class Magnet : public AccElement {
+  protected:
+    const bool rf;
+  public:
+    Magnet(element_type _type, string _name, double _length, bool _rf=false)
+      : AccElement(_type,_name,_length), rf(_rf) {}
 
-// two abstract magnet classes:
-//  PlaneMagnet - homogeneous field in one plane e.g. dipole,corrector (occur as horizontal,vertical,longitudinal)
-//     -> e.g. H means a horizontally bending magnet (horizontal kick, VERTICAL magnetic field)
-//  FamilyMagnet - field in multiple plane e.g. quad, sext (occur as focus and defocus)
+    virtual Magnet* clone() const =0;
 
-class PlaneMagnet : public AccElement {
+    virtual AccTriple B() const;
+    virtual AccTriple B(const AccPair &orbit) const;
+    virtual string printSimTool(SimTool t) const =0;
+    virtual string printLaTeX() const =0;
+  };
+
+
+  // multipole (abstract, du to export). forbids B() without orbit argument.
+  class Multipole : public Magnet {
+  public:
+    Multipole(element_type _type, string _name, double _length)
+      : Magnet(_type,_name,_length) {}
+
+    virtual Multipole* clone() const =0;
+
+    virtual AccTriple B() const;
+    virtual string printSimTool(SimTool t) const =0;
+    virtual string printLaTeX() const =0;
+  };
+
+
+
+
+//-------- magnet types -----------
+
+class Dipole : public Magnet {
 public:
-  PlaneMagnet(string _name, double _length,element_type _type, element_plane _plane, double _strength=0.)
-    : AccElement(_name,_length,_type,_strength, _plane, nofamily) {}
-};
-
-class FamilyMagnet : public AccElement {
-public:
-  FamilyMagnet(string _name, double _length,element_type _type, element_family _family, double _strength=0.)
-    : AccElement(_name,_length,_type,_strength, noplane, _family) {}
-};
-
-
-
-
-
-
-
-//-------- definition of magnet types -----------
-
-class Dipole : public PlaneMagnet {
-public:
-  Dipole(string _name, double _length, double _strength=0., element_plane _plane=H)
-    : PlaneMagnet(_name,_length,dipole,_plane,_strength) {}
+  Dipole(string _name, double _length, element_plane _plane=H, double _k0=0.)
+    : Magnet(dipole,_name,_length) {plane=_plane; k0=_k0;}
   ~Dipole() {}
 
   virtual Dipole* clone() const {return new Dipole(*this);}
 
-  virtual AccTriple B() const;
-  virtual AccTriple B(AccPair orbit) const {return B();}
-  virtual AccTriple B(unsigned int turn) const {return B();}
-  virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B();}
   string printSimTool(SimTool t) const;
   string printLaTeX() const;
 };
 
-
-class Corrector : public PlaneMagnet {
+class Corrector : public Magnet {
 public:
-  Corrector(string _name, double _length, double _strength=0., element_plane _plane=H)
-    : PlaneMagnet(_name,_length,corrector,_plane,_strength) {}
+  Corrector(string _name, double _length, element_plane _plane=H, double _k0=0.)
+    : Magnet(corrector,_name,_length) {plane=_plane; k0=_k0;}
   ~Corrector() {}
 
   virtual Corrector* clone() const {return new Corrector(*this);}
 
-  virtual AccTriple B() const;
-  virtual AccTriple B(AccPair orbit) const {return B();}
-  virtual AccTriple B(unsigned int turn) const {return B();}
-  virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B();}
   string printSimTool(SimTool t) const;
   string printLaTeX() const;
 };
-
-
-class RFdipole : public PlaneMagnet {
-public:
-  RFdipole(string _name, double _length, double _strength=0., element_plane _plane=H)
-    : PlaneMagnet(_name,_length,rfdipole,_plane,_strength) {}
-  ~RFdipole() {}
-
-  virtual RFdipole* clone() const {return new RFdipole(*this);}
-
-  virtual AccTriple B(unsigned int turn) const;
-  virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B(turn);}
-  string printSimTool(SimTool t) const;
-  string printLaTeX() const;
-};
-
-
 
 // ====== ATTENTION ====================================================================
-// Change of "element_family" (F <-> D) changes sign of "B()" !
-// So either set "element_family" and use absolute values for "strength"
-// or always use default "element_family" (F) and set negative "strength" for D magnets.
+// Change of "element_family" (F <-> D) changes sign of magnetic field (k1,k2) !
+// So either set "element_family" and use absolute values for "k[i]"
+// or always use default "element_family" (F) and set negative "k[i]" for D magnets.
 // =====================================================================================
 
-class Quadrupole : public FamilyMagnet {
+class Quadrupole : public Multipole {
 public:
-  Quadrupole(string _name, double _length, double _strength=0., element_family _family=F)
-    : FamilyMagnet(_name,_length,quadrupole,_family,_strength) {}
+  Quadrupole(string _name, double _length, element_family _family=F, double _k1=0.)
+    : Multipole(quadrupole,_name,_length) {family=_family; k1=_k1;}
   ~Quadrupole() {}
 
   virtual Quadrupole* clone() const {return new Quadrupole(*this);}
 
-  virtual AccTriple B(AccPair orbit) const;
-  virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B(orbit);}
   string printSimTool(SimTool t) const;
   string printLaTeX() const;
 };
 
-
-class Sextupole : public FamilyMagnet {
+class Sextupole : public Multipole {
 public:
-  Sextupole(string _name, double _length, double _strength=0., element_family _family=F)
-    : FamilyMagnet(_name,_length,sextupole,_family,_strength) {}
+  Sextupole(string _name, double _length, element_family _family=F, double _k2=0.)
+    : Multipole(quadrupole,_name,_length) {family=_family; k2=_k2;}
   ~Sextupole() {}
 
   virtual Sextupole* clone() const {return new Sextupole(*this);}
 
-  virtual AccTriple B(AccPair orbit) const;
-  virtual AccTriple B(AccPair orbit, unsigned int turn) const {return B(orbit);}
   string printSimTool(SimTool t) const;
   string printLaTeX() const;
 };
+
 
 
 string getLaTeXDrift(double driftlength); // Drift element for LaTeX (used by Drift::printLaTeX and AccLattice::latexexport)

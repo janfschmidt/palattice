@@ -16,7 +16,7 @@ using namespace pal;
 
 
 // set all magnetic field values from lattice and orbit
-void Field::set(AccLattice &lattice, FunctionOfPos<AccPair>& orbit, double n_samples)
+void Field::set(AccLattice &lattice, FunctionOfPos<AccPair>& orbit, unsigned int n_samples)
 {
   //metadata
   stringstream stmp;
@@ -52,11 +52,11 @@ void Field::set(AccLattice &lattice, FunctionOfPos<AccPair>& orbit, double n_sam
 	   cout << e.what() << endl;
 	   noorbit = true;
 	 }
-	 Btmp = lattice[_pos]->B(t); //use field without orbit
+	 Btmp = lattice[_pos]->B_rf(t); //use field without orbit (not implemented for AccLattice::B())
 	 this->modify(Btmp, i, t);
        }
 
-       //Btmp = lattice[_pos]->B(otmp,t);
+       //Btmp = lattice[_pos]->B_rf(t,otmp);
        Btmp = lattice.B(_pos_tot,otmp);
        this->modify(Btmp, i, t);
      }

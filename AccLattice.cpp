@@ -563,76 +563,56 @@ void AccLattice::madximport(SimToolInstance &madx)
   SimToolTable twi;
   twi = madx.readTable(madxTwissFile, columns);
 
-  //AccElements
-  AccElement *element;
-  Dipole hDip("defaultName", 0., 0., H); // horizontally bending dipole
-  Dipole vDip("defaultName", 0., 0., V); // vertically bending dipole
-  Corrector vCorr("defaultName", 0., 0., V); // vertical kicker has HORIZONTAL field
-  Corrector hCorr("defaultName", 0., 0., H);
-  RFdipole vRFdip("defaultName", 0., 0., V); // vertical kicker has HORIZONTAL field
-  RFdipole hRFdip("defaultName", 0., 0., H);
-  Quadrupole Quad("defaultName", 0., 0., F); // madx uses negative sign "strength" for D magnets,
-  Sextupole Sext("defaultName", 0., 0., F);  // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
-  Cavity Cav("defaultName");
-  Drift empty_space("defaultName", 0.);  
-
 
   //mount elements
+  AccElement *element;
+  double s=0.;
   for (unsigned int i=0; i<twi.rows(); i++) {
-    string key = twi.get<string>("KEYWORD",i);
+    string key = twi.gets("KEYWORD",i);
+    string name = removeQuote(twi.gets("NAME",i));
     double l = twi.getd("L",i);
-    double s = twi.getd("S",i);
+    double angle = twi.getd("ANGLE",i);
+    double hkick = twi.getd("HKICK",i);
+    double vkick = twi.getd("VKICK",i);
 
     if (key == "\"SBEND\"" || key == "\"RBEND\"") {  //vertical Dipole (assume all bends have vertical field)
-      element = &hDip;
-      element->strength = twi.getd("ANGLE",i)/l;   // 1/R (!!! assuming l is arclength (along ref. orbit) !!!)
+      element = new Dipole(name, l, H);
     }
     else if (key == "\"QUADRUPOLE\"") {
-      element = &Quad;
-      element->strength = twi.getd("K1L",i)/l;   // k1
+      element = new Quadrupole(name, l, F);
     }
     else if (key == "\"SEXTUPOLE\"") {
-      element = &Sext;
-      element->strength = twi.getd("K2L",i)/l;
+      element = new Sextupole(name, l, F);
     }
     else if (key == "\"VKICKER\"") {
-      if (twi.gets("NAME",i).substr(0,6) == "RFDIP.") { //RF dipole
-	element = &vRFdip;
-	//element->Qrf0 = 0.625;          // !! hardcoded RF-tune values !!
-	//element->dQrf = 5.402e-6;
-      }
-      else {                              //Corrector
-	element = &vCorr;
-      }
-      element->strength = sin(twi.getd("VKICK",i))/l;   // 1/R from kick-angle
+      element = new Corrector(name, l, V);
     }
     else if (key == "\"HKICKER\"") {
-      if (twi.gets("NAME",i).substr(0,6) == "RFDIP.") { //RF dipole
-	element = &hRFdip;
-	//element->Qrf0 = 0.625;          // !! hardcoded RF-tune values !!
-	//element->dQrf = 5.402e-6;
-      }
-      else {                              //Corrector
-	element = &hCorr;
-      }
-      element->strength = sin(twi.getd("HKICK",i))/l;   // 1/R from kick-angle
+      element = new Corrector(name, l, H);
     }
+    // IMPLEMENT type KICKER -> kick in 2 planes H&V!
     else if (key == "\"RFCAVITY\"") {
-      element = &Cav;
-      element->strength = 0.;
+      element = new Cavity(name, l);
     }
-    else
-      element = &empty_space;
+    else continue; //Drifts are not mounted explicitly
     
-    if (element->type != drift) {
-      element->name = removeQuote(twi.gets("NAME",i));
-      element->length = l;
-      element->setPhysLength();
-      if (refPos == begin) s -= l;
-      else if (refPos == center) s -= l/2;
-      this->mount(s, *element);
-    }
-    // cout << "new line, mounted:" << element->name << endl;
+    // rf magnet
+    // if (twi.gets("NAME",i).substr(0,6) == "RFDIP.") {
+    //   element->Qrf0 = 0.625;          // !! hardcoded RF-tune values !!
+    //   element->dQrf = 5.402e-6;
+    // }
+
+    if (angle!=0.) element->k0 += angle / l; // 1/R from bending angle, curved length l
+    if (element->plane==H && hkick!=0.)  element->k0 += sin(hkick) / l; // 1/R from kick angle, straight length
+    else if (element->plane==V && vkick!=0.)  element->k0 += sin(vkick) / l;
+    element->k1 = twi.getd("K1L",i)/l;
+    element->k2 = twi.getd("K2L",i)/l;
+    //misalignments in AccLattice::madximportMisalignments()
+    s = twi.getd("S",i);
+    if (refPos == begin) s -= l;
+    else if (refPos == center) s -= l/2;
+    this->mount(s, *element);
+    delete element;
   }
 
   // import misalignments
@@ -732,15 +712,6 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
     throw std::runtime_error(msg.str());
   }
 
-  //AccElements
-  Dipole hDip("defaultName", 0., 0., H);
-  Dipole vDip("defaultName", 0., 0., V);
-  Corrector vCorr("defaultName", 0., 0., V); // vertical kicker has HORIZONTAL field
-  Corrector hCorr("defaultName", 0., 0., H);
-  Quadrupole Quad("defaultName", 0., 0., F); // elegant uses negative sign "strength" for D magnets,
-  Sextupole Sext("defaultName", 0., 0., F);  // so here all Quads/Sexts are defined as family F (also see AccElements.hpp)
-  Cavity Cav("defaultName", 0.);
-  Drift empty_space("defaultName", 0.);
 
   if (refPos != end)
     cout << "WARNING: AccLattice::elegantimport(): The input file (elegant parameter) uses element end as positions." << endl
@@ -770,43 +741,46 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
     if (row.name != row_old.name) {
 
      if (row_old.type=="CSBEND" || row_old.type=="CSRCSBEND" || row_old.type=="KSBEND" || row_old.type=="NIBEND" || row_old.type=="TUBEND") {
-       element = &hDip;
-       element->strength = angle / l;
+       element = new Dipole(row_old.name, l, H);
      }
      else if (row_old.type=="QUAD") {
-       element = &Quad;
-       element->strength = k1;
+       element = new Quadrupole(row_old.name, l, F);
      }
      else if (row_old.type=="SEXT") {
-       element = &Sext;
-       element->strength = k2;
+       element = new Sextupole(row_old.name, l, F);
      }
      else if (row_old.type=="VKICK") {
-       element = &vCorr;
-       element->strength = sin(kick) / l;  // 1/R from kick-angle
+       element = new Corrector(row_old.name, l, V);
      }
      else if (row_old.type=="HKICK") {
-       element = &hCorr;
-       element->strength = sin(kick) / l;  // 1/R from kick-angle
+       element = new Corrector(row_old.name, l, V);
      }
+     // IMPLEMENT type KICK -> kick in 2 planes H&V!
      else if (row_old.type=="RFCA") {
-       element = &Cav;
-       element->strength = 0.;
+       element = new Cavity(row_old.name, l);
      }
      else
-       element = &empty_space; //Drift
+       element = new Drift(); //Drifts are not mounted explicitly
+     
+     // rf magnet
+     // if (row_old.name.substr(0,6) == "RFDIP.") {
+     //   element->Qrf0 = 0.625;          // !! hardcoded RF-tune values !!
+     //   element->dQrf = 5.402e-6;
+     // }
 
      if (element->type != drift) {
-       element->length = l;
-       element->setPhysLength();
-       element->name = row_old.name;
+       if (angle!=0.) element->k0 += angle / l; // 1/R from bending angle, curved length l
+       if (kick!=0.)  element->k0 += sin(kick) / l; // 1/R from kick angle, straight length l
+       element->k1 = k1;
+       element->k2 = k2;
        element->dpsi = tilt;
        if (refPos == begin) pos = s-l;
        else if (refPos == center) pos = s-l/2;
        else pos = s; 
        this->mount(pos, *element); // mount element
-       pos=l=k1=k2=angle=kick=tilt=0.;   // clear param. values to avoid reuse of an old value
      }
+     delete element;
+     pos=l=k1=k2=angle=kick=tilt=0.;   // clear param. values to avoid reuse of an old value
     }
 
     //read parameter in row (if needed)
@@ -881,20 +855,20 @@ void AccLattice::setELSAoptics(string spurenFolder)
   //Write strengths to quads
   for (it=firstIt(quadrupole); it!=elements.end(); it=nextIt(it,quadrupole)) {
     if (it->second->name.compare(1,2,"QF") == 0) {
-      it->second->strength = kf;
+      it->second->k1 = kf;
     }
     else if (it->second->name.compare(1,2,"QD") == 0) {
-      it->second->strength = -kd;
+      it->second->k1 = -kd;
     }
   }
 
   //Write strengths to sexts
   for (it=firstIt(sextupole); it!=elements.end(); it=nextIt(it,sextupole)) {
     if (it->second->name.compare(1,2,"SF") == 0) {
-      it->second->strength = mf;
+      it->second->k2 = mf;
     }
     else if (it->second->name.compare(1,2,"SD") == 0) {
-      it->second->strength = -md;
+      it->second->k2 = -md;
     }
   }
 
@@ -944,7 +918,7 @@ unsigned int AccLattice::setELSACorrectors(ELSASpuren &spuren, unsigned int t)
    }
    
    corrTmp = it->second->clone();
-   corrTmp->strength = spuren.vcorrs[i].time[t].kick/1000.0/corrTmp->length;   //unit 1/m
+   corrTmp->k0 = spuren.vcorrs[i].time[t].kick/1000.0/corrTmp->length;   //unit 1/m
    it_next = nextIt(it,corrector,V);  // only vertical correctors (V)!
    elements.erase(it);   // erase "old" corrector (madx) to be able to mount new one
    endPos = spuren.vcorrs[i].pos + corrTmp->length/2;
@@ -1002,7 +976,7 @@ void AccLattice::subtractCorrectorStrengths(AccLattice &other)
     }
 
     // subtract
-    it->second->strength -= otherIt->second->strength;
+    it->second->k0 -= otherIt->second->k0;
     // set otherIt to next corrector
     otherIt=nextCIt(otherIt,corrector);
   }
@@ -1114,18 +1088,18 @@ double AccLattice::slope(double pos, const_AccIterator it) const
 }
 
 // magnetic field including edge field (with slope)
-AccTriple AccLattice::B(double posIn, AccPair orbit) const
+AccTriple AccLattice::B(double posIn, const AccPair &orbit) const
 {
   double pos = posMod(posIn);
   unsigned int t = turn(posIn);
   // next magnet with center > pos:
   const_AccIterator it = nextCIt(pos,center);
   AccTriple field;
-  field = it->second->B(orbit,t) * slope(pos, it);
+  field = it->second->B_rf(t,orbit) * slope(pos, it); //B_rf includes rf magnets
   // previous magnet (center <= pos):
   if (it == elements.begin()) it = elements.end();
   it--;                                       
-  field += it->second->B(orbit,t) * slope(pos, it);
+  field += it->second->B_rf(t,orbit) * slope(pos, it);
 
   return field;
 }
@@ -1151,7 +1125,7 @@ void AccLattice::print(string filename)
 
   //write text to s
   s << info.out("#");
-  s <<"# (* unit of Strength depends on magnet type! e.g. Quad: k1, Sext: k2, Dipole: 1/R)" <<endl;
+  // NO! s <<"# (* unit of Strength depends on magnet type! e.g. Quad: k1, Sext: k2, Dipole: 1/R)" <<endl;
   s <<"#"<< std::setw(w) << "Ref.Pos/m" << it->second->printHeader();
 
   for (; it!=elements.end(); ++it) {
@@ -1185,7 +1159,7 @@ void AccLattice::print(element_type _type, string filename) const
   //write text to s
   s << info.out("#");
   s << "# List of " << it->second->type_string() << "s only!" << endl;
-  s <<"# (* unit of Strength depends on magnet type! e.g. Quad: k1, Sext: k2, Dipole: 1/R)" <<endl;
+  // NO! s <<"# (* unit of Strength depends on magnet type! e.g. Quad: k1, Sext: k2, Dipole: 1/R)" <<endl;
   s <<"#"<< std::setw(w) << "Ref.Pos/m" << it->second->printHeader();
 
   for (; it!=lastCIt(_type); it=nextCIt(it,_type)) {

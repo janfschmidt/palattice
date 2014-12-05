@@ -67,7 +67,7 @@ AccPair operator*(double num) {
     this->z /= num;
   }
   // tilt clockwise around s (longitudinal) axis -> dpsi
-  AccPair tilt(double dpsi) {
+  AccPair tilt(double dpsi) const {
     AccPair tmp;
     tmp.x = this->x*cos(dpsi) + this->z*sin(dpsi);
     tmp.z = - this->x*sin(dpsi) + this->z*cos(dpsi);
@@ -109,32 +109,32 @@ public:
     this->s -= second.s;
   }
   //multiplication&division
-  AccTriple operator*(double num) {
+  template <typename T> AccTriple operator*(T num) {
     AccTriple tmp;
     tmp.x = this->x * num;
     tmp.z = this->z * num;
     tmp.s = this->s * num;
     return tmp;
   }
-  AccTriple operator/(double num) {
+  template <typename T> AccTriple operator/(T num) {
     AccTriple tmp;
     tmp.x = this->x / num;
     tmp.z = this->z / num;
     tmp.s = this->s / num;
     return tmp;
   }
- void operator*=(double num) {
+  template <typename T> void operator*=(T num) {
     this->x *= num;
     this->z *= num;
     this->s *= num;
   }
-  void operator/=(double num) {
+  template <typename T> void operator/=(T num) {
     this->x /= num;
     this->z /= num;
     this->s /= num;
   }
   // tilt clockwise around s (longitudinal) axis -> dpsi
-  AccTriple tilt(double dpsi) {
+  AccTriple tilt(double dpsi) const {
     AccTriple tmp;
     tmp.x = this->x*cos(dpsi) + this->z*sin(dpsi);
     tmp.z = - this->x*sin(dpsi) + this->z*cos(dpsi);

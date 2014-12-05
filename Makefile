@@ -1,8 +1,8 @@
 CC=g++
 ccflags = -Wall -fPIC -g #-O0
 LIB_NAME=libpal
-Vmajor=2
-Vminor=1.0
+Vmajor=3
+Vminor=0.0
 INSTALL_PATH=/usr/local/
 
 ALL_O=Interpolate.o Metadata.o ELSASpuren.o FunctionOfPos.o Field.o AccElements.o AccLattice.o Spectrum.o SimTools.o
@@ -10,7 +10,7 @@ LIB_FILE=$(LIB_NAME).so
 SIMTOOL_PATH=$(INSTALL_PATH)/lib/libpal_simTools
 
 
-$(LIB_NAME): $(ALL_O)
+$(LIB_NAME): libpalGitversion.hpp simToolPath.hpp $(ALL_O)
 	$(CC) $(ccflags) -shared -Wl,-soname,$(LIB_FILE).$(Vmajor) -o $(LIB_FILE).$(Vmajor).$(Vminor)  $(ALL_O) -lgsl -lgslcblas -lm
 
 programs: 
