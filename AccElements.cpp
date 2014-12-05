@@ -155,8 +155,6 @@ string AccElement::type_string() const
     return "Quadrupole";
   case corrector:
     return "Corrector";
-  case rfdipole:
-    return "RF-Dipole";
   case sextupole:
     return "Sextupole";
   case cavity:

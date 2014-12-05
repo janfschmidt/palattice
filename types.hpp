@@ -46,23 +46,23 @@ public:
     this->z -= second.z;
   }
   //multiplication&division
-AccPair operator*(double num) {
+  template <typename T> AccPair operator*(T num) {
     AccPair tmp;
     tmp.x = this->x * num;
     tmp.z = this->z * num;
     return tmp;
   }
-  AccPair operator/(double num) {
+  template <typename T> AccPair operator/(T num) {
     AccPair tmp;
     tmp.x = this->x / num;
     tmp.z = this->z / num;
     return tmp;
   }
-  void operator*=(double num) {
+  template <typename T> void operator*=(T num) {
     this->x *= num;
     this->z *= num;
   }
-  void operator/=(double num) {
+  template <typename T> void operator/=(T num) {
     this->x /= num;
     this->z /= num;
   }
@@ -141,7 +141,6 @@ public:
     tmp.s = this->s;
     return tmp;
   }
-
 };
 
 

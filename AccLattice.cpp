@@ -753,7 +753,7 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
        element = new Corrector(row_old.name, l, V);
      }
      else if (row_old.type=="HKICK") {
-       element = new Corrector(row_old.name, l, V);
+       element = new Corrector(row_old.name, l, H);
      }
      // IMPLEMENT type KICK -> kick in 2 planes H&V!
      else if (row_old.type=="RFCA") {
@@ -1054,7 +1054,7 @@ string AccLattice::sizeSummary() const
   stringstream s;
   s << "* "<<this->size(dipole)<<" dipoles, "<<this->size(quadrupole)<<" quadrupoles, "
     <<this->size(sextupole)<<" sextupoles, "<<this->size(corrector)<<" kickers, "
-    <<this->size(rfdipole)<<" rfdipoles, "<<this->size(cavity)<<" cavities";
+    <<this->size(cavity)<<" cavities";
   return s.str();
 }
 
