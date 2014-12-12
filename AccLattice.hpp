@@ -75,9 +75,11 @@ public:
   double posMod(double posIn) const {return fmod(posIn,circ);}           // get position modulo circumference
   unsigned int turn(double posIn) const {return int(posIn/circ + ZERO_DISTANCE) + 1;} // get turn from position
   double locate(double pos, const AccElement *obj, Anchor here) const;  // get here=begin/center/end (in meter) of obj at reference-position pos
+  double locate(const_AccIterator it, Anchor here) const;               // get here=begin/center/end (in meter) of lattice element "it"
+  double locate(string name, Anchor here) const {return locate(operator[](name),here);} // get here=begin/center/end (in meter) of lattice element by name
   bool inside(double pos, const AccElement *obj, double here) const;    // test if "here" is inside obj at position pos
-  double locate(const_AccIterator it, Anchor here) const;               // get here=begin/center/end (in meter)  of lattice element "it"
   bool inside(const_AccIterator it, double here) const;                 // test if "here" is inside lattice element "it"  
+  bool inside(string name, double here) const {return inside(operator[](name),here);}   // test if "here" is inside lattice element with name
   double distance(double pos, const_AccIterator it, Anchor itRef) const;// distance from itRef of element it to pos (>0 if pos is after itRef)
   double distanceRing(double pos, const_AccIterator it, Anchor itRef) const;// distance in a ring (both directions, shorter distance returned)
 

@@ -39,7 +39,7 @@ private:
   //string headerString;
   unsigned int index(unsigned int i, unsigned int turn) const; //get index for pos[] & value[] from index(1turn) and turn
   unsigned int index(double pos, unsigned int turn) const; //get index for pos[] & value[] from pos(1turn) and turn
-  void hide_last_turn(); // reduce turns by one (only do this, if you need pos=0. value to avoid extrapolation for non-periodic function!)
+  void hide_last_turn() {n_turns-=1;} // reduce turns by one (only do this, if you need pos=0. value to avoid extrapolation for non-periodic function!)
   void circCheck();
 
 

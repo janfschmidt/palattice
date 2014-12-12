@@ -13,7 +13,7 @@ using namespace std;
 
 
 SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string fileIn, string fileTag)
-  : executed(false), trackingTurns(0), tag(fileTag), tool(toolIn), mode(modeIn)
+  : executed(false), trackingTurns(0), tag(fileTag), tool(toolIn), mode(modeIn), verbose(false)
 {
 
   //path: path of fileIn
@@ -161,7 +161,11 @@ void SimToolInstance::run()
     runcmd << ELEGANTCOMMAND << " ";
     cout << "Run Elegant...";
   }
-  runcmd << runFile << " >> " << log();
+  runcmd << runFile;
+  if (this->verbose)
+    runcmd << " | tee " <<tool_string()<< ".log";
+  else
+    runcmd << " >> " <<tool_string()<< ".log";
   cout << " (log: " << log() << ")" << endl;
   int ret = system(runcmd.str().c_str());
   if (ret != 0)

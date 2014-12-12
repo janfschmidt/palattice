@@ -54,6 +54,7 @@ namespace pal
   public:
     const SimTool tool;
     const SimToolMode mode;
+    bool verbose;
 
     //SimToolInstance constructor:
     //-fileIn: mode=online: latticeInput, mode=offline: SimTool Output
@@ -77,7 +78,7 @@ namespace pal
     //filenames
     string inFile() const {return _path+file;} //mode=online: latticeInput, mode=offline: SimTool Output
     string outFile(string extension) const {return _path+filebase+"."+extension;}
-    string log() const {return outFile("log");}
+    string log() const {return _path+tool_string()+".log";}
     string path() const {return _path;}
     string lattice() const {return outCases("twiss", "param");}
     string twiss() const {return outCases("twiss", "twi");}

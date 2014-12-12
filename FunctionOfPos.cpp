@@ -134,12 +134,13 @@ void FunctionOfPos<AccPair>::readSimToolColumn(SimToolInstance &s, string file, 
     double pos = tab.get<double>(posColumn,i);
     // values at pos=circ are ignored to avoid #turns problem
     // see simToolTrajectory() for another solution
-    if (fabs(pos-circ) <= ZERO_DISTANCE) continue;
+    if (fabs(pos-circ) <= 0.0001) continue;
 
     pair.x = tab.getd(valColumn[0],i);
     pair.z = tab.getd(valColumn[1],i);
     this->set(pair, pos);
   }
+  //if (s.tool==elegant) this->pop_back_turn(); //elegant: always entry with s=circumference due to drifts. Avoid additional turn.
 
  //metadata
   info.simToolImport(s);
@@ -169,13 +170,14 @@ void FunctionOfPos<AccTriple>::readSimToolColumn(SimToolInstance &s, string file
     double pos = tab.get<double>(posColumn,i);
     // values at pos=circ are ignored to avoid #turns problem
     // see simToolTrajectory() for another solution
-    if (fabs(pos-circ) <= ZERO_DISTANCE) continue;
+    if (fabs(pos-circ) <= 0.0001) continue;
 
     triple.x = tab.getd(valColumn[0],i);
     triple.z = tab.getd(valColumn[1],i);
     triple.s = tab.getd(valColumn[2],i);
     this->set(triple, pos);
   }
+  //if (s.tool==elegant) this->pop_back_turn(); //elegant: always entry with s=circumference due to drifts. Avoid additional turn.
 
  //metadata
   info.simToolImport(s);

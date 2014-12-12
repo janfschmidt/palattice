@@ -13,19 +13,19 @@ else
     tag="_"$1
 fi
 
-
-# ascii closed orbit file elegant.clo
-sddsprintout $2.clo elegant$tag.clo -Title='***' -col='(ElementName,ElementType,s,x,y)'
-
 # header data for lattice parameter file elegant.param:
 # circumference from watch file
 file=`ls $2*.w | head -n1`
-echo -e "circumference\t `sdds2stream $file -page=1 -par=PassLength`" > elegant$tag.param #overwrite existing file
+circ=`sdds2stream $file -page=1 -par=PassLength`
+echo -e "circumference\t $circ" > elegant$tag.param #overwrite existing file
 # pCentral from watch file
 echo -e "pCentral/m_e*c\t `sdds2stream $file -page=1 -par=pCentral`" >> elegant$tag.param #append..
 # tunes from watch file
 echo -e "tune:Qx\t `sdds2stream $2.twi -par=nux`" >> elegant$tag.param
 echo -e "tune:Qz\t `sdds2stream $2.twi -par=nuy`" >> elegant$tag.param
+
+# ascii closed orbit file elegant.clo
+sddsprocess $2.clo -pipe=out -match=column,ElementType=WATCH,! -match=column,ElementName=_BEG_,! | sddsprintout -pipe=in elegant$tag.clo -Title='***' -col='(ElementName,ElementType,s,x,y)'
 
 # ascii lattice parameter file elegant.param
 sddsprintout $2.param tmp.param -Title='***' -col='(ElementName,ElementParameter,ParameterValue,ElementType)'
@@ -33,7 +33,7 @@ cat tmp.param >> elegant$tag.param
 rm tmp.param
 
 # ascii twiss file elegant.twi
-sddsprintout $2.twi elegant$tag.twi -Title='***' -width=200 -col='(ElementName,ElementType,s,betax,alphax,psix,etax,etaxp,betay,alphay,psiy)'
+sddsprocess $2.twi -pipe=out -match=column,ElementType=WATCH,! -match=column,ElementName=_BEG_,! | sddsprintout -pipe=in elegant$tag.twi -Title='***' -width=200 -col='(ElementName,ElementType,s,betax,alphax,psix,etax,etaxp,betay,alphay,psiy)'
 
 # ascii single particle trajectory files ($3=particleID) , e.g. elegant.w02.p1
 # from watch-files:
