@@ -35,9 +35,8 @@ int main()
   B.print("fields_edge.dat");
 
   //Spectrum of horizontal (pal::x) field
-  double stepwidth = 0.;  // Field already has equidistant sampling, so no new sampling for FFT needed
   unsigned int fmax = 60;
-  pal::Spectrum fft = B.getSpectrum(stepwidth,pal::x,fmax);
+  pal::Spectrum fft = B.getSpectrum(pal::x,fmax);  // Field already has equidistant sampling, so no new sampling for FFT needed (in contrast to interptwiss.cpp)
   fft.print("fields_x.spectrum");
 
   return 0;

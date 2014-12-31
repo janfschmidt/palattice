@@ -30,6 +30,13 @@ public:
   void set(AccLattice &lattice, FunctionOfPos<AccPair> &orbit, unsigned int n_samples, bool edgefields=true); // set all magnetic field values from lattice and orbit
 
   int magnetlengths(AccLattice &lattice, const char *filename) const;
+
+  // overwrite getSpectrum: equidistant sampling given, no need to set stepwidth
+  Spectrum getSpectrum(AccAxis axis=x, unsigned int fmaxrev=30, double ampcut=0., string name="") const
+  {return FunctionOfPos<AccTriple>::getSpectrum(0,axis,fmaxrev,ampcut,name);}
+  Spectrum getSpectrum(unsigned int fmaxrev=30, double ampcut=0., string name="") const
+  {return FunctionOfPos<AccTriple>::getSpectrum(0,fmaxrev,ampcut,name);}
+
 };
 
 } //namespace pal
