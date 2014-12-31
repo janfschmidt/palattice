@@ -30,7 +30,7 @@ void usage()
        << "     if both -m and -e are given, the last one is used." << endl
        << "* -l        additional output of a LaTeX format lattice file (default: convert_[FILE].tex)" << endl
        << "* -o [name] specify output filenames ([name].lte/madx/tex). If [name]=stdout, output to terminal" << endl
-       << "* -a        all 3 output formats"
+       << "* -a        all 3 output formats" << endl
        << "* -n        offline mode. no madx or elegant execution." << endl
        << "            Thus, [FILE] must be a madx/elegant output filename:" << endl
        << "            - for MadX: a twiss file" << endl
@@ -96,7 +96,8 @@ int main (int argc, char *argv[])
   
 
   // import lattice
-  pal::AccLattice lattice("convertlattice", tool, file, mode);
+  pal::SimToolInstance sim(tool, mode, file);
+  pal::AccLattice lattice("convertlattice", sim);
   
 
   // export lattice

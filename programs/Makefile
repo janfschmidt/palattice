@@ -2,24 +2,27 @@ CC=g++
 ccflags = -Wall #-g -O0 #last 2 for valgrind
 INSTALL_PATH=/usr/local/
 
-ALL=convertlattice interptwiss
+ALL=lattice interptwiss fields convertlattice
 
 all: $(ALL)
 .PHONY: all
 
-convertlattice: convertlattice.cpp
+lattice: lattice.cpp
 	$(CC) $(ccflags) -o $@ $< -lpal
-
 interptwiss: interptwiss.cpp
 	$(CC) $(ccflags) -o $@ $< -lpal -lgsl
+fields: fields.cpp
+	$(CC) $(ccflags) -o $@ $< -lpal -lgsl
+
+
+convertlattice: convertlattice.cpp
+	$(CC) $(ccflags) -o $@ $< -lpal
 
 clean:
 	rm $(ALL)
 
 install:
 	install -m 755 -p -v convertlattice $(INSTALL_PATH)/bin/
-	install -m 755 -p -v interptwiss $(INSTALL_PATH)/bin/
 
 uninstall:
 	rm -f $(INSTALL_PATH)/bin/convertlattice
-	rm -f $(INSTALL_PATH)/bin/interptwiss
