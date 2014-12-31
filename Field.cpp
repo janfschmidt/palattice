@@ -16,7 +16,7 @@ using namespace pal;
 
 
 // set all magnetic field values from lattice and orbit
-void Field::set(AccLattice &lattice, FunctionOfPos<AccPair>& orbit, unsigned int n_samples)
+void Field::set(AccLattice &lattice, FunctionOfPos<AccPair>& orbit, unsigned int n_samples, bool edgefields)
 {
   //metadata
   stringstream stmp;
@@ -47,17 +47,20 @@ void Field::set(AccLattice &lattice, FunctionOfPos<AccPair>& orbit, unsigned int
        try{
        otmp = orbit.interp(_pos_tot);
        }
-       catch (std::runtime_error &e) {
+       catch (std::runtime_error &e) { //no orbit available: use field without orbit
 	 if (!noorbit) {
 	   cout << e.what() << endl;
 	   noorbit = true;
 	 }
-	 Btmp = lattice[_pos]->B_rf(t); //use field without orbit (not implemented for AccLattice::B())
+	 Btmp = lattice[_pos]->B_rf(t); //field without orbit not implemented with edgefields (AccLattice::B())
 	 this->modify(Btmp, i, t);
        }
 
-       //Btmp = lattice[_pos]->B_rf(t,otmp);
-       Btmp = lattice.B(_pos_tot,otmp);
+       if (edgefields)
+	 Btmp = lattice.B(_pos_tot,otmp);
+       else
+	 Btmp = lattice[_pos]->B_rf(t,otmp);
+
        this->modify(Btmp, i, t);
      }
    }

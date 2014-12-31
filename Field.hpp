@@ -27,7 +27,7 @@ public:
   ~Field() {}
 
   
-  void set(AccLattice &lattice, FunctionOfPos<AccPair> &orbit, unsigned int n_samples); // set all magnetic field values from lattice and orbit
+  void set(AccLattice &lattice, FunctionOfPos<AccPair> &orbit, unsigned int n_samples, bool edgefields=true); // set all magnetic field values from lattice and orbit
 
   int magnetlengths(AccLattice &lattice, const char *filename) const;
 };

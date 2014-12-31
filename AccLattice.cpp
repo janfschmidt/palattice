@@ -637,7 +637,7 @@ void AccLattice::madximport(SimToolInstance &madx)
 // *************************sign of rotation angle:*********************************
 // test with influence of dpsi on vertical closed orbit in madx show
 // that dpsi is defined counter clockwise (dpsi>0 for dipole => kick to negative z)
-// Bsupply and elegant use clockwise definition, so sign is changed here
+// libpal and elegant use clockwise definition, so sign is changed here
 // to get the correct signs for the magnetic fields calculated from dpsi
 // *********************************************************************************
 void AccLattice::madximportMisalignments(element_type t, string madxEalignFile)
@@ -1215,7 +1215,7 @@ string AccLattice::getLine(SimTool tool) const
   line << endl << endl;
 
   s << "! Drifts (caculated from element positions)" << endl; //Drifts
-  line << "LATTICE_BY_BSUPPLY : LINE=(BEGIN";                 //line
+  line << "LATTICE_BY_LIBPAL : LINE=(BEGIN";                 //line
 
   const_AccIterator it=elements.begin();
   unsigned int n=0;
@@ -1263,7 +1263,7 @@ string AccLattice::getSequence(Anchor refer) const
 {
   std::stringstream s;
 
-  s << "LATTICE_BY_BSUPPLY : SEQUENCE, REFER=";
+  s << "LATTICE_BY_LIBPAL : SEQUENCE, REFER=";
   if (refer==center)
     s << "CENTRE, ";
   else if (refer==begin)
