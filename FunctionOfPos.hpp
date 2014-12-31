@@ -69,7 +69,7 @@ public:
   double getPos(unsigned int i, unsigned int turn=1) const;  //get pos-DATA by index or by index(1turn) and turn
   double getPosInTurn(unsigned int i, unsigned int turn=1) const;
   T get(unsigned int i, unsigned int turn=1) const;          //get value-DATA by index or by index(1turn) and turn
-  vector<double> getVector(AccAxis axis=x) const;            //get vector of values (choose axis for multidim.)
+  vector<double> getVector(double stepwidth=0.1, AccAxis axis=x) const;  //get vector of equidistant values (choose axis for multidim.)
 
   // >>> to get value by position use interp(double pos) (inherited from Interpolate) <<<
 
@@ -105,20 +105,22 @@ public:
   void operator-=(FunctionOfPos<T> &other);
 
   // construct Spectrum (FFT) from this FunctionOfPos (for 1D values, chosen by axis).
-  // default name is axis_string(axis) (e.g. "horizontal" for x).
   // axis is ignored for 1D data (int or double)
-  Spectrum getSpectrum(AccAxis axis=x, unsigned int fmaxrev=30, double ampcut=0., string name="") const;
+  // FFT is done with equidistant data (given stepwidth in m) from interpolation.
+  // if stepwidth=0, data is taken without interpolation.
+  // default Spectrum name is axis_string(axis) (e.g. "horizontal" for x).
+  Spectrum getSpectrum(double stepwidth=0.1, AccAxis axis=x, unsigned int fmaxrev=30, double ampcut=0., string name="") const;
   //1D version without axis. default name is this->header()
-  Spectrum getSpectrum(unsigned int fmaxrev=30, double ampcut=0., string name="") const;
+  Spectrum getSpectrum(double stepwidth=0.1, unsigned int fmaxrev=30, double ampcut=0., string name="") const;
 
 };
 
 
 // template function specializations
-template<> vector<double> FunctionOfPos<double>::getVector(AccAxis axis) const;
-template<> vector<double> FunctionOfPos<int>::getVector(AccAxis axis) const;
-template<> vector<double> FunctionOfPos<AccPair>::getVector(AccAxis axis) const;
-template<> vector<double> FunctionOfPos<AccTriple>::getVector(AccAxis axis) const;
+  template<> vector<double> FunctionOfPos<double>::getVector(double stepwidth,AccAxis axis) const;
+template<> vector<double> FunctionOfPos<int>::getVector(double stepwidth,AccAxis axis) const;
+template<> vector<double> FunctionOfPos<AccPair>::getVector(double stepwidth,AccAxis axis) const;
+template<> vector<double> FunctionOfPos<AccTriple>::getVector(double stepwidth,AccAxis axis) const;
 template<> void FunctionOfPos<AccPair>::readSimToolColumn(SimToolInstance &s, string file, string posColumn, vector<string> valColumn);
 template<> void FunctionOfPos<AccTriple>::readSimToolColumn(SimToolInstance &s, string file, string posColumn, vector<string> valColumn);
 template<> void FunctionOfPos<AccPair>::simToolClosedOrbit(SimToolInstance &s);

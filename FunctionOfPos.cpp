@@ -25,7 +25,7 @@ string pal::axis_string(AccAxis a)
   case s:
     return "longitudinal";
   }
-  return "Please implement this AccAxis in axis_string() in types.hpp.";
+  return "Please implement this AccAxis in axis_string() in FunctionOfPos.cpp.";
 }
 
 
@@ -33,37 +33,48 @@ string pal::axis_string(AccAxis a)
 
 
 template <>
-vector<double> FunctionOfPos<double>::getVector(AccAxis axis) const
+vector<double> FunctionOfPos<double>::getVector(double stepwidth,AccAxis axis) const
 {
   // axis not needed, if only 1D values exist.
-  unsigned int i;
   vector<double> out;
   
-   for (i=0; i<size(); i++)
-     out.push_back( value[i] );
-   
+  //data values, no interpolation
+  if (stepwidth == 0.) {
+    for (unsigned int i=0; i<size(); i++)
+      out.push_back( value[i] );
+  }
+  //interpolation: equidistant data values
+  else {
+    for (double pos=0; pos<turns()*circ; pos+=stepwidth)
+      out.push_back( this->interp(pos) );
+  }
    return out;
 }
 
 
 template <>
-vector<double> FunctionOfPos<int>::getVector(AccAxis axis) const
+vector<double> FunctionOfPos<int>::getVector(double stepwidth,AccAxis axis) const
 {
   // axis not needed, if only 1D values exist.
-  unsigned int i;
   vector<double> out;
-  
-   for (i=0; i<size(); i++)
-     out.push_back( int(value[i]) );
-   
+
+  //data values, no interpolation
+  if (stepwidth == 0.) {
+    for (unsigned int i=0; i<size(); i++)
+      out.push_back( double(value[i]) );
+  }
+  //interpolation: equidistant data values
+  else {
+    for (double pos=0; pos<turns()*circ; pos+=stepwidth)
+      out.push_back( double(this->interp(pos)) );
+  }
    return out;
 }
 
 
 template <>
-vector<double> FunctionOfPos<AccPair>::getVector(AccAxis axis) const
+vector<double> FunctionOfPos<AccPair>::getVector(double stepwidth,AccAxis axis) const
 {
-  unsigned int i;
   vector<double> out;
 
   switch(axis) {
@@ -71,12 +82,24 @@ vector<double> FunctionOfPos<AccPair>::getVector(AccAxis axis) const
     throw invalid_argument("FunctionOfPos<AccPair>::getVector(): s coordinate is not defined for AccPair. Use AccTriple instead.");
     break;
   case x:
-    for (i=0; i<size(); i++)
-      out.push_back(value[i].x);
+    if (stepwidth == 0.) {     //data values, no interpolation
+      for (unsigned int i=0; i<size(); i++)
+	out.push_back( value[i].x );
+    }
+    else {                     //interpolation: equidistant data values
+      for (double pos=0; pos<turns()*circ; pos+=stepwidth)
+	out.push_back( this->interp(pos).x );
+    }
     break;
   case z:
-    for (i=0; i<size(); i++)
-      out.push_back(value[i].z);
+    if (stepwidth == 0.) {     //data values, no interpolation
+      for (unsigned int i=0; i<size(); i++)
+	out.push_back( value[i].z );
+    }
+    else {                     //interpolation: equidistant data values
+      for (double pos=0; pos<turns()*circ; pos+=stepwidth)
+	out.push_back( this->interp(pos).z );
+    }
     break;
   }
 
@@ -85,26 +108,43 @@ vector<double> FunctionOfPos<AccPair>::getVector(AccAxis axis) const
 
 
 template <>
-vector<double> FunctionOfPos<AccTriple>::getVector(AccAxis axis) const
+vector<double> FunctionOfPos<AccTriple>::getVector(double stepwidth,AccAxis axis) const
 {
-  unsigned int i;
   vector<double> out;
 
   switch(axis) {
   case s:
-    for (i=0; i<size(); i++)
-      out.push_back(value[i].s);
+    if (stepwidth == 0.) {     //data values, no interpolation
+      for (unsigned int i=0; i<size(); i++)
+	out.push_back( value[i].s );
+    }
+    else {                     //interpolation: equidistant data values
+      for (double pos=0; pos<turns()*circ; pos+=stepwidth)
+	out.push_back( this->interp(pos).s );
+    }
     break;
   case x:
-    for (i=0; i<size(); i++)
-      out.push_back(value[i].x);
+    if (stepwidth == 0.) {     //data values, no interpolation
+      for (unsigned int i=0; i<size(); i++)
+	out.push_back( value[i].x );
+    }
+    else {                     //interpolation: equidistant data values
+      for (double pos=0; pos<turns()*circ; pos+=stepwidth)
+	out.push_back( this->interp(pos).x );
+    }
     break;
   case z:
-    for (i=0; i<size(); i++)
-      out.push_back(value[i].z);
+    if (stepwidth == 0.) {     //data values, no interpolation
+      for (unsigned int i=0; i<size(); i++)
+	out.push_back( value[i].z );
+    }
+    else {                     //interpolation: equidistant data values
+      for (double pos=0; pos<turns()*circ; pos+=stepwidth)
+	out.push_back( this->interp(pos).z );
+    }
     break;
   }
-
+  
   return out;
 }
 

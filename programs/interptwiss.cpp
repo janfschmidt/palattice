@@ -28,6 +28,7 @@ int main ()
   // construct FunctionOfPos container (here used for a twiss variable)
   // it reads the lattice circumference from the SimTool output files (runs SimTool, if mode=online)
   pal::FunctionOfPos<double> twiss(sim);
+  //pal::FunctionOfPos<pal::AccPair> twiss(sim);
 
   //write the name of the twiss variable to a string vector
   //vector, because it allows 2 (3) columns for FunctionOfPos<AccPair> (<AccTriple>)
@@ -66,11 +67,12 @@ int main ()
 
   // calculate spectrum (FFT) of twiss
   unsigned int fmax = 42; // maximum frequency in spectrum / rev. harmonics
-  double cut = 0.1;       // frequencies with amplitude < cut are filtered out
-  Spectrum fft = twiss.getSpectrum(fmax, cut);
+  double cut = 0.05;      // frequencies with amplitude < cut are filtered out
+  Spectrum fft = twiss.getSpectrum(step, pal::x, fmax, cut);
 
   // spectrum output
   fft.print(out+".spectrum");
+  fft.eval_out(step,twiss.circ,out+".eval");
 
   return 0;
 }

@@ -516,10 +516,10 @@ void FunctionOfPos<T>::operator-=(FunctionOfPos<T> &other)
 // construct Spectrum (FFT) from this FunctionOfPos
 // uses getVector() to generate 1D input data
 template <class T>
-Spectrum FunctionOfPos<T>::getSpectrum(AccAxis axis, unsigned int fmaxrevIn, double ampcutIn, string name) const
+Spectrum FunctionOfPos<T>::getSpectrum(double stepwidth, AccAxis axis, unsigned int fmaxrevIn, double ampcutIn, string name) const
 {
   if (name=="") name = axis_string(axis);
-  vector<double> data = this->getVector(axis);
+  vector<double> data = this->getVector(stepwidth, axis);
   Spectrum s(name, data, circ, turns(), data.size(), fmaxrevIn, ampcutIn);
   // copy metadata to Spectrum
   for (unsigned int i=2; i<this->info.size(); i++)
@@ -527,10 +527,10 @@ Spectrum FunctionOfPos<T>::getSpectrum(AccAxis axis, unsigned int fmaxrevIn, dou
   return s;
 }
 template <class T>
-Spectrum FunctionOfPos<T>::getSpectrum(unsigned int fmaxrevIn, double ampcutIn, string name) const
+Spectrum FunctionOfPos<T>::getSpectrum(double stepwidth, unsigned int fmaxrevIn, double ampcutIn, string name) const
 {
   if (name=="") name = this->header()+"-spectrum";
-  return getSpectrum(pal::x, fmaxrevIn, ampcutIn, name);
+  return getSpectrum(stepwidth, pal::x, fmaxrevIn, ampcutIn, name);
 }
 
 
@@ -540,7 +540,7 @@ Spectrum FunctionOfPos<T>::getSpectrum(unsigned int fmaxrevIn, double ampcutIn, 
 
 // get all values as double-vector, axis for multidim. data (-> template specialization)
 template <class T>
-vector<double> FunctionOfPos<T>::getVector(AccAxis axis) const
+vector<double> FunctionOfPos<T>::getVector(double stepwidth,AccAxis axis) const
 {
   stringstream s;
   s << "FunctionOfPos<T>::getVector(): get vector<double> from vector<T> is not implemented for data type "

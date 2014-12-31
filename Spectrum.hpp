@@ -81,7 +81,7 @@ public:
   void clear() {b.clear();}
 
   void print(string filename="");
-  void eval_out(double stepwidth, double max, string filename);
+  void eval_out(double stepwidth, double maxPos, string filename); // fourier series output in [0,maxPos]
   void updateMetadata();
 };
 

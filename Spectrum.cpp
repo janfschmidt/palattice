@@ -255,9 +255,9 @@ void Spectrum::print(string filename)
 
  // write spectrum data
  if (circUnit == degree)
-   s <<"#"<<setw(w+2)<<"Freq[rev.harm.]"<<setw(w)<<"Amp[mrad]"<<setw(w)<<"Phase[deg]" << endl;
+   s <<"#"<<setw(w+2)<<"Freq / rev.harm."<<setw(w)<<"Amp / mrad"<<setw(w)<<"Phase / deg" << endl;
  else
-   s <<"#"<<setw(w+2)<<"Freq[Hz]"<<setw(w)<<"Amp[1/m]"<<setw(w)<<"Phase[deg]" << endl;
+   s <<"#"<<setw(w+2)<<"Freq / Hz"<<setw(w)<<"Amp / 1/m"<<setw(w)<<"Phase / deg" << endl;
  
  for (unsigned int i=0; i<size(); i++) {
    s <<resetiosflags(ios::fixed)<<setiosflags(ios::scientific)<<showpoint<<setprecision(8);
@@ -308,7 +308,7 @@ void Spectrum::eval_out(double stepwidth, double max, string filename)
   updateMetadata();
   file << info.out("#");
 
-  file <<"# "<<setw(w)<< "s [m]" <<setw(w)<< "t [s]" <<setw(w)<< "B [1/m]"  << endl;
+  file <<"# "<<setw(w)<< "s / m" <<setw(w)<< "t / s" <<setw(w)<< info.getbyLabel("Spectrum name")  << endl;
   for (s=0.0; s<=max; s+=stepwidth) {
     file <<setiosflags(ios::scientific)<<showpoint<<setprecision(4);
     file <<setw(w+2)<< s <<setw(w)<< s/GSL_CONST_MKSA_SPEED_OF_LIGHT <<setw(w)<< eval(s/GSL_CONST_MKSA_SPEED_OF_LIGHT) << endl;
