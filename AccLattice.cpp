@@ -740,7 +740,7 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
     //mount element if next element reached (=all parameters read)
     if (row.name != row_old.name) {
 
-     if (row_old.type=="CSBEND" || row_old.type=="CSRCSBEND" || row_old.type=="KSBEND" || row_old.type=="NIBEND" || row_old.type=="TUBEND") {
+     if (row_old.type=="CSBEND" || row_old.type=="CSRCSBEND" || row_old.type=="KSBEND" || row_old.type=="NIBEND" || row_old.type=="TUBEND" || row_old.type=="SBEN") {
        element = new Dipole(row_old.name, l, H);
      }
      else if (row_old.type=="QUAD") {
