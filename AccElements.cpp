@@ -376,6 +376,7 @@ string Sextupole::printSimTool(SimTool t) const
 // ============ printLaTeX ==========================
 string Drift::printLaTeX() const
 {
+ 
   return getLaTeXDrift(length);
 }
 
@@ -417,21 +418,12 @@ string Sextupole::printLaTeX() const
 
 
 // Drift element for LaTeX (used by Drift::printLaTeX and AccLattice::latexexport)
-//maximum drift length 2.9m in lattice package -> split longer drifts
 string pal::getLaTeXDrift(double driftlength)
 {
   if (fabs(driftlength) < 1e-6)
     return "";
 
   std::stringstream s;
-  int factor = driftlength/2.9 +1;
-    if (factor > 1) { 
-      driftlength /= factor;
-      for (int i=0; i<factor; i++)
-	s << "\\drift{" << driftlength << "}"<< endl;
-    }
-    else {
-      s << "\\drift{" << driftlength << "}"<< endl; //drift
-    }
-    return s.str();
+  s << "\\drift{" << driftlength << "}"<< endl; //drift
+  return s.str();
 }
