@@ -89,16 +89,48 @@ gsl_spline* Interpolate<T>::getSpline(vector<double> f_single)
     double range = dataRange();
 
     if (period == 0.) {
-      cout << "WARNING: Interpolate::init(): period of function should be set for periodic interpolation type "
+      cout << "WARNING: Interpolate::getSpline(): period of function should be set for periodic interpolation type "
 	   << getType() << ". Assume last data point x=" << _x.back() << " as period." << endl;
       cout << "--- period can be set with class constructor." << endl;
       period = _x.back();
     }
 
+    // for trajectory:
+    // - data of additional turn needed to avoid extrapolation for non-periodic case
+    // - due to additional turn data range exceeds period for periodic case
+    // solution at the moment: dont set period to range, but set range to period (ignore additional points)
+    // !! still problem: trajectory with periodic boundary: x=0 already in data -> repeats
+    // ---
     if (range > period) {
-	cout << "WARNING: Interpolate::init(): period of function should be >= data range (" << range
-	     << "). Assume range as period." << endl;
-	period = range;
+      cout << "WARNING: Interpolate::getSpline(): period of function < data range (" << period <<"<"<< range
+    	     << "). Use data within period only." << endl;
+      unsigned int n_period = 0;
+      for (;n_period < n; n_period++) {
+	if (_x[n_period] > period) {
+	  n_period--;
+	  break;
+	}
+      }
+      cout << n <<" "<< n_period << endl;
+      // add datapoint (based on period) to enlarge range
+      if (dataMin()==0.) n = n_period +1; //avoid two datapoints at x=0
+      else n = n_period + 2;
+      xTmp = new double[n];
+      fTmp = new double[n];
+      cleanup = true;
+
+      if (dataMin()!=0.) {//avoid two datapoints at x=0
+	xTmp[0] = _x[n_period] - period;  // add datapoint BEFORE range (!interpMin/Max functions affected!)
+	fTmp[0] = f_single[n_period];
+	std::copy(_x.begin(), _x.begin()+n_period+1, xTmp+1);
+	std::copy(f_single.begin(), f_single.begin()+n_period+1, fTmp+1);
+      }
+      else {
+	std::copy(_x.begin(), _x.begin()+n_period+1, xTmp);
+	std::copy(f_single.begin(), f_single.begin()+n_period+1, fTmp);
+      }
+      xTmp[n-1] = period + xTmp[1];   // add datapoint AFTER range (!interpMin/Max functions affected!)
+      fTmp[n-1] = fTmp[1];
     }
     
     else if (range < period) {
@@ -125,6 +157,7 @@ gsl_spline* Interpolate<T>::getSpline(vector<double> f_single)
 
   // initialize interpolation
   gsl_spline *newSpline = gsl_spline_alloc (type, n);
+  for (unsigned int i=0; i<n; i++) cout << i <<"\t"<< xTmp[i] <<"\t"<< fTmp[i] << endl;
   gsl_spline_init (newSpline, xTmp, fTmp, n);
 
   if (cleanup) {

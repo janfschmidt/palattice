@@ -433,6 +433,8 @@ void FunctionOfPos<AccPair>::simToolTrajectory(SimToolInstance &s, unsigned int 
     this->modify(otmp, 0, turn);
   }
   this->hide_last_turn();
+  //this->pop_back_turn();
+  if(this->periodic) this->period=circ*n_turns;
 
    //metadata
   info.add("Trajectory from", s.tool_string());

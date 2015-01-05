@@ -28,10 +28,10 @@ protected:
   std::string headerString;
   double period;
   bool ready;
+  bool periodic;
 
 private:
   const gsl_interp_type *type;  // type of interpolation used (see GSL manual)
-  bool periodic;
 
   gsl_interp_accel *acc;
   std::vector<gsl_spline*> spline;  //several splines for multidimensional data types
