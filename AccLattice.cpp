@@ -752,7 +752,7 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
      else if (row_old.type=="VKICK") {
        element = new Corrector(row_old.name, l, V);
      }
-     else if (row_old.type=="HKICK") {
+     else if (row_old.type=="HKICK" || row_old.type=="KICKER") { //assume kicker as horizontal -> todo: implement 2D/3D kicker
        element = new Corrector(row_old.name, l, H);
      }
      // IMPLEMENT type KICK -> kick in 2 planes H&V!
