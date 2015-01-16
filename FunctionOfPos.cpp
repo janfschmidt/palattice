@@ -258,7 +258,6 @@ void FunctionOfPos<AccPair>::simToolClosedOrbit(SimToolInstance &s)
   //read columns from file (execute madx/elegant if mode=online)
   SimToolTable oTable;
   oTable = s.readTable(orbitFile, columns);
-
   //orbit at quadrupoles
   AccPair otmp;
   for (unsigned int i=0; i<oTable.rows(); i++) {
@@ -273,7 +272,6 @@ void FunctionOfPos<AccPair>::simToolClosedOrbit(SimToolInstance &s)
       this->set(otmp, oTable.getd("s",i));
     }
   }
-
   //metadata
   info.add("Closed Orbit from", s.tool_string());
   info.add("Orbit Source file", orbitFile);

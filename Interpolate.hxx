@@ -111,7 +111,7 @@ gsl_spline* Interpolate<T>::getSpline(vector<double> f_single)
 	  break;
 	}
       }
-      cout << n <<" "<< n_period << endl;
+
       // add datapoint (based on period) to enlarge range
       if (dataMin()==0.) n = n_period +1; //avoid two datapoints at x=0
       else n = n_period + 2;
@@ -157,7 +157,6 @@ gsl_spline* Interpolate<T>::getSpline(vector<double> f_single)
 
   // initialize interpolation
   gsl_spline *newSpline = gsl_spline_alloc (type, n);
-  for (unsigned int i=0; i<n; i++) cout << i <<"\t"<< xTmp[i] <<"\t"<< fTmp[i] << endl;
   gsl_spline_init (newSpline, xTmp, fTmp, n);
 
   if (cleanup) {
