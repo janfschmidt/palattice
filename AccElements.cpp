@@ -397,7 +397,7 @@ string Dipole::printLaTeX() const
 string Corrector::printLaTeX() const
 {
   stringstream s;
-  s << "\\kicker{"<< name <<"}{"<< length <<"}" << endl;
+  s << "\\corrector{"<< name <<"}{"<< length <<"}" << endl;
   return s.str();
 }
 
