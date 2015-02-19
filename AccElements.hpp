@@ -67,6 +67,9 @@ public:
   virtual AccTriple B() const =0;
   virtual AccTriple B(const AccPair &orbit) const =0;
 
+  // integral magnetic field
+  virtual AccTriple B_int() const {return B() * length;}
+  virtual AccTriple B_int(const AccPair &orbit) const {return B(orbit) * length;}
   //RF magnets (oscillating fields)
   double rfFactor(unsigned int turn) const; // Magnetic field amplitude factor for oscillating fields
   AccTriple B_rf(unsigned int turn) const {return B() * rfFactor(turn);}

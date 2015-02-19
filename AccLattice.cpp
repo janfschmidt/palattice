@@ -368,6 +368,12 @@ double AccLattice::distanceRing(double pos, const_AccIterator it, Anchor itRef) 
     else return d_other;
   }
 }
+// |distance| from it to next element (circulating)
+double AccLattice::distanceNext(const_AccIterator it) const
+{
+  const_AccIterator next = revolve(it);
+  return distanceRing(next->first, it, refPos);
+}
 
 
 

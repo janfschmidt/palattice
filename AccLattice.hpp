@@ -84,6 +84,7 @@ public:
   bool inside(string name, double here) const {return inside(operator[](name),here);}   // test if "here" is inside lattice element with name
   double distance(double pos, const_AccIterator it, Anchor itRef) const;// distance from itRef of element it to pos (>0 if pos is after itRef)
   double distanceRing(double pos, const_AccIterator it, Anchor itRef) const;// distance in a ring (both directions, shorter distance returned)
+  double distanceNext(const_AccIterator it) const;                      // |distance| from it to next element (circulating)
 
   const AccElement* operator[](double pos) const;                    // get element (any position, Drift returned if not inside any element)
   const_AccIterator operator[](string name) const;                   // get iterator by name (first match in lattice, Drift returned otherwise)
