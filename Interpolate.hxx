@@ -183,7 +183,7 @@ double Interpolate<T>::evalSpline(gsl_spline *s, double xIn) const
     throw range_error(msg.str());
   }
   
-  if (isnan(tmp)) {
+  if (std::isnan(tmp)) {
     cout << "ERROR: Interpolate::evalSpline(): interpolation error at x="<<xIn<< endl
 	 << "return 0.0 and continue";
     return 0.;

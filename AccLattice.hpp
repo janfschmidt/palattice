@@ -45,6 +45,7 @@ protected:
   AccIterator nextIt(double pos, element_type _type, element_plane p=noplane, element_family f=nofamily);     // get iterator to next element of given type after pos
   AccIterator nextIt(AccIterator it, element_type _type, element_plane p=noplane, element_family f=nofamily); // get iterator to next element of given type after it (for any type just use it++ ;) )
   AccIterator nextIt(double pos, Anchor anchor);       // get iterator to first element, whose begin/center/end is > pos. circulating.
+  AccIterator revolve(AccIterator it);                 // like it++, but starts at begin() after last element (never reaches end()!)
 
   double slope(double pos, const_AccIterator it) const; // helper function for magnetic field edges
 
@@ -69,6 +70,7 @@ public:
   const_AccIterator nextCIt(double pos, element_type _type, element_plane p=noplane, element_family f=nofamily) const;           // get iterator to next element of given type after pos
   const_AccIterator nextCIt(const_AccIterator it, element_type _type, element_plane p=noplane, element_family f=nofamily) const; // get iterator to next element of given type after it (for any type just use it++ ;) )
   const_AccIterator nextCIt(double pos, Anchor anchor) const;       // get iterator to first element, whose begin/center/end is > pos. circulating.
+  const_AccIterator revolve(const_AccIterator it) const;            // like it++, but starts at begin() after last element (never reaches end()!)
 
 
   double pos(const_AccIterator it) const {return it->first;}          // get position of element with iterator it

@@ -220,6 +220,14 @@ AccIterator AccLattice::nextIt(double posIn, Anchor anchor)
     return c;
   }
 }
+AccIterator AccLattice::revolve(AccIterator it)
+{
+  it++;
+  if (it == elements.end())
+    return elements.begin();
+  else
+    return it;
+}
 
 
 // public const_AccIterator versions of first/last/nextIt
@@ -286,7 +294,14 @@ const_AccIterator AccLattice::nextCIt(double posIn, Anchor anchor) const
     return c;
   }
 }
-
+const_AccIterator AccLattice::revolve(const_AccIterator it) const
+{
+  it++;
+  if (it == elements.end())
+    return elements.begin();
+  else
+    return it;
+}
 
 
 
