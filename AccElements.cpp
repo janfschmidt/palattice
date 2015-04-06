@@ -456,7 +456,10 @@ string Dipole::printLaTeX() const
 string Corrector::printLaTeX() const
 {
   stringstream s;
-  s << "\\corrector{"<< name <<"}{"<< length <<"}" << endl;
+  if (this->plane == noplane)
+    s << "\\kicker{"<< name <<"}{"<< length <<"}" << endl;
+  else
+    s << "\\corrector{"<< name <<"}{"<< length <<"}" << endl;
   return s.str();
 }
 

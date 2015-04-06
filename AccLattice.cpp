@@ -1368,7 +1368,7 @@ void AccLattice::simToolExport(SimTool tool, string filename, MadxLatticeType lt
 
 
 // print lattice readable by LaTeX. If no filename is given, print to stdout
-// (using lattice package by Jan Schmidt <schmidt@physik.uni-bonn.de>)
+// (using package tikz-palattice)
 void AccLattice::latexexport(string filename) const
 {
   const_AccIterator it=elements.begin();
@@ -1386,7 +1386,7 @@ void AccLattice::latexexport(string filename) const
   s << "\\documentclass[]{standalone}" <<endl
     << "\\usepackage[ngerman]{babel}" <<endl
     << "\\usepackage[utf8]{inputenc}" <<endl
-    << "\\usepackage{lattice} % by Jan Schmidt <schmidt@physik.uni-bonn.de>" <<endl<<endl;
+    << "\\usepackage{tikz-palattice} % available at CTAN" <<endl<<endl;
 
   //lattice
   s << "\\begin{document}" << endl << "\\begin{lattice}" << endl;
