@@ -39,11 +39,11 @@ protected:
   vector<string> ignoreList;              // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted (set) in this lattice
   unsigned int ignoreCounter;
 
-  AccIterator firstIt(element_type _type, element_plane p=noplane, element_family f=nofamily); // get iterator to first element of given type
-  AccIterator lastIt(element_type _type, element_plane p=noplane, element_family f=nofamily);  // get iterator to last element of given type
-  AccIterator nextIt(double pos, element_plane p=noplane, element_family f=nofamily);                         // get iterator to next element after pos
-  AccIterator nextIt(double pos, element_type _type, element_plane p=noplane, element_family f=nofamily);     // get iterator to next element of given type after pos
-  AccIterator nextIt(AccIterator it, element_type _type, element_plane p=noplane, element_family f=nofamily); // get iterator to next element of given type after it (for any type just use it++ ;) )
+  AccIterator firstIt(element_type _type, element_family f=nofamily); // get iterator to first element of given type
+  AccIterator lastIt(element_type _type, element_family f=nofamily);  // get iterator to last element of given type
+  AccIterator nextIt(double pos, element_family f=nofamily);                         // get iterator to next element after pos
+  AccIterator nextIt(double pos, element_type _type, element_family f=nofamily);     // get iterator to next element of given type after pos
+  AccIterator nextIt(AccIterator it, element_type _type, element_family f=nofamily); // get iterator to next element of given type after it (for any type just use it++ ;) )
   AccIterator nextIt(double pos, Anchor anchor);       // get iterator to first element, whose begin/center/end is > pos. circulating.
   AccIterator revolve(AccIterator it);                 // like it++, but starts at begin() after last element (never reaches end()!)
 
@@ -64,11 +64,11 @@ public:
   const_AccIterator getIt(double pos) const;      // get const_Iterator to element, if pos is inside it
   const_AccIterator getItBegin() const;           // get iterator to begin (first Element)
   const_AccIterator getItEnd() const;             // get iterator to end (after last Element)
-  const_AccIterator firstCIt(element_type _type, element_plane p=noplane, element_family f=nofamily) const; // get iterator to first element of given type
-  const_AccIterator lastCIt(element_type _type, element_plane p=noplane, element_family f=nofamily) const;  // get iterator to last element of given type
-  const_AccIterator nextCIt(double pos, element_plane p=noplane, element_family f=nofamily) const;                               // get iterator to next element after pos
-  const_AccIterator nextCIt(double pos, element_type _type, element_plane p=noplane, element_family f=nofamily) const;           // get iterator to next element of given type after pos
-  const_AccIterator nextCIt(const_AccIterator it, element_type _type, element_plane p=noplane, element_family f=nofamily) const; // get iterator to next element of given type after it (for any type just use it++ ;) )
+  const_AccIterator firstCIt(element_type _type, element_family f=nofamily) const; // get iterator to first element of given type
+  const_AccIterator lastCIt(element_type _type, element_family f=nofamily) const;  // get iterator to last element of given type
+  const_AccIterator nextCIt(double pos, element_family f=nofamily) const;                               // get iterator to next element after pos
+  const_AccIterator nextCIt(double pos, element_type _type, element_family f=nofamily) const;           // get iterator to next element of given type after pos
+  const_AccIterator nextCIt(const_AccIterator it, element_type _type, element_family f=nofamily) const; // get iterator to next element of given type after it (for any type just use it++ ;) )
   const_AccIterator nextCIt(double pos, Anchor anchor) const;       // get iterator to first element, whose begin/center/end is > pos. circulating.
   const_AccIterator revolve(const_AccIterator it) const;            // like it++, but starts at begin() after last element (never reaches end()!)
 
@@ -105,7 +105,7 @@ public:
   void subtractMisalignments(const AccLattice &other);         // subtract other misalignments from the ones of this lattice
 
   // "information"
-  unsigned int size(element_type _type,element_plane p=noplane,element_family f=nofamily) const;        // returns number of elements of a type in this lattice
+  unsigned int size(element_type _type, element_family f=nofamily) const;        // returns number of elements of a type in this lattice
   unsigned int size() const {return elements.size();} // returns total number of elements
   string sizeSummary() const; //formated "size" output for all element types
 

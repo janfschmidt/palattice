@@ -18,9 +18,9 @@ AccPair AccElement::zeroPair;
 AccTriple AccElement::zeroTriple;
 
 AccElement::AccElement(element_type _type, string _name, double _length)
-  : type(_type),name(_name),length(_length),plane(noplane),family(nofamily)
+  : type(_type),name(_name),length(_length),family(nofamily)
 {
-  physLength = k0 = k1 = k2 = Qrf1 = dQrf = dpsi = 0;
+  physLength = k1 = k2 = Qrf1 = dQrf = dpsi = 0;
 
   if (length < 0.) {
     stringstream msg;
@@ -31,6 +31,44 @@ AccElement::AccElement(element_type _type, string _name, double _length)
     this->checkPhysLength();
 }
 
+
+Dipole::Dipole(string _name, double _length, AccAxis axis, double _k0)
+  : Magnet(dipole,_name,_length)
+{
+  switch(axis) {
+  case x:
+    k0.x = _k0;
+    break;
+  case z:
+    k0.z = _k0;
+    break;
+  case s:
+    k0.s = _k0;
+    break;
+  }
+}
+
+Dipole::Dipole(string _name, double _length, AccTriple _k0)
+  : Magnet(dipole,_name,_length) {k0 = _k0;}
+
+Corrector::Corrector(string _name, double _length, AccAxis axis, double _k0)
+  : Magnet(corrector,_name,_length)
+{
+  switch(axis) {
+  case x:
+    k0.x = _k0;
+    break;
+  case z:
+    k0.z = _k0;
+    break;
+  case s:
+    k0.s = _k0;
+    break;
+  }
+}
+
+Corrector::Corrector(string _name, double _length, AccTriple _k0)
+  : Magnet(corrector,_name,_length) {k0 = _k0;}
 
 
 void AccElement::checkPhysLength()
@@ -70,7 +108,7 @@ AccElement& AccElement::operator=(const AccElement* other)
   }
 
    this->name = other->name;
-   this->plane = other->plane;
+   //this->plane = other->plane;
    this->family = other->family;
    this->dpsi = other->dpsi;
    this->k0 = other->k0;
@@ -155,6 +193,10 @@ string AccElement::type_string() const
     return "Quadrupole";
   case corrector:
     return "Corrector";
+  case vcorrector:
+    return "V-Corrector";
+  case hcorrector:
+    return "H-Corrector";
   case sextupole:
     return "Sextupole";
   case cavity:
@@ -206,12 +248,7 @@ string AccElement::printHeader() const
 // Magnet
 AccTriple Magnet::B() const
 {
-  AccTriple tmp; 
-  if(plane==H) tmp.z=k0;       // H means a horizontally bending magnet (horizontal kick, VERTICAL magnetic field)
-  else if(plane==V) tmp.x=k0;
-  else if(plane==L) tmp.s=k0;
-  else if(plane==noplane && k0!=0.) throw libpalError("Magnet::B(): k0 given, but plane (H,V,L) not specified");
-  return tmp.tilt(dpsi);
+  return k0.tilt(dpsi);
 }
 
 AccTriple Magnet::B(const AccPair &orbit) const
@@ -231,12 +268,7 @@ AccTriple Magnet::B(const AccPair &orbit) const
   if(family==D) tmp*=(-1.); //sign of k1,k2
 
   //dipole field (k0)
-  if(k0!=0.) {
-    if(plane==H) tmp.z+=k0;
-    else if(plane==V) tmp.x+=k0;
-    else if(plane==L) tmp.s+=k0;
-    else throw libpalError("Magnet::B(orbit): k0 given, but plane (H,V,L) not specified");
-  }
+  tmp += k0;
   
   return tmp.tilt(this->dpsi);
 }
@@ -306,14 +338,16 @@ string Cavity::printSimTool(SimTool t) const
 string Dipole::printSimTool(SimTool t) const
 {
   stringstream s;
+  if (k0.x!=0. || k0.s!=0.) 
+    std::cout << "WARNING: " << name << "nonzero horizontal or vertical field is not exported!" << std::endl;
 
   s << name <<" : "<< nameInTool("SBEND","CSBEND",t) <<", "
     <<"L="<< length <<", "
-    <<"ANGLE="<< k0*length;
+    <<"ANGLE="<< k0.z*length;
   if (t == elegant) {
     s <<", TILT="<< dpsi;
     s <<", e1=0, e2=0, "   //not implemented
-      <<"synch_rad=1, isr=1, use_rad_dist=0";
+      <<"synch_rad=1, isr=1, use_rad_dist=0 ! edges & radiation not implemented in libpal. Please set manually.";
   }
   s <<";"<< rfComment() << endl;
   return s.str();
@@ -322,13 +356,59 @@ string Dipole::printSimTool(SimTool t) const
 string Corrector::printSimTool(SimTool t) const
 {
   stringstream s;
+  double kick=0.;
  
-  if (plane == V)
-    s << name <<" : V"<< nameInTool("KICKER","KICK",t) <<", "; // plane==V => vertical kick
-  else if (plane == H)
-    s << name <<" : H"<< nameInTool("KICKER","KICK",t) <<", ";
-  s <<"L="<< length <<", "
-    <<"KICK="<< asin(k0*length);
+  s << name;
+  if (k0.x!=0. && k0.z==0. && k0.s==0.) {
+    s <<" : V"; // plane==V => vertical kick => horizontal field!
+    kick = k0.x;
+  }
+  else if (k0.z!=0. && k0.x==0. && k0.s==0.) {
+    s <<" : H"<< nameInTool("KICKER","KICK",t) <<", ";
+    kick = k0.z;
+  }
+  else if (k0.x==k0.z) {
+    kick = k0.x;
+  }
+  else
+    throw libpalError("Export of Corrector with different x/z-kicks not implemented!");
+
+  s << nameInTool("KICKER","KICK",t) <<", L="<< length <<", "
+    <<"KICK="<< asin(kick*length);
+
+  if (t == elegant && dpsi!=0.)
+    s <<", TILT="<< dpsi;
+  s  <<";"<< rfComment() << endl;
+  return s.str();
+}
+
+string VCorrector::printSimTool(SimTool t) const
+{
+  stringstream s; 
+  s << name;
+  if (k0.z!=0. || k0.s!=0.) {
+    std::cout << "WARNING: VCorrector::printSimTool: k0.z & k0.s are not exported for VCorrector." << std::endl;
+  }
+
+  s << "V" << nameInTool("KICKER","KICK",t) <<", L="<< length <<", "
+    <<"KICK="<< asin(k0.x*length);
+
+  if (t == elegant && dpsi!=0.)
+    s <<", TILT="<< dpsi;
+  s  <<";"<< rfComment() << endl;
+  return s.str();
+}
+string HCorrector::printSimTool(SimTool t) const
+{
+  stringstream s; 
+  s << name;
+  if (k0.z!=0. || k0.s!=0.) {
+    std::cout << "WARNING: HCorrector::printSimTool: k0.x & k0.s are not exported for HCorrector." << std::endl;
+  }
+
+  s << "H" << nameInTool("KICKER","KICK",t) <<", L="<< length <<", "
+    <<"KICK="<< asin(k0.z*length);
+
   if (t == elegant && dpsi!=0.)
     s <<", TILT="<< dpsi;
   s  <<";"<< rfComment() << endl;
@@ -390,7 +470,10 @@ string Cavity::printLaTeX() const
 string Dipole::printLaTeX() const
 {
   stringstream s;
-  s << "\\dipole{"<< name <<"}{"<< length <<"}{"<< k0*length*180/M_PI <<"}" << endl;
+  if (k0.x!=0. || k0.s!=0.) 
+    std::cout << "WARNING: " << name << "nonzero horizontal or vertical field is not exported!" << std::endl;
+
+  s << "\\dipole{"<< name <<"}{"<< length <<"}{"<< k0.z*length*180/M_PI <<"}" << endl;
   return s.str();
 }
 

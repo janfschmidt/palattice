@@ -155,51 +155,51 @@ bool AccLattice::inside(const_AccIterator it, double here) const
 
 
 // get first element of given type (returns iterator to end if there is none)
-AccIterator AccLattice::firstIt(element_type _type, element_plane p, element_family f)
+AccIterator AccLattice::firstIt(element_type _type, element_family f)
 {
   for (AccIterator it=elements.begin(); it!=elements.end(); ++it) {
-    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+    if (it->second->type == _type && (f==nofamily || it->second->family==f))
       return it;
   }
   return elements.end();
 }
 // get last element of given type (returns iterator to end if there is none)
-AccIterator AccLattice::lastIt(element_type _type, element_plane p, element_family f)
+AccIterator AccLattice::lastIt(element_type _type, element_family f)
 {
   AccIterator it = elements.end();
   it--;
   for (; it!=elements.begin(); it--) {
-    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+    if (it->second->type == _type && (f==nofamily || it->second->family==f))
       return it;
   }
   return elements.end();  
 }
 // get iterator to next element after pos (returns iterator to end if there is none)
-AccIterator AccLattice::nextIt(double posIn, element_plane p, element_family f)
+AccIterator AccLattice::nextIt(double posIn, element_family f)
 {
   double pos = posMod(posIn);
   for (AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
-    if ((p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+    if (f==nofamily || it->second->family==f)
       return it;
   }
   return elements.end();
 }
 // get iterator to next element of given type after pos (returns iterator to end if there is none)
-AccIterator AccLattice::nextIt(double posIn, element_type _type, element_plane p, element_family f)
+AccIterator AccLattice::nextIt(double posIn, element_type _type, element_family f)
 {
   double pos = posMod(posIn);
   for (AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
-    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+    if (it->second->type == _type && (f==nofamily || it->second->family==f))
       return it;
   }
   return elements.end();
 }
 // get iterator to next element of given type after it (returns iterator to end if there is none)
-AccIterator AccLattice::nextIt(AccIterator it, element_type _type, element_plane p, element_family f)
+AccIterator AccLattice::nextIt(AccIterator it, element_type _type, element_family f)
 {
   it++; // check only elements AFTER it
  for (; it!=elements.end(); ++it) {
-   if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+   if (it->second->type == _type && (f==nofamily || it->second->family==f))
       return it;
   }
   return elements.end();  
@@ -235,47 +235,47 @@ AccIterator AccLattice::revolve(AccIterator it)
 // - they are const members (can be used in other const members like print())
 // - the above versions cannot be const (should allow modification)
 // - conversion from const_iterator to iterator is only possible via advance() & distance(), which would be slower
-const_AccIterator AccLattice::firstCIt(element_type t, element_plane p, element_family f) const
+const_AccIterator AccLattice::firstCIt(element_type t, element_family f) const
 {
   for (const_AccIterator it=elements.begin(); it!=elements.end(); ++it) {
-    if (it->second->type == t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+    if (it->second->type == t && (f==nofamily || it->second->family==f))
       return it;
   }
   return elements.end();
 }
-const_AccIterator AccLattice::lastCIt(element_type t, element_plane p, element_family f) const
+const_AccIterator AccLattice::lastCIt(element_type t, element_family f) const
 {
  const_AccIterator it = elements.end();
   it--;
   for (; it!=elements.begin(); it--) {
-    if (it->second->type == t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+    if (it->second->type == t && (f==nofamily || it->second->family==f))
       return it;
   }
   return elements.end();  
 }
-const_AccIterator AccLattice::nextCIt(double posIn, element_plane p, element_family f) const
+const_AccIterator AccLattice::nextCIt(double posIn, element_family f) const
 {
   double pos = posMod(posIn);
   for (const_AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
-    if ((p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+    if (f==nofamily || it->second->family==f)
       return it;
   }
   return elements.end();
 }
-const_AccIterator AccLattice::nextCIt(double posIn, element_type t, element_plane p, element_family f) const
+const_AccIterator AccLattice::nextCIt(double posIn, element_type t, element_family f) const
 {
   double pos = posMod(posIn);
  for (const_AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
-    if (it->second->type == t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+    if (it->second->type == t && (f==nofamily || it->second->family==f))
       return it;
   }
   return elements.end();
 }
-const_AccIterator AccLattice::nextCIt(const_AccIterator it, element_type t, element_plane p, element_family f) const
+const_AccIterator AccLattice::nextCIt(const_AccIterator it, element_type t, element_family f) const
 {
   it++; // check only elements AFTER it
  for (; it!=elements.end(); ++it) {
-   if (it->second->type == t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+   if (it->second->type == t && (f==nofamily || it->second->family==f))
       return it;
   }
   return elements.end();  
@@ -597,7 +597,7 @@ void AccLattice::madximport(SimToolInstance &madx)
     double vkick = twi.getd("VKICK",i);
 
     if (key == "\"SBEND\"" || key == "\"RBEND\"") {  //vertical Dipole (assume all bends have vertical field)
-      element = new Dipole(name, l, H);
+      element = new Dipole(name, l, z);
     }
     else if (key == "\"QUADRUPOLE\"") {
       element = new Quadrupole(name, l, F);
@@ -606,12 +606,14 @@ void AccLattice::madximport(SimToolInstance &madx)
       element = new Sextupole(name, l, F);
     }
     else if (key == "\"VKICKER\"") {
-      element = new Corrector(name, l, V);
+      element = new Corrector(name, l);
     }
     else if (key == "\"HKICKER\"") {
-      element = new Corrector(name, l, H);
+      element = new Corrector(name, l);
     }
-    // IMPLEMENT type KICKER -> kick in 2 planes H&V!
+    else if (key == "\"KICKER\"") {
+      element = new Corrector(name, l);
+    }
     else if (key == "\"RFCAVITY\"") {
       element = new Cavity(name, l);
     }
@@ -623,9 +625,9 @@ void AccLattice::madximport(SimToolInstance &madx)
     //   element->dQrf = 5.402e-6;
     // }
 
-    if (angle!=0.) element->k0 += angle / l; // 1/R from bending angle, curved length l
-    if (element->plane==H && hkick!=0.)  element->k0 += sin(hkick) / l; // 1/R from kick angle, straight length
-    else if (element->plane==V && vkick!=0.)  element->k0 += sin(vkick) / l;
+    if (angle!=0.) element->k0.z += angle / l; // 1/R from bending angle, curved length l
+    if (hkick!=0. && key!="\"VKICKER\"")  element->k0.z += sin(hkick) / l; // 1/R from kick angle, straight length l
+    if (vkick!=0. && key!="\"HKICKER\"")  element->k0.x += sin(vkick) / l;
     element->k1 = twi.getd("K1L",i)/l;
     element->k2 = twi.getd("K2L",i)/l;
     //misalignments in AccLattice::madximportMisalignments()
@@ -762,7 +764,7 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
     if (row.name != row_old.name) {
 
      if (row_old.type=="CSBEND" || row_old.type=="CSRCSBEND" || row_old.type=="KSBEND" || row_old.type=="NIBEND" || row_old.type=="TUBEND" || row_old.type=="SBEN") {
-       element = new Dipole(row_old.name, l, H);
+       element = new Dipole(row_old.name, l);
      }
      else if (row_old.type=="QUAD") {
        element = new Quadrupole(row_old.name, l, F);
@@ -771,12 +773,20 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
        element = new Sextupole(row_old.name, l, F);
      }
      else if (row_old.type=="VKICK") {
-       element = new Corrector(row_old.name, l, V);
+       element = new Corrector(row_old.name, l);
+       if (kick!=0.)  element->k0.x += sin(kick) / l; // 1/R from kick angle, straight length l
      }
-     else if (row_old.type=="HKICK" || row_old.type=="KICKER") { //assume kicker as horizontal -> todo: implement 2D/3D kicker
-       element = new Corrector(row_old.name, l, H);
+     else if (row_old.type=="HKICK") {
+       element = new Corrector(row_old.name, l);
+       if (kick!=0.)  element->k0.z += sin(kick) / l;
      }
-     // IMPLEMENT type KICK -> kick in 2 planes H&V!
+     else if (row_old.type=="KICKER") {
+       element = new Corrector(row_old.name, l);
+       if (kick!=0.) {
+	 element->k0.x += sin(kick) / l;
+	 element->k0.z += sin(kick) / l;
+       }
+     }
      else if (row_old.type=="RFCA") {
        element = new Cavity(row_old.name, l);
      }
@@ -790,8 +800,7 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
      // }
 
      if (element->type != drift) {
-       if (angle!=0.) element->k0 += angle / l; // 1/R from bending angle, curved length l
-       if (kick!=0.)  element->k0 += sin(kick) / l; // 1/R from kick angle, straight length l
+       if (angle!=0.) element->k0.z += angle / l; // 1/R from bending angle, curved length l
        element->k1 = k1;
        element->k2 = k2;
        element->dpsi = tilt;
@@ -910,7 +919,7 @@ unsigned int AccLattice::setELSACorrectors(ELSASpuren &spuren, unsigned int t)
  stringstream strMsg;
  double diff=0;
  double endPos;
- AccIterator it = firstIt(corrector,V); // only vertical correctors (V)!
+ AccIterator it = firstIt(vcorrector); // only vertical correctors!
  AccIterator it_next;
 
  
@@ -939,21 +948,20 @@ unsigned int AccLattice::setELSACorrectors(ELSASpuren &spuren, unsigned int t)
    }
    
    corrTmp = it->second->clone();
-   corrTmp->k0 = spuren.vcorrs[i].time[t].kick/1000.0/corrTmp->length;   //unit 1/m
-   it_next = nextIt(it,corrector,V);  // only vertical correctors (V)!
+   corrTmp->k0.x = spuren.vcorrs[i].time[t].kick/1000.0/corrTmp->length;   //unit 1/m
+   it_next = nextIt(it,vcorrector);  // only vertical correctors!
    elements.erase(it);   // erase "old" corrector (madx) to be able to mount new one
    endPos = spuren.vcorrs[i].pos + corrTmp->length/2;
    this->mount(endPos, *(corrTmp));
    delete corrTmp;
 
-   //it = nextIt(it,corrector);
    it = it_next;
    n++;
    if (it == elements.end())
      break;
  }
  
- if (n != this->size(corrector,V)) // only vertical correctors (V)!
+ if (n != this->size(vcorrector)) // only vertical correctors!
    cout << "WARNING: Not all correctors overwritten by ELSA-Spuren" << endl;
 
  //metadata
@@ -1058,11 +1066,14 @@ void AccLattice::subtractMisalignments(const AccLattice &other)
 
 // ------------------ "information" -----------------------
 // returns number of elements of a type in this lattice
-unsigned int AccLattice::size(element_type _type, element_plane p, element_family f) const
+// for type corrector also derived types vcorrector & hcorrector are counted
+unsigned int AccLattice::size(element_type _type, element_family f) const
 {
   unsigned int n=0;
   for (const_AccIterator it=elements.begin(); it!=elements.end(); ++it) {
-    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+    if (it->second->type == _type && (f==nofamily || it->second->family==f))
+      n++;
+    else if ((it->second->type==hcorrector || it->second->type==vcorrector) && _type==corrector)
       n++;
   }
 
@@ -1074,7 +1085,7 @@ string AccLattice::sizeSummary() const
 {
   stringstream s;
   s << "* "<<this->size(dipole)<<" dipoles, "<<this->size(quadrupole)<<" quadrupoles, "
-    <<this->size(sextupole)<<" sextupoles, "<<this->size(corrector)<<" kickers, "
+    <<this->size(sextupole)<<" sextupoles, "<<this->size(corrector)<<" correctors, "
     <<this->size(cavity)<<" cavities";
   return s.str();
 }
