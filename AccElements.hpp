@@ -22,9 +22,10 @@ using namespace std;
 namespace pal
 {
 
-  enum element_type{dipole, quadrupole, corrector, vcorrector, hcorrector, sextupole, cavity, drift}; //! keep dipole as first and drift as last
-  //enum element_plane{H,V,L,noplane};    //horizontal,vertical,longitudinal
-enum element_family{F,D,nofamily};     //focus,defocus
+  enum element_type{dipole, quadrupole, corrector, sextupole, cavity, drift}; //! keep dipole as first and drift as last
+  enum element_plane{H,V,L,noplane};    //horizontal,vertical,longitudinal
+                                        //used for export and filtering only, NO INFLUENCE ON FIELD B()!
+  enum element_family{F,D,nofamily};    //focus,defocus, CHANGES SIGN OF FIELD!
 
 // abstract base class
 class AccElement {
@@ -41,7 +42,7 @@ public:
   const element_type type;
   string name;
   const double length;    // effective length (field length) / m
-  //  element_plane plane;
+  element_plane plane;
   element_family family;
   AccTriple k0;          // magnet strength. 1/R / m^-1 for each axis (x,z,s).
                          // direction: e.g. k0.x corresponds to B.x and thus causes a vertical kick
@@ -163,7 +164,7 @@ public:
 
 class Dipole : public Magnet {
 public:
-  Dipole(string _name, double _length, AccAxis axis=x, double _k0=0.);
+  Dipole(string _name, double _length, element_plane p=H, double _k0=0.);
   Dipole(string _name, double _length, AccTriple _k0);
   ~Dipole() {}
 
@@ -175,7 +176,7 @@ public:
 
 class Corrector : public Magnet {
 public:
-  Corrector(string _name, double _length, AccAxis axis=x, double _k0=0.);
+  Corrector(string _name, double _length, element_plane p=H, double _k0=0.);
   Corrector(string _name, double _length, AccTriple _k0);
   ~Corrector() {}
 
@@ -183,31 +184,6 @@ public:
 
   string printSimTool(SimTool t) const;
   string printLaTeX() const;
-
-protected:
-  // protected constructor for derived vcorrector/hcorrector
-  Corrector(element_type type, string _name, double _length) : Magnet(type,_name,_length) {};
-
-};
-
-class VCorrector : public Corrector {
-public:
-  VCorrector(string _name, double _length, double _k0=0.) : Corrector(vcorrector,_name,_length) {k0.x=_k0;}
-  ~VCorrector() {}
-
-  virtual VCorrector* clone() const {return new VCorrector(*this);}
-
-  string printSimTool(SimTool t) const;
-};
-
-class HCorrector : public Corrector {
-public:
-  HCorrector(string _name, double _length, double _k0=0.) : Corrector(hcorrector,_name,_length) {k0.z=_k0;}
-  ~HCorrector() {}
-
-  virtual HCorrector* clone() const {return new HCorrector(*this);}
-
-  string printSimTool(SimTool t) const;
 };
 
 
