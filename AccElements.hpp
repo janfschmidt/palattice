@@ -176,7 +176,7 @@ public:
 
 class Corrector : public Magnet {
 public:
-  Corrector(string _name, double _length, element_plane p=H, double _k0=0.);
+  Corrector(string _name, double _length, element_plane p=noplane, double _k0=0.);
   Corrector(string _name, double _length, AccTriple _k0);
   ~Corrector() {}
 

@@ -362,27 +362,31 @@ string Corrector::printSimTool(SimTool t) const
   stringstream s;
   double kick=0.;
  
-  s << name;
+  s << name << " : ";
   if (plane == V) {
     if (k0.z!=0. || k0.s!=0.) 
       std::cout << "WARNING: " << name << " nonzero vertical or longitudinal field is not exported (plane=V)!" << std::endl;
-    s <<" : V"; // plane==V => vertical kick => horizontal field!
-    kick = k0.x;
+    s << "V" << nameInTool("KICKER","KICK",t); 
+    kick = k0.x; // plane==V => vertical kick => horizontal field!
   }
   else if (plane == H) {
     if (k0.x!=0. || k0.s!=0.) 
       std::cout << "WARNING: " << name << " nonzero horizontal or longitudinal field is not exported (plane=H)!" << std::endl;
-    s <<" : H"<< nameInTool("KICKER","KICK",t) <<", ";
-    kick = k0.z;
+    s << "H"<< nameInTool("KICKER","KICK",t);
+    kick = k0.z; // plane==H => horizontal kick => vertical field!
   }
-  else if (plane==noplane && k0.x==k0.z) {
-    kick = k0.x;
+  else if (plane==noplane) {
+    s << "KICKER";
   }
   else
-    throw libpalError("Export of Corrector with plane=L or different x/z-kicks not implemented!");
+    throw libpalError("Export of Corrector with plane=L not implemented!");
 
-  s << nameInTool("KICKER","KICK",t) <<", L="<< length <<", "
-    <<"KICK="<< asin(kick*length);
+  s << ", L="<< length <<", ";
+
+  if (plane == noplane)
+    s << "VKICK="<< asin(k0.x*length) <<", HKICK="<< asin(k0.z*length);
+  else
+    s << "KICK="<< asin(kick*length);
 
   if (t == elegant && dpsi!=0.)
     s <<", TILT="<< dpsi;

@@ -626,8 +626,8 @@ void AccLattice::madximport(SimToolInstance &madx)
     // }
 
     if (angle!=0.) element->k0.z += angle / l; // 1/R from bending angle, curved length l
-    if (hkick!=0. && element->plane==H)  element->k0.z += sin(hkick) / l; // 1/R from kick angle, straight length l
-    if (vkick!=0. && element->plane==V)  element->k0.x += sin(vkick) / l;
+    if (hkick!=0. && element->plane!=V)  element->k0.z += sin(hkick) / l; // 1/R from kick angle, straight length l
+    if (vkick!=0. && element->plane!=H)  element->k0.x += sin(vkick) / l;
     element->k1 = twi.getd("K1L",i)/l;
     element->k2 = twi.getd("K2L",i)/l;
     //misalignments in AccLattice::madximportMisalignments()
@@ -716,7 +716,7 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
 
 
   double s, pos;
-  double l, k1, k2, angle, kick, tilt; //parameter values
+  double l, k1, k2, angle, kick, hkick, vkick, tilt; //parameter values
   paramRow row, row_old;
   AccElement *element;
   fstream elegantParam;
@@ -782,10 +782,8 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
      }
      else if (row_old.type=="KICKER") {
        element = new Corrector(row_old.name, l);
-       if (kick!=0.) {
-	 element->k0.x += sin(kick) / l;
-	 element->k0.z += sin(kick) / l;
-       }
+       element->k0.x += sin(vkick) / l;
+       element->k0.z += sin(hkick) / l;
      }
      else if (row_old.type=="RFCA") {
        element = new Cavity(row_old.name, l);
@@ -810,7 +808,7 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
        this->mount(pos, *element); // mount element
      }
      delete element;
-     pos=l=k1=k2=angle=kick=tilt=0.;   // clear param. values to avoid reuse of an old value
+     pos=l=k1=k2=angle=kick=hkick=vkick=tilt=0.;   // clear param. values to avoid reuse of an old value
     }
 
     //read parameter in row (if needed)
@@ -822,6 +820,8 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
     else if (row.param == "K2") k2 = row.value;
     else if (row.param == "ANGLE") angle = row.value;
     else if (row.param == "KICK") kick = row.value;
+    else if (row.param == "HKICK") hkick = row.value;
+    else if (row.param == "VKICK") vkick = row.value;
     else if (row.param == "ETILT") tilt += row.value;
     else if (row.param == "TILT") tilt += row.value;
     //... add more parameters here
