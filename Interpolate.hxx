@@ -140,7 +140,7 @@ double Interpolate<T>::evalSpline(gsl_spline *s, double xIn) const
   
   if (std::isnan(tmp)) {
     cout << "ERROR: Interpolate::evalSpline(): interpolation error at key="<<xIn<< endl
-	 << "return 0.0 and continue";
+	 << "return 0.0 and continue" << endl;
     return 0.;
   }
   else

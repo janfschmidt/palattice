@@ -318,7 +318,7 @@ void FunctionOfPos<AccPair>::simToolTrajectory(SimToolInstance &s, unsigned int 
   //then modify() can be used below instead of set() ->  much faster for large datasets
 
 
-  cout << "* Initializing trajectory... " << endl;  
+  cout << "Initializing trajectory... " << endl;  
   unsigned int obs;
   std::string trajFile;
   SimToolTable tab;
@@ -455,13 +455,16 @@ void FunctionOfPos<AccPair>::simToolTrajectory(SimToolInstance &s, unsigned int 
   stmp << particle;
   info.add("particle number", stmp.str());
   stmp.str(std::string());
+  stmp << turns();
+  info.add("number of turns", stmp.str());
+  stmp.str(std::string());
   stmp << samplesInTurn(1);
   info.add("number of obs. points", stmp.str());
 
   //info stdout
   cout << "* trajectory of particle "<<particle<<" read at "<<samplesInTurn(1)
        <<" observation points for "<<turns()<<" turns"<<endl;
-  this->print("traj.tmp"); //debug
+  //this->print("traj.tmp"); //debug
 }
 
 

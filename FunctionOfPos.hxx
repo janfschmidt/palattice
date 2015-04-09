@@ -341,6 +341,8 @@ void FunctionOfPos<T>::set(T valueIn, double posIn, unsigned int turnIn) {
   // if insert failed (key already existed), replace value
   if (ret.second == false)
     ret.first->second = valueIn;
+
+  this->reset(); //reset interpolation
 }
 
 
@@ -522,7 +524,7 @@ void FunctionOfPos<T>::operator+=(FunctionOfPos<T> &other)
   if (!compatible(other))
     throw invalid_argument("Addition of FunctionOfPos<T> objects not possible (incompatible circumference or number of turns).");
 
-  const_FoPiterator it = data.begin();
+  FoPiterator it = data.begin();
   if (other.turns()==1 && turns()>1) {    // special case: add this 1 turn of other to each turn
     for (; it!=data.end(); it++)
       it->second += other.interp( posInTurn(it->first) );
@@ -546,7 +548,7 @@ void FunctionOfPos<T>::operator-=(FunctionOfPos<T> &other)
   if (!compatible(other))
     throw invalid_argument("Addition of FunctionOfPos<T> objects not possible (incompatible circumference or number of turns).");
 
-  const_FoPiterator it = data.begin();
+  FoPiterator it = data.begin();
   if (other.turns()==1 && turns()>1) {    // special case: add this 1 turn of other to each turn
     for (; it!=data.end(); it++)
       it->second -= other.interp( posInTurn(it->first) );
