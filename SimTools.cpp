@@ -168,8 +168,11 @@ void SimToolInstance::run()
     runcmd << " >> " <<tool_string()<< ".log";
   cout << " (log: " << log() << ")" << endl;
   int ret = system(runcmd.str().c_str());
-  if (ret != 0)
-    throw libpalError("Mad-X or Elegant Error");
+  if (ret != 0) {
+    stringstream msg;
+    msg << tool_string() << " Error! (see " << log() <<")";
+    throw libpalError(msg.str());
+  }
 
 
   //MadX: additional commands to set tracking observation points at each BPM (element name including BPM)
@@ -184,8 +187,11 @@ void SimToolInstance::run()
     // 2. madx run -> using madx.observe
     cout << "Run MadX 2... (log: " << log() << ")" << endl;
     int ret = system(runcmd.str().c_str());
-    if (ret != 0)
-      throw libpalError("Mad-X Error");
+    if (ret != 0) {
+      stringstream msg;
+      msg << tool_string() << " Error! (see " << log() <<")";
+      throw libpalError(msg.str());
+    }
   }
 
   executed = true;

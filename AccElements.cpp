@@ -351,8 +351,7 @@ string Dipole::printSimTool(SimTool t) const
     <<"ANGLE="<< k0.z*length;
   if (t == elegant) {
     s <<", TILT="<< dpsi;
-    s <<", e1=0, e2=0, "   //not implemented
-      <<"synch_rad=1, isr=1, use_rad_dist=0 ! edges & radiation not implemented in libpal. Please set manually.";
+    //s <<", e1=0, e2=0, "   //not implemented
   }
   s <<";"<< rfComment() << endl;
   return s.str();
@@ -409,7 +408,7 @@ string Quadrupole::printSimTool(SimTool t) const
     s  <<"K1="<< -k1;
   if (t == elegant) {
     s <<", TILT=" <<dpsi;
-    s <<", fringe_type=fixed-strength, ffringe=0";
+    //s <<", fringe_type=fixed-strength, ffringe=0"; //not implemented
   }
   s <<";"<< rfComment() << endl;
   return s.str();

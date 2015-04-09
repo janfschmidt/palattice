@@ -1224,7 +1224,10 @@ string AccLattice::getElementDefs(SimTool tool, element_type _type) const
 
   if (it == elements.end())
     return "";
-  s << "! " << it->second->type_string() << "s" << endl;
+  s << "! " << it->second->type_string() << "s";
+  if (_type==dipole && tool==elegant)
+    s <<" (use synch_rad=1, isr=1 for synchrotron radiation)";
+  s << endl;
   for (; it!=elements.end(); it=nextCIt(it, _type)) {
     s << it->second->printSimTool(tool);
   }
