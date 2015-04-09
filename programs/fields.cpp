@@ -10,7 +10,7 @@ using namespace std;
 int main()
 {
   //import lattice and closed orbit
-  pal::SimToolInstance sim(pal::elegant, pal::online, "../lattice/ELSA/elsa.lte");
+  pal::SimToolInstance sim(pal::madx, pal::online, "ELSAlattice/elsa.madx");
   pal::AccLattice elsa("ELSA", sim);
 
   pal::FunctionOfPos<pal::AccPair> orbit(sim);
@@ -19,7 +19,7 @@ int main()
   double s = 26.23;
 
   int samples = 16440;
-  pal::Field B(elsa.circumference(), samples);
+  pal::Field B(elsa.circumference());
 
 
   //access field of element

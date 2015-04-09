@@ -19,7 +19,7 @@ int main ()
   string out = "twiss";
   pal::SimTool tool = pal::elegant;       // choose madx or elegant
   pal::SimToolMode mode = pal::online; // SimTool is executed automatically
-  string latticefile = "../lattice/ELSA/elsa.lte";
+  string latticefile = "ELSAlattice/elsa.lte";
 
 
   // construct SimToolInstance for a lattice file
@@ -52,7 +52,7 @@ int main ()
   cout << endl<< "some info about FunctionOfPos<double> twiss:" << endl;
   cout << "circumference=" << twiss.circ << endl; 
   cout << "turns=" << twiss.turns() << endl; 
-  cout << "samples=" << twiss.samples() << endl;
+  cout << "samples=" << twiss.samplesInTurn(1) << endl;
   cout << "data range: " << twiss.dataMin() <<" - "<< twiss.dataMax() << endl;
   cout << "interpolation range: " << twiss.interpMin() <<" - "<< twiss.interpMax() << endl << endl;
 
