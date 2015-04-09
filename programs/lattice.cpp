@@ -13,7 +13,7 @@
 
 using namespace std;
 
-int main()
+int main(int argc, char *argv[])
 {
 
   // manuell angelegtes Lattice
@@ -49,7 +49,8 @@ int main()
 
 
   //importiertes Lattice
-  pal::SimToolInstance sim(pal::madx, pal::online, "../lattice/ELSA/elsa.madx");
+  string latticefile = argv[1];
+  pal::SimToolInstance sim(pal::madx, pal::online, latticefile);
   //pal::SimToolInstance sim(pal::elegant, pal::online, "../lattice/ELSA/elsa.lte");
   pal::AccLattice elsa("ELSA", sim);
 

@@ -7,10 +7,11 @@
 
 using namespace std;
 
-int main()
+int main(int argc, char *argv[])
 {
   //import lattice and closed orbit
-  pal::SimToolInstance sim(pal::madx, pal::online, "ELSAlattice/elsa.madx");
+  string latticefile = argv[1];
+  pal::SimToolInstance sim(pal::madx, pal::online, latticefile);
   pal::AccLattice elsa("ELSA", sim);
 
   pal::FunctionOfPos<pal::AccPair> orbit(sim);
@@ -23,13 +24,13 @@ int main()
 
 
   //access field of element
-  cout << "field of element at s=" << s << "m: " << elsa[s]->B(orbit.interp(s)) << endl;
+  cout << "field of element (no edges) at s=" << s << "m: " << elsa[s]->B(orbit.interp(s)) << endl;
   //calc. field of one revolution
   B.set(elsa, orbit, samples, false);
   B.print("fields_noedge.dat");
 
   //access field of lattice (incl. edge fields, default)
-  cout << "field of lattice at s=" << s << "m: " << elsa.B(s, orbit.interp(s)) << endl;
+  cout << "field of lattice (with edges) at s=" << s << "m: " << elsa.B(s, orbit.interp(s)) << endl;
   //calc. field of one revolution
   B.set(elsa, orbit, samples, true);
   B.print("fields_edge.dat");

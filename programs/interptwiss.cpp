@@ -14,12 +14,12 @@
 using namespace std;
 
 
-int main ()
+int main (int argc, char *argv[])
 {
   string out = "twiss";
   pal::SimTool tool = pal::elegant;       // choose madx or elegant
   pal::SimToolMode mode = pal::online; // SimTool is executed automatically
-  string latticefile = "ELSAlattice/elsa.lte";
+  string latticefile = argv[1];
 
 
   // construct SimToolInstance for a lattice file
