@@ -225,7 +225,8 @@ string AccElement::print() const
   std::stringstream s;
 
   s <<std::setw(w)<< name <<std::setw(w)<< type_string() <<std::setw(w) << length
-    <<std::setw(w)<< k0 <<std::setw(w)<< k1 <<std::setw(w)<< k2 <<std::setw(w)<< dpsi << endl;
+    <<std::setw(w)<< k0.x <<std::setw(w)<< k0.z <<std::setw(w)<< k0.s
+    <<std::setw(w)<< k1 <<std::setw(w)<< k2 <<std::setw(w)<< dpsi << endl;
 
   return s.str();
 }
@@ -237,7 +238,7 @@ string AccElement::printHeader() const
   std::stringstream s;
 
   s <<std::setw(w)<< "Name" <<std::setw(w)<< "Type" <<std::setw(w)<< "Length/m"
-    <<std::setw(w)<< "k0 / 1/m" <<std::setw(w)<< "k1 / 1/m^2" <<std::setw(w)<< "k2 / 1/m^3" 
+    <<std::setw(w)<< "k0.x / 1/m" <<std::setw(w)<< "k0.z / 1/m" <<std::setw(w)<< "k0.s / 1/m" <<std::setw(w)<< "k1 / 1/m^2" <<std::setw(w)<< "k2 / 1/m^3" 
     <<std::setw(w)<< "Rotation(s)/rad" << endl;
 
   return s.str();
