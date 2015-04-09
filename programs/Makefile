@@ -19,10 +19,13 @@ convertlattice: convertlattice.cpp
 	$(CC) $(ccflags) -o $@ $< -lpal
 
 clean:
-	rm $(ALL)
+	rm $(ALL) convertlattice_static
 
 install:
 	install -m 755 -p -v convertlattice $(INSTALL_PATH)/bin/
 
 uninstall:
 	rm -f $(INSTALL_PATH)/bin/convertlattice
+
+static: convertlattice.cpp ../libpal.a
+	$(CC) $(ccflags) -o convertlattice_static $^

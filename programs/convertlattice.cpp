@@ -35,7 +35,8 @@ void usage()
        << "* -n        offline mode. no madx or elegant execution." << endl
        << "            Thus, [FILE] must be a madx/elegant output filename:" << endl
        << "            - for MadX: a twiss file" << endl
-       << "            - for Elegant: an ascii parameter file" << endl << endl;
+       << "            - for Elegant: an ascii parameter file" << endl
+       << "* -h        display this help." << endl << endl;
   cout << "examples:" << endl
        << "MadX-->Elegant: convertlattice -m [MADXFILE]" <<endl
        << "Elegant-->MadX & LaTeX: convertlattice -e [ELEGANTFILE] -l" <<endl << endl;

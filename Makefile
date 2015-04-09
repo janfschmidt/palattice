@@ -51,7 +51,7 @@ simToolPath.hpp: Makefile
 	echo "#endif" >> $@
 
 clean: 
-	rm $(LIB_FILE)* $(ALL_O) libpalGitversion.hpp
+	rm $(LIB_FILE)* $(ALL_O) $(LIB_NAME).a libpalGitversion.hpp
 
 install: $(LIB_FILE).$(Vmajor).$(Vminor)
 	install -m 755 -p -v $< $(INSTALL_PATH)/lib/                     #library
@@ -73,3 +73,6 @@ uninstall:
 	rm -f $(INSTALL_PATH)/lib/$(LIB_FILE)*
 	rm -rf $(INSTALL_PATH)/include/$(LIB_NAME)*
 	make uninstall -C ./programs
+
+static:
+	ar rcs $(LIB_NAME).a $(ALL_O)
