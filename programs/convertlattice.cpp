@@ -18,24 +18,27 @@ void usage()
 {
   cout << "convert particle accelerator lattice definition files using libpal:" << endl
        << "- MadX <--> Elegant" << endl
-       << "- MadX, Elegant --> LaTeX (lattice package)" << endl << "---usage:---" << endl;
+       << "- MadX, Elegant --> LaTeX (tikz-palattice package)" << endl << endl
+       << "usage:" << endl;
   cout << "convertlattice -m [FILE] [other options]" << endl
        << "convertlattice -e [FILE] [other options]" << endl;
   cout << "[FILE] is:" << endl
        << "* a lattice file for madx (including BEAM!) or elegant" << endl
-       << "* or a madx/elegant output file, if option -o is used (see below)" << endl;
+       << "* or a madx/elegant output file, if option -n is used (see below)" << endl;
   cout << "options:" << endl
-       << "* -m [FILE] input of a MadX file [FILE] => Elegant output (default: convert_[FILE].lte)" << endl
-       << "* -e [FILE] input of an Elegant file [FILE] => MadX output (default: convert_[FILE].madx)" << endl
-       << "     if both -m and -e are given, the last one is used." << endl
-       << "* -l        additional output of a LaTeX format lattice file (default: convert_[FILE].tex)" << endl
+       << "* -m [FILE] input of a MadX file [FILE] => Elegant output (default: [FILE]_converted.lte)" << endl
+       << "* -e [FILE] input of an Elegant file [FILE] => MadX output (default: [FILE]_converted.madx)" << endl
+       << "            If both -m and -e are given, the last one is used." << endl
+       << "* -l        additional output of a LaTeX format lattice file (default: [FILE].tex)" << endl
        << "* -o [name] specify output filenames ([name].lte/madx/tex). If [name]=stdout, output to terminal" << endl
        << "* -a        all 3 output formats" << endl
        << "* -n        offline mode. no madx or elegant execution." << endl
        << "            Thus, [FILE] must be a madx/elegant output filename:" << endl
        << "            - for MadX: a twiss file" << endl
-       << "            - for Elegant: an ascii parameter file" << endl
-       << "            See libpal documentation for details... " << endl;
+       << "            - for Elegant: an ascii parameter file" << endl << endl;
+  cout << "examples:" << endl
+       << "MadX-->Elegant: convertlattice -m [MADXFILE]" <<endl
+       << "Elegant-->MadX & LaTeX: convertlattice -e [ELEGANTFILE] -l" <<endl;
 }
 
 
@@ -92,13 +95,18 @@ int main (int argc, char *argv[])
     return 1;
   }
   
-  if (out == "-" || out == "") out = "convert_"+file;
-  
 
   // import lattice
   pal::SimToolInstance sim(tool, mode, file);
   pal::AccLattice lattice("convertlattice", sim);
   
+
+  // remove path from input file name
+  unsigned int found = file.find_last_of("/");
+  file = file.substr(found+1);
+  // set output file base name
+  if (out == "-" || out == "") out = "converted_"+file;
+
 
   // export lattice
   if (m) {
@@ -111,7 +119,7 @@ int main (int argc, char *argv[])
   }
   if (l) {
     if (out == "stdout") lattice.latexexport("");
-    else lattice.latexexport(out+".tex");
+    else lattice.latexexport(file+".tex");
   }
   
   return 0;
