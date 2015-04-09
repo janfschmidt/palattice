@@ -17,7 +17,7 @@ using namespace pal;
 template <>
 void Interpolate<double>::initThis()
 {
-  spline.push_back( getSpline(f) );
+  spline.push_back( getSpline(data) );
 }
 
 //double
@@ -35,11 +35,11 @@ double Interpolate<double>::interpThis(double xIn) const
 template <>
 void Interpolate<AccPair>::initThis()
 {
-  vector<double> tmpX, tmpZ;
+  std::map<double,double> tmpX, tmpZ;
 
-  for (unsigned int i=0; i<f.size(); i++) {
-    tmpX.push_back( f[i].x );
-    tmpZ.push_back( f[i].z );
+  for (std::map<double,AccPair>::const_iterator it=data.begin(); it!=data.end(); it++) {
+    tmpX.insert( std::pair<double,double>(it->first, it->second.x) );
+    tmpZ.insert( std::pair<double,double>(it->first, it->second.z) );
   }
   spline.push_back( getSpline(tmpX) ); // x: spline[0]
   spline.push_back( getSpline(tmpZ) ); // z: spline[1]
@@ -61,12 +61,12 @@ AccPair Interpolate<AccPair>::interpThis(double xIn) const
 template <>
 void Interpolate<AccTriple>::initThis()
 {
-  vector<double> tmpX, tmpZ, tmpS;
+  std::map<double,double> tmpX, tmpZ, tmpS;
 
-  for (unsigned int i=0; i<f.size(); i++) {
-    tmpX.push_back( f[i].x );
-    tmpZ.push_back( f[i].z );
-    tmpS.push_back( f[i].s );
+  for (std::map<double,AccTriple>::const_iterator it=data.begin(); it!=data.end(); it++) {
+    tmpX.insert( std::pair<double,double>(it->first, it->second.x) );
+    tmpZ.insert( std::pair<double,double>(it->first, it->second.z) );
+    tmpS.insert( std::pair<double,double>(it->first, it->second.s) );
   }
   spline.push_back( getSpline(tmpX) ); // x: spline[0]
   spline.push_back( getSpline(tmpZ) ); // z: spline[1]
@@ -90,11 +90,11 @@ AccTriple Interpolate<AccTriple>::interpThis(double xIn) const
 template <>
 std::string Interpolate<AccPair>::header() const
 {
-  return this->f[0].header();
+  return this->data.begin()->second.header();
 }
 
 template <>
 std::string Interpolate<AccTriple>::header() const
 {
-  return this->f[0].header();
+  return this->data.begin()->second.header();
 }

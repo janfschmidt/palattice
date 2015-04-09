@@ -31,7 +31,7 @@ string pal::axis_string(AccAxis a)
 
 // =========== template specialization ============
 
-
+//double
 template <>
 vector<double> FunctionOfPos<double>::getVector(double stepwidth,AccAxis axis) const
 {
@@ -40,8 +40,8 @@ vector<double> FunctionOfPos<double>::getVector(double stepwidth,AccAxis axis) c
   
   //data values, no interpolation
   if (stepwidth == 0.) {
-    for (unsigned int i=0; i<size(); i++)
-      out.push_back( value[i] );
+    for (const_FoPiterator it=data.begin(); it!=data.end(); it++)
+      out.push_back( it->second );
   }
   //interpolation: equidistant data values
   else {
@@ -51,17 +51,17 @@ vector<double> FunctionOfPos<double>::getVector(double stepwidth,AccAxis axis) c
    return out;
 }
 
-
+//int
 template <>
 vector<double> FunctionOfPos<int>::getVector(double stepwidth,AccAxis axis) const
-{
+{ 
   // axis not needed, if only 1D values exist.
   vector<double> out;
-
+  
   //data values, no interpolation
   if (stepwidth == 0.) {
-    for (unsigned int i=0; i<size(); i++)
-      out.push_back( double(value[i]) );
+    for (const_FoPiterator it=data.begin(); it!=data.end(); it++)
+      out.push_back( double(it->second) );
   }
   //interpolation: equidistant data values
   else {
@@ -69,9 +69,10 @@ vector<double> FunctionOfPos<int>::getVector(double stepwidth,AccAxis axis) cons
       out.push_back( double(this->interp(pos)) );
   }
    return out;
+ 
 }
 
-
+//AccPair
 template <>
 vector<double> FunctionOfPos<AccPair>::getVector(double stepwidth,AccAxis axis) const
 {
@@ -83,8 +84,8 @@ vector<double> FunctionOfPos<AccPair>::getVector(double stepwidth,AccAxis axis) 
     break;
   case x:
     if (stepwidth == 0.) {     //data values, no interpolation
-      for (unsigned int i=0; i<size(); i++)
-	out.push_back( value[i].x );
+      for (const_FoPiterator it=data.begin(); it!=data.end(); it++)
+	out.push_back( it->second.x );
     }
     else {                     //interpolation: equidistant data values
       for (double pos=0; pos<turns()*circ; pos+=stepwidth)
@@ -93,8 +94,8 @@ vector<double> FunctionOfPos<AccPair>::getVector(double stepwidth,AccAxis axis) 
     break;
   case z:
     if (stepwidth == 0.) {     //data values, no interpolation
-      for (unsigned int i=0; i<size(); i++)
-	out.push_back( value[i].z );
+      for (const_FoPiterator it=data.begin(); it!=data.end(); it++)
+	out.push_back( it->second.z );
     }
     else {                     //interpolation: equidistant data values
       for (double pos=0; pos<turns()*circ; pos+=stepwidth)
@@ -106,7 +107,7 @@ vector<double> FunctionOfPos<AccPair>::getVector(double stepwidth,AccAxis axis) 
   return out;
 }
 
-
+//AccTriple
 template <>
 vector<double> FunctionOfPos<AccTriple>::getVector(double stepwidth,AccAxis axis) const
 {
@@ -115,8 +116,8 @@ vector<double> FunctionOfPos<AccTriple>::getVector(double stepwidth,AccAxis axis
   switch(axis) {
   case s:
     if (stepwidth == 0.) {     //data values, no interpolation
-      for (unsigned int i=0; i<size(); i++)
-	out.push_back( value[i].s );
+      for (const_FoPiterator it=data.begin(); it!=data.end(); it++)
+	out.push_back( it->second.s );
     }
     else {                     //interpolation: equidistant data values
       for (double pos=0; pos<turns()*circ; pos+=stepwidth)
@@ -125,8 +126,8 @@ vector<double> FunctionOfPos<AccTriple>::getVector(double stepwidth,AccAxis axis
     break;
   case x:
     if (stepwidth == 0.) {     //data values, no interpolation
-      for (unsigned int i=0; i<size(); i++)
-	out.push_back( value[i].x );
+      for (const_FoPiterator it=data.begin(); it!=data.end(); it++)
+	out.push_back( it->second.x );
     }
     else {                     //interpolation: equidistant data values
       for (double pos=0; pos<turns()*circ; pos+=stepwidth)
@@ -135,8 +136,8 @@ vector<double> FunctionOfPos<AccTriple>::getVector(double stepwidth,AccAxis axis
     break;
   case z:
     if (stepwidth == 0.) {     //data values, no interpolation
-      for (unsigned int i=0; i<size(); i++)
-	out.push_back( value[i].z );
+      for (const_FoPiterator it=data.begin(); it!=data.end(); it++)
+	out.push_back( it->second.z );
     }
     else {                     //interpolation: equidistant data values
       for (double pos=0; pos<turns()*circ; pos+=stepwidth)
@@ -238,6 +239,8 @@ void FunctionOfPos<AccTriple>::readSimToolColumn(SimToolInstance &s, string file
 template <>
 void FunctionOfPos<AccPair>::simToolClosedOrbit(SimToolInstance &s)
 {
+  this->clear(); //delete old data
+
   string orbitFile=s.orbit();
 
   //SimTool columns
@@ -282,7 +285,7 @@ void FunctionOfPos<AccPair>::simToolClosedOrbit(SimToolInstance &s)
   }
 
   //stdout info
-  cout  << "* "<<samples()<<" BPMs read"<<endl
+  cout  << "* "<<size()<<" BPMs read"<<endl
 	<<"  from "<<orbitFile << endl;
 }
 
@@ -293,6 +296,8 @@ void FunctionOfPos<AccPair>::simToolClosedOrbit(SimToolInstance &s)
 template <>
 void FunctionOfPos<AccPair>::simToolTrajectory(SimToolInstance &s, unsigned int particle)
 {
+  this->clear(); //delete old data
+
   //SimTool columns
   vector<string> columns;
   if (s.tool == pal::madx) {
@@ -315,64 +320,66 @@ void FunctionOfPos<AccPair>::simToolTrajectory(SimToolInstance &s, unsigned int 
 
   cout << "* Initializing trajectory... " << endl;  
   unsigned int obs;
-  unsigned int turnsRead;
-  SimToolTable tab_first;
-  vector<double> obsPos;
-  if (s.tool==pal::madx) obs=1;
-  else if (s.tool==pal::elegant) obs=0;
-  string trajFile=s.trajectory(obs,particle);
-
-  tab_first = s.readTable(trajFile, columns);
-
-  //read turns from first obs file (and position)
-  if (s.tool==pal::madx) {
-    turnsRead = tab_first.get<unsigned int>("TURN",tab_first.rows()-1);
-    obsPos.push_back(tab_first.getd("S",0)); //read position s from first line
-  }
-  else if (s.tool==pal::elegant) {
-    turnsRead = tab_first.get<unsigned int>("Pass",tab_first.rows()-1);
-    obsPos.push_back(s.readParameter<double>(trajFile,"position_s/m")); //read position s from parameter in file header
-  }
-
-  if (s.mode==pal::online && turnsRead != s.turns())
-    cout << "LIBPAL WARNING: FunctionOfPos<AccPair>::simToolTrajectory(): "
-	 <<turnsRead<< " turns read from "<<s.tool_string()<<" files, but "
-	 <<s.turns()<<" turns set in SimToolInstance" << endl;
-
-  //read positions from all other obs files
-  obs++;
+  std::string trajFile;
   SimToolTable tab;
-  //iterate all existing obs files:
-  while (true) {
-    trajFile=s.trajectory(obs,particle);
-    try {
-      if (s.tool==pal::madx) {
-	tab = s.readTable(trajFile, columns, 1); //read first line
-	obsPos.push_back(tab.getd("S",0));
-      }
-      else if (s.tool==pal::elegant) {
-	obsPos.push_back(s.readParameter<double>(trajFile,"position_s/m")); //read parameter in file header
-      }
-    }
-    catch (libpalFileError) {
-      if (s.tool==pal::elegant) obsPos.pop_back(); //elegant: obs-file at lattice end only needed for last turn
-      break;
-    }
-    obs++;
-  }
+
+  // SimToolTable tab_first;
+  // vector<double> obsPos;
+  // if (s.tool==pal::madx) obs=1;
+  // else if (s.tool==pal::elegant) obs=0;
+  // string trajFile=s.trajectory(obs,particle);
+
+  // tab_first = s.readTable(trajFile, columns);
+
+  // //read turns from first obs file (and position)
+  // if (s.tool==pal::madx) {
+  //   turnsRead = tab_first.get<unsigned int>("TURN",tab_first.rows()-1);
+  //   obsPos.push_back(tab_first.getd("S",0)); //read position s from first line
+  // }
+  // else if (s.tool==pal::elegant) {
+  //   turnsRead = tab_first.get<unsigned int>("Pass",tab_first.rows()-1);
+  //   obsPos.push_back(s.readParameter<double>(trajFile,"position_s/m")); //read position s from parameter in file header
+  // }
+
+  // if (s.mode==pal::online && turnsRead != s.turns())
+  //   cout << "LIBPAL WARNING: FunctionOfPos<AccPair>::simToolTrajectory(): "
+  // 	 <<turnsRead<< " turns read from "<<s.tool_string()<<" files, but "
+  // 	 <<s.turns()<<" turns set in SimToolInstance" << endl;
+
+  // //read positions from all other obs files
+  // obs++;
+  // SimToolTable tab;
+  // //iterate all existing obs files:
+  // while (true) {
+  //   trajFile=s.trajectory(obs,particle);
+  //   try {
+  //     if (s.tool==pal::madx) {
+  // 	tab = s.readTable(trajFile, columns, 1); //read first line
+  // 	obsPos.push_back(tab.getd("S",0));
+  //     }
+  //     else if (s.tool==pal::elegant) {
+  // 	obsPos.push_back(s.readParameter<double>(trajFile,"position_s/m")); //read parameter in file header
+  //     }
+  //   }
+  //   catch (libpalFileError) {
+  //     if (s.tool==pal::elegant) obsPos.pop_back(); //elegant: obs-file at lattice end only needed for last turn
+  //     break;
+  //   }
+  //   obs++;
+  // }
   
   //resize & set positions s
-  AccPair empty;
-  this->n_turns = turnsRead + 1;      //last turn to avoid extrapolation, hidden later
-  this->n_samples = obsPos.size();
-  pos.resize(turns()*samples());
-  value.resize(turns()*samples());
-  for (unsigned int t=1; t<=turns(); t++) {
-    for (unsigned int i=0; i<samples(); i++) {
-      pos[index(i,t)] = posTotal(obsPos[i], t);
-      value[index(i,t)] =  empty;
-    }
-  }
+  //AccPair empty;
+  //this->n_turns = turnsRead + 1;      //last turn to avoid extrapolation, hidden later
+  //this->n_samples = obsPos.size();
+  // pos.resize(turns()*samples());
+  // value.resize(turns()*samples());
+  // for (unsigned int t=1; t<=turns(); t++) {
+  //   for (unsigned int i=0; i<samples(); i++) {
+  //     pos[index(i,t)] = posTotal(obsPos[i], t);
+  //     value[index(i,t)] =  empty;
+  //   }
+  // }
 
   //for chosen particle: read data from all observation points
   //-----------------------------------------------------------------------------------------------------
@@ -383,6 +390,7 @@ void FunctionOfPos<AccPair>::simToolTrajectory(SimToolInstance &s, unsigned int 
   //-----------------------------------------------------------------------------------------------------
   AccPair otmp;
   unsigned int turn;
+  double obsPos;
   if (s.tool==pal::madx) obs=1;
   else if (s.tool==pal::elegant) obs=0;
   //iterate all existing obs files:
@@ -396,9 +404,14 @@ void FunctionOfPos<AccPair>::simToolTrajectory(SimToolInstance &s, unsigned int 
       obs--;
       break;
     }
+    // read obs position
+    if (s.tool==pal::madx)
+      obsPos = tab.getd("S",0);
+    else if (s.tool==pal::elegant)
+      obsPos = s.readParameter<double>(trajFile,"position_s/m"); // read parameter in file header
     // write table rows to FunctionOfPos:
-    if (s.tool==pal::elegant && obs==this->samples()) //elegant: obs-file at lattice end only needed for last turn
-      break;
+    //    if (s.tool==pal::elegant && obs==this->samples()) //elegant: obs-file at lattice end only needed for last turn
+    //  break;
     for (unsigned int i=0; i<tab.rows(); i++) {
       if (s.tool==pal::madx) {
 	turn = tab.get<unsigned int>("TURN",i);
@@ -415,8 +428,9 @@ void FunctionOfPos<AccPair>::simToolTrajectory(SimToolInstance &s, unsigned int 
       }
       
       // modify(): by index (obs) and not by pos -> faster than set() !
-      if (s.tool==pal::madx) this->modify(otmp, obs-1, turn);
-      else if (s.tool==pal::elegant) this->modify(otmp, obs, turn);
+      // if (s.tool==pal::madx) this->modify(otmp, obs-1, turn);
+      // else if (s.tool==pal::elegant) this->modify(otmp, obs, turn);
+      this->set(otmp, obsPos, turn);
     }
     obs++;
   }
@@ -428,7 +442,7 @@ void FunctionOfPos<AccPair>::simToolTrajectory(SimToolInstance &s, unsigned int 
     turn = tab.get<unsigned int>("Pass",tab.rows()-1) + 1;
     otmp.x = tab.getd("x",tab.rows()-1);
     otmp.z = tab.getd("y",tab.rows()-1);
-    this->modify(otmp, 0, turn);
+    this->set(otmp, 0, turn);
   }
   this->hide_last_turn();
   //this->pop_back_turn();
@@ -441,13 +455,13 @@ void FunctionOfPos<AccPair>::simToolTrajectory(SimToolInstance &s, unsigned int 
   stmp << particle;
   info.add("particle number", stmp.str());
   stmp.str(std::string());
-  stmp << samples();
+  stmp << samplesInTurn(1);
   info.add("number of obs. points", stmp.str());
 
   //info stdout
-  cout << "* trajectory of particle "<<particle<<" read at "<<samples()
+  cout << "* trajectory of particle "<<particle<<" read at "<<samplesInTurn(1)
        <<" observation points for "<<turns()<<" turns"<<endl;
-  this->print("traj.tmp");
+  this->print("traj.tmp"); //debug
 }
 
 
@@ -463,7 +477,7 @@ void FunctionOfPos<AccPair>::elsaClosedOrbit(ELSASpuren &spuren, unsigned int t)
   char msg[1024];
   AccPair otmp;
 
-  this->clear(); //delete old-BPM-data (from madx or previous t)
+  this->clear(); //delete old-BPM-data
   
   for (i=0; i<NBPMS; i++) {
     if (t > spuren.bpms[i].time.size()) {

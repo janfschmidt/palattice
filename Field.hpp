@@ -22,8 +22,6 @@ public:
   // use FunctionOfPos constructors:
   Field(double circIn=164.4, const gsl_interp_type *t=gsl_interp_akima)
     : FunctionOfPos(circIn, t) {}
-  Field(double circIn, unsigned int samplesIn, unsigned int turnsIn=1, const gsl_interp_type *t=gsl_interp_akima)
-    : FunctionOfPos(circIn, samplesIn, turnsIn, t) {}
   ~Field() {}
 
   

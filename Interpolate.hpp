@@ -23,8 +23,9 @@ template <class T=double>
 class Interpolate {
 
 protected:
-  std::vector<double> _x;      // _x data
-  std::vector<T> f;           // f(_x) data
+  //std::vector<double> _x;      // _x data
+  //std::vector<T> f;           // f(_x) data
+  std::map<double,T> data;
   std::string headerString;
   double period;
   bool ready;
@@ -36,7 +37,7 @@ private:
   gsl_interp_accel *acc;
   std::vector<gsl_spline*> spline;  //several splines for multidimensional data types
 
-  gsl_spline* getSpline(std::vector<double> f_single);
+  gsl_spline* getSpline(std::map<double,double> data1D);
   double evalSpline(gsl_spline *s, double xIn) const;
   void initThis();
   T interpThis(double xIn) const;
@@ -45,24 +46,21 @@ private:
 public:
   Metadata info;
 
-  // ! user must provide appropriate _x and f(x): !
-  // !  - _x[i] corresponding to f(_x)[i]          !
-  // !  - sorted by _x, increasing                !
-  Interpolate(const gsl_interp_type *t=gsl_interp_akima, double periodIn=0., unsigned int sizeIn=0);
-  Interpolate(std::vector<double> xIn, std::vector<T> fIn, const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
+  //Interpolate(const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
+  Interpolate(const gsl_interp_type *t=gsl_interp_akima, double periodIn=0., std::map<double,T> dataIn=std::map<double,T>());
   Interpolate(const Interpolate &other);
   ~Interpolate();
 
   void init();
   T interp(double xIn);
   T interp(double xIn) const;
-  void reset();                                // new initialization (for child-classes that can change _x and f)
-  void reset(std::vector<double> xIn, std::vector<T> fIn, double periodIn=0.); // new initialization and new external data
+  void reset();                                // new initialization (for derived classes that can change data)
+  void reset(std::map<double,T> dataIn, double periodIn=0.); // new initialization and new external data
 
-  unsigned int size() const;
-  double dataMin() const {return _x.front();}            // minimum given _x 
-  double dataMax() const {return _x.back();}             // maximum given _x 
-  double dataRange() const {return _x.back()-_x.front();}
+  unsigned int size() const {return data.size();}
+  double dataMin() const {return data.begin()->first;}            // minimum given _x 
+  double dataMax() const {return data.rbegin()->first;}           // maximum given _x 
+  double dataRange() const {return dataMax()-dataMin();}
   double interpMin() const;                             // lower limit for interpolation
   double interpMax() const;                             // upper limit for interpolation
   double interpRange() const;

@@ -15,27 +15,24 @@ using namespace std;
 using namespace pal;
 
 // constructor
-// ! user must provide appropriate _x and f(_x): !
-// !  - _x[i] corresponding to f(_x)[i]          !
-// !  - sorted by _x, increasing                !
-template <class T>
-Interpolate<T>::Interpolate(const gsl_interp_type *t, double periodIn, unsigned int sizeIn)
-  : _x(sizeIn), f(sizeIn), headerString("value"), period(periodIn), ready(false), type(t)
-{
-  acc = gsl_interp_accel_alloc ();
+// template <class T>
+// Interpolate<T>::Interpolate(const gsl_interp_type *t, double periodIn)
+//   : headerString("value"), period(periodIn), ready(false), type(t)
+// {
+//   acc = gsl_interp_accel_alloc ();
 
-  if (type == gsl_interp_akima_periodic || type == gsl_interp_cspline_periodic)
-    periodic = true;
-  else
-    periodic = false;
+//   if (type == gsl_interp_akima_periodic || type == gsl_interp_cspline_periodic)
+//     periodic = true;
+//   else
+//     periodic = false;
 
-  // if ( period!=0. && !periodic )
-  //   cout << "WARNING: Interpolate::Interpolate(): period not used for non-periodic interpolation type." << endl;
-}
+//   // if ( period!=0. && !periodic )
+//   //   cout << "WARNING: Interpolate::Interpolate(): period not used for non-periodic interpolation type." << endl;
+// }
 
 template <class T>
-Interpolate<T>::Interpolate(vector<double> xIn, vector<T> fIn, const gsl_interp_type *t, double periodIn)
-  : _x(xIn), f(fIn), headerString("value"), type(t), period(periodIn), ready(false), headerString("value")
+Interpolate<T>::Interpolate(const gsl_interp_type *t, double periodIn, std::map<double,T> dataIn)
+  : data(dataIn), headerString("value"), period(periodIn), ready(false), type(t)
 {
   acc = gsl_interp_accel_alloc ();
 
@@ -52,7 +49,7 @@ Interpolate<T>::Interpolate(vector<double> xIn, vector<T> fIn, const gsl_interp_
 // copy constructor
 template <class T>
 Interpolate<T>::Interpolate(const Interpolate &other)
-  : _x(other._x), f(other.f), headerString(other.headerString), type(other.type), period(other.period), ready(false), headerString("value")
+  : data(other.data), headerString(other.headerString), type(other.type), period(other.period), ready(false), headerString("value")
 {
   // by setting ready=false spline and acc are initialized again before beeing used
 }
@@ -75,95 +72,53 @@ Interpolate<T>::~Interpolate()
 
 //initialize interpolation for double type data
 template <class T>
-gsl_spline* Interpolate<T>::getSpline(vector<double> f_single)
+gsl_spline* Interpolate<T>::getSpline(std::map<double,double> data1D)
 {
-  unsigned int n = size();
   double *xTmp;
   double *fTmp;
-  bool cleanup = false;
-  
 
   // periodic boundary conditions
   if (periodic) {
 
-    double range = dataRange();
-
     if (period == 0.) {
       cout << "WARNING: Interpolate::getSpline(): period of function should be set for periodic interpolation type "
-	   << getType() << ". Assume last data point x=" << _x.back() << " as period." << endl;
+	   << getType() << ". Assume last data point x=" << dataMax() << " as period." << endl;
       cout << "--- period can be set with class constructor." << endl;
-      period = _x.back();
+      period = dataMax();
     }
 
-    // for trajectory:
-    // - data of additional turn needed to avoid extrapolation for non-periodic case
-    // - due to additional turn data range exceeds period for periodic case
-    // solution at the moment: dont set period to range, but set range to period (ignore additional points)
-    // !! still problem: trajectory with periodic boundary: x=0 already in data -> repeats
-    // ---
-    if (range > period) {
-      cout << "WARNING: Interpolate::getSpline(): period of function < data range (" << period <<"<"<< range
-    	     << "). Use data within period only." << endl;
-      unsigned int n_period = 0;
-      for (;n_period < n; n_period++) {
-	if (_x[n_period] > period) {
-	  n_period--;
-	  break;
-	}
-      }
-
-      // add datapoint (based on period) to enlarge range
-      if (dataMin()==0.) n = n_period +1; //avoid two datapoints at x=0
-      else n = n_period + 2;
-      xTmp = new double[n];
-      fTmp = new double[n];
-      cleanup = true;
-
-      if (dataMin()!=0.) {//avoid two datapoints at x=0
-	xTmp[0] = _x[n_period] - period;  // add datapoint BEFORE range (!interpMin/Max functions affected!)
-	fTmp[0] = f_single[n_period];
-	std::copy(_x.begin(), _x.begin()+n_period+1, xTmp+1);
-	std::copy(f_single.begin(), f_single.begin()+n_period+1, fTmp+1);
-      }
-      else {
-	std::copy(_x.begin(), _x.begin()+n_period+1, xTmp);
-	std::copy(f_single.begin(), f_single.begin()+n_period+1, fTmp);
-      }
-      xTmp[n-1] = period + xTmp[1];   // add datapoint AFTER range (!interpMin/Max functions affected!)
-      fTmp[n-1] = fTmp[1];
+    if (dataRange() > period) {
+      cout << "WARNING: Interpolate::getSpline(): period of function < data range (" << period <<"<"<< dataRange()
+	   << "). Use data within period only." << endl;
     }
-    
-    else if (range < period) {
-      // add datapoint (based on period) to enlarge range
-      n += 2;
-      xTmp = new double[n];
-      fTmp = new double[n];
-      cleanup = true;
-      
-      xTmp[0] = _x.back() - period;  // add datapoint BEFORE range (!interpMin/Max functions affected!)
-      fTmp[0] = f_single.back();
-      std::copy(_x.begin(), _x.end(), xTmp+1);
-      std::copy(f_single.begin(), f_single.end(), fTmp+1);
-      xTmp[n-1] = period + xTmp[1];   // add datapoint AFTER range (!interpMin/Max functions affected!)
-      fTmp[n-1] = fTmp[1];
-    }
-  } // (end periodic boundary conditions)
 
-  else { // non periodic type
-    xTmp = &(_x[0]); 
-    fTmp = &(f_single[0]);
+    // add datapoints to avoid extrapolation, if they do not exist already
+    std::pair<double,double> begin = *data1D.begin();
+    std::pair<double,double> lastInPeriod = *(--data1D.upper_bound(period));
+    // add datapoint BEFORE range (!interpMin/Max functions affected!)
+    data1D.insert( std::pair<double,double>(lastInPeriod.first-period, lastInPeriod.second) );
+    // add datapoint AFTER range (!interpMin/Max functions affected!)
+    data1D.insert( std::pair<double,double>(period+begin.first, begin.second) );
+  }// (end periodic boundary conditions)
+  
+  // write data to double arrays for gsl spline
+  unsigned int n = data1D.size();
+  xTmp = new double[n];
+  fTmp = new double[n];
+  std::map<double,double>::const_iterator it=data1D.begin();
+  for (unsigned int i=0; i<n; i++) {
+    xTmp[i] = it->first;
+    fTmp[i] = it->second;
+    it++;
   }
-
 
   // initialize interpolation
   gsl_spline *newSpline = gsl_spline_alloc (type, n);
   gsl_spline_init (newSpline, xTmp, fTmp, n);
 
-  if (cleanup) {
-    delete[] xTmp;
-    delete[] fTmp;
-  }
-
+  delete[] xTmp;
+  delete[] fTmp;
+  
   return newSpline;
 }
 
@@ -179,12 +134,12 @@ double Interpolate<T>::evalSpline(gsl_spline *s, double xIn) const
   if ( xIn >= interpMin() && xIn <= interpMax() )
     tmp =  gsl_spline_eval (s, xIn, acc);
   else {
-    msg << "ERROR: Interpolate<T>::evalSpline(): f(x) Extrapolation instead of Interpolation requested @ x=" <<xIn<< endl;
+    msg << "ERROR: Interpolate<T>::evalSpline(): Extrapolation instead of Interpolation requested @ key=" <<xIn<< endl;
     throw range_error(msg.str());
   }
   
   if (std::isnan(tmp)) {
-    cout << "ERROR: Interpolate::evalSpline(): interpolation error at x="<<xIn<< endl
+    cout << "ERROR: Interpolate::evalSpline(): interpolation error at key="<<xIn<< endl
 	 << "return 0.0 and continue";
     return 0.;
   }
@@ -205,7 +160,7 @@ void Interpolate<T>::init()
   }
   if (this->size() < 2) {
     stringstream msg;
-    msg << "ERROR: Interpolate::init(): Interpolation not possible for only " << _x.size() << " datapoints. Skip.";
+    msg << "ERROR: Interpolate::init(): Interpolation not possible for only " << data.size() << " datapoints. Skip.";
     throw std::runtime_error(msg.str());
   }
 
@@ -257,10 +212,9 @@ void Interpolate<T>::reset()
 
 // change of data and Interpolation reset
 template <class T>
-void Interpolate<T>::reset(vector<double> xIn, vector<T> fIn, double periodIn)
+void Interpolate<T>::reset(std::map<double,T> dataIn, double periodIn)
 {
-  _x = xIn;
-  f = fIn;
+  data = dataIn;
   if (periodIn != 0.) period = periodIn;
 
   reset();
@@ -269,24 +223,6 @@ void Interpolate<T>::reset(vector<double> xIn, vector<T> fIn, double periodIn)
   //   cout << "WARNING: Interpolate::Interpolate(): period not used for non-periodic interpolation type." << endl;
 }
 
-
-
-
-//get length of _x and f(_x)
-template <class T>
-unsigned int Interpolate<T>::size() const
-{
-  unsigned int s = _x.size();
-
-  if(s != f.size()) {
-    stringstream msg;
-    msg << "ERROR: Interpolate::size(): unequal size of x (" << s << ") and f(x) (" << f.size()
-         << ").";
-    throw libpalError(msg.str());
-  }
-  else
-    return s;
-}
 
 
 
