@@ -23,8 +23,6 @@ template <class T=double>
 class Interpolate {
 
 protected:
-  //std::vector<double> _x;      // _x data
-  //std::vector<T> f;           // f(_x) data
   std::map<double,T> data;
   std::string headerString;
   double period;
@@ -33,7 +31,6 @@ protected:
 
 private:
   const gsl_interp_type *type;  // type of interpolation used (see GSL manual)
-
   gsl_interp_accel *acc;
   std::vector<gsl_spline*> spline;  //several splines for multidimensional data types
 
@@ -46,7 +43,6 @@ private:
 public:
   Metadata info;
 
-  //Interpolate(const gsl_interp_type *t=gsl_interp_akima, double periodIn=0.);
   Interpolate(const gsl_interp_type *t=gsl_interp_akima, double periodIn=0., std::map<double,T> dataIn=std::map<double,T>());
   Interpolate(const Interpolate &other);
   ~Interpolate();

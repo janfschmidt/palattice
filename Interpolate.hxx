@@ -15,21 +15,6 @@ using namespace std;
 using namespace pal;
 
 // constructor
-// template <class T>
-// Interpolate<T>::Interpolate(const gsl_interp_type *t, double periodIn)
-//   : headerString("value"), period(periodIn), ready(false), type(t)
-// {
-//   acc = gsl_interp_accel_alloc ();
-
-//   if (type == gsl_interp_akima_periodic || type == gsl_interp_cspline_periodic)
-//     periodic = true;
-//   else
-//     periodic = false;
-
-//   // if ( period!=0. && !periodic )
-//   //   cout << "WARNING: Interpolate::Interpolate(): period not used for non-periodic interpolation type." << endl;
-// }
-
 template <class T>
 Interpolate<T>::Interpolate(const gsl_interp_type *t, double periodIn, std::map<double,T> dataIn)
   : data(dataIn), headerString("value"), period(periodIn), ready(false), type(t)
