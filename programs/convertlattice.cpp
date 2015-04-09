@@ -38,7 +38,9 @@ void usage()
        << "            - for Elegant: an ascii parameter file" << endl << endl;
   cout << "examples:" << endl
        << "MadX-->Elegant: convertlattice -m [MADXFILE]" <<endl
-       << "Elegant-->MadX & LaTeX: convertlattice -e [ELEGANTFILE] -l" <<endl;
+       << "Elegant-->MadX & LaTeX: convertlattice -e [ELEGANTFILE] -l" <<endl << endl;
+  cout << "For a beamline (no ring) MadX twiss module fails, because of missing start values (betx, bety)." << endl
+       << "Add them to the twiss command in libpal.madx to run MadX successfully." << endl;
 }
 
 

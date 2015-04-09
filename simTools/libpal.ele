@@ -115,11 +115,11 @@
     	verbosity = 1,
 &end
 
-&rf_setup
-	! if no name given, all RFCA elements used
-	harmonic = 274,
-	over_voltage = 5
-&end
+! &rf_setup
+! 	! if no name given, all RFCA elements used
+! 	harmonic = 274,
+! 	over_voltage = 5
+! &end
 
 
 
@@ -127,19 +127,19 @@
 ! TRACKING
 ! -------------------------------------------------
 &bunched_beam
-!       bunch = "%s.bun",
-       sigma_dp = 0.0005,    ! "Energiebreite"
-       sigma_s = 0.05,        ! "Bunch Länge"
-       use_twiss_command_values = 1,
        n_particles_per_bunch = 1,
        enforce_rms_values[0] = 3*0,
-       emit_x = 5e-7        ! deutlich größer als Gleichgewicht (~5e-7) um Dämpfung zu sehen 
-       emit_y = 1e-7,
        distribution_type[0] = 3*gaussian,
-       distribution_cutoff[0] = 3*3,
        symmetrize = 1,
-       first_is_fiducial = 0, ! generate a first bunch with 1 particle (for first_is_fiducial in &run_control)
-       !centroid[5]=1e-4
+!      bunch = "%s.bun",
+!      sigma_dp = 0.0,
+!      sigma_s = 0.0,
+!      emit_x = 1e-7,
+!      emit_y = 1e-7,
+!      centroid[5]=1e-4,
+!      use_twiss_command_values = 1,
+!      distribution_cutoff[0] = 3*3,
+!       first_is_fiducial = 0, ! generate a first bunch with 1 particle (for first_is_fiducial in &run_control)
 &end
 
 &track 
