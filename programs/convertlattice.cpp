@@ -30,6 +30,7 @@ void usage()
        << "* -e [FILE] input of an Elegant file [FILE] => MadX output (default: [FILE]_converted.madx)" << endl
        << "            If both -m and -e are given, the last one is used." << endl
        << "* -l        additional output of a LaTeX format lattice file (default: [FILE].tex)" << endl
+       << "* -L        MadX output as LINE (including drifts) instead of SEQUENCE" << endl
        << "* -o [name] specify output filenames ([name].lte/madx/tex). If [name]=stdout, output to terminal" << endl
        << "* -a        all 3 output formats" << endl
        << "* -n        offline mode. no madx or elegant execution." << endl
@@ -62,6 +63,7 @@ int main (int argc, char *argv[])
   m=e=l=false;
   pal::SimTool tool;
   pal::SimToolMode mode = pal::online;
+  pal::MadxLatticeType ltype = pal::sequence;
 
   string file;
 
@@ -69,7 +71,7 @@ int main (int argc, char *argv[])
   int opt;
   extern char *optarg;
 
-  while ((opt = getopt(argc, argv, "m:e:o:lnah")) != -1) {
+  while ((opt = getopt(argc, argv, "m:e:o:lLnah")) != -1) {
     switch(opt) {
     case 'm':
       tool = pal::madx;
@@ -89,6 +91,9 @@ int main (int argc, char *argv[])
       break;
     case 'l':
       l=true;
+      break;
+    case 'L':
+      ltype = pal::line;
       break;
     case 'a':
       m=e=l=true;
@@ -126,8 +131,8 @@ int main (int argc, char *argv[])
 
   // export lattice
   if (m) {
-    if (out == "stdout") lattice.madxexport("");
-    else lattice.madxexport(out+".madx");
+    if (out == "stdout") lattice.madxexport("",ltype);
+    else lattice.madxexport(out+".madx",ltype);
   }
   if (e) {
     if (out == "stdout") lattice.elegantexport("");
