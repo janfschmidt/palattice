@@ -8,6 +8,7 @@
 #include <string>
 #include <iomanip>
 #include <vector>
+#include <cmath>
 #include "AccElements.hpp"
 
 
@@ -203,6 +204,8 @@ string AccElement::type_string() const
     return "Corrector";
   case sextupole:
     return "Sextupole";
+  case multipole:
+    return "Multipole";
   case cavity:
     return "Cavity";
   case drift:
@@ -308,6 +311,24 @@ string AccElement::nameInTool(string name_madx, string name_elegant, SimTool t) 
   return "unknown SimTool";
 }
 
+// *************************sign of rotation angle dpsi:*********************************
+// test with influence of dpsi on vertical closed orbit in madx show
+// that dpsi is defined counter clockwise (dpsi>0 for dipole => kick to negative z)
+// libpal and elegant (tilt) use clockwise definition, so sign is changed here
+// to get the correct signs in madx (sign also changed during madximport, see AccLattice.cpp)
+// *********************************************************************************
+string AccElement::printTilt(SimTool t) const
+{
+  stringstream s;
+  if (std::fabs(dpsi)>=MIN_EXPORT_TILT) {
+    if (t == elegant)
+      s <<", TILT="<< dpsi;
+    else if (t == madx)
+      s <<", TILT="<< - dpsi;
+  }
+  return s.str();
+}
+
 string AccElement::rfComment() const
 {
   stringstream s;
@@ -316,6 +337,8 @@ string AccElement::rfComment() const
 
   return s.str();
 }
+
+
 
 string Drift::printSimTool(SimTool t) const
 {
@@ -349,11 +372,7 @@ string Dipole::printSimTool(SimTool t) const
   s << name <<" : "<< nameInTool("SBEND","CSBEND",t) <<", "
     <<"L="<< length <<", "
     <<"ANGLE="<< k0.z*length;
-  if (t == elegant) {
-    s <<", TILT="<< dpsi;
-    //s <<", e1=0, e2=0, "   //not implemented
-  }
-  s <<";"<< rfComment() << endl;
+  s << printTilt(t) <<";"<< rfComment() << endl;
   return s.str();
 }
 
@@ -388,9 +407,8 @@ string Corrector::printSimTool(SimTool t) const
   else
     s << "KICK="<< asin(kick*length);
 
-  if (t == elegant && dpsi!=0.)
-    s <<", TILT="<< dpsi;
-  s  <<";"<< rfComment() << endl;
+  
+  s << printTilt(t) <<";"<< rfComment() << endl;
   return s.str();
 }
 
@@ -406,11 +424,8 @@ string Quadrupole::printSimTool(SimTool t) const
     s  <<"K1="<< k1;
   else if (family == D)
     s  <<"K1="<< -k1;
-  if (t == elegant) {
-    s <<", TILT=" <<dpsi;
     //s <<", fringe_type=fixed-strength, ffringe=0"; //not implemented
-  }
-  s <<";"<< rfComment() << endl;
+  s << printTilt(t) <<";"<< rfComment() << endl;
   return s.str();
 }
 
@@ -424,9 +439,35 @@ string Sextupole::printSimTool(SimTool t) const
     s  <<"K2="<< k2;
   else if (family == D)
     s  <<"K2="<< -k2;
-  if (t == elegant && dpsi!=0.)
-    s <<", TILT="<< dpsi;
-  s <<";"<< rfComment() << endl;
+  s << printTilt(t) <<";"<< rfComment() << endl;
+  return s.str();
+}
+
+
+//elegants MULT has only 1 Order (e.g. not both k1 and k2)
+//export only for madx. for elegant a drift is exported
+string Multipole::printSimTool(SimTool t) const
+{
+ stringstream s;
+
+ if (t == elegant) {
+   cout << "Multipole::printSimTool: No Multipole (with k1 and k2) implemented for export to elegant! Export drift.";
+   s << name <<" : "<< nameInTool("DRIFT","DRIF",t) <<", "
+     <<"L="<< length <<"; ! Multipole in libpal (with k1 and k2)!"<<endl;
+   return s.str();
+ }
+
+  s << name <<" : "<< nameInTool("MULTIPOLE","MULT",t) <<", "
+    <<"L="<< length <<", ";
+  if (family == F) {
+    s  <<"K1="<< k1;
+    s  <<"K2="<< k2;
+  }
+  else if (family == D) {
+    s  <<"K1="<< -k1;
+    s  <<"K2="<< -k2;
+  }
+  s << printTilt(t) <<";"<< rfComment() << endl;
   return s.str();
 }
 
@@ -478,6 +519,13 @@ string Sextupole::printLaTeX() const
 {
  stringstream s;
   s << "\\sextupole{"<< name <<"}{"<< length <<"}" << endl;
+  return s.str();
+}
+
+string Multipole::printLaTeX() const //Multipole is exported as Sextupole
+{
+ stringstream s;
+  s << "\\sextupole{"<< name <<"}{"<< length <<"} % multipole exported as sextupole" << endl;
   return s.str();
 }
 

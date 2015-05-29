@@ -22,7 +22,7 @@ using namespace std;
 namespace pal
 {
 
-  enum element_type{dipole, quadrupole, corrector, sextupole, cavity, drift}; //! keep dipole as first and drift as last
+  enum element_type{dipole, quadrupole, corrector, sextupole, cavity, multipole, drift}; //! keep dipole as first and drift as last
   enum element_plane{H,V,L,noplane};    //horizontal,vertical,longitudinal
                                         //used for export and filtering only, NO INFLUENCE ON FIELD B()!
   enum element_family{F,D,nofamily};    //focus,defocus, CHANGES SIGN OF FIELD!
@@ -35,6 +35,7 @@ protected:
   double physLength;      // physical length (used for edge field calculation (pal::AccLattice::B()) / m
   void checkPhysLength(); // check for valid value and (re-)calculate physLength from default (config.hpp)
   string nameInTool(string madx, string elegant, SimTool t) const;
+  string printTilt(SimTool t) const;
   string rfComment() const;
 
   // following data can be accessed and modified. Only type and length of an element must not be changed.
@@ -146,15 +147,18 @@ public:
 
   // multipole (abstract, du to export). forbids B() without orbit argument.
   class Multipole : public Magnet {
-  public:
+  protected:
     Multipole(element_type _type, string _name, double _length)
       : Magnet(_type,_name,_length) {}
+  public:
+    Multipole(string _name, double _length, element_family _family=F)
+      : Magnet(multipole,_name,_length) {family=_family;}
 
-    virtual Multipole* clone() const =0;
+    virtual Multipole* clone() const {return new Multipole(*this);}
 
     virtual AccTriple B() const;
-    virtual string printSimTool(SimTool t) const =0;
-    virtual string printLaTeX() const =0;
+    virtual string printSimTool(SimTool t) const;
+    virtual string printLaTeX() const;
   };
 
 

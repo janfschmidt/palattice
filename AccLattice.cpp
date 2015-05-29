@@ -660,7 +660,7 @@ void AccLattice::madximport(SimToolInstance &madx)
 // *************************sign of rotation angle:*********************************
 // test with influence of dpsi on vertical closed orbit in madx show
 // that dpsi is defined counter clockwise (dpsi>0 for dipole => kick to negative z)
-// libpal and elegant use clockwise definition, so sign is changed here
+// libpal and elegant (tilt) use clockwise definition, so sign is changed here
 // to get the correct signs for the magnetic fields calculated from dpsi
 // *********************************************************************************
 void AccLattice::madximportMisalignments(element_type t, string madxEalignFile)
