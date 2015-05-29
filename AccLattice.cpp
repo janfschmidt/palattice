@@ -617,6 +617,9 @@ void AccLattice::madximport(SimToolInstance &madx)
     else if (key == "\"RFCAVITY\"") {
       element = new Cavity(name, l);
     }
+    else if (key == "\"MULTIPOLE\"") {
+      element = new Multipole(name, l);
+    }
     else continue; //Drifts are not mounted explicitly
     
     // rf magnet
