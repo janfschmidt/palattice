@@ -44,6 +44,16 @@ void usage()
        << "Add them to the twiss command in libpal.madx to run MadX successfully." << endl;
 }
 
+void showInfo()
+{
+  cout << "*************************** convertlattice ***************************" << endl
+       << "This is unpublished testing software. Please do not copy/distribute it" << endl
+       << "without prior agreement of the author." << endl
+       << "Open Source publication of the full library coming soon :-)" << endl
+       << "(c) Jan Schmidt <schmidt@physik.uni-bonn.de>, 2015" << endl
+       << "**********************************************************************" << endl;
+}
+
 
 int main (int argc, char *argv[])
 {
@@ -98,6 +108,9 @@ int main (int argc, char *argv[])
     return 1;
   }
   
+
+  // print info
+  showInfo();
 
   // import lattice
   pal::SimToolInstance sim(tool, mode, file);
