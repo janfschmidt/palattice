@@ -769,10 +769,10 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
      if (row_old.type=="CSBEND" || row_old.type=="CSRCSBEND" || row_old.type=="KSBEND" || row_old.type=="NIBEND" || row_old.type=="TUBEND" || row_old.type=="SBEN") {
        element = new Dipole(row_old.name, l, H);
      }
-     else if (row_old.type=="QUAD") {
+     else if (row_old.type=="QUAD" || row_old.type=="KQUAD") {
        element = new Quadrupole(row_old.name, l, F);
      }
-     else if (row_old.type=="SEXT") {
+     else if (row_old.type=="SEXT" || row_old.type=="KSEXT") {
        element = new Sextupole(row_old.name, l, F);
      }
      else if (row_old.type=="VKICK") {
@@ -1255,10 +1255,10 @@ string AccLattice::getLine(SimTool tool) const
   line << endl << endl;
 
   s << "! Drifts (caculated from element positions)" << endl; //Drifts
-  line << "LATTICE_BY_LIBPAL : LINE=(BEGIN";                 //line
+  line << "LATTICE_BY_LIBPAL : LINE=(BEGIN, ";                //line
 
   const_AccIterator it=elements.begin();
-  unsigned int n=0;
+  unsigned int n=0, nInRow=0;
   for (; it!=elements.end(); ++it) {
     if (it == elements.begin()) {
       driftlength = locate(it, begin);
@@ -1274,10 +1274,17 @@ string AccLattice::getLine(SimTool tool) const
       else
 	s << "DRIFT, L=";
       s << driftlength <<";"<< endl;  //drift definition
-      line << ", DRIFT_" << n;  //insert drift in line
+      line << "DRIFT_" << n << ", ";  //insert drift in line
       n++;
     }
-    line <<", "<< it->second->name; //insert element in line
+    line << it->second->name << ", "; //insert element in line
+    nInRow+=2;
+    if (nInRow >= EXPORT_LINE_ELEMENTS_PER_ROW) {
+      if (tool==elegant)
+	line <<"&";
+      line << std::endl << "                    ";
+      nInRow = 0;
+    }
   }
   //final drift to end
   if ( (circumference() - lastend) > ZERO_DISTANCE ) { //ignore very short drift
@@ -1287,7 +1294,7 @@ string AccLattice::getLine(SimTool tool) const
     else
       s << "DRIFT, L=";
     s << this->circumference() - lastend <<";"<<endl;
-    line << ", DRIFT_" << n;   // drift to end
+    line << "DRIFT_" << n;   // drift to end
   }
 
   s << endl<<endl << line.str() << ")";

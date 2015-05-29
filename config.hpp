@@ -8,6 +8,7 @@
 #define MIN_EXPORT_TILT 1e-9 // smaller element tilts/rad are ignored during lattice export
 #define VCPOS_WARNDIFF 0.05  //warning for larger VC pos.diff. in MadX & ELSA-Spuren
 #define DEFAULT_LENGTH_DIFFERENCE 0.09 // default for AccElement "effective-minus-physical" length in m (if no physical length is set)
+#define EXPORT_LINE_ELEMENTS_PER_ROW 10
 
 // system commands
 #define MADXCOMMAND "madx"        // system command to run MadX

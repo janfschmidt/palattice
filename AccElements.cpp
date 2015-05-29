@@ -418,7 +418,7 @@ string Quadrupole::printSimTool(SimTool t) const
 {
   stringstream s;
 
-  s << name <<" : "<< nameInTool("QUADRUPOLE","QUAD",t) <<", "
+  s << name <<" : "<< nameInTool("QUADRUPOLE","KQUAD",t) <<", "
     <<"L="<< length <<", ";
   if (family == F)
     s  <<"K1="<< k1;
@@ -433,7 +433,7 @@ string Sextupole::printSimTool(SimTool t) const
 {
  stringstream s;
 
-  s << name <<" : "<< nameInTool("SEXTUPOLE","SEXT",t) <<", "
+  s << name <<" : "<< nameInTool("SEXTUPOLE","KSEXT",t) <<", "
     <<"L="<< length <<", ";
   if (family == F)
     s  <<"K2="<< k2;
