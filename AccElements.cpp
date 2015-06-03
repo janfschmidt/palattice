@@ -189,6 +189,30 @@ bool AccElement::nameMatch(string &pattern) const
 }
 
 
+bool AccElement::operator==(const AccElement &o) const
+{
+  if (o.type != type) return false;
+  else if (o.name != name) return false;
+  else if (std::fabs(o.length-length) > ZERO_DISTANCE) return false;
+  else if ((k0-o.k0).abs() > COMPARE_DOUBLE_EQUAL) return false;
+  else if (std::fabs(o.k1-k1) > COMPARE_DOUBLE_EQUAL) return false;
+  else if (std::fabs(o.k2-k2) > COMPARE_DOUBLE_EQUAL) return false;
+  else if (std::fabs(o.dpsi-dpsi) > COMPARE_DOUBLE_EQUAL) return false;
+  // libpal internal variables
+  else if (o.plane != plane) return false;
+  else if (o.family != family) return false;
+  else if (o.Qrf1 != Qrf1) return false;
+  else if (o.dQrf != dQrf) return false;
+  else return true;
+}
+
+bool AccElement::operator!=(const AccElement &o) const
+{
+  if (operator==(o) == true) return false;
+  else return true;
+}
+
+
 
 
 

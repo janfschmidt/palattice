@@ -1224,6 +1224,7 @@ string AccLattice::getElementDefs(SimTool tool, element_type _type) const
 {
   stringstream s;
   const_AccIterator it=firstCIt(_type);
+  const_AccIterator firstOccur;
 
   if (it == elements.end())
     return "";
@@ -1232,7 +1233,16 @@ string AccLattice::getElementDefs(SimTool tool, element_type _type) const
     s <<" (use synch_rad=1, isr=1 for synchrotron radiation)";
   s << endl;
   for (; it!=elements.end(); it=nextCIt(it, _type)) {
-    s << it->second->printSimTool(tool);
+    //only list identical elements once
+    firstOccur = operator[](it->second->name); //first element in lattice with this name
+    if ((it->first-firstOccur->first) > ZERO_DISTANCE && *(firstOccur->second) == *(it->second)) {
+      //debug
+      // std::cout << "EXPORT-DEBUG: ignored element " << it->second->name << " @ " << it->first << "m," << std::endl
+      // 		<< "because it's not the first occurrence (" << firstOccur->first << "m)" << std::endl; 
+    }
+    else { 
+      s << it->second->printSimTool(tool);
+    } 
   }
   s << endl;
 
@@ -1346,13 +1356,13 @@ void AccLattice::simToolExport(SimTool tool, string filename, MadxLatticeType lt
   s << info.out("!") << endl;
 
 
-  //element definitions
+  //write element definitions
   for (element_type type=dipole; type<drift; type=element_type(type+1)) {
     s << this->getElementDefs(tool,type);
   }
   s << endl;
 
-  //lattice
+  //write lattice
   if (tool == madx && ltype == sequence) {
     s << getSequence();
   }

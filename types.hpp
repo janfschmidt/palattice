@@ -25,49 +25,66 @@ public:
   inline std::string header() const {return "x / m\t\t z / m";}
 
   //addition and subraction
-  AccPair operator+(AccPair second) {
+  AccPair operator+(const AccPair second) const {
     AccPair tmp;
     tmp.x = this->x + second.x;
     tmp.z = this->z + second.z;
     return tmp;
   }
-  AccPair operator-(AccPair second) {
+  AccPair operator-(const AccPair second) const {
     AccPair tmp;
     tmp.x = this->x - second.x;
     tmp.z = this->z - second.z;
     return tmp;
   }
-  void operator+=(AccPair second) {
+  void operator+=(const AccPair second) {
     this->x += second.x;
     this->z += second.z;
   }
-  void operator-=(AccPair second) {
+  void operator-=(const AccPair second) {
     this->x -= second.x;
     this->z -= second.z;
   }
   //multiplication&division
-  template <typename T> AccPair operator*(T num) {
+  template <typename T> AccPair operator*(const T num) {
     AccPair tmp;
     tmp.x = this->x * num;
     tmp.z = this->z * num;
     return tmp;
   }
-  template <typename T> AccPair operator/(T num) {
+  template <typename T> AccPair operator/(const T num) {
     AccPair tmp;
     tmp.x = this->x / num;
     tmp.z = this->z / num;
     return tmp;
   }
-  template <typename T> void operator*=(T num) {
+  template <typename T> void operator*=(const T num) {
     this->x *= num;
     this->z *= num;
   }
-  template <typename T> void operator/=(T num) {
+  template <typename T> void operator/=(const T num) {
     this->x /= num;
     this->z /= num;
   }
+  //comparison
+  bool operator==(const AccPair &o) const {
+    if (this->x != o.x) return false;
+    else if (this->z != o.z) return false;
+    else return true;
+  }
+  bool operator!=(const AccPair &o) const {
+    if (operator==(o) == true) return false;
+    else return true;
+  }
+
+    //absolute value
+  double abs() const {
+    return std::sqrt(std::pow(x,2) + std::pow(z,2));
+  }
+  
+
   // tilt clockwise around s (longitudinal) axis -> dpsi
-  AccPair tilt(double dpsi) const {
+  AccPair tilt(const double dpsi) const {
     AccPair tmp;
     tmp.x = this->x*cos(dpsi) + this->z*sin(dpsi);
     tmp.z = - this->x*sin(dpsi) + this->z*cos(dpsi);
@@ -84,57 +101,74 @@ public:
   inline std::string header() const {return "x / m\t\t z / m\t\t s / m";}
 
   // addition and subraction
-  AccTriple operator+(AccTriple second) {
+  AccTriple operator+(const AccTriple second) const {
     AccTriple tmp;
     tmp.x = this->x + second.x;
     tmp.z = this->z + second.z;
     tmp.s = this->s + second.s;
     return tmp;
   }
-  AccTriple operator-(AccTriple second) {
+  AccTriple operator-(const AccTriple second) const {
     AccTriple tmp;
     tmp.x = this->x - second.x;
     tmp.z = this->z - second.z;
     tmp.s = this->s - second.s;
     return tmp;
   }
-  void operator+=(AccTriple second) {
+  void operator+=(const AccTriple second) {
     this->x += second.x;
     this->z += second.z;
     this->s += second.s;
   }
-  void operator-=(AccTriple second) {
+  void operator-=(const AccTriple second) {
     this->x -= second.x;
     this->z -= second.z;
     this->s -= second.s;
   }
   //multiplication&division
-  template <typename T> AccTriple operator*(T num) {
+  template <typename T> AccTriple operator*(const T num) {
     AccTriple tmp;
     tmp.x = this->x * num;
     tmp.z = this->z * num;
     tmp.s = this->s * num;
     return tmp;
   }
-  template <typename T> AccTriple operator/(T num) {
+  template <typename T> AccTriple operator/(const T num) {
     AccTriple tmp;
     tmp.x = this->x / num;
     tmp.z = this->z / num;
     tmp.s = this->s / num;
     return tmp;
   }
-  template <typename T> void operator*=(T num) {
+  template <typename T> void operator*=(const T num) {
     this->x *= num;
     this->z *= num;
     this->s *= num;
   }
-  template <typename T> void operator/=(T num) {
+  template <typename T> void operator/=(const T num) {
     this->x /= num;
     this->z /= num;
     this->s /= num;
   }
+  //comparison
+  bool operator==(const AccTriple &o) const {
+    if (this->x != o.x) return false;
+    else if (this->z != o.z) return false;
+    else if (this->s != o.s) return false;
+    else return true;
+  }
+  bool operator!=(const AccTriple &o) const {
+    if (operator==(o) == true) return false;
+    else return true;
+  }
+
+  //absolute value
+  double abs() const {
+    return std::sqrt(std::pow(x,2) + std::pow(z,2) + std::pow(s,2));
+  }
+  
   // tilt clockwise around s (longitudinal) axis -> dpsi
-  AccTriple tilt(double dpsi) const {
+  AccTriple tilt(const double dpsi) const {
     AccTriple tmp;
     tmp.x = this->x*cos(dpsi) + this->z*sin(dpsi);
     tmp.z = - this->x*sin(dpsi) + this->z*cos(dpsi);

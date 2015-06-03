@@ -9,6 +9,7 @@
 #define VCPOS_WARNDIFF 0.05  //warning for larger VC pos.diff. in MadX & ELSA-Spuren
 #define DEFAULT_LENGTH_DIFFERENCE 0.09 // default for AccElement "effective-minus-physical" length in m (if no physical length is set)
 #define EXPORT_LINE_ELEMENTS_PER_ROW 10
+#define COMPARE_DOUBLE_EQUAL 1e-10 // difference allowed for double to be accepted as equal (e.g. lattice compare)
 
 // system commands
 #define MADXCOMMAND "madx"        // system command to run MadX

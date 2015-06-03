@@ -58,6 +58,8 @@ public:
   AccElement(element_type _type, string _name, double _length);
   virtual ~AccElement() {};
   virtual AccElement& operator=(const AccElement* other);
+  virtual bool operator==(const AccElement &other) const;
+  virtual bool operator!=(const AccElement &other) const;
   virtual AccElement* clone() const =0;
 
   // physical length (used for edge field calculation (pal::AccLattice::B()) / m
