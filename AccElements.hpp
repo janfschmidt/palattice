@@ -36,6 +36,7 @@ protected:
   void checkPhysLength(); // check for valid value and (re-)calculate physLength from default (config.hpp)
   string nameInTool(string madx, string elegant, SimTool t) const;
   string printTilt(SimTool t) const;
+  string printEdges() const;
   string rfComment() const;
 
   // following data can be accessed and modified. Only type and length of an element must not be changed.
@@ -51,6 +52,11 @@ public:
   double k2;             // magnet strength. m / m^-3
   double Qrf1;           // RF magnet tune for turn=1
   double dQrf;           // RF magnet tune change per turn (linear frequency sweep)
+
+  //edge angles in rad
+  //used only for import/export and integrated field B_int(orbit)
+  double e1;
+  double e2;
   
   //alignment errors:
   double dpsi;           //rotation around s axis in rad
@@ -74,7 +80,7 @@ public:
 
   // integral magnetic field
   virtual AccTriple B_int() const {return B() * length;}
-  virtual AccTriple B_int(const AccPair &orbit) const {return B(orbit) * length;}
+  virtual AccTriple B_int(const AccPair &orbit) const {return B(orbit) * (length + orbit.x*(tan(e1)+tan(e2)) );} //edges: length depends on x
   //RF magnets (oscillating fields)
   double rfFactor(unsigned int turn) const; // Magnetic field amplitude factor for oscillating fields
   AccTriple B_rf(unsigned int turn) const {return B() * rfFactor(turn);}

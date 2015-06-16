@@ -579,6 +579,8 @@ void AccLattice::madximport(SimToolInstance &madx)
   columns.push_back("K2L");
   columns.push_back("HKICK");
   columns.push_back("VKICK");
+  columns.push_back("E1");
+  columns.push_back("E2");
 
   //read columns from file (execute madx if mode=online)
   SimToolTable twi;
@@ -631,6 +633,8 @@ void AccLattice::madximport(SimToolInstance &madx)
     if (angle!=0.) element->k0.z += angle / l; // 1/R from bending angle, curved length l
     if (hkick!=0. && element->plane!=V)  element->k0.z += sin(hkick) / l; // 1/R from kick angle, straight length l
     if (vkick!=0. && element->plane!=H)  element->k0.x += sin(vkick) / l;
+    element->e1 = twi.getd("E1",i);
+    element->e2 = twi.getd("E2",i);
     element->k1 = twi.getd("K1L",i)/l;
     element->k2 = twi.getd("K2L",i)/l;
     //misalignments in AccLattice::madximportMisalignments()
@@ -719,14 +723,14 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
 
 
   double s, pos;
-  double l, k1, k2, angle, kick, hkick, vkick, tilt; //parameter values
+  double l, k1, k2, angle, kick, hkick, vkick, tilt, e1,e2; //parameter values
   paramRow row, row_old;
   AccElement *element;
   fstream elegantParam;
   bool firstElement = true;
   string tmp;
 
-  pos=l=k1=k2=angle=kick=tilt=0.;   // initialize param. values
+  pos=l=k1=k2=angle=kick=tilt=e1=e2=0.;   // initialize param. values
   s = 0.;
 
   //get metadata and set circumference
@@ -805,13 +809,15 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
        element->k1 = k1;
        element->k2 = k2;
        element->dpsi = tilt;
+       element->e1 = e1;
+       element->e2 = e2;
        if (refPos == begin) pos = s-l;
        else if (refPos == center) pos = s-l/2;
        else pos = s; 
        this->mount(pos, *element); // mount element
      }
      delete element;
-     pos=l=k1=k2=angle=kick=hkick=vkick=tilt=0.;   // clear param. values to avoid reuse of an old value
+     pos=l=k1=k2=angle=kick=hkick=vkick=tilt=e1=e2=0.;   // clear param. values to avoid reuse of an old value
     }
 
     //read parameter in row (if needed)
@@ -827,6 +833,8 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
     else if (row.param == "VKICK") vkick = row.value;
     else if (row.param == "ETILT") tilt += row.value;
     else if (row.param == "TILT") tilt += row.value;
+    else if (row.param == "E1") e1 = row.value;
+    else if (row.param == "E2") e2 = row.value;
     //... add more parameters here
 
    row_old = row;

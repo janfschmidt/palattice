@@ -2,7 +2,7 @@ CC=g++
 ccflags = -Wall -fPIC -g #-O0
 LIB_NAME=libpal
 Vmajor=3
-Vminor=2.1
+Vminor=2.2
 INSTALL_PATH=/usr/local/
 
 ALL_O=Interpolate.o Metadata.o ELSASpuren.o FunctionOfPos.o Field.o AccElements.o AccLattice.o Spectrum.o SimTools.o
@@ -36,7 +36,7 @@ AccLattice.o: AccLattice.cpp AccLattice.hpp AccElements.hpp ELSASpuren.hpp Metad
 SimTools.o: SimTools.cpp SimTools.hpp types.hpp config.hpp simToolPath.hpp
 	$(CC) $(ccflags) -c $<
 
-libpalGitversion.hpp: .git/HEAD .git/index
+libpalGitversion.hpp: Makefile .git/HEAD .git/index
 	echo "#ifndef __LIBPAL__GITVERSION_HPP_" > $@
 	echo "#define __LIBPAL__GITVERSION_HPP_" >> $@
 	echo "namespace pal {" >> $@

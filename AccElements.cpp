@@ -253,7 +253,8 @@ string AccElement::print() const
 
   s <<std::setw(w)<< name <<std::setw(w)<< type_string() <<std::setw(w) << length
     <<std::setw(w)<< k0.x <<std::setw(w)<< k0.z <<std::setw(w)<< k0.s
-    <<std::setw(w)<< k1 <<std::setw(w)<< k2 <<std::setw(w)<< dpsi << endl;
+    <<std::setw(w)<< k1 <<std::setw(w)<< k2 <<std::setw(w)<< dpsi
+    <<std::setw(w)<< e1 <<std::setw(w)<< e2 << std::endl;
 
   return s.str();
 }
@@ -266,7 +267,8 @@ string AccElement::printHeader() const
 
   s <<std::setw(w)<< "Name" <<std::setw(w)<< "Type" <<std::setw(w)<< "Length/m"
     <<std::setw(w)<< "k0.x / 1/m" <<std::setw(w)<< "k0.z / 1/m" <<std::setw(w)<< "k0.s / 1/m" <<std::setw(w)<< "k1 / 1/m^2" <<std::setw(w)<< "k2 / 1/m^3" 
-    <<std::setw(w)<< "Rotation(s)/rad" << endl;
+    <<std::setw(w)<< "Rotation(s)/rad"
+    <<std::setw(w)<< "e1 / rad" <<std::setw(w)<< "e2 / rad" << std::endl;
 
   return s.str();
 }
@@ -353,6 +355,14 @@ string AccElement::printTilt(SimTool t) const
   return s.str();
 }
 
+string AccElement::printEdges() const
+{
+  stringstream s;
+  if (std::fabs(e1)>=MIN_EXPORT_TILT || std::fabs(e2)>=MIN_EXPORT_TILT)
+    s << ", E1="<< e1 <<", E2="<< e2;
+  return s.str();
+}
+
 string AccElement::rfComment() const
 {
   stringstream s;
@@ -396,7 +406,7 @@ string Dipole::printSimTool(SimTool t) const
   s << name <<" : "<< nameInTool("SBEND","CSBEND",t) <<", "
     <<"L="<< length <<", "
     <<"ANGLE="<< k0.z*length;
-  s << printTilt(t) <<";"<< rfComment() << endl;
+  s << printEdges() << printTilt(t) <<";"<< rfComment() << endl;
   return s.str();
 }
 
@@ -449,7 +459,7 @@ string Quadrupole::printSimTool(SimTool t) const
   else if (family == D)
     s  <<"K1="<< -k1;
     //s <<", fringe_type=fixed-strength, ffringe=0"; //not implemented
-  s << printTilt(t) <<";"<< rfComment() << endl;
+  s << printEdges() << printTilt(t) <<";"<< rfComment() << endl;
   return s.str();
 }
 
@@ -463,7 +473,7 @@ string Sextupole::printSimTool(SimTool t) const
     s  <<"K2="<< k2;
   else if (family == D)
     s  <<"K2="<< -k2;
-  s << printTilt(t) <<";"<< rfComment() << endl;
+  s << printEdges() << printTilt(t) <<";"<< rfComment() << endl;
   return s.str();
 }
 
@@ -491,7 +501,7 @@ string Multipole::printSimTool(SimTool t) const
     s  <<"K1="<< -k1;
     s  <<"K2="<< -k2;
   }
-  s << printTilt(t) <<";"<< rfComment() << endl;
+  s << printEdges() << printTilt(t) <<";"<< rfComment() << endl;
   return s.str();
 }
 
