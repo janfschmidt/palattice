@@ -363,6 +363,20 @@ string AccElement::printEdges() const
   return s.str();
 }
 
+string AccElement::printStrength() const
+{
+  stringstream s;
+  if (family == F) {
+    if (k1!=0.) s <<", K1="<< k1;
+    if (k2!=0.) s <<", K2="<< k2;
+  }
+  else if (family == D) {
+    if (k1!=0.) s <<", K1="<< -k1;
+    if (k2!=0.) s <<", K2="<< -k2;
+  }
+  return s.str();
+}
+
 string AccElement::rfComment() const
 {
   stringstream s;
@@ -406,6 +420,7 @@ string Dipole::printSimTool(SimTool t) const
   s << name <<" : "<< nameInTool("SBEND","CSBEND",t) <<", "
     <<"L="<< length <<", "
     <<"ANGLE="<< k0.z*length;
+  s << printStrength();
   s << printEdges() << printTilt(t) <<";"<< rfComment() << endl;
   return s.str();
 }
@@ -453,12 +468,8 @@ string Quadrupole::printSimTool(SimTool t) const
   stringstream s;
 
   s << name <<" : "<< nameInTool("QUADRUPOLE","KQUAD",t) <<", "
-    <<"L="<< length <<", ";
-  if (family == F)
-    s  <<"K1="<< k1;
-  else if (family == D)
-    s  <<"K1="<< -k1;
-    //s <<", fringe_type=fixed-strength, ffringe=0"; //not implemented
+    <<"L="<< length;
+  s << printStrength();
   s << printEdges() << printTilt(t) <<";"<< rfComment() << endl;
   return s.str();
 }
@@ -468,11 +479,8 @@ string Sextupole::printSimTool(SimTool t) const
  stringstream s;
 
   s << name <<" : "<< nameInTool("SEXTUPOLE","KSEXT",t) <<", "
-    <<"L="<< length <<", ";
-  if (family == F)
-    s  <<"K2="<< k2;
-  else if (family == D)
-    s  <<"K2="<< -k2;
+    <<"L="<< length;
+  s << printStrength();
   s << printEdges() << printTilt(t) <<";"<< rfComment() << endl;
   return s.str();
 }
@@ -492,15 +500,8 @@ string Multipole::printSimTool(SimTool t) const
  }
 
   s << name <<" : "<< nameInTool("MULTIPOLE","MULT",t) <<", "
-    <<"L="<< length <<", ";
-  if (family == F) {
-    s  <<"K1="<< k1;
-    s  <<"K2="<< k2;
-  }
-  else if (family == D) {
-    s  <<"K1="<< -k1;
-    s  <<"K2="<< -k2;
-  }
+    <<"L="<< length;
+  s << printStrength();
   s << printEdges() << printTilt(t) <<";"<< rfComment() << endl;
   return s.str();
 }

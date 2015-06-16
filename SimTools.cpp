@@ -165,7 +165,7 @@ void SimToolInstance::run()
   if (this->verbose)
     runcmd << " | tee " <<tool_string()<< ".log";
   else
-    runcmd << " >> " <<tool_string()<< ".log";
+    runcmd << " > " <<tool_string()<< ".log";
   cout << " (log: " << log() << ")" << endl;
   int ret = system(runcmd.str().c_str());
   if (ret != 0) {

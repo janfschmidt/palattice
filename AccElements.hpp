@@ -37,6 +37,7 @@ protected:
   string nameInTool(string madx, string elegant, SimTool t) const;
   string printTilt(SimTool t) const;
   string printEdges() const;
+  string printStrength() const;
   string rfComment() const;
 
   // following data can be accessed and modified. Only type and length of an element must not be changed.
