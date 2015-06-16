@@ -22,7 +22,7 @@ using namespace std;
 namespace pal
 {
 
-  enum element_type{dipole, quadrupole, corrector, sextupole, cavity, multipole, drift}; //! keep dipole as first and drift as last
+  enum element_type{dipole=0, quadrupole=1, corrector=2, sextupole=3, cavity=4, multipole=5, drift=6}; //! keep dipole as first and drift as last
   enum element_plane{H,V,L,noplane};    //horizontal,vertical,longitudinal
                                         //used for export and filtering only, NO INFLUENCE ON FIELD B()!
   enum element_family{F,D,nofamily};    //focus,defocus, CHANGES SIGN OF FIELD!

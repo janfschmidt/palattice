@@ -1091,7 +1091,7 @@ string AccLattice::sizeSummary() const
   stringstream s;
   s << "* "<<this->size(dipole)<<" dipoles, "<<this->size(quadrupole)<<" quadrupoles, "
     <<this->size(sextupole)<<" sextupoles, "<<this->size(corrector)<<" correctors, "
-    <<this->size(cavity)<<" cavities";
+    <<this->size(cavity)<<" cavities, "<<this->size(multipole)<<" multipoles";
   return s.str();
 }
 
