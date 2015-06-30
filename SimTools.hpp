@@ -1,5 +1,5 @@
-#ifndef __LIBPAL_SIMTOOLS_HPP_
-#define __LIBPAL_SIMTOOLS_HPP_
+#ifndef __LIBPALATTICE_SIMTOOLS_HPP_
+#define __LIBPALATTICE_SIMTOOLS_HPP_
 
 #include <string>
 #include <sstream>
@@ -107,7 +107,7 @@ T pal::SimToolTable::get(string key, unsigned int index)
   if (it == table.end()) {
     stringstream msg;
     msg << "ERROR: pal::SimToolTable::get<T>(): No key \"" <<key<< "\" in this table.";
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
 
   stringstream s(table[key][index]);
@@ -131,7 +131,7 @@ T pal::SimToolInstance::readParameter(string file, string label)
 
   f.open(file.c_str(), ios::in);
   if (!f.is_open())
-    throw libpalFileError(file);
+    throw palatticeFileError(file);
 
   while(!f.eof()) {
     f >> tmp;
@@ -146,10 +146,10 @@ T pal::SimToolInstance::readParameter(string file, string label)
   stringstream msg;
   msg << "ERROR: pal::SimToolInstance::readParameter(): No parameter label "
       << label << "in " << file;
-  throw libpalError(msg.str());
+  throw palatticeError(msg.str());
 }
 
 
 #endif
-/*__LIBPAL_SIMTOOLS_HPP_*/
+/*__LIBPALATTICE_SIMTOOLS_HPP_*/
 

@@ -1,8 +1,8 @@
 // Particle Accelerator Lattice library (PAL)
 // by Jan Schmidt <schmidt@physik.uni-bonn.de>
 
-#ifndef __LIBPAL_HPP_
-#define __LIBPAL_HPP_
+#ifndef __LIBPALATTICE_HPP_
+#define __LIBPALATTICE_HPP_
 
 
 // namespace pal
@@ -29,4 +29,4 @@
 
 
 #endif
-/*__LIBPAL_HPP_*/
+/*__LIBPALATTICE_HPP_*/

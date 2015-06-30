@@ -152,13 +152,13 @@
 
 
 ! execute shell script with SDDS commands
-! to generate ascii output for libpal:
+! to generate ascii output for libpalattice:
 ! - closed orbit (elegant.clo), 
 ! - lattice (elegant.param),
 ! - trajectory (elegant.wXXX.pX) --> choose particleID for export
   &subprocess
   ! particleID is number at end of line
-	command = "elegant2libpal none %s 1" 
+	command = "elegant2libpalattice none %s 1" 
   &end
 ! ---------------------
 

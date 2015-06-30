@@ -24,7 +24,7 @@ void FunctionOfPos<T>::circCheck()
   if (this->circ <= 0.) {
     stringstream msg;
     msg << "FunctionOfPos: circumference (" << this->circ << ") must be positive.";
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
 }
 
@@ -103,7 +103,7 @@ T FunctionOfPos<T>::get(unsigned int i) const
   if (i >= data.size()) {
     std::stringstream msg;
     msg << "FunctionOfPos<T>::get(): index" << i << "out of data range (" << data.size() <<")";
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
   FoPiterator it;
   for (unsigned int k=0; k<i; k++) {
@@ -186,7 +186,7 @@ void FunctionOfPos<T>::print(string filename) const
  else {
    file.open(filename.c_str(), ios::out);
    if (!file.is_open())
-     throw libpalFileError(filename);
+     throw palatticeFileError(filename);
    file << s.str();
    file.close();
    cout << "* Wrote "<< filename  << endl;
@@ -271,7 +271,7 @@ void FunctionOfPos<T>::readSimToolColumn(SimToolInstance &s, string file, string
     stringstream msg;
     msg << "FunctionOfPos::readSimToolColumn(): valColumn should have 1(not "
 	<<valColumn.size()<<") entry for 1D data type " << typeid(T).name();
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
 
   vector<string> columns;

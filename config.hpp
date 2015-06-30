@@ -1,5 +1,5 @@
-#ifndef __LIBPAL__CONFIG_HPP_
-#define __LIBPAL__CONFIG_HPP_
+#ifndef __LIBPALATTICE__CONFIG_HPP_
+#define __LIBPALATTICE__CONFIG_HPP_
 
 
 // acclattice options
@@ -17,4 +17,4 @@
 
 #endif
 
-/*__LIBPAL__CONFIG_HPP_*/
+/*__LIBPALATTICE__CONFIG_HPP_*/

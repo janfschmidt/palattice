@@ -6,8 +6,8 @@
  */
 
 
-#ifndef __LIBPAL__FIELD_HPP_
-#define __LIBPAL__FIELD_HPP_
+#ifndef __LIBPALATTICE__FIELD_HPP_
+#define __LIBPALATTICE__FIELD_HPP_
 
 #include "types.hpp"
 #include "FunctionOfPos.hpp"
@@ -40,4 +40,4 @@ public:
 } //namespace pal
 
 #endif
-/*__LIBPAL__FIELD_HPP_*/
+/*__LIBPALATTICE__FIELD_HPP_*/

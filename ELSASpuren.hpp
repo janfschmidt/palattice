@@ -1,5 +1,5 @@
-#ifndef __LIBPAL__ELSASPUREN_HPP_
-#define __LIBPAL__ELSASPUREN_HPP_
+#ifndef __LIBPALATTICE__ELSASPUREN_HPP_
+#define __LIBPALATTICE__ELSASPUREN_HPP_
 
 #include <string>
 
@@ -68,4 +68,4 @@ public:
 } //namespace pal
 
 #endif
-/*__LIBPAL__ELSASPUREN_HPP_*/
+/*__LIBPALATTICE__ELSASPUREN_HPP_*/

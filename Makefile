@@ -1,16 +1,16 @@
 CC=g++
 ccflags = -Wall -fPIC -g #-O0
-LIB_NAME=libpal
+LIB_NAME=libpalattice
 Vmajor=3
-Vminor=2.2
+Vminor=2.3
 INSTALL_PATH=/usr/local/
 
 ALL_O=Interpolate.o Metadata.o ELSASpuren.o FunctionOfPos.o Field.o AccElements.o AccLattice.o Spectrum.o SimTools.o
 LIB_FILE=$(LIB_NAME).so
-SIMTOOL_PATH=$(INSTALL_PATH)/lib/libpal_simTools
+SIMTOOL_PATH=$(INSTALL_PATH)/lib/libpalattice_simTools
 
 
-$(LIB_NAME): libpalGitversion.hpp simToolPath.hpp $(ALL_O)
+$(LIB_NAME): gitversion.hpp simToolPath.hpp $(ALL_O)
 	$(CC) $(ccflags) -shared -Wl,-soname,$(LIB_FILE).$(Vmajor) -o $(LIB_FILE).$(Vmajor).$(Vminor)  $(ALL_O) -lgsl -lgslcblas -lm
 
 programs: 
@@ -27,7 +27,7 @@ Field.o: Field.cpp Field.hpp FunctionOfPos.hpp FunctionOfPos.hxx types.hpp AccLa
 	$(CC) $(ccflags) -c $<
 ELSASpuren.o: ELSASpuren.cpp types.hpp
 	$(CC) $(ccflags) -c $<
-Metadata.o: Metadata.cpp Metadata.hpp libpalGitversion.hpp SimTools.hpp
+Metadata.o: Metadata.cpp Metadata.hpp gitversion.hpp SimTools.hpp
 	$(CC) $(ccflags) -c $<
 AccElements.o: AccElements.cpp AccElements.hpp types.hpp SimTools.hpp config.hpp
 	$(CC) $(ccflags) -c $<
@@ -36,22 +36,22 @@ AccLattice.o: AccLattice.cpp AccLattice.hpp AccElements.hpp ELSASpuren.hpp Metad
 SimTools.o: SimTools.cpp SimTools.hpp types.hpp config.hpp simToolPath.hpp
 	$(CC) $(ccflags) -c $<
 
-libpalGitversion.hpp: Makefile .git/HEAD .git/index
-	echo "#ifndef __LIBPAL__GITVERSION_HPP_" > $@
-	echo "#define __LIBPAL__GITVERSION_HPP_" >> $@
+gitversion.hpp: Makefile .git/HEAD .git/index
+	echo "#ifndef __LIBPALATTICE__GITVERSION_HPP_" > $@
+	echo "#define __LIBPALATTICE__GITVERSION_HPP_" >> $@
 	echo "namespace pal {" >> $@
-	echo "inline const std::string libpalGitversion() {return \"$(Vmajor).$(Vminor), git ID $(shell git log -n 1 --date=iso --pretty=format:"%h from %ad")\";} }" >> $@
+	echo "inline const std::string gitversion() {return \"$(Vmajor).$(Vminor), git ID $(shell git log -n 1 --date=iso --pretty=format:"%h from %ad")\";} }" >> $@
 	echo "#endif" >> $@
 
 simToolPath.hpp: Makefile
-	echo "#ifndef __LIBPAL__SIMTOOLPATH_HPP_" > $@
-	echo "#define __LIBPAL__SIMTOOLPATH_HPP_" >> $@
+	echo "#ifndef __LIBPALATTICE__SIMTOOLPATH_HPP_" > $@
+	echo "#define __LIBPALATTICE__SIMTOOLPATH_HPP_" >> $@
 	echo "namespace pal {" >> $@
 	echo "inline const std::string simToolPath() {return \"$(SIMTOOL_PATH)\";} }" >> $@
 	echo "#endif" >> $@
 
 clean: 
-	rm $(LIB_FILE)* $(ALL_O) $(LIB_NAME).a libpalGitversion.hpp
+	rm $(LIB_FILE)* $(ALL_O) $(LIB_NAME).a gitversion.hpp simToolPath.hpp
 
 install: $(LIB_FILE).$(Vmajor).$(Vminor)
 	install -m 755 -p -v $< $(INSTALL_PATH)/lib/                     #library
@@ -63,7 +63,7 @@ install: $(LIB_FILE).$(Vmajor).$(Vminor)
 	mkdir -p $(SIMTOOL_PATH)                                         #simTool files
 	install -m 664 -p -v simTools/*.madx $(SIMTOOL_PATH)
 	install -m 664 -p -v simTools/*.ele $(SIMTOOL_PATH)
-	install -m 755 -p -v simTools/elegant2libpal.sh $(INSTALL_PATH)/bin/elegant2libpal
+	install -m 755 -p -v simTools/elegant2libpalattice.sh $(INSTALL_PATH)/bin/elegant2libpalattice
 	ldconfig
 
 install_programs:
@@ -72,6 +72,7 @@ install_programs:
 uninstall:
 	rm -f $(INSTALL_PATH)/lib/$(LIB_FILE)*
 	rm -rf $(INSTALL_PATH)/include/$(LIB_NAME)*
+	rm -rf $(SIMTOOL_PATH)
 	make uninstall -C ./programs
 
 static:

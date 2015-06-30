@@ -78,12 +78,12 @@ AccLattice& AccLattice::operator= (AccLattice &other)
   if (refPos != other.refPos) {
     msg << "ERROR: AccLattice::operator=(): Cannot assign Lattice - different refPos ("
 	<< refPos_string() <<"/"<< other.refPos_string() <<")";
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
   if (circumference() != other.circumference()) {
     msg << "ERROR: AccLattice::operator=(): Cannot assign Lattice - different circumferences ("
 	<< circumference() <<"/"<< other.circumference() <<")";
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
 
   for (const_AccIterator it=other.getItBegin(); it!=other.getItEnd(); ++it) {
@@ -435,7 +435,7 @@ void AccLattice::mount(double pos, const AccElement& obj, bool verbose)
   if (pos < 0.) {
     stringstream msg;
     msg << "ERROR: AccLattice::mount(): Position of Lattice elements must be > 0. " << pos << " is not." <<endl;
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
 
   // empty map (mount first element)
@@ -519,7 +519,7 @@ void AccLattice::setIgnoreList(string ignoreFile)
 
   f.open(ignoreFile.c_str());
   if (!f.is_open()) {
-    throw libpalFileError(ignoreFile);
+    throw palatticeFileError(ignoreFile);
   }
 
   //metadata
@@ -550,7 +550,7 @@ void AccLattice::setIgnoreList(string ignoreFile)
 void AccLattice::madximport(SimToolInstance &madx)
 {
   if (madx.tool != pal::madx)
-    throw libpalError("AccLattice::madximport() is only allowed for SimToolInstance::tool=madx");
+    throw palatticeError("AccLattice::madximport() is only allowed for SimToolInstance::tool=madx");
 
   string madxTwissFile=madx.lattice();
   
@@ -667,7 +667,7 @@ void AccLattice::madximport(SimToolInstance &madx)
 // *************************sign of rotation angle:*********************************
 // test with influence of dpsi on vertical closed orbit in madx show
 // that dpsi is defined counter clockwise (dpsi>0 for dipole => kick to negative z)
-// libpal and elegant (tilt) use clockwise definition, so sign is changed here
+// libpalattice and elegant (tilt) use clockwise definition, so sign is changed here
 // to get the correct signs for the magnetic fields calculated from dpsi
 // *********************************************************************************
 void AccLattice::madximportMisalignments(element_type t, string madxEalignFile)
@@ -713,7 +713,7 @@ void AccLattice::madximportMisalignments(element_type t, string madxEalignFile)
 void AccLattice::elegantimport(SimToolInstance &elegant)
 {
   if (elegant.tool != pal::elegant)
-    throw libpalError("AccLattice::elegantimport() is only allowed for SimToolInstance::tool=elegant");
+    throw palatticeError("AccLattice::elegantimport() is only allowed for SimToolInstance::tool=elegant");
 
   string elegantParamFile = elegant.lattice();
 
@@ -749,7 +749,7 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
 
   elegantParam.open(elegantParamFile.c_str(), ios::in);
   if (!elegantParam.is_open()) {
-    throw libpalFileError(elegantParamFile);
+    throw palatticeFileError(elegantParamFile);
   }
 
   
@@ -872,7 +872,7 @@ void AccLattice::setELSAoptics(string spurenFolder)
   f_magnets.open(filename, ios::in);
   if (!f_magnets.is_open()) {
     msg << "ERROR: AccLattice::setELSAoptics(): Cannot open " << filename;
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
   while(!f_magnets.eof()) {
     f_magnets >> tmp;
@@ -888,7 +888,7 @@ void AccLattice::setELSAoptics(string spurenFolder)
       getline(f_magnets, tmp);
     else {
       msg << "ERROR: AccLattice::setELSAoptics(): Unexpected entry in " << filename;
-      throw libpalError(msg.str());
+      throw palatticeError(msg.str());
     }
   }
   f_magnets.close();
@@ -940,7 +940,7 @@ unsigned int AccLattice::setELSACorrectors(ELSASpuren &spuren, unsigned int t)
    }
    else if (t > spuren.vcorrs[i].time.size()) {
      snprintf(msg, 1024, "ERROR: AccLattice::setELSACorrectors(): No ELSA VC%02d corrector data available for %d ms.\n", i+1, t);
-     throw libpalError(msg);
+     throw palatticeError(msg);
    }
    
    //same corrector in Mad-X and ELSA-Spuren?
@@ -950,7 +950,7 @@ unsigned int AccLattice::setELSACorrectors(ELSASpuren &spuren, unsigned int t)
    if (it->second->name != name1 && it->second->name != name2) {
      strMsg << "ERROR: AccLattice::setELSACorrectors(): Unexpected corrector name. Mad-X lattice does not fit to ELSA." << endl;
      strMsg << "       Mad-X: " <<it->second->name<< " -- expected: " <<name2<< " (" <<name1<< ")" << endl;
-     throw libpalError(strMsg.str());
+     throw palatticeError(strMsg.str());
    }
    //...check by position
    diff = spuren.vcorrs[i].pos - locate(it,center);
@@ -995,7 +995,7 @@ void AccLattice::subtractCorrectorStrengths(AccLattice &other)
   
   if (this->size(corrector) != other.size(corrector)) {
     msg << "ERROR: AccLattice::subtractCorrectorStrengths(): Unequal number of correctors to subtract.";
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
   
   otherIt = other.firstCIt(corrector);
@@ -1006,18 +1006,18 @@ void AccLattice::subtractCorrectorStrengths(AccLattice &other)
     if (otherIt->second->name != it->second->name) {
       msg << "ERROR: AccLattice::subtractCorrectorStrengths(): Unequal names of correctors to subtract. ("
 	  << it->second->name <<"/"<< otherIt->second->name << ").";
-      throw libpalError(msg.str());
+      throw palatticeError(msg.str());
     }
     // check by position
     if (otherIt->first != it->first) {
       msg << "ERROR: AccLattice::subtractCorrectorStrengths(): Unequal positions of correctors to subtract. ("
 	  << it->first <<"/"<< otherIt->first << ").";
-      throw libpalError(msg.str());
+      throw palatticeError(msg.str());
     }
     // check plane
     if (otherIt->second->plane != it->second->plane) {
       msg << "ERROR: AccLattice::subtractCorrectorStrengths(): Unequal planes of correctors to subtract.";
-      throw libpalError(msg.str());
+      throw palatticeError(msg.str());
     }
 
     // subtract
@@ -1044,7 +1044,7 @@ void AccLattice::subtractMisalignments(const AccLattice &other)
   
   if (this->size() != other.size()) {
     msg << "ERROR: AccLattice::subtractMissalignments(): Unequal number of elements to subtract.";
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
   
   otherIt = other.getItBegin();
@@ -1055,13 +1055,13 @@ void AccLattice::subtractMisalignments(const AccLattice &other)
     if (otherIt->second->name != it->second->name) {
       msg << "ERROR: AccLattice::subtractMisalignments(): Unequal names of elements to subtract. ("
 	  << it->second->name <<"/"<< otherIt->second->name << ").";
-      throw libpalError(msg.str());
+      throw palatticeError(msg.str());
     }
     // check by position
     if (otherIt->first != it->first) {
       msg << "ERROR: AccLattice::subtractMisalignments(): Unequal positions of elements to subtract. ("
 	  << it->first <<"/"<< otherIt->first << ").";
-      throw libpalError(msg.str());
+      throw palatticeError(msg.str());
     }
 
     // subtract
@@ -1183,7 +1183,7 @@ void AccLattice::print(string filename)
   else {
     file.open(filename.c_str(), ios::out);
     if (!file.is_open())
-      throw libpalFileError(filename);
+      throw palatticeFileError(filename);
     file << s.str();
     file.close();
     cout << "* Wrote " << filename  << endl;
@@ -1217,7 +1217,7 @@ void AccLattice::print(element_type _type, string filename) const
   else {
     file.open(filename.c_str(), ios::out);
     if (!file.is_open())
-     throw libpalFileError(filename);
+     throw palatticeFileError(filename);
     file << s.str();
     file.close();
     cout << "* Wrote " << filename  << endl;
@@ -1273,7 +1273,7 @@ string AccLattice::getLine(SimTool tool) const
   line << endl << endl;
 
   s << "! Drifts (caculated from element positions)" << endl; //Drifts
-  line << "LATTICE_BY_LIBPAL : LINE=(BEGIN, ";                //line
+  line << "LATTICE_BY_LIBPALATTICE : LINE=(BEGIN, ";          //line
 
   const_AccIterator it=elements.begin();
   unsigned int n=0, nInRow=0;
@@ -1328,7 +1328,7 @@ string AccLattice::getSequence(Anchor refer) const
 {
   std::stringstream s;
 
-  s << "LATTICE_BY_LIBPAL : SEQUENCE, REFER=";
+  s << "LATTICE_BY_LIBPALATTICE : SEQUENCE, REFER=";
   if (refer==center)
     s << "CENTRE, ";
   else if (refer==begin)
@@ -1387,7 +1387,7 @@ void AccLattice::simToolExport(SimTool tool, string filename, MadxLatticeType lt
     file.open(filename.c_str(), ios::out);
     if (!file.is_open()) {
       msg << "ERROR: AccLattice::elegantexport(): Cannot open " << filename << ".";
-      throw libpalError(msg.str());
+      throw palatticeError(msg.str());
     }
     file << s.str();
     file.close();
@@ -1417,7 +1417,7 @@ void AccLattice::latexexport(string filename) const
   s << "\\documentclass[]{standalone}" <<endl
     << "\\usepackage[ngerman]{babel}" <<endl
     << "\\usepackage[utf8]{inputenc}" <<endl
-    << "\\usepackage{tikz-palattice} % available at CTAN" <<endl<<endl;
+    << "\\usepackage{tikz-palattice} % available at CTAN, included in TeXlive and MikTeX" <<endl<<endl;
 
   //lattice
   s << "\\begin{document}" << endl << "\\begin{lattice}" << endl;
@@ -1449,7 +1449,7 @@ void AccLattice::latexexport(string filename) const
     file.open(filename.c_str(), ios::out);
     if (!file.is_open()) {
       msg << "ERROR: AccLattice::latexexport(): Cannot open " << filename << ".";
-      throw libpalError(msg.str());
+      throw palatticeError(msg.str());
     }
     file << s.str();
     file.close();

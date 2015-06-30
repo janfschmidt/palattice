@@ -5,8 +5,8 @@
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
  */
 
-#ifndef __LIBPAL_INTERPOLATE_HPP_
-#define __LIBPAL_INTERPOLATE_HPP_
+#ifndef __LIBPALATTICE_INTERPOLATE_HPP_
+#define __LIBPALATTICE_INTERPOLATE_HPP_
 
 #include <vector>
 #include <string>
@@ -86,4 +86,4 @@ template<> std::string Interpolate<AccTriple>::header() const;
 #include "Interpolate.hxx"
 
 #endif
-/*__LIBPAL_INTERPOLATE_HPP_*/
+/*__LIBPALATTICE_INTERPOLATE_HPP_*/

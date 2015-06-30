@@ -1,5 +1,5 @@
-#ifndef __LIBPAL__TYPES_HPP_
-#define __LIBPAL__TYPES_HPP_
+#ifndef __LIBPALATTICE__TYPES_HPP_
+#define __LIBPALATTICE__TYPES_HPP_
 
 #include <string>
 #include <iostream>
@@ -180,14 +180,14 @@ public:
 
 
   // exceptions
-  class libpalError : public std::runtime_error {
+  class palatticeError : public std::runtime_error {
   public:
-    libpalError(std::string msg) : std::runtime_error(msg) {}
+    palatticeError(std::string msg) : std::runtime_error(msg) {}
   };
 
-  class libpalFileError : public libpalError {
+  class palatticeFileError : public palatticeError {
   public:
-    libpalFileError(std::string file) : libpalError("Cannot open "+file) {}
+    palatticeFileError(std::string file) : palatticeError("Cannot open "+file) {}
   };
 
 
@@ -210,4 +210,4 @@ inline std::ostream &operator<<(std::ostream &out, const pal::AccTriple &A)
 
 
 #endif
-/*__LIBPAL__TYPES_HPP_*/
+/*__LIBPALATTICE__TYPES_HPP_*/

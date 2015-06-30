@@ -172,7 +172,7 @@ template <class T>
 T Interpolate<T>::interp(double xIn) const
 {
   if (!ready) {
-    throw libpalError("ERROR: Interpolate<>:interp_const(): Interpolation cannot be initialized by this const (!) function.");
+    throw palatticeError("ERROR: Interpolate<>:interp_const(): Interpolation cannot be initialized by this const (!) function.");
   }
   
   return interpThis(xIn);
@@ -251,7 +251,7 @@ void Interpolate<T>::interp_out(double stepwidth, string filename)
   const int w = 14;
   
   if (stepwidth == 0.) {
-    throw libpalError("ERROR: Interpolate<T>::interp_out(): output stepwidth cannot be zero.");
+    throw palatticeError("ERROR: Interpolate<T>::interp_out(): output stepwidth cannot be zero.");
   }
   else if (stepwidth < 0.)
     stepwidth = -stepwidth;
@@ -278,7 +278,7 @@ void Interpolate<T>::interp_out(double stepwidth, string filename)
   else {
     file.open(filename.c_str(), ios::out);
     if (!file.is_open())
-      throw libpalFileError(filename);
+      throw palatticeFileError(filename);
     file << s.str();
     file.close();
     cout << "* Wrote "<< filename  << endl;
@@ -293,13 +293,13 @@ void Interpolate<T>::interp_out(double stepwidth, string filename)
 template <class T>
 void Interpolate<T>::initThis()
 {
-  throw libpalError("ERROR: Interpolate<>:initThis(): Interpolation is not implemented for this data type.");
+  throw palatticeError("ERROR: Interpolate<>:initThis(): Interpolation is not implemented for this data type.");
 }
 
 template <class T>
 T Interpolate<T>::interpThis(double xIn) const
 {
-  throw libpalError("ERROR: Interpolate<>:interpThis(): Interpolation is not implemented for this data type.");
+  throw palatticeError("ERROR: Interpolate<>:interpThis(): Interpolation is not implemented for this data type.");
 }
 
 

@@ -8,8 +8,8 @@
  */
 
 
-#ifndef __LIBPAL_SPECTRUM_HPP_
-#define __LIBPAL_SPECTRUM_HPP_
+#ifndef __LIBPALATTICE_SPECTRUM_HPP_
+#define __LIBPALATTICE_SPECTRUM_HPP_
 
 #include <vector>
 #include <string>
@@ -89,4 +89,4 @@ public:
 
 
 #endif
-/*__LIBPAL_SPECTRUM_HPP_*/
+/*__LIBPALATTICE_SPECTRUM_HPP_*/

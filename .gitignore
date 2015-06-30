@@ -1,6 +1,7 @@
 *.o
 *.so.*
 *.dat
+*.a
 *~
 *gitversion*.hpp
 *Gitversion*.hpp
@@ -8,3 +9,8 @@ simToolPath.hpp
 programs/convertlattice
 programs/interptwiss
 doc/*
+*.log
+*.lte
+*.clo
+*.twi
+*.param

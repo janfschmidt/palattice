@@ -26,7 +26,7 @@ AccElement::AccElement(element_type _type, string _name, double _length)
   if (length < 0.) {
     stringstream msg;
     msg << "invalid length "<<length<<"<0 for AccElement " << name;
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
   else if (length > 0.)
     this->checkPhysLength();
@@ -108,12 +108,12 @@ AccElement& AccElement::operator=(const AccElement* other)
   if (type != other->type) {
     msg << "ERROR: AccElement::operator=(): Cannot assign Element of different type ("
 	<< type_string() <<"/"<< other->type_string() <<")";
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
   if (abs(length-other->length) > ZERO_DISTANCE) {
     msg << "ERROR: AccElement::operator=(): Cannot assign Element of different length ("
 	<< length <<"/"<< other->length <<")";
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
 
    this->name = other->name;
@@ -314,7 +314,7 @@ AccTriple Magnet::B(const AccPair &orbit) const
 AccTriple Multipole::B() const
 {
   string msg="Multipole::B(): B-Field of "+type_string()+" depends on orbit! Please provide argument.";
-  throw libpalError(msg);
+  throw palatticeError(msg);
 }
 
 
@@ -332,7 +332,7 @@ string AccElement::nameInTool(string name_madx, string name_elegant, SimTool t) 
   case elegant:
     return name_elegant;
   default:
-    throw libpalError("AccElement::nameInTool(): unknown SimTool");
+    throw palatticeError("AccElement::nameInTool(): unknown SimTool");
   }
   return "unknown SimTool";
 }
@@ -447,7 +447,7 @@ string Corrector::printSimTool(SimTool t) const
     s << "KICKER";
   }
   else
-    throw libpalError("Export of Corrector with plane=L not implemented!");
+    throw palatticeError("Export of Corrector with plane=L not implemented!");
 
   s << ", L="<< length <<", ";
 

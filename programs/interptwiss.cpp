@@ -1,6 +1,6 @@
 /* -----interptwiss-----
- * libpal example program
- * interpolate twiss parameters from madx or elegant using libpal
+ * libpalattice example program
+ * interpolate twiss parameters from madx or elegant using libpalattice
  * ... and calculate spectrum (FFT)
  * 
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
@@ -9,7 +9,7 @@
 
 #include <iostream>
 #include <getopt.h>
-#include <libpal/libpal.hpp>
+#include <libpalattice/libpalattice.hpp>
 
 using namespace std;
 

@@ -1,12 +1,12 @@
 /* -----lattice-----
- * libpal example program
+ * libpalattice example program
  * create a lattice and print some output,
  * import a lattice from madx or elegant
  * 
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
  */
 
-#include "libpal/AccLattice.hpp"
+#include "libpalattice/AccLattice.hpp"
 #include <iostream>
 #include <string>
 #include <vector>

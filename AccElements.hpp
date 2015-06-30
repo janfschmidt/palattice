@@ -5,8 +5,8 @@
  */
 
 
-#ifndef __LIBPAL_ACCELEMENTS_HPP_
-#define __LIBPAL_ACCELEMENTS_HPP_
+#ifndef __LIBPALATTICE_ACCELEMENTS_HPP_
+#define __LIBPALATTICE_ACCELEMENTS_HPP_
 
 #include <iostream>
 #include <string>
@@ -237,4 +237,4 @@ string getLaTeXDrift(double driftlength); // Drift element for LaTeX (used by Dr
 } //namespace pal
 
 #endif
-/*__LIBPAL_ACCELEMENTS_HPP_*/
+/*__LIBPALATTICE_ACCELEMENTS_HPP_*/

@@ -1,5 +1,5 @@
 /* -----convertlattice-----
- * convert particle accelerator lattice definition files using libpal
+ * convert particle accelerator lattice definition files using libpalattice
  * - MadX <--> Elegant
  * - MadX, Elegant --> LaTeX (lattice package)
  * 
@@ -9,14 +9,14 @@
 
 #include <iostream>
 #include <getopt.h>
-#include <libpal/AccLattice.hpp>
+#include <libpalattice/AccLattice.hpp>
 
 using namespace std;
 
 
 void usage()
 {
-  cout << "convert particle accelerator lattice definition files using libpal:" << endl
+  cout << "convert particle accelerator lattice definition files using libpalattice:" << endl
        << "- MadX <--> Elegant" << endl
        << "- MadX, Elegant --> LaTeX (tikz-palattice package)" << endl << endl
        << "usage:" << endl;
@@ -42,7 +42,7 @@ void usage()
        << "MadX-->Elegant: convertlattice -m [MADXFILE]" <<endl
        << "Elegant-->MadX & LaTeX: convertlattice -e [ELEGANTFILE] -l" <<endl << endl;
   cout << "For a beamline (no ring) MadX twiss module fails, because of missing start values (betx, bety)." << endl
-       << "Add them to the twiss command in libpal.madx to run MadX successfully." << endl;
+       << "Add them to the twiss command in libpalattice.madx to run MadX successfully." << endl;
 }
 
 void showInfo()
@@ -117,30 +117,36 @@ int main (int argc, char *argv[])
   // print info
   showInfo();
 
-  // import lattice
-  pal::SimToolInstance sim(tool, mode, file);
-  pal::AccLattice lattice("convertlattice", sim);
+  try {
+    // import lattice
+    pal::SimToolInstance sim(tool, mode, file);
+    pal::AccLattice lattice("convertlattice", sim);
   
 
-  // remove path from input file name
-  unsigned int found = file.find_last_of("/");
-  file = file.substr(found+1);
-  // set output file base name
-  if (out == "-" || out == "") out = "converted_"+file;
+    // remove path from input file name
+    unsigned int found = file.find_last_of("/");
+    file = file.substr(found+1);
+    // set output file base name
+    if (out == "-" || out == "") out = "converted_"+file;
 
 
-  // export lattice
-  if (m) {
-    if (out == "stdout") lattice.madxexport("",ltype);
-    else lattice.madxexport(out+".madx",ltype);
+    // export lattice
+    if (m) {
+      if (out == "stdout") lattice.madxexport("",ltype);
+      else lattice.madxexport(out+".madx",ltype);
+    }
+    if (e) {
+      if (out == "stdout") lattice.elegantexport("");
+      else lattice.elegantexport(out+".lte");
+    }
+    if (l) {
+      if (out == "stdout") lattice.latexexport("");
+      else lattice.latexexport(out+".tex");
+    }
   }
-  if (e) {
-    if (out == "stdout") lattice.elegantexport("");
-    else lattice.elegantexport(out+".lte");
-  }
-  if (l) {
-    if (out == "stdout") lattice.latexexport("");
-    else lattice.latexexport(file+".tex");
+  catch (pal::palatticeError &e) {
+    std::cout << e.what() << std::endl;
+    return 1;
   }
   
   return 0;

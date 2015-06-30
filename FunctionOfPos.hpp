@@ -7,8 +7,8 @@
  *
  */
 
-#ifndef __LIBPAL_FUNCTIONOFPOS_HPP_
-#define __LIBPAL_FUNCTIONOFPOS_HPP_
+#ifndef __LIBPALATTICE_FUNCTIONOFPOS_HPP_
+#define __LIBPALATTICE_FUNCTIONOFPOS_HPP_
 
 #include <exception>
 #include <stdexcept>
@@ -134,4 +134,4 @@ public:
 #include "FunctionOfPos.hxx"
 
 #endif
-/*__LIBPAL_FUNCTIONOFPOS_HPP_*/
+/*__LIBPALATTICE_FUNCTIONOFPOS_HPP_*/

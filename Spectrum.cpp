@@ -274,7 +274,7 @@ void Spectrum::print(string filename)
  else {
    file.open(filename.c_str(), ios::out);
    if (!file.is_open()) {
-     throw libpalFileError(filename);
+     throw palatticeFileError(filename);
    }
    file << s.str();
    file.close();
@@ -296,12 +296,12 @@ void Spectrum::eval_out(double stepwidth, double max, string filename)
   if (stepwidth <= 0.) {
     stringstream msg;
    msg << "ERROR: Spectrum::eval_out(): output stepwidth must be > 0.0 (" <<stepwidth<< " is not)" <<endl;
-   throw libpalError(msg.str());
+   throw palatticeError(msg.str());
   }
  
   file.open(filename.c_str(), ios::out);
   if (!file.is_open()) {
-    throw libpalFileError(filename);
+    throw palatticeFileError(filename);
   }
 
   //metadata

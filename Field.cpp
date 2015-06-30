@@ -37,7 +37,7 @@ void Field::set(AccLattice &lattice, FunctionOfPos<AccPair>& orbit, unsigned int
   if (this->circ != orbit.circ) {
     msg << "ERROR: Field::set(): Field and orbit have different circumferences ("
 	 <<this->circ <<", "<<orbit.circ<<").";
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
 
    for (t=1; t<=orbit.turns(); t++) {
@@ -78,7 +78,7 @@ int Field::magnetlengths(AccLattice &lattice, const char *filename) const
 
   file.open(filename, ios::out);
   if (!file.is_open()) {
-    throw libpalFileError(filename);
+    throw palatticeFileError(filename);
   }
   file << "deviation of start/end/length of stepwise field from lattice (field - lattice)" << endl;
   file << "n_samp = " << this->samplesInTurn(1) << " sampling points per turn" << endl;

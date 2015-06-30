@@ -1,10 +1,10 @@
-#ifndef __LIBPAL__METADATA_HPP_
-#define __LIBPAL__METADATA_HPP_
+#ifndef __LIBPALATTICE__METADATA_HPP_
+#define __LIBPALATTICE__METADATA_HPP_
 
 #include <vector>
 #include <string>
 #include "SimTools.hpp"
-#include "libpalGitversion.hpp"
+#include "gitversion.hpp"
 
 using namespace std;
 
@@ -40,4 +40,4 @@ public:
 } //namespace pal
 
 #endif
-/*__LIBPAL__METADATA_HPP_*/
+/*__LIBPALATTICE__METADATA_HPP_*/

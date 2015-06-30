@@ -45,9 +45,9 @@ SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string file
 
 
   if (tool==madx)
-    runFile = "libpal.madx";
+    runFile = "libpalattice.madx";
   else if (tool==elegant)
-    runFile = "libpal.ele";
+    runFile = "libpalattice.ele";
 }
 
 
@@ -79,7 +79,7 @@ void SimToolInstance::replaceInFile(string variable, string value, string delim,
   //cout << cmd.str() << endl;
   int ret = system(cmd.str().c_str());
   if (ret != 0)
-    throw libpalError("SimToolInstance::replaceInFile(): Error executing sed");
+    throw palatticeError("SimToolInstance::replaceInFile(): Error executing sed");
 }
 
 // replace a tag in a filename in a madx/elegant file via sed.
@@ -94,7 +94,7 @@ void SimToolInstance::replaceTagInFile(string name, string extension, string new
   //cout << cmd.str() << endl;
   int ret = system(cmd.str().c_str());
   if (ret != 0)
-    throw libpalError("SimToolInstance::replaceTagInFile(): Error executing sed");
+    throw palatticeError("SimToolInstance::replaceTagInFile(): Error executing sed");
 }
 
 
@@ -104,7 +104,7 @@ void SimToolInstance::replaceTagInFile(string name, string extension, string new
 void SimToolInstance::run()
 {
   if (mode==offline)
-    throw libpalError("You cannot run madx/elegant from a SimToolInstance in offline mode.");
+    throw palatticeError("You cannot run madx/elegant from a SimToolInstance in offline mode.");
 
   if (executed) return; // only run madx/elegant once
 
@@ -125,8 +125,8 @@ void SimToolInstance::run()
   // set output file tag in runFile:
   if (tool== elegant) {
     string tmpcmd;
-    if (tag=="") tmpcmd = "\"elegant2libpal none ";
-    else tmpcmd = "\"elegant2libpal " + tag + " ";
+    if (tag=="") tmpcmd = "\"elegant2libpalattice none ";
+    else tmpcmd = "\"elegant2libpalattice " + tag + " ";
     replaceInFile("command", tmpcmd, "%s", runFile);
   }
   else if (tool== madx) {
@@ -171,7 +171,7 @@ void SimToolInstance::run()
   if (ret != 0) {
     stringstream msg;
     msg << tool_string() << " Error! (see " << log() <<")";
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
 
 
@@ -190,7 +190,7 @@ void SimToolInstance::run()
     if (ret != 0) {
       stringstream msg;
       msg << tool_string() << " Error! (see " << log() <<")";
-      throw libpalError(msg.str());
+      throw palatticeError(msg.str());
     }
   }
 
@@ -214,7 +214,7 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
   fstream tabFile;
   tabFile.open(filename.c_str(), ios::in);
   if (!tabFile.is_open()) {
-    throw libpalFileError(filename);
+    throw palatticeFileError(filename);
   }
 
 
@@ -255,7 +255,7 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
   if (tabFile.eof()) {
     stringstream msg;
     msg << "ERROR: SimToolInstance::readTable(): " << filename << " is not a valid madx/elegant output file. No column headline found.";
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
   if (columnPos.size() != columnKeys.size()) {
     stringstream msg;
@@ -268,7 +268,7 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
       for (map<unsigned int,string>::const_iterator it=columnPos.begin(); it!=columnPos.end(); ++it)
 	msg <<"\""<< it->second <<"\"(column "<< it->first <<") ";
     }
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
 
   //skip additional headline(s)
@@ -283,7 +283,7 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
   if (tabFile.eof()) {
     stringstream msg;
     msg << "ERROR: SimToolInstance::readTable(): " << filename << " has no valid madx/elegant column headline.";
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
 
 
@@ -331,7 +331,7 @@ string SimToolInstance::readParameter(string file, string label)
 
   f.open(file.c_str(), ios::in);
   if (!f.is_open())
-    throw libpalFileError(file);
+    throw palatticeFileError(file);
 
   while(!f.eof()) {
     f >> tmp;
@@ -350,7 +350,7 @@ string SimToolInstance::readParameter(string file, string label)
   stringstream msg;
   msg << "ERROR: pal::SimToolInstance::readParameter(): No parameter label "
       << label << "in " << file;
-  throw libpalError(msg.str());
+  throw palatticeError(msg.str());
 }
 
 

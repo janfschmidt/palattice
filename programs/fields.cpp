@@ -1,6 +1,6 @@
-#include "libpal/AccLattice.hpp"
-#include "libpal/FunctionOfPos.hpp"
-#include "libpal/Field.hpp"
+#include "libpalattice/AccLattice.hpp"
+#include "libpalattice/FunctionOfPos.hpp"
+#include "libpalattice/Field.hpp"
 #include <iostream>
 #include <string>
 #include <vector>

@@ -160,7 +160,7 @@ void FunctionOfPos<AccPair>::readSimToolColumn(SimToolInstance &s, string file, 
     stringstream msg;
     msg << "FunctionOfPos::readSimToolColumn(): valColumn should have 2(not "
 	<<valColumn.size()<<") entries for 2D data type AccPair";
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
 
   vector<string> columns;
@@ -195,7 +195,7 @@ void FunctionOfPos<AccTriple>::readSimToolColumn(SimToolInstance &s, string file
     stringstream msg;
     msg << "FunctionOfPos::readSimToolColumn(): valColumn should have 2(not "
 	<<valColumn.size()<<") entries for 3D data type AccTriple";
-    throw libpalError(msg.str());
+    throw palatticeError(msg.str());
   }
 
   vector<string> columns;
@@ -314,72 +314,12 @@ void FunctionOfPos<AccPair>::simToolTrajectory(SimToolInstance &s, unsigned int 
   }
 
 
-  //for chosen particle: read turns, samples and positions
-  //then modify() can be used below instead of set() ->  much faster for large datasets
-
-
   cout << "Initializing trajectory... " << endl;  
   unsigned int obs;
   std::string trajFile;
   SimToolTable tab;
 
-  // SimToolTable tab_first;
-  // vector<double> obsPos;
-  // if (s.tool==pal::madx) obs=1;
-  // else if (s.tool==pal::elegant) obs=0;
-  // string trajFile=s.trajectory(obs,particle);
 
-  // tab_first = s.readTable(trajFile, columns);
-
-  // //read turns from first obs file (and position)
-  // if (s.tool==pal::madx) {
-  //   turnsRead = tab_first.get<unsigned int>("TURN",tab_first.rows()-1);
-  //   obsPos.push_back(tab_first.getd("S",0)); //read position s from first line
-  // }
-  // else if (s.tool==pal::elegant) {
-  //   turnsRead = tab_first.get<unsigned int>("Pass",tab_first.rows()-1);
-  //   obsPos.push_back(s.readParameter<double>(trajFile,"position_s/m")); //read position s from parameter in file header
-  // }
-
-  // if (s.mode==pal::online && turnsRead != s.turns())
-  //   cout << "LIBPAL WARNING: FunctionOfPos<AccPair>::simToolTrajectory(): "
-  // 	 <<turnsRead<< " turns read from "<<s.tool_string()<<" files, but "
-  // 	 <<s.turns()<<" turns set in SimToolInstance" << endl;
-
-  // //read positions from all other obs files
-  // obs++;
-  // SimToolTable tab;
-  // //iterate all existing obs files:
-  // while (true) {
-  //   trajFile=s.trajectory(obs,particle);
-  //   try {
-  //     if (s.tool==pal::madx) {
-  // 	tab = s.readTable(trajFile, columns, 1); //read first line
-  // 	obsPos.push_back(tab.getd("S",0));
-  //     }
-  //     else if (s.tool==pal::elegant) {
-  // 	obsPos.push_back(s.readParameter<double>(trajFile,"position_s/m")); //read parameter in file header
-  //     }
-  //   }
-  //   catch (libpalFileError) {
-  //     if (s.tool==pal::elegant) obsPos.pop_back(); //elegant: obs-file at lattice end only needed for last turn
-  //     break;
-  //   }
-  //   obs++;
-  // }
-  
-  //resize & set positions s
-  //AccPair empty;
-  //this->n_turns = turnsRead + 1;      //last turn to avoid extrapolation, hidden later
-  //this->n_samples = obsPos.size();
-  // pos.resize(turns()*samples());
-  // value.resize(turns()*samples());
-  // for (unsigned int t=1; t<=turns(); t++) {
-  //   for (unsigned int i=0; i<samples(); i++) {
-  //     pos[index(i,t)] = posTotal(obsPos[i], t);
-  //     value[index(i,t)] =  empty;
-  //   }
-  // }
 
   //for chosen particle: read data from all observation points
   //-----------------------------------------------------------------------------------------------------
@@ -400,7 +340,7 @@ void FunctionOfPos<AccPair>::simToolTrajectory(SimToolInstance &s, unsigned int 
     try {
       tab = s.readTable(trajFile, columns);
     }
-    catch (libpalFileError) {
+    catch (palatticeFileError) {
       obs--;
       break;
     }
@@ -427,9 +367,6 @@ void FunctionOfPos<AccPair>::simToolTrajectory(SimToolInstance &s, unsigned int 
 	otmp.z = tab.getd("y",i);
       }
       
-      // modify(): by index (obs) and not by pos -> faster than set() !
-      // if (s.tool==pal::madx) this->modify(otmp, obs-1, turn);
-      // else if (s.tool==pal::elegant) this->modify(otmp, obs, turn);
       this->set(otmp, obsPos, turn);
     }
     obs++;
@@ -464,7 +401,6 @@ void FunctionOfPos<AccPair>::simToolTrajectory(SimToolInstance &s, unsigned int 
   //info stdout
   cout << "* trajectory of particle "<<particle<<" read at "<<samplesInTurn(1)
        <<" observation points for "<<turns()<<" turns"<<endl;
-  //this->print("traj.tmp"); //debug
 }
 
 
@@ -485,7 +421,7 @@ void FunctionOfPos<AccPair>::elsaClosedOrbit(ELSASpuren &spuren, unsigned int t)
   for (i=0; i<NBPMS; i++) {
     if (t > spuren.bpms[i].time.size()) {
       snprintf(msg, 1024, "ERROR: FunctionOfPos::elsaClosedOrbit: No ELSA BPM%02d data available for %d ms.\n", i+1, t);
-      throw libpalError(msg);
+      throw palatticeError(msg);
     }
 
     otmp.x = spuren.bpms[i].time[t].x / 1000; // unit mm -> m

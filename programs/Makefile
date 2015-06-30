@@ -8,15 +8,15 @@ all: $(ALL)
 .PHONY: all
 
 lattice: lattice.cpp
-	$(CC) $(ccflags) -o $@ $< -lpal
+	$(CC) $(ccflags) -o $@ $< -lpalattice
 interptwiss: interptwiss.cpp
-	$(CC) $(ccflags) -o $@ $< -lpal -lgsl
+	$(CC) $(ccflags) -o $@ $< -lpalattice -lgsl
 fields: fields.cpp
-	$(CC) $(ccflags) -o $@ $< -lpal -lgsl
+	$(CC) $(ccflags) -o $@ $< -lpalattice -lgsl
 
 
 convertlattice: convertlattice.cpp
-	$(CC) $(ccflags) -o $@ $< -lpal
+	$(CC) $(ccflags) -o $@ $< -lpalattice
 
 clean:
 	rm $(ALL) convertlattice_static
@@ -27,5 +27,5 @@ install:
 uninstall:
 	rm -f $(INSTALL_PATH)/bin/convertlattice
 
-static: convertlattice.cpp ../libpal.a
+static: convertlattice.cpp ../libpalattice.a
 	$(CC) $(ccflags) -o convertlattice_static $^

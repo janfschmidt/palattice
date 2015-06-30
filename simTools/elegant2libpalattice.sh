@@ -1,5 +1,5 @@
 #!/bin/bash
-# generate ascii files in a format readable by libpal
+# generate ascii files in a format readable by libpalattice
 # from elegant output, via sdds-tools
 # argument 1: tag for filename. if tag is "none", no tag is used 
 # argument 2: filename (the "%s" part in elegant)
@@ -13,14 +13,13 @@ else
     tag="_"$1
 fi
 
-# header data for lattice parameter file elegant.param:
-# circumference from watch file
-file=`ls $2*.w | head -n1`
-circ=`sdds2stream $file -page=1 -par=PassLength`
+# header data for lattice parameter file elegant.param from .twi file:
+# circumference (position s of last element)
+circ=`sdds2stream $2.twi -col=s | tail -n1`
 echo -e "circumference\t $circ" > elegant$tag.param #overwrite existing file
-# pCentral from watch file
-echo -e "pCentral/m_e*c\t `sdds2stream $file -page=1 -par=pCentral`" >> elegant$tag.param #append..
-# tunes from watch file
+# pCentral
+echo -e "pCentral/m_e*c\t `sdds2stream $2.twi -par=pCentral`" >> elegant$tag.param #append..
+# tunes 
 echo -e "tune:Qx\t `sdds2stream $2.twi -par=nux`" >> elegant$tag.param
 echo -e "tune:Qz\t `sdds2stream $2.twi -par=nuy`" >> elegant$tag.param
 

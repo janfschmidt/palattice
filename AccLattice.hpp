@@ -6,8 +6,8 @@
  */
 
 
-#ifndef __LIBPAL_ACCLATTICE_HPP_
-#define __LIBPAL_ACCLATTICE_HPP_
+#ifndef __LIBPALATTICE_ACCLATTICE_HPP_
+#define __LIBPALATTICE_ACCLATTICE_HPP_
 
 #include <map>
 #include <stdexcept>
@@ -169,4 +169,4 @@ string removeQuote(string s); //remove quotation marks ("" or '') from begin&end
 } //namespace pal
 
 #endif
-/*__LIBPAL_ACCLATTICE_HPP_*/
+/*__LIBPALATTICE_ACCLATTICE_HPP_*/
