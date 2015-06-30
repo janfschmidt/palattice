@@ -1,8 +1,15 @@
 /* === Interpolate Class ===
- * supplies data f(x) for arbitrary x. uses gsl interpolation
- * x is double, f can have several types.
+ * stores arbitrary data values f(x) as a function of x
+ * and allows for access to data f(x) at any x using gsl interpolation.
+ * x is double, f can have several types (int, double, AccPair, AccTriple).
  * for each type the init() function must be implemented, because gsl interpolation needs double data type.
+ *
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
+ *
+ * This is unpublished software. Please do not copy/distribute it without
+ * prior agreement of the author. Open Source publication coming soon :-)
+ *
+ * (c) Jan Schmidt <schmidt@physik.uni-bonn.de>, 2015
  */
 
 

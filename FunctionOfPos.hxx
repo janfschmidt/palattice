@@ -1,6 +1,12 @@
 /* === "Function of Position" Class ===
  * contain any value(pos) for an accelerator ring, e.g. orbit- or field-data.
+ *
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
+ *
+ * This is unpublished software. Please do not copy/distribute it without
+ * prior agreement of the author. Open Source publication coming soon :-)
+ *
+ * (c) Jan Schmidt <schmidt@physik.uni-bonn.de>, 2015
  *
  * ! first "turn"   = 1  !
  * ! first "sample" = 0  !

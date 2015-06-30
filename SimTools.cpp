@@ -1,3 +1,17 @@
+/* === SimTools Classes ===
+ * classes to handle simulation tools (currently MadX, Elegant)
+ * SimToolInstance is connected to a lattice file and can be executed,
+ * SimToolTable contains columns of simulation tool results
+ *
+ * by Jan Schmidt <schmidt@physik.uni-bonn.de>
+ *
+ * This is unpublished software. Please do not copy/distribute it without
+ * prior agreement of the author. Open Source publication coming soon :-)
+ *
+ * (c) Jan Schmidt <schmidt@physik.uni-bonn.de>, 2015
+ */
+
+
 #include <iostream>
 #include <fstream>
 #include <string>

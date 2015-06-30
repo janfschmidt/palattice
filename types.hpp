@@ -1,3 +1,16 @@
+/* === data type definitions ===
+ * AccPair/AccTriple for 2D/3D quantities in accelerator coordinates (x,z)/(x,z,s),
+ * libpalattice exceptions, ...
+ *
+ * by Jan Schmidt <schmidt@physik.uni-bonn.de>
+ *
+ * This is unpublished software. Please do not copy/distribute it without
+ * prior agreement of the author. Open Source publication coming soon :-)
+ *
+ * (c) Jan Schmidt <schmidt@physik.uni-bonn.de>, 2015
+ */
+
+
 #ifndef __LIBPALATTICE__TYPES_HPP_
 #define __LIBPALATTICE__TYPES_HPP_
 

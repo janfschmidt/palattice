@@ -2,7 +2,13 @@
  * a container to store elements of an accelerator (ring) by position
  * They can be imported from MAD-X.
  * Uses the "AccElements" classes
+ *
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
+ *
+ * This is unpublished software. Please do not copy/distribute it without
+ * prior agreement of the author. Open Source publication coming soon :-)
+ *
+ * (c) Jan Schmidt <schmidt@physik.uni-bonn.de>, 2015
  */
 
 

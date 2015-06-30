@@ -1,5 +1,14 @@
-/* Read data from ELSA CCS, /sgt and ELSA MadX Lattice: element positions, bpm- & magnet-data, ... */
-/* 14.06.2012 - J.Schmidt */
+/* === ELSASpuren class ===
+ * read measured closed orbits and set vertical corrector magnet kicks
+ * from files written by the ELSA control system.
+ *
+ * by Jan Schmidt <schmidt@physik.uni-bonn.de>
+ *
+ * This is unpublished software. Please do not copy/distribute it without
+ * prior agreement of the author. Open Source publication coming soon :-)
+ *
+ * (c) Jan Schmidt <schmidt@physik.uni-bonn.de>, 2015
+ */
 
 #include <stdio.h>
 #include <stdlib.h>

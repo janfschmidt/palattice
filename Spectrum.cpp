@@ -1,11 +1,18 @@
 /* === Spectrum Class ===
  * Frequency spectrum of arbitrary data.
  * Spectrum is calculated via gsl FFT in class constructor.
- * Data can be given as vector<double> (and a "length" in pos/time),
- * as FunctionOfPos<T> for an accelerator (automatic calc. of rev.freq. etc)
- * or as RESONANCES for resonance-strengths (Bsupply).
+ * Data can be given as vector<double> (and a "length" in pos or time),
+ * as FunctionOfPos<T> for an accelerator (automatic calculation of rev.freq. etc)
+ * or as RESONANCES for strengths of depolarizing resonances.
+ *
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
+ *
+ * This is unpublished software. Please do not copy/distribute it without
+ * prior agreement of the author. Open Source publication coming soon :-)
+ *
+ * (c) Jan Schmidt <schmidt@physik.uni-bonn.de>, 2015
  */
+
 
 #include <fstream>
 #include <iostream>
