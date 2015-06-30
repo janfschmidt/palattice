@@ -116,7 +116,7 @@ void Spectrum::fft(vector<double> In)
 double Spectrum::real(unsigned int i, double *hc, unsigned int n) const
 {
   if (i>=n)
-    throw out_of_range("Spectrum::real(): requested index i is out of given range n.");
+    throw palatticeError("Spectrum::real(): requested index i is out of given range n.");
 
   if (i == 0)
     return hc[0];
@@ -130,7 +130,7 @@ double Spectrum::real(unsigned int i, double *hc, unsigned int n) const
 double Spectrum::imag(unsigned int i, double *hc, unsigned int n) const
 {
  if (i>=n)
-    throw out_of_range("Spectrum::real(): requested index i is out of given range n.");
+    throw palatticeError("Spectrum::real(): requested index i is out of given range n.");
 
   if (i == 0)
     return 0.;
@@ -187,7 +187,7 @@ void Spectrum::push_back(FREQCOMP tmp)
 void Spectrum::setAmpcut(double ampcutIn)
 {
   if (ampcutIn < ampcut)
-    throw invalid_argument("Spectrum::setAmpcut(): Amplitude Cut cannot be decreased. Use new Spectrum.");
+    throw palatticeError("Spectrum::setAmpcut(): Amplitude Cut cannot be decreased. Use new Spectrum.");
 
   ampcut = ampcutIn;
   for (int i=size()-1; i>=0; i--) {
@@ -200,7 +200,7 @@ void Spectrum::setAmpcut(double ampcutIn)
 void Spectrum::setFMax_rev(unsigned int fmaxrevIn)
 {
   if (fMax_rev > fmaxrevIn)
-    throw invalid_argument("Spectrum::setFMax_rev():fmax cannot be increased. Use new Spectrum.");
+    throw palatticeError("Spectrum::setFMax_rev():fmax cannot be increased. Use new Spectrum.");
 
   fMax_rev = fmaxrevIn;
   for (unsigned int i=0; i<size(); i++) {
@@ -216,7 +216,7 @@ void Spectrum::setFMax_rev(unsigned int fmaxrevIn)
 void Spectrum::setLength(double length, unit u)
 {
   if (size() > 0)
-    throw logic_error("Spectrum::setLength() Existing components would change their frequency!");
+    throw palatticeError("Spectrum::setLength() Existing components would change their frequency!");
   //or: calculation of new freq. from new/old f_rev() etc.
   //or: clear()
 

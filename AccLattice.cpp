@@ -384,7 +384,7 @@ const AccElement* AccLattice::operator[](double pos) const
   if (pos > circumference()) {
     stringstream msg;
     msg << pos << " m is larger than lattice circumference " << circumference() << " m.";
-    throw std::out_of_range(msg.str());
+    throw palatticeError(msg.str());
   }
 
   try {
@@ -422,7 +422,7 @@ void AccLattice::mount(double pos, const AccElement& obj, bool verbose)
   if (pos > circumference()) {
     stringstream msg;
     msg << pos << " m is larger than lattice circumference " << circumference() << " m.";
-    throw std::out_of_range(msg.str());
+    throw palatticeError(msg.str());
   }
 
   bool first_element = false;
@@ -560,7 +560,7 @@ void AccLattice::madximport(SimToolInstance &madx)
   if (circ == 0) {
     stringstream msg;
     msg << "AccLattice::madximport(): Cannot read circumference from " << madxTwissFile;
-    throw std::runtime_error(msg.str());
+    throw palatticeError(msg.str());
   }
 
   if (refPos != end)
@@ -739,7 +739,7 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
   if (circ == 0) {
     stringstream msg;
     msg << "AccLattice::elegantimport(): Cannot read circumference from " << elegantParamFile;
-    throw std::runtime_error(msg.str());
+    throw palatticeError(msg.str());
   }
 
 
