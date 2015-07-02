@@ -32,7 +32,7 @@ Metadata::Metadata()
 }
 
 //add other Metadata, without first 2 entries ("default" metadata)
-void Metadata::operator+=(Metadata &other)
+void Metadata::operator+=(const Metadata &other)
 {
   for (unsigned int i=2; i<other.size(); i++)
     this->add(other.getLabel(i), other.getEntry(i));

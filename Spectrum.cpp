@@ -43,7 +43,7 @@ Spectrum::Spectrum(string _name, vector<double> In, double c, unsigned int t, in
 {
   info.add("Spectrum name", _name);
 
-  if (_norm == -1) norm = In.size(); // default normaization
+  if (_norm == -1) norm = In.size(); // default normalization
 
   if (fMax() > In.size()/2.) {
     cout << "WARNING: Spectrum constructor: fmax = " <<fMax_rev<< " is to large." << endl

@@ -103,6 +103,26 @@ AccLattice& AccLattice::operator= (AccLattice &other)
 
 
 
+// get rotation angle [0,2pi]: increases lin. in bending dipoles, constant in-between. 
+double AccLattice::theta(double posIn) const
+{
+  double theta = 0.;
+  // sum theta of all bending dipoles that end is at a pos < posIn
+  for (const_AccIterator it=firstCIt(dipole); locate(it,end) < posIn; it=nextCIt(it,dipole)) {
+    theta += it->second->length * it->second->k0.z; // theta= l/R = l*k0.z
+  }
+  // if posIn is inside a dipole, add theta of this magnet up to posIn
+  try {
+    const_AccIterator atPosIn = getIt(posIn); // throws if there is no element
+    if (atPosIn->second->type == dipole) {
+      theta += (posIn - locate(atPosIn,begin)) * atPosIn->second->k0.z;
+    }
+  }
+  catch (eNoElement) {}
+  return theta;
+}
+
+
 
 // get here=begin/center/end (in meter) of obj at reference-position pos
 // works for all reference Anchors (refPos)

@@ -2,10 +2,10 @@ CC=g++
 ccflags = -Wall -fPIC -g #-O0
 LIB_NAME=libpalattice
 Vmajor=3
-Vminor=2.3
+Vminor=3.0
 INSTALL_PATH=/usr/local/
 
-ALL_O=Interpolate.o Metadata.o ELSASpuren.o FunctionOfPos.o Field.o AccElements.o AccLattice.o Spectrum.o SimTools.o
+ALL_O=Interpolate.o Metadata.o ELSASpuren.o FunctionOfPos.o Field.o AccElements.o AccLattice.o Spectrum.o SimTools.o ResStrengths.o
 LIB_FILE=$(LIB_NAME).so
 SIMTOOL_PATH=$(INSTALL_PATH)/lib/libpalattice_simTools
 
@@ -34,6 +34,8 @@ AccElements.o: AccElements.cpp AccElements.hpp types.hpp SimTools.hpp config.hpp
 AccLattice.o: AccLattice.cpp AccLattice.hpp AccElements.hpp ELSASpuren.hpp Metadata.hpp config.hpp types.hpp SimTools.hpp
 	$(CC) $(ccflags) -c $<
 SimTools.o: SimTools.cpp SimTools.hpp types.hpp config.hpp simToolPath.hpp
+	$(CC) $(ccflags) -c $<
+ResStrengths.o: ResStrengths.cpp ResStrengths.hpp AccLattice.hpp FunctionOfPos.hpp Metadata.hpp
 	$(CC) $(ccflags) -c $<
 
 gitversion.hpp: Makefile .git/HEAD .git/index

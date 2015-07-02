@@ -38,7 +38,7 @@ public:
   void madximport(string madxFile, string labels, SimToolMode m=online) {SimToolInstance mad(pal::madx,m,madxFile); simToolImport(mad,madxFile,labels);}
   void elegantimport(string eleFile, string labels, SimToolMode m=online) {SimToolInstance ele(pal::elegant,m,eleFile); simToolImport(ele,eleFile,labels);}
 
-  void operator+=(Metadata &other);       //add other Metadata, without first 2 entries ("default" metadata)
+  void operator+=(const Metadata &other);       //add other Metadata, without first 2 entries ("default" metadata)
 
   unsigned int size() const {return label.size();}
   string getLabel(unsigned int i) const;
