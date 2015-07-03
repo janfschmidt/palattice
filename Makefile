@@ -19,7 +19,7 @@ programs:
 
 Spectrum.o: Spectrum.cpp Spectrum.hpp config.hpp
 	$(CC) $(ccflags) -c $<
-Interpolate.o: Interpolate.cpp Interpolate.hpp Interpolate.hxx types.hpp Metadata.hpp
+Interpolate.o: Interpolate.cpp Interpolate.hpp Interpolate.hxx types.hpp Metadata.hpp Metadata.hxx
 	$(CC) $(ccflags) -c $<
 FunctionOfPos.o: FunctionOfPos.cpp FunctionOfPos.hpp FunctionOfPos.hxx Interpolate.hpp Interpolate.hxx Spectrum.hpp ELSASpuren.hpp types.hpp config.hpp SimTools.hpp
 	$(CC) $(ccflags) -c $<
@@ -27,15 +27,15 @@ Field.o: Field.cpp Field.hpp FunctionOfPos.hpp FunctionOfPos.hxx types.hpp AccLa
 	$(CC) $(ccflags) -c $<
 ELSASpuren.o: ELSASpuren.cpp types.hpp
 	$(CC) $(ccflags) -c $<
-Metadata.o: Metadata.cpp Metadata.hpp gitversion.hpp SimTools.hpp
+Metadata.o: Metadata.cpp Metadata.hpp Metadata.hxx gitversion.hpp SimTools.hpp
 	$(CC) $(ccflags) -c $<
 AccElements.o: AccElements.cpp AccElements.hpp types.hpp SimTools.hpp config.hpp
 	$(CC) $(ccflags) -c $<
-AccLattice.o: AccLattice.cpp AccLattice.hpp AccElements.hpp ELSASpuren.hpp Metadata.hpp config.hpp types.hpp SimTools.hpp
+AccLattice.o: AccLattice.cpp AccLattice.hpp AccElements.hpp ELSASpuren.hpp Metadata.hpp Metadata.hxx config.hpp types.hpp SimTools.hpp
 	$(CC) $(ccflags) -c $<
 SimTools.o: SimTools.cpp SimTools.hpp types.hpp config.hpp simToolPath.hpp
 	$(CC) $(ccflags) -c $<
-ResStrengths.o: ResStrengths.cpp ResStrengths.hpp AccLattice.hpp FunctionOfPos.hpp Metadata.hpp
+ResStrengths.o: ResStrengths.cpp ResStrengths.hpp AccLattice.hpp FunctionOfPos.hpp FunctionOfPos.hxx Metadata.hpp Metadata.hxx
 	$(CC) $(ccflags) -c $<
 
 gitversion.hpp: Makefile .git/HEAD .git/index

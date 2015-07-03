@@ -74,22 +74,6 @@ void Metadata::simToolImport(SimToolInstance &sim, string file, string labels)
 
 
 
-// add an entry. if label already exists, update entry
-void Metadata::add(string inLabel, string inEntry)
-{
-  //change existing entry
-  for(unsigned int i=0; i<label.size(); i++) {
-    if (label[i] == inLabel) {
-      entry[i] = inEntry;
-      return;
-    }
-  }
-  //add new entry
-  label.push_back(inLabel);
-  entry.push_back(inEntry);
-}
-
-
 
 /* get i-th value */
 string Metadata::getLabel(unsigned int i) const

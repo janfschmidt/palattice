@@ -33,7 +33,7 @@ public:
   Metadata();
   ~Metadata() {}
 
-  void add(string inLabel, string inEntry);         //add an entry. if label already exists, update entry
+  template <class T> void add(string inLabel, T inEntry);         //add an entry. if label already exists, update entry
   void simToolImport(SimToolInstance &sim, string file="default", string labels="default");
   void madximport(string madxFile, string labels, SimToolMode m=online) {SimToolInstance mad(pal::madx,m,madxFile); simToolImport(mad,madxFile,labels);}
   void elegantimport(string eleFile, string labels, SimToolMode m=online) {SimToolInstance ele(pal::elegant,m,eleFile); simToolImport(ele,eleFile,labels);}
@@ -51,6 +51,8 @@ public:
 };
 
 } //namespace pal
+
+#include "Metadata.hxx"
 
 #endif
 /*__LIBPALATTICE__METADATA_HPP_*/

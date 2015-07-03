@@ -14,9 +14,11 @@
 
 #include "ResStrengths.hpp"
 
-ResStrengths::ResStrengths(AccLattice *_lattice, FunctionOfPos<AccPair> *_orbit)
-  : lattice(_lattice), orbit(_orbit), im(std::complex<double> (0,1)), a_gyro(0.001159652)
+ResStrengths::ResStrengths(AccLattice *_lattice, FunctionOfPos<AccPair> *_orbit, unsigned int _nturns)
+  : lattice(_lattice), orbit(_orbit), im(std::complex<double> (0,1)), nturns(_nturns), a_gyro(0.001159652)
 {
+  info.add("Description", "strengths of depolarizing resonances (complex numbers)");
+  info.add("turns used for res. strength calc.", nturns);
   info += lattice->info;
   info += orbit->info;
 }
@@ -49,21 +51,27 @@ std::complex<double> ResStrengths::calculate(double agamma)
   std::complex<double> epsilon (0,0);
   const_AccIterator it;
 
-  for (it=lattice->getItBegin(); it!=lattice->getItEnd(); ++it) {
-    //field from Thomas-BMT equation, assume particle velocity parallel to s-axis, B is devided by rigidity (BR)_0 = p_0/e
-    std::complex<double> omega = (1+agamma)*it->second->B(orbit->interp(it->first)).x - im * (1+a_gyro)*it->second->B(orbit->interp(it->first)).s;
-   
-    if (it->second->type == dipole) {
-      double R = 1/it->second->k0.z; // bending radius
-      epsilon += 1/(2*M_PI) * omega * it->second->length * R/(im*agamma) * (std::exp(im*agamma*lattice->theta(lattice->locate(it,end))) - std::exp(im*agamma*lattice->theta(lattice->locate(it,begin))));
-    }
-    else {
-      epsilon += 1/(2*M_PI) * std::exp(im*agamma*lattice->theta(it->first)) * omega * it->second->length;
-    }
-  }
+  for (unsigned int turn=1; turn<=nturns; turn++) {
+    for (it=lattice->getItBegin(); it!=lattice->getItEnd(); ++it) {
+      //field from Thomas-BMT equation:
+      // omega = (1+agamma) * B_x - i * (1+a) * B_s
+      // assume particle velocity parallel to s-axis, B is already normalized to rigidity (BR)_0 = p_0/e
+      std::complex<double> omega = (1+agamma)*it->second->B(orbit->interp(it->first)).x - im * (1+a_gyro)*it->second->B(orbit->interp(it->first)).s;
+
+      // dipole: epsilon = 1/2pi * omega * R/(i*agamma) * (e^{i*agamma*theta2}-e^{i*agamma*theta1})
+      if (it->second->type == dipole) {
+	double R = 1/it->second->k0.z; // bending radius
+	epsilon += 1/(2*M_PI) * omega * R/(im*agamma) * (std::exp(im*agamma*(lattice->theta(lattice->locate(it,end))+turn*2*M_PI)) - std::exp(im*agamma*(lattice->theta(lattice->locate(it,begin))+turn*2*M_PI)));
+      }
+      // all others: epsilon = 1/2pi * e^{i*agamma*theta} *  omega * l
+      else {
+      epsilon += 1/(2*M_PI) * std::exp(im*agamma*(lattice->theta(it->first)+turn*2*M_PI)) * omega * it->second->length;
+      }
+    }//lattice
+  }//turn
   
-  cache.insert( std::pair<double,std::complex<double> >(agamma,epsilon) );
-  return epsilon;
+  cache.insert( std::pair<double,std::complex<double> >(agamma,epsilon/double(nturns)) );
+		return epsilon/double(nturns);
 }
 
 

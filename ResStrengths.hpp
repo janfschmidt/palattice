@@ -29,13 +29,14 @@ namespace pal
     const AccLattice *lattice;
     const FunctionOfPos<AccPair> *orbit;
     std::map<double,std::complex<double> > cache;
-    const std::complex<double> im;
+    const std::complex<double> im;                  // imaginary unit i (initialized in constructor)
+    unsigned int nturns;
   
   public:
     const double a_gyro;   // electron gyromagnetic anomaly a = (g-2)/2
     
     Metadata info;
-    ResStrengths(AccLattice *_lattice, FunctionOfPos<AccPair> *_orbit);
+    ResStrengths(AccLattice *_lattice, FunctionOfPos<AccPair> *_orbit, unsigned int _nturns=1);
     ~ResStrengths() {}
 
     std::complex<double> calculate(double agamma);    // calculate res. strength freq. omega=agamma
