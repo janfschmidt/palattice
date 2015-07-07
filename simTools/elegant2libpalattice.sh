@@ -27,7 +27,7 @@ echo -e "tune:Qz\t `sdds2stream $2.twi -par=nuy`" >> elegant$tag.param
 sddsprocess $2.clo -pipe=out -match=column,ElementType=WATCH,! -match=column,ElementName=_BEG_,! | sddsprintout -pipe=in elegant$tag.clo -Title='***' -col='(ElementName,ElementType,s,x,y)'
 
 # ascii lattice parameter file elegant.param
-sddsprintout $2.param tmp.param -Title='***' -col='(ElementName,ElementParameter,ParameterValue,ElementType)'
+sddsprintout $2.param -Title='***' -col=ElementName -col=ElementParameter -col=ParameterValue,format=%.12e -col=ElementType
 cat tmp.param >> elegant$tag.param
 rm tmp.param
 
