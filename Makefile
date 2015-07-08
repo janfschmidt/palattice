@@ -54,6 +54,7 @@ simToolPath.hpp: Makefile
 
 clean: 
 	rm $(LIB_FILE)* $(ALL_O) $(LIB_NAME).a gitversion.hpp simToolPath.hpp
+	make clean -C ./programs
 
 install: $(LIB_FILE).$(Vmajor).$(Vminor)
 	install -m 755 -p -v $< $(INSTALL_PATH)/lib/                     #library

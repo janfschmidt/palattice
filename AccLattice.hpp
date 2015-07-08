@@ -67,6 +67,8 @@ public:
   AccLattice& operator= (AccLattice &other);
 
   double circumference() const {return circ;}
+
+  // ------- these functions may be replaced soon by a new API for lattice iteration -------------------------
   const_AccIterator getIt(double pos) const;      // get const_Iterator to element, if pos is inside it
   const_AccIterator getItBegin() const;           // get iterator to begin (first Element)
   const_AccIterator getItEnd() const;             // get iterator to end (after last Element)

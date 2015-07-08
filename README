@@ -1,0 +1,126 @@
+******************* libpalattice ***********************************
+         C++ particle accelerator lattice libraray
+	 
+This is unpublished testing software. Please do not copy/distribute it
+without prior agreement of the author.
+Open Source publication coming soon :-)
+
+(c) Jan Schmidt <schmidt@physik.uni-bonn.de>, 2015
+********************************************************************
+
+
+
+Please report bugs and do not hesitate to contact me if you have any questions.
+
+
+--------------------------------------------------------------------------
+If you used convertlattice before:
+--------------------------------------------------------------------------
+If you used the statically compiled convertlattice program before,
+please first uninstall this by execution of the "uninstall.sh" script from
+your convertlattice directory.
+It is also recommended to delete the existing "libpal.ele"/"libpal.madx"
+files in your projects to avoid confusion, because the library ignores the
+old files and creates "libpalattice.ele"/"libpalattice.madx" instead
+during first Mad-X/Elegant execution in this directory.
+If you made any custom changes you should copy them to the new files.
+
+
+--------------------------------------------------------------------------
+Installation
+--------------------------------------------------------------------------
+1) get a copy of the source code:
+   "git clone git@elsafs1.physik.uni-bonn.de:lib/libpalattice"
+   - requires git, in Ubuntu it can be installed via "sudo apt-get install git"
+   - has to be unlocked for your user/computer. Send your ssh public key
+     to schmidt@physik.uni-bonn.de
+2) go to libpalattice directory and compile the library by the command:
+   "make"
+   - compilation requires the gcc (g++) compiler, can be changed in Makefile
+   - libpalattice requires the Gnu Scientific Library GSL,
+     in Ubuntu it can be installed via "sudo apt-get install libgsl0-dev"
+3) install the library for all users of your system:
+   "sudo make install"
+   - the default install path is /usr/local and can be changed in Makefile
+4) compile & install example programs including convertlattice:
+   "make programs"
+   "sudo make install_programs"
+
+
+--------------------------------------------------------------------------
+Update
+--------------------------------------------------------------------------
+To get updated versions of the code just go to libpalattice directory
+and type: "git pull"
+If there are any changes compile and install themby step 2)-4) of
+"Installation" ("make", "sudo make install", "make programs", "sudo make install_programs")
+
+
+--------------------------------------------------------------------------
+Uninstall
+--------------------------------------------------------------------------
+To remove all library files from the installation path (/usr/local)
+go to libpalattice directory and type
+"sudo make uninstall".
+To remove all compiled files from the libpalattice directory type
+"make clean".
+To delete all source files just delete the libpalattice directory.
+
+
+--------------------------------------------------------------------------
+requirements for automatic execution of Mad-X/Elegant by libpalattice
+--------------------------------------------------------------------------
+The commands to run Mad-X and Elegant can be set in libpalattice/config.hpp.
+Default values are:
+* command to run Mad-X: "madx"
+* command to run Elegant: "elegant"
+
+
+--------------------------------------------------------------------------
+comment on automatic execution of Mad-X/Elegant by libpalattice
+--------------------------------------------------------------------------
+To allow for automatic execution of Mad-X/Elegant, the library:
+1. copies file libpalattice.madx/libpal.ele
+   from /usr/local/lib/libpalattice_simTools/
+   to the path of your lattice file if it does not exist there.
+2. writes the name of your lattice file (and a few other settings)
+   to libpalattice.madx/libpalattice.ele.
+3. executes "madx libpalattice.madx" or "elegant libpalattice.elegant".
+(4. Elegant only) executes /usr/local/bin/elegant2libpalattice to convert
+    SDDS files to ascii.
+
+If execution fails for your lattice, you can edit libpalattice.madx/libpal.ele
+in your lattice folder or edit the original template in
+/usr/local/lib/libpalattice_simTools/.
+E.g. for a beamline (no ring) MadX twiss module fails, because of missing
+start values (betx, bety). Add them to the twiss command in libpalattice.madx
+to run MadX successfully.
+
+
+
+--------------------------------------------------------------------------
+Documentation of libpalattice API
+--------------------------------------------------------------------------
+Unfortunately there is no dedicated documentation yet.
+If you have some time left over please send it to me...
+
+A good start are the example programs in libpalattice/programs.
+The .cpp files have many comments and show the basic usage of the classes.
+
+For the full API I refer to the header files (.hpp) in libpalattice/,
+where nearly all classes and methods are described by short comments.
+Start with libpalattice.hpp, which is a kind of table of contents.
+
+Please do not hesitate to contact me if you have any further questions.
+
+
+
+--------------------------------------------------------------------------
+Warning
+--------------------------------------------------------------------------
+Some main API features may still change due to ongoing development, so
+there is no guarantee to full compatibility with new versions.
+This is especially likely in the AccLattice class, because I am not happy
+with the way one can iterate/loop through a lattice. May be I will
+completely replace the iterator based API.
+Basically this is why I did not publish it yet.
