@@ -87,7 +87,8 @@ namespace pal
     double readCircumference();
     AccPair readTune();
 
-    string tool_string() const {if (tool==madx) return "Mad-X"; else if (tool==elegant) return "Elegant"; else return "";}
+    string tool_string() const {if (tool==madx) return "madx"; else if (tool==elegant) return "elegant"; else return "";}
+    string mode_string() const {if (mode==online) return "online"; else if (mode==offline) return "offline"; else return "";}
 
     //filenames
     string inFile() const {return _path+file;} //mode=online: latticeInput, mode=offline: SimTool Output

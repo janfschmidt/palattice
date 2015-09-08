@@ -14,6 +14,7 @@
 #include "libpalattice/AccLattice.hpp"
 #include "libpalattice/FunctionOfPos.hpp"
 #include "libpalattice/Field.hpp"
+#include "libpalattice/ResStrengths.hpp"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -52,6 +53,16 @@ int main(int argc, char *argv[])
   unsigned int fmax = 60;
   pal::Spectrum fft = B.getSpectrum(pal::x,fmax);  // Field already has equidistant sampling, so no new sampling for FFT needed (in contrast to interptwiss.cpp)
   fft.print("fields_x.spectrum");
+
+  // depolarizing Resonance Strengths
+  pal::ResStrengths res(&elsa, &orbit);
+  std::cout << res[5] << std::endl;
+  res.print(0.05,7, "fields.resonances");
+  
+  // test theta(s)
+  // for (double s=0; s<164.4; s+=0.5) {
+  //   std::cout << elsa[s]->name <<"\t"<< elsa.theta(s)*180./M_PI/15. << std::endl;
+  // }
 
   return 0;
 }

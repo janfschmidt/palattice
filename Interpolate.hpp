@@ -52,7 +52,7 @@ public:
 
   Interpolate(const gsl_interp_type *t=gsl_interp_akima, double periodIn=0., std::map<double,T> dataIn=std::map<double,T>());
   Interpolate(const Interpolate &other);
-  ~Interpolate();
+  virtual ~Interpolate();
 
   void init();
   T interp(double xIn);
