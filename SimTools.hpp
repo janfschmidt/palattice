@@ -56,6 +56,7 @@ namespace pal
   protected:
     bool executed;
     unsigned int trackingTurns;
+    unsigned int trackingNumParticles;
     string tag;
     string _path;
     string file;     //mode=online: latticeInput, mode=offline: SimTool Output
@@ -78,7 +79,9 @@ namespace pal
 
     void run();
     unsigned int turns() const {return trackingTurns;}
+    unsigned int numParticles() const {return trackingNumParticles;}
     void setTurns(unsigned int t) {trackingTurns=t; executed=false;}  // if turns!=0 (default) single particle tracking is performed while madx/elegant run
+    void setNumParticles(unsigned int n) {trackingNumParticles=n; executed=false;}
     void setRunFile(string file) {runFile = file;}
     SimToolTable readTable(string file, vector<string> columnKeys, unsigned int maxRows=0); // read specified columns from a madx/elegant table format output file (reading stopped after [maxRows] rows, if !=0)
     template<class T> T readParameter(string file, string label); // read specified parameter from file header

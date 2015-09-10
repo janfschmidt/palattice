@@ -27,7 +27,7 @@ using namespace std;
 
 
 SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string fileIn, string fileTag)
-  : executed(false), trackingTurns(0), tag(fileTag), tool(toolIn), mode(modeIn), verbose(false)
+  : executed(false), trackingTurns(0), trackingNumParticles(1), tag(fileTag), tool(toolIn), mode(modeIn), verbose(false)
 {
 
   //path: path of fileIn
@@ -158,6 +158,16 @@ void SimToolInstance::run()
       replaceInFile("turns", tmp.str(), ",", runFile);
     else if (tool== elegant)
       replaceInFile("n_passes", tmp.str(), ",", runFile);
+  }
+
+  // set tracking number of particles in runFile:
+  if (trackingTurns != 1) {
+    tmp.str(std::string());
+    tmp << trackingNumParticles;
+    if (tool==madx)
+      throw palatticeError("set number of Particles not implemented for madx. Please set manually in "+runFile);
+    else if (tool==elegant)
+      replaceInFile("n_particles_per_bunch", tmp.str(), ",", runFile);
   }
   
   //run madx/elegant:

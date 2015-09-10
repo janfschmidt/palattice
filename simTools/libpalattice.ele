@@ -158,7 +158,7 @@
 ! - trajectory (elegant.wXXX.pX) --> choose particleID for export
   &subprocess
   ! particleID is number at end of line
-	command = "elegant2libpalattice none %s 1" 
+	command = "elegant2libpalattice none %s" 
   &end
 ! ---------------------
 
