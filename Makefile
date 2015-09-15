@@ -1,5 +1,5 @@
 CC=g++
-ccflags = -Wall -fPIC -g #-O0
+ccflags = -std=c++11 -Wall -fPIC -g #-O0
 LIB_NAME=libpalattice
 Vmajor=3
 Vminor=3.0

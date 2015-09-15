@@ -52,6 +52,8 @@ public:
 
   FunctionOfPos(double circIn, const gsl_interp_type *t=gsl_interp_akima);
   FunctionOfPos(SimToolInstance &sim, const gsl_interp_type *t=gsl_interp_akima_periodic); //get circ from SimToolInstance
+  FunctionOfPos(const FunctionOfPos &other) = default;
+  FunctionOfPos(FunctionOfPos &&other) = default;
   ~FunctionOfPos() {}
 
   unsigned int turns() const {return n_turns;}

@@ -42,9 +42,21 @@ Interpolate<T>::Interpolate(const gsl_interp_type *t, double periodIn, std::map<
 // copy constructor
 template <class T>
 Interpolate<T>::Interpolate(const Interpolate &other)
-  : data(other.data), headerString(other.headerString), type(other.type), period(other.period), ready(false)
+  : data(other.data), headerString(other.headerString), type(other.type), periodic(other.periodic), period(other.period), ready(false), info(other.info)
 {
-  // by setting ready=false spline and acc are initialized again before beeing used
+  acc = gsl_interp_accel_alloc ();
+
+  // by setting ready=false spline is initialized again before beeing used
+}
+
+template <class T>
+Interpolate<T>::Interpolate(Interpolate &&other)
+  : data(std::move(other.data)), headerString(std::move(other.headerString)), type(std::move(other.type)), periodic(std::move(other.periodic)), period(std::move(other.period)), ready(std::move(other.ready)), info(std::move(other.info))
+{
+  acc = other.acc;
+  other.acc=nullptr;
+
+  //  std::cout << "move it!" << std::endl;
 }
 
 
