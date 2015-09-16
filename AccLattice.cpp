@@ -442,6 +442,10 @@ void AccLattice::mount(double pos, const AccElement& obj, bool verbose)
   //ignoreList
   if ( obj.nameMatch(ignoreList) ) {
     ignoreCounter++;
+    //metadata
+    stringstream ignore;
+    ignore << ignoreCounter;
+    info.add("ignored elements", ignore.str());
     return;
   }
 
@@ -1179,20 +1183,13 @@ AccTriple AccLattice::B(double posIn, const AccPair &orbit) const
 // ----------- output (stdout or file) ----------------------
 
 // print lattice. If no filename is given, print to stdout
-void AccLattice::print(string filename)
+void AccLattice::print(string filename) const
 {
   const_AccIterator it=elements.begin();
   const int w = 12;
   std::stringstream s;
   std::stringstream msg;
   fstream file;
-
-  //metadata
-  if (ignoreList.size() > 0) {
-    stringstream ignore;
-    ignore << ignoreCounter;
-    info.add("ignored elements", ignore.str());
-  }
 
   //write text to s
   s << info.out("#");

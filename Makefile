@@ -1,8 +1,8 @@
 CC=g++
 ccflags = -std=c++11 -Wall -fPIC -g #-O0
 LIB_NAME=libpalattice
-Vmajor=3
-Vminor=4.0
+Vmajor=3.4
+Vminor=1
 INSTALL_PATH=/usr/local/
 
 ALL_O=Interpolate.o Metadata.o ELSASpuren.o FunctionOfPos.o Field.o AccElements.o AccLattice.o Spectrum.o SimTools.o ResStrengths.o

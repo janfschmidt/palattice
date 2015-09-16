@@ -268,61 +268,17 @@ bool FunctionOfPos<T>::compatible(FunctionOfPos<T> &o, bool verbose) const
 
 
 
-// import a column of data from a madx/elegant file.
-// valColumn usually has 1 entry, 2 for AccPair(x,z), 3 for AccTriple(x,z,s)
-template <class T>
-void FunctionOfPos<T>::readSimToolColumn(SimToolInstance &s, string file, string posColumn, vector<string> valColumn)
-{
-  if (valColumn.size() != 1) {
-    stringstream msg;
-    msg << "FunctionOfPos::readSimToolColumn(): valColumn should have 1(not "
-	<<valColumn.size()<<") entry for 1D data type " << typeid(T).name();
-    throw palatticeError(msg.str());
-  }
-
-  vector<string> columns;
-  columns.push_back(posColumn);
-  columns.push_back(valColumn[0]);
-
-  SimToolTable tab = s.readTable(file, columns);
-
-  for (unsigned int i=0; i<tab.rows(); i++) {
-    double pos = tab.get<double>(i,posColumn);
-    // values at pos=circ are ignored to avoid #turns problem
-    // see simToolTrajectory() for another solution
-    if (fabs(pos-circ) <= 0.0001) continue;
-
-    this->set(tab.get<T>(i,valColumn[0]), pos);
-  }
-
-  //metadata
-  this->info.simToolImport(s);
-  this->info.add("Data Source file", file);
-  this->info.add("read Parameter", valColumn[0]);
-  this->headerString = valColumn[0];
-}
-
-// as above, but no need to fill vector
-template <class T>
-void FunctionOfPos<T>::readSimToolColumn(SimToolInstance &s, string file, string posColumn, string valX, string valZ, string valS)
-{
-  std::vector<std::string> valColumn { valX };
-  if (!valZ.empty()) valColumn.push_back(valZ);
-  if (!valS.empty()) valColumn.push_back(valS);
-  readSimToolColumn(s, file, posColumn, std::move(valColumn));
-}
-
 // import a column of data from a madx/elegant file. if a latticeFile is given, madx/elegant is executed.
-template <class T>
-void FunctionOfPos<T>::readSimToolColumn(SimTool t, string file, string posColumn, vector<string> valColumn, string latticeFile)
-{
-  if (latticeFile=="")
-    SimToolInstance s(t, pal::offline, file);
-  else
-    SimToolInstance s(t, pal::online, latticeFile);
+// template <class T>
+// void FunctionOfPos<T>::readSimToolColumn(SimTool t, string file, string posColumn, vector<string> valColumn, string latticeFile)
+// {
+//   if (latticeFile=="")
+//     SimToolInstance s(t, pal::offline, file);
+//   else
+//     SimToolInstance s(t, pal::online, latticeFile);
 
-  readSimToolColumn(s, file, posColumn, valColumn);
-}
+//   readSimToolColumn(s, file, posColumn, valColumn);
+// }
 
 
 
@@ -400,51 +356,45 @@ Spectrum FunctionOfPos<T>::getSpectrum(double stepwidth, unsigned int fmaxrevIn,
 
 
 
-// ----------- defaults for template specialization (FunctionOfPos.cpp)
 
-// get all values as double-vector, axis for multidim. data (-> template specialization)
+
+
+
+// import a column of data from usual madx/elegant table files like twiss, closed-orbit etc.
 template <class T>
-vector<double> FunctionOfPos<T>::getVector(double stepwidth,AccAxis axis) const
+void FunctionOfPos<T>::readSimToolColumn(SimToolInstance &s, string file, string posColumn, string valX, string valZ, string valS)
 {
-  stringstream s;
-  s << "FunctionOfPos<T>::getVector(): get vector<double> from vector<T> is not implemented for data type "
-    << typeid(T).name();
-  throw logic_error(s.str());
+  vector<string> columns;
+  columns.push_back(posColumn);
+  columns.push_back(valX);
+  if (!valZ.empty()) columns.push_back(valZ);
+  if (!valS.empty()) columns.push_back(valS);
+
+  SimToolTable tab = s.readTable(file, columns);
+  T tmp;
+
+  for (unsigned int i=0; i<tab.rows(); i++) {
+    double pos = tab.get<double>(i,posColumn);
+    // values at pos=circ are ignored to avoid #turns problem
+    // see simToolTrajectory() for another solution
+    if (fabs(pos-circ) <= 0.0001) continue;
+
+    tmp = tab.get<T>(i, valX, valZ, valS);
+    this->set(tmp, pos);
+  }
+  //if (s.tool==elegant) this->pop_back_turn(); //elegant: always entry with s=circumference due to drifts. Avoid additional turn.
+
+ //metadata
+  stringstream stmp;
+  this->info.simToolImport(s);
+  this->info.add("Data Source file", file);
+  stmp << valX;
+  if (!valZ.empty()) stmp << ", " << valZ;
+  if (!valS.empty()) stmp << ", " << valS;
+  this->info.add("read Parameters", stmp.str());
+  
+  this->headerString = valX; //output column header. For 2D/3D AccPair/AccTriple.header() is used
 }
-
-
-
-
-//orbit import is defined only for T=AccPair (-> template specialization)
-template <class T>
-void FunctionOfPos<T>::simToolClosedOrbit(SimToolInstance &sim)
-{
-  stringstream s;
-  s << "FunctionOfPos<T>::simToolClosedOrbit() is not implemented for data type " << typeid(T).name()
-    << ". It is only defined for T=AccPair.";
-  throw logic_error(s.str());
-}
-
-template <class T>
-void FunctionOfPos<T>::simToolTrajectory(SimToolInstance &sim, unsigned int particle)
-{
-  stringstream s;
-  s << "FunctionOfPos<T>::simToolTrajectory() is not implemented for data type " << typeid(T).name()
-    << ". It is only defined for T=AccPair.";
-  throw logic_error(s.str());
-}
-
-
-template <class T>
-void FunctionOfPos<T>::elsaClosedOrbit(ELSASpuren &spuren, unsigned int t)
-{
-  stringstream s;
-  s << "FunctionOfPos<T>::elsaClosedOrbit() is not implemented for data type " << typeid(T).name()
-    << ". It is only defined for T=AccPair.";
-  throw logic_error(s.str());
-}
-
-
 
 
 
@@ -508,8 +458,6 @@ void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned in
     for (unsigned int i=0; i<tab.rows(); i++) {
       if (s.tool==pal::madx) {
 	turn = tab.get<unsigned int>(i,"TURN");
-	// otmp.x = tab.getd("X",i);
-	// otmp.z = tab.getd("Y",i);
 	if (obs==1) { //see comment above ("madx & obs0001")
 	  turn += 1;
 	}
@@ -530,8 +478,6 @@ void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned in
   //- dedicated last obs (at lattice end) for elegant (implemented below)
   if (s.tool==pal::elegant) {
     turn = tab.get<unsigned int>(tab.rows()-1,"Pass") + 1;
-    // otmp.x = tab.getd("x",tab.rows()-1);
-    // otmp.z = tab.getd("y",tab.rows()-1);
     otmp = tab.get<T>(tab.rows()-1, valX, valZ, valS);
     this->set(otmp, 0, turn);
   }
@@ -540,15 +486,69 @@ void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned in
   if(this->periodic) this->period=circ*n_turns;
 
    //metadata
+  stringstream stmp;
   this->info.add("Single Particle Data from", s.tool_string());
   this->info.add("Data Source path", s.path());
-  stringstream stmp;
   stmp << particle;
   this->info.add("particle number", stmp.str());
+  stmp.str(std::string());
+  stmp << valX;
+  if (!valZ.empty()) stmp << ", " << valZ;
+  if (!valS.empty()) stmp << ", " << valS;
+  this->info.add("read Parameters", stmp.str());
   stmp.str(std::string());
   stmp << turns();
   this->info.add("number of turns", stmp.str());
   stmp.str(std::string());
   stmp << samplesInTurn(1);
   this->info.add("number of obs. points", stmp.str());
+}
+
+
+
+
+
+
+// ----------- defaults for template specialization (FunctionOfPos.cpp)
+
+// get all values as double-vector, axis for multidim. data (-> template specialization)
+template <class T>
+vector<double> FunctionOfPos<T>::getVector(double stepwidth,AccAxis axis) const
+{
+  stringstream s;
+  s << "FunctionOfPos<T>::getVector(): get vector<double> from vector<T> is not implemented for data type "
+    << typeid(T).name();
+  throw logic_error(s.str());
+}
+
+
+
+
+//orbit import is defined only for T=AccPair (-> template specialization)
+template <class T>
+void FunctionOfPos<T>::simToolClosedOrbit(SimToolInstance &sim)
+{
+  stringstream s;
+  s << "FunctionOfPos<T>::simToolClosedOrbit() is not implemented for data type " << typeid(T).name()
+    << ". It is only defined for T=AccPair.";
+  throw logic_error(s.str());
+}
+
+template <class T>
+void FunctionOfPos<T>::simToolTrajectory(SimToolInstance &sim, unsigned int particle)
+{
+  stringstream s;
+  s << "FunctionOfPos<T>::simToolTrajectory() is not implemented for data type " << typeid(T).name()
+    << ". It is only defined for T=AccPair.";
+  throw logic_error(s.str());
+}
+
+
+template <class T>
+void FunctionOfPos<T>::elsaClosedOrbit(ELSASpuren &spuren, unsigned int t)
+{
+  stringstream s;
+  s << "FunctionOfPos<T>::elsaClosedOrbit() is not implemented for data type " << typeid(T).name()
+    << ". It is only defined for T=AccPair.";
+  throw logic_error(s.str());
 }

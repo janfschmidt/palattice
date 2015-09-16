@@ -75,9 +75,7 @@ public:
   void clear();
   void pop_back_turn();  // erase data of last turn, reduces turns by 1
 
-  void readSimToolColumn(SimToolInstance &s, string file, string posColumn, vector<string> valColumn); // import a column of data from a madx/elegant file. valColumn usually has 1 entry, 2 for AccPair(x,z), 3 for AccTriple(x,z,s)
-  void readSimToolColumn(SimToolInstance &s, string file, string posColumn, string valX, string valZ="", string valS=""); // as above, but no need to fill vector
-  void readSimToolColumn(SimTool t, string file, string posColumn, vector<string> valColumn, string latticeFile="");      // if a latticeFile is given, madx/elegant is executed.
+  void readSimToolColumn(SimToolInstance &s, string file, string posColumn, string valX, string valZ="", string valS=""); // import a column of data from usual madx/elegant table files like twiss, closed-orbit etc.
   void readSimToolParticleColumn(SimToolInstance &s, unsigned int particle, string valX, string valZ="", string valS=""); // import single particle data from madx/elegant tracking "obs"/"watch" files
 
   // orbit import
@@ -120,8 +118,6 @@ template<> vector<double> FunctionOfPos<double>::getVector(double stepwidth,AccA
 template<> vector<double> FunctionOfPos<int>::getVector(double stepwidth,AccAxis axis) const;
 template<> vector<double> FunctionOfPos<AccPair>::getVector(double stepwidth,AccAxis axis) const;
 template<> vector<double> FunctionOfPos<AccTriple>::getVector(double stepwidth,AccAxis axis) const;
-template<> void FunctionOfPos<AccPair>::readSimToolColumn(SimToolInstance &s, string file, string posColumn, vector<string> valColumn);
-template<> void FunctionOfPos<AccTriple>::readSimToolColumn(SimToolInstance &s, string file, string posColumn, vector<string> valColumn);
 template<> void FunctionOfPos<AccPair>::simToolClosedOrbit(SimToolInstance &s);
 template<> void FunctionOfPos<AccPair>::simToolTrajectory(SimToolInstance &s, unsigned int particle);
 template<> void FunctionOfPos<AccPair>::elsaClosedOrbit(ELSASpuren &spuren, unsigned int t);
