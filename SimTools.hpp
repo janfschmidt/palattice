@@ -39,13 +39,14 @@ namespace pal
 
   public:
     void push_back(string key, string value) {table[key].push_back(value);}
-    template<class T> T get(string key, unsigned int index);
+    template<class T> T get(unsigned int index, string keyX, string keyZ="", string keyS=""); //keyZ,keyS for AccPair,AccTriple
+    
     unsigned int rows() const {return table.begin()->second.size();}
     unsigned int columns() const {return table.size();}
 
     //short forms: getf = get<double> and gets = get<string>
-    double getd(string key, unsigned int index) {return get<double>(key,index);}
-    string gets(string key, unsigned int index) {return get<string>(key,index);}
+    double getd(unsigned int index, string key) {return get<double>(index,key);}
+    string gets(unsigned int index, string key) {return get<string>(index,key);}
   };
   
 
@@ -107,8 +108,10 @@ namespace pal
   };
 
 
-//SimToolInstance template function specialization
-template<> string SimToolInstance::readParameter(string file, string label);
+  //SimToolInstance template function specialization
+  template<> string SimToolInstance::readParameter(string file, string label);
+  template<> AccPair SimToolTable::get(unsigned int index, string keyX, string keyZ, string keyS);
+  template<> AccTriple SimToolTable::get(unsigned int index, string keyX, string keyZ, string keyS);
 
   
 } //namespace pal
@@ -118,8 +121,9 @@ template<> string SimToolInstance::readParameter(string file, string label);
 
 
 //SimToolTable template function implementation:
+//keyZ & keyS ignored for 1D data (used with AccPair&AccTriple specializations)
 template<class T>
-T pal::SimToolTable::get(string key, unsigned int index)
+T pal::SimToolTable::get(unsigned int index, string key, string keyZ, string keyS)
 {
   map< string, vector<string> >::iterator it = table.find(key);
   if (it == table.end()) {

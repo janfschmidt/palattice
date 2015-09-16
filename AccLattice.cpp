@@ -617,12 +617,12 @@ void AccLattice::madximport(SimToolInstance &madx)
   AccElement *element;
   double s=0.;
   for (unsigned int i=0; i<twi.rows(); i++) {
-    string key = twi.gets("KEYWORD",i);
-    string name = removeQuote(twi.gets("NAME",i));
-    double l = twi.getd("L",i);
-    double angle = twi.getd("ANGLE",i);
-    double hkick = twi.getd("HKICK",i);
-    double vkick = twi.getd("VKICK",i);
+    string key = twi.gets(i,"KEYWORD");
+    string name = removeQuote(twi.gets(i,"NAME"));
+    double l = twi.getd(i,"L");
+    double angle = twi.getd(i,"ANGLE");
+    double hkick = twi.getd(i,"HKICK");
+    double vkick = twi.getd(i,"VKICK");
 
     if (key == "\"SBEND\"" || key == "\"RBEND\"") {  //horizontal bending Dipole (assume all bends have vertical field)
       element = new Dipole(name, l, H);
@@ -659,12 +659,12 @@ void AccLattice::madximport(SimToolInstance &madx)
     if (angle!=0.) element->k0.z += angle / l; // 1/R from bending angle, curved length l
     if (hkick!=0. && element->plane!=V)  element->k0.z += sin(hkick) / l; // 1/R from kick angle, straight length l
     if (vkick!=0. && element->plane!=H)  element->k0.x += sin(vkick) / l;
-    element->e1 = twi.getd("E1",i);
-    element->e2 = twi.getd("E2",i);
-    element->k1 = twi.getd("K1L",i)/l;
-    element->k2 = twi.getd("K2L",i)/l;
+    element->e1 = twi.getd(i,"E1");
+    element->e2 = twi.getd(i,"E2");
+    element->k1 = twi.getd(i,"K1L")/l;
+    element->k2 = twi.getd(i,"K2L")/l;
     //misalignments in AccLattice::madximportMisalignments()
-    s = twi.getd("S",i);
+    s = twi.getd(i,"S");
     if (refPos == begin) s -= l;
     else if (refPos == center) s -= l/2;
     this->mount(s, *element);
@@ -714,8 +714,8 @@ void AccLattice::madximportMisalignments(element_type t, string madxEalignFile)
   string type=it->second->type_string();
   for (; it!=elements.end(); it=nextIt(it,t)) {
     for (unsigned int i=0; i<ealign.rows(); i++) {
-      if (it->second->name == removeQuote(ealign.gets("NAME",i))) {
-	it->second->dpsi = - ealign.getd("DPSI",i);    // <<<<<<!!! sign of rotation angle (see comment above)
+      if (it->second->name == removeQuote(ealign.gets(i,"NAME"))) {
+	it->second->dpsi = - ealign.getd(i,"DPSI");    // <<<<<<!!! sign of rotation angle (see comment above)
       }
     }
   }

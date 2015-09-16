@@ -76,7 +76,9 @@ public:
   void pop_back_turn();  // erase data of last turn, reduces turns by 1
 
   void readSimToolColumn(SimToolInstance &s, string file, string posColumn, vector<string> valColumn); // import a column of data from a madx/elegant file. valColumn usually has 1 entry, 2 for AccPair(x,z), 3 for AccTriple(x,z,s)
-  void readSimToolColumn(SimTool t, string file, string posColumn, vector<string> valColumn, string latticeFile=""); //if a latticeFile is given, madx/elegant is executed.
+  void readSimToolColumn(SimToolInstance &s, string file, string posColumn, string valX, string valZ="", string valS=""); // as above, but no need to fill vector
+  void readSimToolColumn(SimTool t, string file, string posColumn, vector<string> valColumn, string latticeFile="");      // if a latticeFile is given, madx/elegant is executed.
+  void readSimToolParticleColumn(SimToolInstance &s, unsigned int particle, string valX, string valZ="", string valS=""); // import single particle data from madx/elegant tracking "obs"/"watch" files
 
   // orbit import
   void simToolClosedOrbit(SimToolInstance &s);                  //import closed orbit from madx (twiss file) or elegant (clo file)

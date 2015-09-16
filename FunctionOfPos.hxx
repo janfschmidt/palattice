@@ -287,12 +287,12 @@ void FunctionOfPos<T>::readSimToolColumn(SimToolInstance &s, string file, string
   SimToolTable tab = s.readTable(file, columns);
 
   for (unsigned int i=0; i<tab.rows(); i++) {
-    double pos = tab.get<double>(posColumn,i);
+    double pos = tab.get<double>(i,posColumn);
     // values at pos=circ are ignored to avoid #turns problem
     // see simToolTrajectory() for another solution
     if (fabs(pos-circ) <= 0.0001) continue;
 
-    this->set(tab.get<T>(valColumn[0],i), pos);
+    this->set(tab.get<T>(i,valColumn[0]), pos);
   }
 
   //metadata
@@ -302,6 +302,15 @@ void FunctionOfPos<T>::readSimToolColumn(SimToolInstance &s, string file, string
   this->headerString = valColumn[0];
 }
 
+// as above, but no need to fill vector
+template <class T>
+void FunctionOfPos<T>::readSimToolColumn(SimToolInstance &s, string file, string posColumn, string valX, string valZ, string valS)
+{
+  std::vector<std::string> valColumn { valX };
+  if (!valZ.empty()) valColumn.push_back(valZ);
+  if (!valS.empty()) valColumn.push_back(valS);
+  readSimToolColumn(s, file, posColumn, std::move(valColumn));
+}
 
 // import a column of data from a madx/elegant file. if a latticeFile is given, madx/elegant is executed.
 template <class T>
@@ -433,4 +442,113 @@ void FunctionOfPos<T>::elsaClosedOrbit(ELSASpuren &spuren, unsigned int t)
   s << "FunctionOfPos<T>::elsaClosedOrbit() is not implemented for data type " << typeid(T).name()
     << ". It is only defined for T=AccPair.";
   throw logic_error(s.str());
+}
+
+
+
+
+
+//import single particle data from madx/elegant tracking "obs"/"watch" files
+template <class T>
+void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned int particle, string valX, string valZ, string valS)
+{
+  this->clear(); //delete old data
+
+  //SimTool columns
+  vector<string> columns;
+  if (s.tool == pal::madx) {
+    columns.push_back("S");
+    columns.push_back("TURN");
+  }
+  else if (s.tool == pal::elegant) {
+    // s: parameter in file header
+    columns.push_back("Pass");
+  }
+
+  columns.push_back(valX);
+  if (!valZ.empty()) columns.push_back(valZ);
+  if (!valS.empty()) columns.push_back(valS);
+
+  unsigned int obs;
+  std::string trajFile;
+  SimToolTable tab;
+
+
+  //for chosen particle: read data from all observation points
+  //-----------------------------------------------------------------------------------------------------
+  //madx & obs0001 is a special case: it corresponds to s=0.0m (START marker in MAD-X), but counts the turns different:
+  //turn=0, s=0.0 are the initial conditions (beginning of turn 1)
+  //turn=1, s=0.0 is the beginning of turn 2 or END of turn 1.
+  //So the data of obs0001 is used with s=0.0 but one turn later than written in MAD-X to fit our notation
+  //-----------------------------------------------------------------------------------------------------
+  T otmp;
+  unsigned int turn;
+  double obsPos;
+  if (s.tool==pal::madx) obs=1;
+  else if (s.tool==pal::elegant) obs=0;
+  //iterate all existing obs files:
+  while (true) {
+    // read table from file:
+    trajFile=s.trajectory(obs,particle);
+    try {
+      tab = s.readTable(trajFile, columns);
+    }
+    catch (palatticeFileError) {
+      obs--;
+      break;
+    }
+    // read obs position
+    if (s.tool==pal::madx)
+      obsPos = tab.getd(0,"S");
+    else if (s.tool==pal::elegant)
+      obsPos = s.readParameter<double>(trajFile,"position_s/m"); // read parameter in file header
+    // write table rows to FunctionOfPos:
+    //    if (s.tool==pal::elegant && obs==this->samples()) //elegant: obs-file at lattice end only needed for last turn
+    //  break;
+    for (unsigned int i=0; i<tab.rows(); i++) {
+      if (s.tool==pal::madx) {
+	turn = tab.get<unsigned int>(i,"TURN");
+	// otmp.x = tab.getd("X",i);
+	// otmp.z = tab.getd("Y",i);
+	if (obs==1) { //see comment above ("madx & obs0001")
+	  turn += 1;
+	}
+      }
+      else if (s.tool==pal::elegant) {
+	turn = tab.get<unsigned int>(i,"Pass");
+	// otmp.x = tab.getd("x",i);
+	// otmp.z = tab.getd("y",i);
+      }
+      otmp = tab.get<T>(i, valX, valZ, valS);
+      this->set(otmp, obsPos, turn);
+    }
+    obs++;
+  }
+  //last turn has only one "real" entry: at the begin of the lattice to avoid extrapolation
+  //it is read from:
+  //- obs0001 for madx (see comment above)
+  //- dedicated last obs (at lattice end) for elegant (implemented below)
+  if (s.tool==pal::elegant) {
+    turn = tab.get<unsigned int>(tab.rows()-1,"Pass") + 1;
+    // otmp.x = tab.getd("x",tab.rows()-1);
+    // otmp.z = tab.getd("y",tab.rows()-1);
+    otmp = tab.get<T>(tab.rows()-1, valX, valZ, valS);
+    this->set(otmp, 0, turn);
+  }
+  this->hide_last_turn();
+  //this->pop_back_turn();
+  if(this->periodic) this->period=circ*n_turns;
+
+   //metadata
+  this->info.add("Single Particle Data from", s.tool_string());
+  this->info.add("Data Source path", s.path());
+  stringstream stmp;
+  stmp << particle;
+  this->info.add("particle number", stmp.str());
+  stmp.str(std::string());
+  stmp << turns();
+  this->info.add("number of turns", stmp.str());
+  stmp.str(std::string());
+  stmp << samplesInTurn(1);
+  this->info.add("number of obs. points", stmp.str());
 }

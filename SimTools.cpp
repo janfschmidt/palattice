@@ -26,6 +26,34 @@ using namespace pal;
 using namespace std;
 
 
+template<> AccPair SimToolTable::get(unsigned int i, string keyX, string keyZ, string keyS)
+{
+  if (keyZ.empty())
+    throw palatticeError("SimToolTable::get<AccPair>: No key for z column given!");
+  AccPair tmp;
+  tmp.x = this->getd(i,keyX);
+  tmp.z = this->getd(i,keyZ);
+  return tmp;
+}
+
+template<> AccTriple SimToolTable::get(unsigned int i, string keyX, string keyZ, string keyS)
+{
+    if (keyZ.empty())
+      throw palatticeError("SimToolTable::get<AccPair>: No key for z column given!");
+    if (keyS.empty())
+      throw palatticeError("SimToolTable::get<AccPair>: No key for s column given!");
+  AccTriple tmp;
+  tmp.x = this->getd(i,keyX);
+  tmp.z = this->getd(i,keyZ);
+  tmp.s = this->getd(i,keyS);
+  return tmp;
+}
+
+
+
+
+
+
 SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string fileIn, string fileTag)
   : executed(false), trackingTurns(0), trackingNumParticles(1), tag(fileTag), tool(toolIn), mode(modeIn), verbose(false)
 {
