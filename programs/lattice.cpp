@@ -21,7 +21,7 @@ using namespace std;
 int main(int argc, char *argv[])
 {
 
-  // manuell angelegtes Lattice
+  // manual filled lattice
   pal::AccLattice beamline("test", 5.0); // default refPos = begin
 
   double R = 11;
@@ -39,24 +39,28 @@ int main(int argc, char *argv[])
   beamline.mount(3.5, mb);
 
   double pos = 1.5;
-  cout << "Zugriff über Position " << pos << "m: "
+  cout << "Access by position " << pos << "m: "
        << beamline[pos]->name <<", " << beamline[pos]->type_string() << endl;
 
   string name = "MB2";
-  cout << "Zugriff über Name " << name
-       << ": Ende bei " << beamline.locate(name, pal::end) << "m" << endl << endl;
+  cout << "Access by name " << name
+       << ": end at " << beamline.locate(name, pal::end) << "m" << endl << endl;
 
-  cout << "Magnetfeld " << beamline[2.6]->name <<": " << beamline[2.6]->B() << endl;
-  cout << "Magnetfeld " << beamline[3.5]->name <<": " << beamline[3.5]->B() << endl << endl;
+  cout << "magnetic field " << beamline[2.6]->name <<": " << beamline[2.6]->B() << endl;
+  cout << "magnetic field " << beamline[3.5]->name <<": " << beamline[3.5]->B() << endl << endl;
 
   beamline.print();
 
 
 
-  //importiertes Lattice
+  //importiertes Lattice, hier aus madx
+  if (argc<2) {
+    cout << "please give madx lattice file as argument." << endl;
+    return 1;
+  }
   string latticefile = argv[1];
+  
   pal::SimToolInstance sim(pal::madx, pal::online, latticefile);
-  //pal::SimToolInstance sim(pal::elegant, pal::online, "../lattice/ELSA/elsa.lte");
   pal::AccLattice elsa("ELSA", sim);
 
   elsa.print("elsa.lattice");

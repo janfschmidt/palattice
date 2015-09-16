@@ -23,8 +23,14 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-  //import lattice and closed orbit
+  if (argc<2) {
+    cout << "please give madx lattice file as argument." << endl;
+    return 1;
+  }
   string latticefile = argv[1];
+
+  
+  //import lattice and closed orbit
   pal::SimToolInstance sim(pal::madx, pal::online, latticefile);
   pal::AccLattice elsa("ELSA", sim);
 
@@ -56,7 +62,7 @@ int main(int argc, char *argv[])
 
   // depolarizing Resonance Strengths
   pal::ResStrengths res(&elsa, &orbit);
-  std::cout << res[5] << std::endl;
+  std::cout << "ResStrength: res[5]=" << res[5] << std::endl;
   res.print(0.05,7, "fields.resonances");
   
   // test theta(s)

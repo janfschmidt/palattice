@@ -1,5 +1,5 @@
 CC=g++
-ccflags = -Wall #-g -O0 #last 2 for valgrind
+ccflags = -std=c++11 -Wall #-g -O0 #last 2 for valgrind
 INSTALL_PATH=/usr/local/
 
 ALL=lattice interptwiss fields convertlattice

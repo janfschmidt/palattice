@@ -20,10 +20,16 @@ using namespace std;
 
 int main (int argc, char *argv[])
 {
+  if (argc<2) {
+    cout << "please give elegant lattice file as argument." << endl;
+    return 1;
+  }
+  string latticefile = argv[1];
+
+  
   string out = "twiss";
   pal::SimTool tool = pal::elegant;       // choose madx or elegant
   pal::SimToolMode mode = pal::online; // SimTool is executed automatically
-  string latticefile = argv[1];
 
 
   // construct SimToolInstance for a lattice file
@@ -37,20 +43,22 @@ int main (int argc, char *argv[])
   //write the name of the twiss variable to a string vector
   //vector, because it allows 2 (3) columns for FunctionOfPos<AccPair> (<AccTriple>)
   string s;
-  vector<string> value;
+  string valueX, valueZ;
   if (tool==madx) {
     s = "S";    
-    value.push_back("BETX");
-    //value.push_back("BETY");
+    valueX = "BETX";
+    //valueZ = "BETY";
   }
   else if (tool==elegant) {
     s = "s";
-    value.push_back("betax");
-    //value.push_back("betay");
+    valueX = "betax";
+    //valueZ = "betay";
   }
 
   // read a twiss variable from a SimTool output file (runs SimTool, if mode=online and not run before)
-  twiss.readSimToolColumn(sim, sim.twiss(), s, value);
+  // 1-3 value strings can be given (2 for AccPair, 3 for AccTriple, 1 else)
+  // needless ones are ignored. missing ones cause throwing a palatticeError
+  twiss.readSimToolColumn(sim, sim.twiss(), s, valueX, valueZ);
 
  // some info output examples
   cout << endl<< "some info about FunctionOfPos<double> twiss:" << endl;

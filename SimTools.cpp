@@ -189,7 +189,7 @@ void SimToolInstance::run()
   }
 
   // set tracking number of particles in runFile:
-  if (trackingTurns != 1) {
+  if (trackingNumParticles != 1) {
     tmp.str(std::string());
     tmp << trackingNumParticles;
     if (tool==madx)

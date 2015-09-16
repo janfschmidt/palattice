@@ -46,7 +46,7 @@ std::complex<double> ResStrengths::operator[](double agamma)
 std::complex<double> ResStrengths::calculate(double agamma)
 {
   //debug:
-  std::cout << "calc! (for agamma=" << agamma << ")" << std::endl;
+  //std::cout << "calc! (for agamma=" << agamma << ")" << std::endl;
 
   std::complex<double> epsilon (0,0);
   const_AccIterator it;
