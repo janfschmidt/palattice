@@ -21,22 +21,30 @@ using namespace std;
 int main(int argc, char *argv[])
 {
 
-  // manual filled lattice
-  pal::AccLattice beamline("test", 5.0); // default refPos = begin
+  //--- manually filled lattice ---
+  // if no circumference is given, it is always set to the end of the last mounted element
+  // ! for rings with drift at the end circumference should be set in constructor (or drift mounted explicitly)
+  // ! via madx/elegant import the circumference is set automatically
+  // default element reference position (refPos) = pal::begin
+  pal::AccLattice beamline("test");       //all arguments: pal::AccLattice beamline("test", 5.0, pal::end);
 
   double R = 11;
   pal::Corrector ssh1("SSH1", 0.15);
   pal::Dipole mb("MB1", 0.8, pal::H, 1/R);
   pal::Quadrupole quad("QD1", 0.5, pal::F, 4.2);
 
-  beamline.mount(0.4, ssh1);
-  beamline.mount(1.0, mb);
-  beamline.mount(2.0, quad);
+  bool verbose = true;
+  beamline.mount(0.4, ssh1, verbose);
+  beamline.mount(1.0, mb, verbose);
+  beamline.mount(2.0, quad, verbose);
   mb.name = "MB2";
-  beamline.mount(2.6, mb);
+  beamline.mount(2.6, mb, verbose);
   mb.name = "MB3";
   mb.plane = pal::V;
-  beamline.mount(3.5, mb);
+  beamline.mount(3.5, mb, verbose);
+
+  cout << "* lattice \"beamline\" size: " << beamline.size() << endl;
+  cout << beamline.sizeSummary() << endl << endl;
 
   double pos = 1.5;
   cout << "Access by position " << pos << "m: "
@@ -46,14 +54,17 @@ int main(int argc, char *argv[])
   cout << "Access by name " << name
        << ": end at " << beamline.locate(name, pal::end) << "m" << endl << endl;
 
-  cout << "magnetic field " << beamline[2.6]->name <<": " << beamline[2.6]->B() << endl;
-  cout << "magnetic field " << beamline[3.5]->name <<": " << beamline[3.5]->B() << endl << endl;
+  pos = 0.5;
+  cout << "magnetic field of " << beamline[pos]->name <<": " << beamline[pos]->B() << endl;
+  pos = 3.51;
+  cout << "magnetic field of " << beamline[pos]->name <<": " << beamline[pos]->B() << endl << endl;
 
+  //print lattice to stdout
   beamline.print();
 
 
 
-  //importiertes Lattice, hier aus madx
+  //--- import lattice, here from Mad-X ---
   if (argc<2) {
     cout << "please give madx lattice file as argument." << endl;
     return 1;
@@ -63,6 +74,7 @@ int main(int argc, char *argv[])
   pal::SimToolInstance sim(pal::madx, pal::online, latticefile);
   pal::AccLattice elsa("ELSA", sim);
 
+  //print lattice to file
   elsa.print("elsa.lattice");
 
   return 0;

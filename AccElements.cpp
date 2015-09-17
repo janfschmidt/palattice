@@ -27,7 +27,7 @@ AccTriple AccElement::zeroTriple;
 AccElement::AccElement(element_type _type, string _name, double _length)
   : type(_type),name(_name),length(_length),plane(noplane),family(nofamily)
 {
-  physLength = k1 = k2 = Qrf1 = dQrf = dpsi = 0;
+  physLength = k1 = k2 = Qrf1 = dQrf = dpsi = e1 = e2 = 0.;
 
   if (length < 0.) {
     stringstream msg;

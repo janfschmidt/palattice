@@ -54,13 +54,14 @@ protected:
   AccIterator revolve(AccIterator it);                 // like it++, but starts at begin() after last element (never reaches end()!)
 
   double slope(double pos, const_AccIterator it) const; // helper function for magnetic field edges
+  void setCircumference(double c);
 
 
 public:
   const Anchor refPos;
   Metadata info;
 
-  AccLattice(string _name, double _circumference, Anchor _refPos=begin);
+  AccLattice(string _name="my lattice", double _circumference=0., Anchor _refPos=begin);
   AccLattice(string _name, SimToolInstance &sim, Anchor _refPos=end, string ignoreFile="");    //direct madx/elegant import
   AccLattice(AccLattice &other);
   ~AccLattice();
@@ -150,15 +151,14 @@ public:
 
 
 // exceptions
-class eNoElement : public std::exception {
+class eNoElement : public pal::palatticeError {
 public:
-
-  eNoElement() {}
+  eNoElement(string msg="eNoElement") : pal::palatticeError(msg) {}
 };
 
-class eNoFreeSpace : public std::invalid_argument {
+class eNoFreeSpace : public pal::palatticeError {
 public:
-  eNoFreeSpace(string msg) : std::invalid_argument(msg) {}
+  eNoFreeSpace(string msg) : pal::palatticeError(msg) {}
 };
 
 

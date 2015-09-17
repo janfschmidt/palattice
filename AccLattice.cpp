@@ -36,16 +36,18 @@ string pal::removeQuote(string s)
 
 //constructor
 AccLattice::AccLattice(string _name, double _circumference, Anchor _refPos)
-  : circ(_circumference), ignoreCounter(0), refPos(_refPos)
+  : circ(0.), ignoreCounter(0), refPos(_refPos)
 {
   empty_space = new Drift;
 
   info.add("Lattice name", _name);
   info.add("Reference pos.", this->refPos_string());
+
+  setCircumference(_circumference);
 }
 
 AccLattice::AccLattice(string _name, SimToolInstance &sim, Anchor _refPos, string ignoreFile)
-  : ignoreCounter(0), refPos(_refPos)
+  : circ(0.), ignoreCounter(0), refPos(_refPos)
 {
   empty_space = new Drift;
 
@@ -58,7 +60,7 @@ AccLattice::AccLattice(string _name, SimToolInstance &sim, Anchor _refPos, strin
 
 //copy constructor
 AccLattice::AccLattice(AccLattice &other)
-  : circ(other.circumference()), refPos(other.refPos)
+  : circ(other.circumference()), ignoreList(other.ignoreList), refPos(other.refPos), info(other.info)
 {
   empty_space = new Drift;
 
@@ -92,6 +94,9 @@ AccLattice& AccLattice::operator= (AccLattice &other)
     throw palatticeError(msg.str());
   }
 
+  ignoreList = other.ignoreList;
+  info = other.info;
+  
   for (const_AccIterator it=other.getItBegin(); it!=other.getItEnd(); ++it) {
     this->mount(it->first, *(it->second));
   }
@@ -100,6 +105,16 @@ AccLattice& AccLattice::operator= (AccLattice &other)
 }
 
 
+
+
+void AccLattice::setCircumference(double c)
+{
+  if (c < circ)
+    throw std::logic_error("DEBUG: This should not have happened! AccLattice circumference was decreased.");
+
+  circ = c;
+  info.add("AccLattice circumference / m", std::to_string(c));
+}
 
 
 
@@ -386,8 +401,8 @@ double AccLattice::distance(double pos, const_AccIterator it, Anchor itRef) cons
 double AccLattice::distanceRing(double pos, const_AccIterator it, Anchor itRef) const
 {
   double d_normal = distance(pos,it,itRef);
-  double d_other = circ - abs(d_normal);
-  if ( d_other >= 0.5*circ ) // regular direction shorter
+  double d_other = circumference() - abs(d_normal);
+  if ( d_other >= 0.5*circumference() ) // regular direction shorter
     return d_normal;
   else {
     if (d_normal>0) return - d_other;
@@ -431,7 +446,8 @@ const_AccIterator AccLattice::operator[](string _name) const
       return it;
   }
   // otherwise name does not match any element:
-  return elements.end();
+  //return elements.end();
+  throw eNoElement("No element "+_name+" found");
 }
 
 
@@ -449,11 +465,11 @@ void AccLattice::mount(double pos, const AccElement& obj, bool verbose)
     return;
   }
 
-  if (pos > circumference()) {
-    stringstream msg;
-    msg << pos << " m is larger than lattice circumference " << circumference() << " m.";
-    throw palatticeError(msg.str());
-  }
+  // if (pos > circumference()) {
+  //   stringstream msg;
+  //   msg << pos << " m is larger than lattice circumference " << circumference() << " m.";
+  //   throw palatticeError(msg.str());
+  // }
 
   bool first_element = false;
   bool last_element = false;
@@ -509,10 +525,10 @@ void AccLattice::mount(double pos, const AccElement& obj, bool verbose)
 	<< previous->second->name << " ("<< locate(previous,begin) <<" - "<<locate(previous,end) << "m)";
     throw eNoFreeSpace(msg.str());
   }
-  else if (newEnd > circumference()) {
-    msg << objPtr->name << " (" << newBegin <<" - "<< newEnd <<  "m) cannot be inserted --- overlap with lattice end at " << circumference() << "m";
-    throw eNoFreeSpace(msg.str());
-  }
+  //else if (newEnd > circumference()) {
+    // msg << objPtr->name << " (" << newBegin <<" - "<< newEnd <<  "m) cannot be inserted --- overlap with lattice end at " << circumference() << "m";
+    // throw eNoFreeSpace(msg.str());
+  //}
   else if (!last_element && newEnd > locate(next,begin)) {
     msg << objPtr->name << " (" << newBegin <<" - "<< newEnd << "m) cannot be inserted --- overlap with "
 	<< next->second->name << " ("<< locate(next,begin) <<" - " << locate(next,end) << "m)";
@@ -520,6 +536,10 @@ void AccLattice::mount(double pos, const AccElement& obj, bool verbose)
   }
   //if there is free space:
   else elements[pos] = objPtr->clone();
+
+  // update circumference
+  if (newEnd > circumference())
+    setCircumference(newEnd);
 
   if (verbose) cout << objPtr->name << " inserted." << endl;
 
@@ -586,12 +606,11 @@ void AccLattice::madximport(SimToolInstance &madx)
   
   //get metadata and set circumference
   info.simToolImport(madx);
-  circ = strtod(info.getbyLabel("LENGTH").c_str(), NULL);
-  if (circ == 0) {
-    stringstream msg;
-    msg << "AccLattice::madximport(): Cannot read circumference from " << madxTwissFile;
-    throw palatticeError(msg.str());
-  }
+  string circTmp = info.getbyLabel("LENGTH");
+  if (circTmp == "NA")
+    throw palatticeError("AccLattice::madximport(): Cannot read circumference from "+madxTwissFile);
+  else
+    setCircumference( strtod(circTmp.c_str(), NULL) );
 
   if (refPos != end)
     cout << "WARNING: AccLattice::madximport(): The input file (MAD-X twiss) uses element end as positions." << endl
@@ -765,13 +784,11 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
 
   //get metadata and set circumference
   info.simToolImport(elegant);
-  circ = strtod(info.getbyLabel("circumference").c_str(), NULL);
-  if (circ == 0) {
-    stringstream msg;
-    msg << "AccLattice::elegantimport(): Cannot read circumference from " << elegantParamFile;
-    throw palatticeError(msg.str());
-  }
-
+  string circTmp = info.getbyLabel("circumference");
+  if (circTmp == "NA")
+    throw palatticeError("AccLattice::elegantimport(): Cannot read circumference from "+elegantParamFile);
+  else
+    setCircumference( strtod(circTmp.c_str(), NULL) );
 
   if (refPos != end)
     cout << "WARNING: AccLattice::elegantimport(): The input file (elegant parameter) uses element end as positions." << endl

@@ -128,7 +128,7 @@ T pal::SimToolTable::get(unsigned int index, string key, string keyZ, string key
   map< string, vector<string> >::iterator it = table.find(key);
   if (it == table.end()) {
     stringstream msg;
-    msg << "ERROR: pal::SimToolTable::get<T>(): No key \"" <<key<< "\" in this table.";
+    msg << "pal::SimToolTable::get<T>(): No column \"" <<key<< "\" in this table.";
     throw palatticeError(msg.str());
   }
 
