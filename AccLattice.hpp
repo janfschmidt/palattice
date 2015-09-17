@@ -65,7 +65,7 @@ public:
   AccLattice(string _name, SimToolInstance &sim, Anchor _refPos=end, string ignoreFile="");    //direct madx/elegant import
   AccLattice(AccLattice &other);
   ~AccLattice();
-  AccLattice& operator= (AccLattice &other);
+  AccLattice& operator= (const AccLattice &other);
 
   double circumference() const {return circ;}
 

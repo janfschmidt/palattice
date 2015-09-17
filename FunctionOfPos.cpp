@@ -51,7 +51,7 @@ vector<double> FunctionOfPos<double>::getVector(double stepwidth,AccAxis axis) c
   }
   //interpolation: equidistant data values
   else {
-    for (double pos=0; pos<turns()*circ; pos+=stepwidth)
+    for (double pos=0; pos<turns()*circumference(); pos+=stepwidth)
       out.push_back( this->interp(pos) );
   }
    return out;
@@ -71,7 +71,7 @@ vector<double> FunctionOfPos<int>::getVector(double stepwidth,AccAxis axis) cons
   }
   //interpolation: equidistant data values
   else {
-    for (double pos=0; pos<turns()*circ; pos+=stepwidth)
+    for (double pos=0; pos<turns()*circumference(); pos+=stepwidth)
       out.push_back( double(this->interp(pos)) );
   }
    return out;
@@ -94,7 +94,7 @@ vector<double> FunctionOfPos<AccPair>::getVector(double stepwidth,AccAxis axis) 
 	out.push_back( it->second.x );
     }
     else {                     //interpolation: equidistant data values
-      for (double pos=0; pos<turns()*circ; pos+=stepwidth)
+      for (double pos=0; pos<turns()*circumference(); pos+=stepwidth)
 	out.push_back( this->interp(pos).x );
     }
     break;
@@ -104,7 +104,7 @@ vector<double> FunctionOfPos<AccPair>::getVector(double stepwidth,AccAxis axis) 
 	out.push_back( it->second.z );
     }
     else {                     //interpolation: equidistant data values
-      for (double pos=0; pos<turns()*circ; pos+=stepwidth)
+      for (double pos=0; pos<turns()*circumference(); pos+=stepwidth)
 	out.push_back( this->interp(pos).z );
     }
     break;
@@ -126,7 +126,7 @@ vector<double> FunctionOfPos<AccTriple>::getVector(double stepwidth,AccAxis axis
 	out.push_back( it->second.s );
     }
     else {                     //interpolation: equidistant data values
-      for (double pos=0; pos<turns()*circ; pos+=stepwidth)
+      for (double pos=0; pos<turns()*circumference(); pos+=stepwidth)
 	out.push_back( this->interp(pos).s );
     }
     break;
@@ -136,7 +136,7 @@ vector<double> FunctionOfPos<AccTriple>::getVector(double stepwidth,AccAxis axis
 	out.push_back( it->second.x );
     }
     else {                     //interpolation: equidistant data values
-      for (double pos=0; pos<turns()*circ; pos+=stepwidth)
+      for (double pos=0; pos<turns()*circumference(); pos+=stepwidth)
 	out.push_back( this->interp(pos).x );
     }
     break;
@@ -146,7 +146,7 @@ vector<double> FunctionOfPos<AccTriple>::getVector(double stepwidth,AccAxis axis
 	out.push_back( it->second.z );
     }
     else {                     //interpolation: equidistant data values
-      for (double pos=0; pos<turns()*circ; pos+=stepwidth)
+      for (double pos=0; pos<turns()*circumference(); pos+=stepwidth)
 	out.push_back( this->interp(pos).z );
     }
     break;

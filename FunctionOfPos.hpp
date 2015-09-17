@@ -38,7 +38,8 @@ protected:
   typedef typename std::map<double,T>::const_iterator const_FoPiterator;
   
   //std::map<double,T> data -> is inherited from Interpolate<T>
-  unsigned int n_turns;                       //number of turns (initialized as 1)
+  unsigned int n_turns;                 //number of turns (initialized as 1)
+  double circ;                          //circumference of accelerator
 
 
 private:
@@ -47,15 +48,16 @@ private:
 
 
 public:
-  const double circ;                          //circumference of accelerator
   //Metadata info -> is inherited from Interpolate<T>
 
   FunctionOfPos(double circIn, const gsl_interp_type *t=gsl_interp_akima);
   FunctionOfPos(SimToolInstance &sim, const gsl_interp_type *t=gsl_interp_akima_periodic); //get circ from SimToolInstance
   FunctionOfPos(const FunctionOfPos &other) = default;
   FunctionOfPos(FunctionOfPos &&other) = default;
+  FunctionOfPos& operator=(const FunctionOfPos &other) = default;
   ~FunctionOfPos() {}
 
+  double circumference() const {return circ;}
   unsigned int turns() const {return n_turns;}
   unsigned int size() const {return data.size();}
   double posMax() const {return data.rbegin()->first;}
@@ -65,7 +67,7 @@ public:
   double posTotal(double posInTurn, unsigned int turn) const;
   unsigned int samplesInTurn(unsigned int turn) const;
 
-  // these functions depend on data. thus they can fail (program exit)
+  // these functions depend on data. thus they can throw palatticeError exception
   T get(unsigned int i) const;          //get value-DATA by index or by index(1turn) and turn
   vector<double> getVector(double stepwidth=0.1, AccAxis axis=x) const;  //get vector of equidistant values (choose axis for multidim.)
   // T interp(double pos) -> inherited from Interpolate<T> allows access of data by position

@@ -79,21 +79,21 @@ AccLattice::~AccLattice()
 }
 
 
-AccLattice& AccLattice::operator= (AccLattice &other)
+AccLattice& AccLattice::operator= (const AccLattice &other)
 {
   stringstream msg;
 
   if (refPos != other.refPos) {
     msg << "ERROR: AccLattice::operator=(): Cannot assign Lattice - different refPos ("
-	<< refPos_string() <<"/"<< other.refPos_string() <<")";
+  	<< refPos_string() <<"/"<< other.refPos_string() <<")";
     throw palatticeError(msg.str());
   }
-  if (circumference() != other.circumference()) {
-    msg << "ERROR: AccLattice::operator=(): Cannot assign Lattice - different circumferences ("
-	<< circumference() <<"/"<< other.circumference() <<")";
-    throw palatticeError(msg.str());
-  }
-
+  // if (circumference() != other.circumference()) {
+  //   msg << "ERROR: AccLattice::operator=(): Cannot assign Lattice - different circumferences ("
+  // 	<< circumference() <<"/"<< other.circumference() <<")";
+  //   throw palatticeError(msg.str());
+  // }
+  circ = other.circ;
   ignoreList = other.ignoreList;
   info = other.info;
   

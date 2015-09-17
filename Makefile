@@ -1,7 +1,7 @@
 CC=g++
 ccflags = -std=c++11 -Wall -fPIC -g #-O0
 LIB_NAME=libpalattice
-Vmajor=3.5
+Vmajor=3.6
 Vminor=0
 INSTALL_PATH=/usr/local/
 

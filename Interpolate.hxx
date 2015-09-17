@@ -49,16 +49,31 @@ Interpolate<T>::Interpolate(const Interpolate &other)
   // by setting ready=false spline is initialized again before beeing used
 }
 
+// move constructor
 template <class T>
 Interpolate<T>::Interpolate(Interpolate &&other)
   : data(std::move(other.data)), headerString(std::move(other.headerString)), type(std::move(other.type)), periodic(std::move(other.periodic)), period(std::move(other.period)), ready(std::move(other.ready)), info(std::move(other.info))
 {
   acc = other.acc;
   other.acc=nullptr;
-
   //  std::cout << "move it!" << std::endl;
 }
 
+// assignment operator
+template<class T>
+Interpolate<T>& Interpolate<T>::operator=(const Interpolate &other)
+{
+  data = other.data;
+  headerString = other.headerString;
+  type = other.type;
+  periodic = other.periodic;
+  period = other.period;
+  ready = false;
+  info = other.info;
+
+  acc = gsl_interp_accel_alloc ();
+  // by setting ready=false spline is initialized again before beeing used
+}
 
 
 // destructor

@@ -62,7 +62,7 @@ int main (int argc, char *argv[])
 
  // some info output examples
   cout << endl<< "some info about FunctionOfPos<double> twiss:" << endl;
-  cout << "circumference=" << twiss.circ << endl; 
+  cout << "circumference=" << twiss.circumference() << endl; 
   cout << "turns=" << twiss.turns() << endl; 
   cout << "samples=" << twiss.samplesInTurn(1) << endl;
   cout << "data range: " << twiss.dataMin() <<" - "<< twiss.dataMax() << endl;
@@ -84,7 +84,7 @@ int main (int argc, char *argv[])
 
   // spectrum output
   fft.print(out+".spectrum");
-  fft.eval_out(step,twiss.circ,out+".eval");
+  fft.eval_out(step,twiss.circumference(),out+".eval");
 
   return 0;
 }

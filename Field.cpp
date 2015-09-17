@@ -39,9 +39,9 @@ void Field::set(AccLattice &lattice, FunctionOfPos<AccPair>& orbit, unsigned int
 
  double interval_samp = this->circ / n_samples; // sampling interval of magn. field values along ring in meter
 
-  if (this->circ != orbit.circ) {
+  if (this->circ != orbit.circumference()) {
     msg << "ERROR: Field::set(): Field and orbit have different circumferences ("
-	 <<this->circ <<", "<<orbit.circ<<").";
+	 <<this->circ <<", "<<orbit.circumference()<<").";
     throw palatticeError(msg.str());
   }
 

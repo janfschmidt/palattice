@@ -27,9 +27,9 @@ using namespace pal;
 template <class T>
 void FunctionOfPos<T>::circCheck()
 {
-  if (this->circ <= 0.) {
+  if (this->circumference() < 0.) {
     stringstream msg;
-    msg << "FunctionOfPos: circumference (" << this->circ << ") must be positive.";
+    msg << "FunctionOfPos: circumference (" << this->circumference() << ") must be positive.";
     throw palatticeError(msg.str());
   }
 }
@@ -58,7 +58,7 @@ FunctionOfPos<T>::FunctionOfPos(SimToolInstance &sim, const gsl_interp_type *t)
 template <class T>
 unsigned int FunctionOfPos<T>::turn(double posIn) const
 {
-  return int(posIn/circ + ZERO_DISTANCE) + 1; // ensure return of next turn for pos=circ
+  return int(posIn/circumference() + ZERO_DISTANCE) + 1; // ensure return of next turn for pos=circ
 }
 
 
@@ -69,8 +69,8 @@ unsigned int FunctionOfPos<T>::turn(double posIn) const
 template <class T>
 double FunctionOfPos<T>::posInTurn(double pos) const
 {
-  double tmp = fmod(pos,circ);
-  if ( abs(tmp-circ) < ZERO_DISTANCE ) return 0.0; // pos=circ is always returned as pos=0 in next turn
+  double tmp = fmod(pos,circumference());
+  if ( abs(tmp-circumference()) < ZERO_DISTANCE ) return 0.0; // pos=circ is always returned as pos=0 in next turn
   else return tmp;
 }
 
@@ -80,15 +80,15 @@ double FunctionOfPos<T>::posInTurn(double pos) const
 template <class T>
 double FunctionOfPos<T>::posTotal(double posInTurn, unsigned int turnIn) const
 {
-  return  posInTurn + circ*(turnIn-1);
+  return  posInTurn + circumference()*(turnIn-1);
 }
 
 template <class T>
 unsigned int FunctionOfPos<T>::samplesInTurn(unsigned int turn) const
 {
   unsigned int n=0;
-  double posend = turn*circ;
-  for ( const_FoPiterator it=data.lower_bound((turn-1)*circ); it!=data.end(); it++) {
+  double posend = turn*circumference();
+  for ( const_FoPiterator it=data.lower_bound((turn-1)*circumference()); it!=data.end(); it++) {
     if (it->first < posend)
       n++;
     else
@@ -133,7 +133,7 @@ void FunctionOfPos<T>::set(T valueIn, double posIn, unsigned int turnIn) {
   double pos = posTotal(posIn,turnIn);
 
   // insert data
-  ret = data.insert( std::pair<double,T>(pos, valueIn) );
+  ret = data.insert( std::move(std::pair<double,T>(pos, valueIn)) );
   // increase n_turns if necessary
   unsigned int t = turn(pos);
   if (t > turns()) n_turns = t;
@@ -221,10 +221,10 @@ bool FunctionOfPos<T>::compatible(FunctionOfPos<T> &o, bool verbose) const
       cout <<endl<<"=== FunctionOfPos<T> objects are not compatible, zero turns are not allowed. ===" << endl;
     return false;
   }
-  if ( circ != o.circ) {
+  if ( circumference() != o.circumference()) {
     if (verbose) {
       cout <<endl<<"=== FunctionOfPos<T> objects are not compatible! ===" << endl;
-      cout << "Circumferences are different ("<<circ <<"/"<<o.circ <<"). So I guess it is not the same accelerator." << endl;
+      cout << "Circumferences are different ("<<circumference() <<"/"<<o.circumference() <<"). So I guess it is not the same accelerator." << endl;
     }
     return false;
   }
@@ -340,7 +340,7 @@ Spectrum FunctionOfPos<T>::getSpectrum(double stepwidth, AccAxis axis, unsigned 
 {
   if (name=="") name = axis_string(axis);
   vector<double> data = this->getVector(stepwidth, axis);
-  Spectrum s(name, data, circ, turns(), data.size(), fmaxrevIn, ampcutIn);
+  Spectrum s(name, data, circumference(), turns(), data.size(), fmaxrevIn, ampcutIn);
   // copy metadata to Spectrum
   for (unsigned int i=2; i<this->info.size(); i++)
     s.info.add(this->info.getLabel(i), this->info.getEntry(i));
@@ -377,7 +377,7 @@ void FunctionOfPos<T>::readSimToolColumn(SimToolInstance &s, string file, string
     double pos = tab.get<double>(i,posColumn);
     // values at pos=circ are ignored to avoid #turns problem
     // see simToolTrajectory() for another solution
-    if (fabs(pos-circ) <= 0.0001) continue;
+    if (fabs(pos-circumference()) <= 0.0001) continue;
 
     tmp = tab.get<T>(i, valX, valZ, valS);
     this->set(tmp, pos);
@@ -483,7 +483,7 @@ void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned in
   }
   this->hide_last_turn();
   //this->pop_back_turn();
-  if(this->periodic) this->period=circ*n_turns;
+  if(this->periodic) this->period=circumference()*n_turns;
 
    //metadata
   stringstream stmp;
