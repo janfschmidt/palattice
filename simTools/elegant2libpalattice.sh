@@ -37,7 +37,7 @@ sddsprocess $2.twi -pipe=out -match=column,ElementType=WATCH,! -match=column,Ele
 # ascii single particle trajectory files for all particles, e.g. elegant.w02.p1
 # from watch-files:
 if [ -e ${2}000.w ]; then
-    numParticles=`sdds2stream ${2}000.w -par=Particles`
+    numParticles=`sdds2stream ${2}000.w -par=Particles -page=1`
     numfiles=`ls $2*.w | wc -w`
     echo "write $numfiles watch files for each of $numParticles particles"
     for (( pID=1; pID<=$numParticles; pID++ )); do

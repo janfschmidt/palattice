@@ -55,7 +55,8 @@ template<> AccTriple SimToolTable::get(unsigned int i, string keyX, string keyZ,
 
 
 SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string fileIn, string fileTag)
-  : executed(false), trackingTurns(0), trackingNumParticles(1), tag(fileTag), tool(toolIn), mode(modeIn), verbose(false)
+  : executed(false), trackingTurns(0), trackingNumParticles(1), trackingTurnsTouched(false), trackingNumParticlesTouched(false),
+    tag(fileTag), tool(toolIn), mode(modeIn), verbose(false)
 {
 
   //path: path of fileIn
@@ -179,7 +180,7 @@ void SimToolInstance::run()
   }
 
   // set tracking turns in runFile:
-  if (trackingTurns != 0) {
+  if (trackingTurnsTouched) {
     tmp.str(std::string());
     tmp << trackingTurns;
     if (tool== madx)
@@ -189,7 +190,7 @@ void SimToolInstance::run()
   }
 
   // set tracking number of particles in runFile:
-  if (trackingNumParticles != 1) {
+  if (trackingNumParticlesTouched) {
     tmp.str(std::string());
     tmp << trackingNumParticles;
     if (tool==madx)
@@ -435,3 +436,26 @@ AccPair SimToolInstance::readTune()
   q.z = readParameter<double>(lattice(), zLabel);
   return q;
 }
+
+
+
+// if turns!=0 (default) single particle tracking is performed while madx/elegant run
+void SimToolInstance::setTurns(unsigned int t)
+{
+  if (t!=trackingTurns) {
+    trackingTurns=t;
+    executed=false;
+  }
+  trackingTurnsTouched = true;
+}
+
+
+void SimToolInstance::setNumParticles(unsigned int n)
+{
+  if (n!=trackingNumParticles) {
+    trackingNumParticles=n;
+    executed=false;
+  }
+  trackingNumParticlesTouched = true;
+}
+
