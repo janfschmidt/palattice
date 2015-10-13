@@ -453,6 +453,11 @@ void SimToolInstance::setTurns(unsigned int t)
 void SimToolInstance::setNumParticles(unsigned int n)
 {
   if (n!=trackingNumParticles) {
+    
+    //currently only implemented for elegant
+    if (tool==madx)
+      throw palatticeError("set number of Particles not implemented for madx. Please set manually in "+runFile);
+    
     trackingNumParticles=n;
     executed=false;
   }
