@@ -219,6 +219,40 @@ inline std::ostream &operator<<(std::ostream &out, const pal::AccTriple &A)
   return out;
 }
 
+namespace std {
+  //define std::pow() & std::sqrt() for "Acc" data types
+  inline pal::AccPair pow(const pal::AccPair &A, unsigned int n)
+  {
+    pal::AccPair ret;
+    ret.x = pow(A.x,n);
+    ret.z = pow(A.z,n);
+    return ret;
+  }
+  inline pal::AccTriple pow(const pal::AccTriple &A, unsigned int n)
+  {
+    pal::AccTriple ret;
+    ret.x = pow(A.x,n);
+    ret.z = pow(A.z,n);
+    ret.s = pow(A.s,n);
+    return ret;
+  }
+  inline pal::AccPair sqrt(const pal::AccPair &A)
+  {
+    pal::AccPair ret;
+    ret.x = sqrt(A.x);
+    ret.z = sqrt(A.z);
+    return ret;
+  }
+  inline pal::AccTriple sqrt(const pal::AccTriple &A)
+  {
+    pal::AccTriple ret;
+    ret.x = sqrt(A.x);
+    ret.z = sqrt(A.z);
+    ret.s = sqrt(A.s);
+    return ret;
+  }
+} //namespace std
+
 
 
 

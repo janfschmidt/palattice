@@ -12,21 +12,3 @@
 
 
 
-// add an entry. if label already exists, update entry
-template <class T>
-void pal::Metadata::add(string inLabel, T inEntry)
-{
-  //get string from T
-  std::stringstream sEntry;
-  sEntry << inEntry;
-  //change existing entry
-  for(unsigned int i=0; i<label.size(); i++) {
-    if (label[i] == inLabel) {
-      entry[i] = sEntry.str();
-      return;
-    }
-  }
-  //add new entry
-  label.push_back(inLabel);
-  entry.push_back(sEntry.str());
-}

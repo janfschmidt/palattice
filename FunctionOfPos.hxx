@@ -97,6 +97,23 @@ unsigned int FunctionOfPos<T>::samplesInTurn(unsigned int turn) const
   return n;
 }
 
+template <class T>
+T FunctionOfPos<T>::mean() const
+{
+  T sum;
+  for (auto &d : data)
+    sum += d.second;
+  return sum/data.size();
+}
+
+template <class T>
+T FunctionOfPos<T>::rms() const
+{
+  T sum;
+  for (auto &d : data)
+    sum += std::pow(d.second,2);
+  return std::sqrt( sum/data.size() );
+}
 
 
 
@@ -307,6 +324,7 @@ void FunctionOfPos<T>::operator+=(FunctionOfPos<T> &other)
   if (tmp != "NA") {
     this->info.add("added Orbit", tmp);
   }
+  this->info.addStatistics(mean(),rms());
 }
 
 template <class T>
@@ -331,6 +349,7 @@ void FunctionOfPos<T>::operator-=(FunctionOfPos<T> &other)
   if (tmp != "NA") {
     this->info.add("subtracted Orbit", tmp);
   }
+  this->info.addStatistics(mean(),rms());
 }
 
 // construct Spectrum (FFT) from this FunctionOfPos
@@ -392,6 +411,7 @@ void FunctionOfPos<T>::readSimToolColumn(SimToolInstance &s, string file, string
   if (!valZ.empty()) stmp << ", " << valZ;
   if (!valS.empty()) stmp << ", " << valS;
   this->info.add("read Parameters", stmp.str());
+  this->info.addStatistics(mean(),rms());
   
   this->headerString = valX; //output column header. For 2D/3D AccPair/AccTriple.header() is used
 }

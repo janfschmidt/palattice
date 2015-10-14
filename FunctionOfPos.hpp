@@ -67,6 +67,10 @@ public:
   double posTotal(double posInTurn, unsigned int turn) const;
   unsigned int samplesInTurn(unsigned int turn) const;
 
+  //statistics of data (no interpolation used)
+  T mean() const;
+  T rms() const;
+
   // these functions depend on data. thus they can throw palatticeError exception
   T get(unsigned int i) const;          //get value-DATA by index or by index(1turn) and turn
   vector<double> getVector(double stepwidth=0.1, AccAxis axis=x) const;  //get vector of equidistant values (choose axis for multidim.)

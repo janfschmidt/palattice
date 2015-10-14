@@ -33,7 +33,8 @@ public:
   Metadata();
   ~Metadata() {}
 
-  template <class T> void add(string inLabel, T inEntry);         //add an entry. if label already exists, update entry
+  template <class T> void add(string inLabel, T inEntry);  //add an entry. if label already exists, update entry
+  template <class T> void addStatistics(T mean, T rms);
   void simToolImport(SimToolInstance &sim, string file="default", string labels="default");
   void madximport(string madxFile, string labels, SimToolMode m=online) {SimToolInstance mad(pal::madx,m,madxFile); simToolImport(mad,madxFile,labels);}
   void elegantimport(string eleFile, string labels, SimToolMode m=online) {SimToolInstance ele(pal::elegant,m,eleFile); simToolImport(ele,eleFile,labels);}
@@ -52,7 +53,33 @@ public:
 
 } //namespace pal
 
-#include "Metadata.hxx"
+
+
+template <class T>
+void pal::Metadata::add(string inLabel, T inEntry)
+{
+  //get string from T
+  std::stringstream sEntry;
+  sEntry << inEntry;
+  //change existing entry
+  for(unsigned int i=0; i<label.size(); i++) {
+    if (label[i] == inLabel) {
+      entry[i] = sEntry.str();
+      return;
+    }
+  }
+  //add new entry
+  label.push_back(inLabel);
+  entry.push_back(sEntry.str());
+}
+
+template <class T>
+void pal::Metadata::addStatistics(T mean, T rms)
+{
+  add("mean", mean);
+  add("rms", rms);
+}
+
 
 #endif
 /*__LIBPALATTICE__METADATA_HPP_*/
