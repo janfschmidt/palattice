@@ -36,19 +36,20 @@ namespace pal
   class SimToolTable {
   protected:
     map< string, vector<string> > table;
-    std::string name;
+    std::string tabname;
 
   public:
-    SimToolTable(std::string _name="") : name(_name) {}
+    SimToolTable(std::string _name="") : tabname(_name) {}
     void push_back(string key, string value) {table[key].push_back(value);}
-    template<class T> T get(unsigned int index, string keyX, string keyZ="", string keyS=""); //keyZ,keyS for AccPair,AccTriple
+    template<class T> T get(unsigned int index, string keyX, string keyZ="", string keyS="") const; //keyZ,keyS for AccPair,AccTriple
     
     unsigned int rows() const {return table.begin()->second.size();}
     unsigned int columns() const {return table.size();}
+    std::string name() const {return tabname;}
 
     //short forms: getf = get<double> and gets = get<string>
-    double getd(unsigned int index, string key) {return get<double>(index,key);}
-    string gets(unsigned int index, string key) {return get<string>(index,key);}
+    double getd(unsigned int index, string key) const {return get<double>(index,key);}
+    string gets(unsigned int index, string key) const {return get<string>(index,key);}
   };
   
 
@@ -114,8 +115,8 @@ namespace pal
 
   //SimToolInstance template function specialization
   template<> string SimToolInstance::readParameter(string file, string label);
-  template<> AccPair SimToolTable::get(unsigned int index, string keyX, string keyZ, string keyS);
-  template<> AccTriple SimToolTable::get(unsigned int index, string keyX, string keyZ, string keyS);
+  template<> AccPair SimToolTable::get(unsigned int index, string keyX, string keyZ, string keyS) const;
+  template<> AccTriple SimToolTable::get(unsigned int index, string keyX, string keyZ, string keyS) const;
 
   
 } //namespace pal
@@ -127,16 +128,22 @@ namespace pal
 //SimToolTable template function implementation:
 //keyZ & keyS ignored for 1D data (used with AccPair&AccTriple specializations)
 template<class T>
-T pal::SimToolTable::get(unsigned int index, string key, string keyZ, string keyS)
+T pal::SimToolTable::get(unsigned int index, string key, string keyZ, string keyS) const
 {
-  map< string, vector<string> >::iterator it = table.find(key);
+  map< string, vector<string> >::const_iterator it = table.find(key);
   if (it == table.end()) {
     stringstream msg;
-    msg << "pal::SimToolTable::get<T>(): No column \"" <<key<< "\" in table " << this->name;
+    msg << "pal::SimToolTable::get<T>(): No column \"" <<key<< "\" in table " << this->name();
     throw palatticeError(msg.str());
   }
 
-  stringstream s(table[key][index]);
+  if (index >= table.at(key).size()) {
+    stringstream msg;
+    msg << "pal::SimToolTable::get<T>(): row " <<index<< ">=" <<table.at(key).size()
+	<< "rows in column \"" <<key<< "\" in table " << this->name();
+    throw std::out_of_range(msg.str());
+  }
+  stringstream s(table.at(key)[index]);
   T value;
   s >> value;
   return value;

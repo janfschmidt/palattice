@@ -435,7 +435,7 @@ void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned in
   }
   else if (s.tool == pal::elegant) {
     // s: parameter in file header
-    columns.push_back("Pass");
+    columns.push_back("Turn");
   }
 
   columns.push_back(valX);
@@ -464,17 +464,19 @@ void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned in
     // read table from file:
     trajFile=s.trajectory(obs,particle);
     try {
-     SimToolTable tab = s.readTable(trajFile, columns);
+     tab = s.readTable(trajFile, columns);
     }
     catch (palatticeFileError) {
       obs--;
       break;
     }
     // read obs position
-    if (s.tool==pal::madx)
+    if (s.tool==pal::madx) {
       obsPos = tab.getd(0,"S");
-    else if (s.tool==pal::elegant)
+    }
+    else if (s.tool==pal::elegant) {
       obsPos = s.readParameter<double>(trajFile,"position_s/m"); // read parameter in file header
+    }
     // write table rows to FunctionOfPos:
     //    if (s.tool==pal::elegant && obs==this->samples()) //elegant: obs-file at lattice end only needed for last turn
     //  break;
@@ -486,7 +488,7 @@ void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned in
 	}
       }
       else if (s.tool==pal::elegant) {
-	turn = tab.get<unsigned int>(i,"Pass");
+	turn = tab.get<unsigned int>(i,"Turn");
 	// otmp.x = tab.getd("x",i);
 	// otmp.z = tab.getd("y",i);
       }
@@ -500,7 +502,7 @@ void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned in
   //- obs0001 for madx (see comment above)
   //- dedicated last obs (at lattice end) for elegant (implemented below)
   if (s.tool==pal::elegant) {
-    turn = tab.get<unsigned int>(tab.rows()-1,"Pass") + 1;
+    turn = tab.get<unsigned int>(tab.rows()-1,"Turn") + 1;
     otmp = tab.get<T>(tab.rows()-1, valX, valZ, valS);
     this->set(otmp, 0, turn);
   }

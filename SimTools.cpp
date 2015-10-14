@@ -26,7 +26,7 @@ using namespace pal;
 using namespace std;
 
 
-template<> AccPair SimToolTable::get(unsigned int i, string keyX, string keyZ, string keyS)
+template<> AccPair SimToolTable::get(unsigned int i, string keyX, string keyZ, string keyS) const
 {
   if (keyZ.empty())
     throw palatticeError("SimToolTable::get<AccPair>: No key for z column given!");
@@ -36,7 +36,7 @@ template<> AccPair SimToolTable::get(unsigned int i, string keyX, string keyZ, s
   return tmp;
 }
 
-template<> AccTriple SimToolTable::get(unsigned int i, string keyX, string keyZ, string keyS)
+template<> AccTriple SimToolTable::get(unsigned int i, string keyX, string keyZ, string keyS) const
 {
     if (keyZ.empty())
       throw palatticeError("SimToolTable::get<AccPair>: No key for z column given!");

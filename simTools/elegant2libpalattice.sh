@@ -49,7 +49,7 @@ if [ -e ${2}000.w ]; then
 	    # position s (as header)
 	    echo -e "position_s/m\t `sdds2stream $file_in -page=1 -par=s`" > $file_out
 	    # trajectory data
-	    sddsprocess $file_in -pipe=out -filter,column,particleID,$pID,$pID -define,column,Pass,"Pass 1 +",type=long | sddscombine -pipe -merge | sddsprintout -pipe=in -Title='***' -col='(x,xp,y,yp,t,p,particleID,Pass)' >> $file_out
+	    sddsprocess $file_in -pipe=out -filter,column,particleID,$pID,$pID -define,column,Turn,"Pass 1 +",type=long | sddscombine -pipe -merge | sddsprintout -pipe=in -Title='***' -col='(x,xp,y,yp,t,p,particleID,Turn)' >> $file_out
 	done
 	echo "$numfiles watch files for particle $pID written"
     done
