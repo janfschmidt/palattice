@@ -258,7 +258,7 @@ void SimToolInstance::run()
 // if maxRows is given (!=0) reading is stopped after [maxRows] rows.
 SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKeys, unsigned int maxRows)
 {
-  SimToolTable table;
+  SimToolTable table(filename);
 
   // run?
   if (!executed && mode==online)

@@ -422,6 +422,9 @@ void FunctionOfPos<T>::readSimToolColumn(SimToolInstance &s, string file, string
 template <class T>
 void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned int particle, string valX, string valZ, string valS)
 {
+  if (particle == 0)
+    throw palatticeError("readSimToolParticleColumn: "+s.tool_string()+" particle number < 1 is invalid");
+  
   this->clear(); //delete old data
 
   //SimTool columns
@@ -461,7 +464,7 @@ void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned in
     // read table from file:
     trajFile=s.trajectory(obs,particle);
     try {
-      tab = s.readTable(trajFile, columns);
+     SimToolTable tab = s.readTable(trajFile, columns);
     }
     catch (palatticeFileError) {
       obs--;

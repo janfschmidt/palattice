@@ -36,8 +36,10 @@ namespace pal
   class SimToolTable {
   protected:
     map< string, vector<string> > table;
+    std::string name;
 
   public:
+    SimToolTable(std::string _name="") : name(_name) {}
     void push_back(string key, string value) {table[key].push_back(value);}
     template<class T> T get(unsigned int index, string keyX, string keyZ="", string keyS=""); //keyZ,keyS for AccPair,AccTriple
     
@@ -130,7 +132,7 @@ T pal::SimToolTable::get(unsigned int index, string key, string keyZ, string key
   map< string, vector<string> >::iterator it = table.find(key);
   if (it == table.end()) {
     stringstream msg;
-    msg << "pal::SimToolTable::get<T>(): No column \"" <<key<< "\" in this table.";
+    msg << "pal::SimToolTable::get<T>(): No column \"" <<key<< "\" in table " << this->name;
     throw palatticeError(msg.str());
   }
 
