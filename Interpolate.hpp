@@ -59,6 +59,10 @@ public:
   void init();
   T interp(double xIn);
   T interp(double xIn) const;
+  //avoiding extrapolation my mapping xIn into interpRange:
+  inline T interpPeriodic(double xIn) {T x=interpMin()+std::fmod(interpMax()-xIn, interpRange()); while(x<interpMin()) x+=interpRange(); return interp(x);}
+  inline T interpPeriodic(double xIn) const {T x=interpMin()+std::fmod(interpMax()-xIn, interpRange()); while(x<interpMin()) x+=interpRange(); return interp(x);}
+  
   void reset();                                // new initialization (for derived classes that can change data)
   void reset(std::map<double,T> dataIn, double periodIn=0.); // new initialization and new external data
 
