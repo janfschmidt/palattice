@@ -294,15 +294,14 @@ void Interpolate<T>::interp_out(double stepwidth, string filename)
   //write text to s
   s << info.out("#");
   s <<"#"<<setw(w)<< "position" <<"\t\t"<< this->header() << endl;
-  s <<setprecision(3);
   if (size() > 0) {
     double start;
     if (interpMin() < 0.) start = 0.;
     else start = interpMin();
     for (double pos=start; pos<=interpMax(); pos+=stepwidth) {
-      s << resetiosflags(ios::scientific) << setiosflags(ios::fixed);
+      s << resetiosflags(ios::scientific) << setiosflags(ios::fixed) <<setprecision(3);
       s <<setw(w+1)<< pos;
-      s << resetiosflags(ios::fixed) << setiosflags(ios::scientific);
+      s << resetiosflags(ios::fixed) << setiosflags(ios::scientific) <<setprecision(6);
       s <<setw(w)<< this->interp(pos)<< endl;
     }
   }

@@ -194,12 +194,11 @@ void FunctionOfPos<T>::print(string filename) const
   //write text to s
  s << this->info.out("#");
  s <<"#"<<setw(w)<<"pos / m"<<setw(w)<<"posInTurn"<<setw(w)<<"turn"<<"\t"<< this->header() << endl;
- s <<setprecision(3);
  
  for (const_FoPiterator it=data.begin(); it!=data.end(); it++) {
-   s << resetiosflags(ios::scientific) << setiosflags(ios::fixed);
+   s << resetiosflags(ios::scientific) << setiosflags(ios::fixed) <<setprecision(3);
    s <<setw(w+1)<< it->first <<setw(w)<< posInTurn(it->first) <<setw(w)<< turn(it->first);
-   s << resetiosflags(ios::fixed) << setiosflags(ios::scientific);
+   s << resetiosflags(ios::fixed) << setiosflags(ios::scientific) <<setprecision(6);
    s <<setw(w)<< it->second << endl;
  }
 
