@@ -51,7 +51,7 @@ void Metadata::simToolImport(SimToolInstance &sim, string file, string labels)
 
   if (labels == "default") {
     if (sim.tool==madx)
-      labels = "TITLE,LENGTH,ORIGIN,PARTICLE";
+      labels = "TITLE,ORIGIN,LENGTH,GAMMA,Q1,Q2";
     else if (sim.tool==elegant)
       labels = "circumference,pCentral/m_e*c,tune:Qx,tune:Qz";
   }
@@ -105,7 +105,16 @@ string Metadata::getbyLabel(string inLabel) const
   return "NA";
 }
 
+double Metadata::getGamma(SimTool t) const
+{
+  std::string label;
+  if (t==madx)
+    label = "GAMMA";
+  else if (t==elegant)
+    label = "pCentral/m_e*c";
 
+  return std::stod( getbyLabel(label) );
+}
 
 
 // formated output of all metadata to be written to a file.

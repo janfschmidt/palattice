@@ -46,6 +46,8 @@ public:
   string getEntry(unsigned int i) const;
   string getbyLabel(string inLabel) const;
 
+  double getGamma(SimTool t) const;
+
   string out(string delimiter) const; //formatted output, each line starting with delimiter
   unsigned int columnwidth() const;
   string timestamp() const;
