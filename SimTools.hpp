@@ -47,7 +47,7 @@ namespace pal
     unsigned int columns() const {return table.size();}
     std::string name() const {return tabname;}
 
-    //short forms: getf = get<double> and gets = get<string>
+    //short forms: getd = get<double> and gets = get<string>
     double getd(unsigned int index, string key) const {return get<double>(index,key);}
     string gets(unsigned int index, string key) const {return get<string>(index,key);}
   };

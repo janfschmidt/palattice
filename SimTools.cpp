@@ -147,7 +147,7 @@ void SimToolInstance::replaceTagInFile(string name, string extension, string new
 void SimToolInstance::run()
 {
   if (mode==offline)
-    throw palatticeError("You cannot run madx/elegant from a SimToolInstance in offline mode.");
+    throw palatticeError("You cannot run "+tool_string()+" from a SimToolInstance in offline mode.");
 
   if (executed) return; // only run madx/elegant once
 
@@ -307,7 +307,7 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
   //error checks
   if (tabFile.eof()) {
     stringstream msg;
-    msg << "ERROR: SimToolInstance::readTable(): " << filename << " is not a valid madx/elegant output file. No column headline found.";
+    msg << "ERROR: SimToolInstance::readTable(): " << filename << " is not a valid "<<tool_string()<<" output file. No column headline found.";
     throw palatticeError(msg.str());
   }
   if (columnPos.size() != columnKeys.size()) {
@@ -335,7 +335,7 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
   }
   if (tabFile.eof()) {
     stringstream msg;
-    msg << "ERROR: SimToolInstance::readTable(): " << filename << " has no valid madx/elegant column headline.";
+    msg << "ERROR: SimToolInstance::readTable(): " << filename << " has no valid "<<tool_string()<<" column headline.";
     throw palatticeError(msg.str());
   }
 
