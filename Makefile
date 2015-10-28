@@ -11,7 +11,7 @@ SIMTOOL_PATH=$(INSTALL_PATH)/lib/libpalattice_simTools
 
 
 $(LIB_NAME): gitversion.hpp simToolPath.hpp $(ALL_O)
-	$(CC) $(ccflags) -shared -Wl,-soname,$(LIB_FILE).$(Vmajor) -o $(LIB_FILE).$(Vmajor).$(Vminor)  $(ALL_O) -lgsl -lgslcblas -lm
+	$(CC) $(ccflags) -shared -Wl,-soname,$(LIB_FILE).$(Vmajor) -o $(LIB_FILE).$(Vmajor).$(Vminor)  $(ALL_O) -lsddsi -lgsl -lgslcblas -lm
 
 programs: 
 	make -C ./programs

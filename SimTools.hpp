@@ -20,6 +20,7 @@
 #include <fstream>
 #include <vector>
 #include <map>
+#include "libsddsi/sdds-interface.hpp"
 #include "types.hpp"
 
 using namespace std;
@@ -91,6 +92,8 @@ namespace pal
     void setRunFile(string file) {runFile = file;}
     SimToolTable readTable(string file, vector<string> columnKeys, unsigned int maxRows=0); // read specified columns from a madx/elegant table format output file (reading stopped after [maxRows] rows, if !=0)
     template<class T> T readParameter(string file, string label); // read specified parameter from file header
+
+    SimToolTable readSDDSTable(string file, map<string, sddsi::sdds_type> columnKeys);
 
     // readParameter() implementations for some parameters (labels):
     double readCircumference();

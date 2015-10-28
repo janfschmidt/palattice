@@ -21,6 +21,7 @@
 #include "types.hpp"
 #include "simToolPath.hpp"
 #include "config.hpp"
+#include "libsddsi/sdds-interface.hpp"
 
 using namespace pal;
 using namespace std;
@@ -270,7 +271,7 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
     throw palatticeFileError(filename);
   }
 
-
+  
   // read column names (=> column position)
   string tmp;
   map<unsigned int,string> columnPos;
@@ -464,3 +465,72 @@ void SimToolInstance::setNumParticles(unsigned int n)
   trackingNumParticlesTouched = true;
 }
 
+
+
+SimToolTable SimToolInstance::readSDDSTable(string filename, map<string,sddsi::sdds_type> columnKeys)
+{
+  SimToolTable table(filename);
+
+  // run?
+  if (!executed && mode==online)
+    this->run();
+
+  sddsi::SDDSInputTable *intab = new sddsi::SDDSInputTable(filename);
+  for (auto &it : columnKeys) {
+    switch (it.second) {
+    case sddsi::INT:
+      {
+	intab->addColumn(new sddsi::SDDSColumn<int>(it.first));
+	break;
+      }
+    case sddsi::DOUBLE:
+      {
+	intab->addColumn(new sddsi::SDDSColumn<double>(it.first));
+	break;
+      }
+    case sddsi::STRING:
+      {
+	intab->addColumn(new sddsi::SDDSColumn<std::string>(it.first));
+	break;
+      }
+    default:
+      throw palatticeError("SimToolInstance::readSDDSTable(): Type not implemented.");
+    }
+  }
+  intab->readColumns();
+
+  std::stringstream s;
+  for (auto &it : columnKeys) {
+     switch (it.second) {
+     case sddsi::INT:
+       {
+	 std::vector<int> tmpI = intab->getData<int>(it.first);
+	 for (auto i=0u; i<tmpI.size(); i++) {
+	   s.str(std::string()); s << tmpI[i];
+	   table.push_back(it.first,s.str());
+	 }
+	 break;
+       }
+     case sddsi::DOUBLE:
+       {
+	 std::vector<double> tmpD = intab->getData<double>(it.first);
+	 for (auto i=0u; i<tmpD.size(); i++) {
+	   s.str(std::string()); s << tmpD[i];
+	   table.push_back(it.first,s.str());
+	 }
+	 break;
+       }
+     case sddsi::STRING:
+       {
+	 std::vector<std::string> tmpS = intab->getData<std::string>(it.first);
+	 for (auto i=0u; i<tmpS.size(); i++) {
+	   table.push_back(it.first,tmpS[i]);
+	 }
+	 break;
+       }
+    default:
+      throw palatticeError("SimToolInstance::readSDDSTable(): Type not implemented.");
+    }
+  }
+  return std::move(table);
+}
