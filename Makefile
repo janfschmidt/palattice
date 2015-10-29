@@ -2,20 +2,31 @@ CC=g++
 ccflags = -std=c++11 -Wall -fPIC -g #-O0
 LIB_NAME=libpalattice
 Vmajor=3.6
-Vminor=1
+Vminor=2
 INSTALL_PATH=/usr/local/
 
 ALL_O=Interpolate.o Metadata.o ELSASpuren.o FunctionOfPos.o Field.o AccElements.o AccLattice.o Spectrum.o SimTools.o ResStrengths.o
 LIB_FILE=$(LIB_NAME).so
 SIMTOOL_PATH=$(INSTALL_PATH)/lib/libpalattice_simTools
 
+SDDSLINKPATH=-L /home/control/epics/extensions/lib/linux-x86_64/ -L /home/control/epics/extensions/src/SDDS/SDDSlib/O.linux-x86_64/
+SDDSFLAGS =-lsddsi -lSDDS1c -lz -lmdbcommon -lmatlib -lfftpack -lnnetwork -lcsa -lrpnlib  -lmdblib -lmdbmth
+LINKFLAGS=-lgsl -lgslcblas -lm $(SDDSFLAGS)
+GTESTFLAGS=-lpthread $(LINKFLAGS)
+
 
 $(LIB_NAME): gitversion.hpp simToolPath.hpp $(ALL_O)
-	$(CC) $(ccflags) -shared -Wl,-soname,$(LIB_FILE).$(Vmajor) -o $(LIB_FILE).$(Vmajor).$(Vminor)  $(ALL_O) -lsddsi -lgsl -lgslcblas -lm
+	$(CC) $(ccflags) -shared -Wl,-soname,$(LIB_FILE).$(Vmajor) -o $(LIB_FILE).$(Vmajor).$(Vminor)  $(ALL_O) $(SDDSLINKPATH) $(LINKFLAGS)
+	ln -sf $(LIB_FILE).$(Vmajor).$(Vminor) $(LIB_FILE).$(Vmajor)
+	ln -sf $(LIB_FILE).$(Vmajor).$(Vminor) $(LIB_FILE)
 
 programs: 
 	make -C ./programs
-.PHONY: programs
+
+tests:
+	make -C ./tests
+
+.PHONY: programs tests
 
 Spectrum.o: Spectrum.cpp Spectrum.hpp config.hpp
 	$(CC) $(ccflags) -c $<
@@ -52,9 +63,11 @@ simToolPath.hpp: Makefile
 	echo "inline const std::string simToolPath() {return \"$(SIMTOOL_PATH)\";} }" >> $@
 	echo "#endif" >> $@
 
+
 clean: 
 	rm $(LIB_FILE)* $(ALL_O) $(LIB_NAME).a gitversion.hpp simToolPath.hpp
 	make clean -C ./programs
+	make clean -C ./tests
 
 install: $(LIB_FILE).$(Vmajor).$(Vminor)
 	install -m 755 -p -v $< $(INSTALL_PATH)/lib/                     #library

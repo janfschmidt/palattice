@@ -57,7 +57,7 @@ template<> AccTriple SimToolTable::get(unsigned int i, string keyX, string keyZ,
 
 SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string fileIn, string fileTag)
   : executed(false), trackingTurns(0), trackingNumParticles(1), trackingTurnsTouched(false), trackingNumParticlesTouched(false),
-    tag(fileTag), tool(toolIn), mode(modeIn), verbose(false)
+    tag(fileTag), tool(toolIn), mode(modeIn), verbose(false), SDDS(false)
 {
 
   //path: path of fileIn
@@ -72,10 +72,21 @@ SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string file
     file = fileIn;
   }
 
+  if (tool==madx)
+    runFile = "libpalattice.madx";
+  else if (tool==elegant)
+    runFile = "libpalattice.ele";
+}
+
+string SimToolInstance::filebase() const
+{
+  string filebase;
   if (mode==online && tool==madx)
     filebase = "madx";
-  else if (mode==online && tool==elegant)
+  else if (mode==online && tool==elegant && !SDDS)
     filebase = "elegant";
+  else if (mode==online && tool==elegant && SDDS)
+    filebase = "libpalattice";
   else if (mode==offline) {
     //filebase: file without extension
     string::size_type f2 = file.find_first_of(".");
@@ -87,11 +98,7 @@ SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string file
   if (mode==online && tag!="")
     filebase = filebase + "_" + tag;
 
-
-  if (tool==madx)
-    runFile = "libpalattice.madx";
-  else if (tool==elegant)
-    runFile = "libpalattice.ele";
+  return filebase;
 }
 
 
@@ -103,9 +110,9 @@ string SimToolInstance::trajectory(unsigned int obs, unsigned int particle) cons
   char tmp[n];
   string out;
   if (tool == madx)
-    snprintf(tmp, n, "%s%s.obs%04d.p%04d", path().c_str(), filebase.c_str(), obs, particle);
+    snprintf(tmp, n, "%s%s.obs%04d.p%04d", path().c_str(), filebase().c_str(), obs, particle);
   else if (tool== elegant)
-    snprintf(tmp, n, "%s%s.w%04d.p%d", path().c_str(), filebase.c_str(), obs, particle);
+    snprintf(tmp, n, "%s%s.w%04d.p%d", path().c_str(), filebase().c_str(), obs, particle);
   out = tmp;
 
   return out;
@@ -177,7 +184,7 @@ void SimToolInstance::run()
     replaceTagInFile("madx", "twiss", tag, runFile);      // twiss file
     replaceTagInFile("madx", "dipealign", tag, runFile);  // dipealign file
     replaceTagInFile("madx", "quadealign", tag, runFile); // quadealign file
-    replaceInFile("ptc_track, file", filebase, ",", runFile);        // "obs" files
+    replaceInFile("ptc_track, file", filebase(), ",", runFile);        // "obs" files
   }
 
   // set tracking turns in runFile:
@@ -403,7 +410,7 @@ string SimToolInstance::readParameter(string file, string label)
   }
   stringstream msg;
   msg << "ERROR: pal::SimToolInstance::readParameter(): No parameter label "
-      << label << "in " << file;
+      << label << " in " << file;
   throw palatticeError(msg.str());
 }
 
@@ -534,3 +541,5 @@ SimToolTable SimToolInstance::readSDDSTable(string filename, map<string,sddsi::s
   }
   return std::move(table);
 }
+
+

@@ -382,13 +382,26 @@ Spectrum FunctionOfPos<T>::getSpectrum(double stepwidth, unsigned int fmaxrevIn,
 template <class T>
 void FunctionOfPos<T>::readSimToolColumn(SimToolInstance &s, string file, string posColumn, string valX, string valZ, string valS)
 {
-  vector<string> columns;
-  columns.push_back(posColumn);
-  columns.push_back(valX);
-  if (!valZ.empty()) columns.push_back(valZ);
-  if (!valS.empty()) columns.push_back(valS);
+  SimToolTable tab;
+  if (s.SDDS && s.tool==elegant) {
+    std::map<string, sddsi::sdds_type> columnKeys;
+    columnKeys[posColumn] = sddsi::DOUBLE;
+    columnKeys[valX] = sddsi::DOUBLE;
+    if (!valZ.empty()) columnKeys[valZ] = sddsi::DOUBLE;
+    if (!valS.empty()) columnKeys[valS] = sddsi::DOUBLE;
+    tab = s.readSDDSTable(file, columnKeys);
+  }
+  else {
+    vector<string> columns;
+    columns.push_back(posColumn);
+    columns.push_back(valX);
+    if (!valZ.empty()) columns.push_back(valZ);
+    if (!valS.empty()) columns.push_back(valS);
 
-  SimToolTable tab = s.readTable(file, columns);
+    tab = s.readTable(file, columns);
+  }
+
+  
   T tmp;
 
   for (unsigned int i=0; i<tab.rows(); i++) {

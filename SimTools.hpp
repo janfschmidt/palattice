@@ -67,7 +67,6 @@ namespace pal
     string tag;
     string _path;
     string file;     //mode=online: latticeInput, mode=offline: SimTool Output
-    string filebase; //output filename without extension
     string runFile;
     string outCases(string madxExt, string eleExt) const {if(tool==madx) return outFile(madxExt); else if(tool==elegant) return outFile(eleExt); return "";}
     void replaceInFile(string variable, string value, string delim, string file);
@@ -77,6 +76,7 @@ namespace pal
     const SimTool tool;
     const SimToolMode mode;
     bool verbose;
+    bool SDDS;
 
     //SimToolInstance constructor:
     //-fileIn: mode=online: latticeInput, mode=offline: SimTool Output
@@ -103,8 +103,9 @@ namespace pal
     string mode_string() const {if (mode==online) return "online"; else if (mode==offline) return "offline"; else return "";}
 
     //filenames
+    string filebase() const;                   //output filename without extension
     string inFile() const {return _path+file;} //mode=online: latticeInput, mode=offline: SimTool Output
-    string outFile(string extension) const {return _path+filebase+"."+extension;}
+    string outFile(string extension) const {return _path+filebase()+"."+extension;}
     string log() const {return _path+tool_string()+".log";}
     string path() const {return _path;}
     string lattice() const {return outCases("twiss", "param");}
