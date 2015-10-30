@@ -27,6 +27,31 @@ using namespace pal;
 using namespace std;
 
 
+void SimToolTable::init_sdds(const string &filename, std::vector<string> columnKeys)
+{
+  table_sdds = new SDDS_TABLE;
+  if( SDDS_InitializeInput(table_sdds,const_cast<char*>(filename.c_str())) != 1 )
+    throw sddsi::SDDSFailure();
+
+  SDDS_ReadTable(table_sdds);
+
+  //select columns
+  if (columnKeys.size() > 0) {
+    std::stringstream tmp;
+    for (auto &key : columnKeys)
+      tmp << key << " ";
+    std::cout << "-"<<tmp.str()<<"-" << std::endl; //DEBUG
+    
+    SDDS_SetColumnFlags(table_sdds,0); // unselect all columns first
+    if( SDDS_SetColumnsOfInterest(table_sdds, SDDS_NAMES_STRING, tmp.str().c_str()) != 1 )
+      throw sddsi::SDDSFailure();
+  }
+
+  sdds = true;
+  table.clear(); //delete non-sdds data
+}
+
+
 template<> AccPair SimToolTable::get(unsigned int i, string keyX, string keyZ, string keyS) const
 {
   if (keyZ.empty())
@@ -56,8 +81,8 @@ template<> AccTriple SimToolTable::get(unsigned int i, string keyX, string keyZ,
 
 
 SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string fileIn, string fileTag)
-  : executed(false), trackingTurns(0), trackingNumParticles(1), trackingTurnsTouched(false), trackingNumParticlesTouched(false),
-    tag(fileTag), tool(toolIn), mode(modeIn), verbose(false), SDDS(false)
+  : executed(false), sdds(false), trackingTurns(0), trackingNumParticles(1), trackingTurnsTouched(false), trackingNumParticlesTouched(false),
+    tag(fileTag), tool(toolIn), mode(modeIn), verbose(false)
 {
 
   //path: path of fileIn
@@ -83,9 +108,9 @@ string SimToolInstance::filebase() const
   string filebase;
   if (mode==online && tool==madx)
     filebase = "madx";
-  else if (mode==online && tool==elegant && !SDDS)
+  else if (mode==online && tool==elegant && !sdds)
     filebase = "elegant";
-  else if (mode==online && tool==elegant && SDDS)
+  else if (mode==online && sddsMode())
     filebase = "libpalattice";
   else if (mode==offline) {
     //filebase: file without extension
@@ -272,13 +297,19 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
   if (!executed && mode==online)
     this->run();
 
+  if(sddsMode()) {
+    if (maxRows!=0) std::cout << "WARNING: SimToolInstance::readTable() - maxRows not implemented for SDDS mode." << std::endl;
+    table.init_sdds(filename, columnKeys);
+    return table;
+  }
+  
+
   fstream tabFile;
   tabFile.open(filename.c_str(), ios::in);
   if (!tabFile.is_open()) {
     throw palatticeFileError(filename);
   }
 
-  
   // read column names (=> column position)
   string tmp;
   map<unsigned int,string> columnPos;
@@ -378,10 +409,28 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
 
 
 
+void* SimToolInstance::getPointerToParameter_sdds(const string &file, const string &label)
+{
+  SDDS_TABLE *t = new SDDS_TABLE;
+  if( SDDS_InitializeInput(t,const_cast<char*>(file.c_str())) != 1 )
+    throw sddsi::SDDSFailure();
+  
+  SDDS_ReadTable(t);
+  void *mem = SDDS_GetParameter(t, const_cast<char*>(label.c_str()), NULL);
+  if (mem == NULL) throw sddsi::SDDSFailure();
+  delete t;
+  return mem;  
+}
+
+
 //specialization for string parameter -> accept space in parameter
 template<>
-string SimToolInstance::readParameter(string file, string label)
+string SimToolInstance::readParameter(const string &file, const string &label)
 {
+   if(sddsMode()) {
+    return readParameter_sdds<string>(file, label);
+  }
+   
   fstream f;
   string tmp;
   string val;
@@ -474,72 +523,6 @@ void SimToolInstance::setNumParticles(unsigned int n)
 
 
 
-SimToolTable SimToolInstance::readSDDSTable(string filename, map<string,sddsi::sdds_type> columnKeys)
-{
-  SimToolTable table(filename);
 
-  // run?
-  if (!executed && mode==online)
-    this->run();
-
-  sddsi::SDDSInputTable *intab = new sddsi::SDDSInputTable(filename);
-  for (auto &it : columnKeys) {
-    switch (it.second) {
-    case sddsi::INT:
-      {
-	intab->addColumn(new sddsi::SDDSColumn<int>(it.first));
-	break;
-      }
-    case sddsi::DOUBLE:
-      {
-	intab->addColumn(new sddsi::SDDSColumn<double>(it.first));
-	break;
-      }
-    case sddsi::STRING:
-      {
-	intab->addColumn(new sddsi::SDDSColumn<std::string>(it.first));
-	break;
-      }
-    default:
-      throw palatticeError("SimToolInstance::readSDDSTable(): Type not implemented.");
-    }
-  }
-  intab->readColumns();
-
-  std::stringstream s;
-  for (auto &it : columnKeys) {
-     switch (it.second) {
-     case sddsi::INT:
-       {
-	 std::vector<int> tmpI = intab->getData<int>(it.first);
-	 for (auto i=0u; i<tmpI.size(); i++) {
-	   s.str(std::string()); s << tmpI[i];
-	   table.push_back(it.first,s.str());
-	 }
-	 break;
-       }
-     case sddsi::DOUBLE:
-       {
-	 std::vector<double> tmpD = intab->getData<double>(it.first);
-	 for (auto i=0u; i<tmpD.size(); i++) {
-	   s.str(std::string()); s << tmpD[i];
-	   table.push_back(it.first,s.str());
-	 }
-	 break;
-       }
-     case sddsi::STRING:
-       {
-	 std::vector<std::string> tmpS = intab->getData<std::string>(it.first);
-	 for (auto i=0u; i<tmpS.size(); i++) {
-	   table.push_back(it.first,tmpS[i]);
-	 }
-	 break;
-       }
-    default:
-      throw palatticeError("SimToolInstance::readSDDSTable(): Type not implemented.");
-    }
-  }
-  return std::move(table);
-}
 
 

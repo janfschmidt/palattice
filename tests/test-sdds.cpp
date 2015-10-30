@@ -5,15 +5,6 @@
 
 
 
-// TEST(sddsFoP, OrbitTest) {
-//   pal::SimToolInstance elegant(pal::elegant, pal::online, "elsa.lte");
-//   elegant.SDDS = true;
-  
-//   pal::FunctionOfPos<pal::AccPair> orbit(elegant);
-//   orbit.simToolClosedOrbit(elegant);
-//   orbit.print("sdds-orbit.dat");
-// }
-
 TEST(sdds, Parameter) {
   SDDS_TABLE *t = new SDDS_TABLE;
   if( SDDS_InitializeInput(t,const_cast<char*>("libpalattice.twi")) != 1 )
@@ -26,6 +17,21 @@ TEST(sdds, Parameter) {
   
   double p = *static_cast<double *>(mem);
   EXPECT_NEAR(4.500987e+03, p, 0.001);
+  delete t;
+}
+
+TEST(sdds, StringParameter) {
+  SDDS_TABLE *t = new SDDS_TABLE;
+  if( SDDS_InitializeInput(t,const_cast<char*>("libpalattice002.w")) != 1 )
+    throw sddsi::SDDSFailure();
+  
+  SDDS_ReadTable(t);
+  void *mem = SDDS_GetParameter(t, const_cast<char*>("PreviousElementName"), NULL);
+  if (mem == NULL)
+    throw sddsi::SDDSFailure();
+
+  std::string s(*static_cast<char **>(mem));
+  EXPECT_STREQ("BPM02", s.c_str());
   delete t;
 }
 
@@ -148,6 +154,37 @@ TEST(sdds, FilterParticleId) {
   delete t;
 }
 
+
+
+
+// TEST(sddsFoP, OrbitTest) {
+//   pal::SimToolInstance elegant(pal::elegant, pal::online, "elsa.lte");
+//   elegant.SDDS = true;
+  
+//   pal::FunctionOfPos<pal::AccPair> orbit(elegant);
+//   orbit.simToolClosedOrbit(elegant);
+//   orbit.print("sdds-orbit.dat");
+// }
+
+TEST(sddsSimTool, Parameter) {
+  pal::SimToolInstance elegant(pal::elegant, pal::offline, "libpalattice.param");
+  elegant.set_sddsMode(true);
+
+  double p = elegant.readParameter<double>(elegant.twiss(), "pCentral");
+  EXPECT_NEAR(4.500987e+03, p, 0.001);
+}
+
+TEST(sddsSimTool, Table) {
+  pal::SimToolInstance elegant(pal::elegant, pal::offline, "libpalattice.param");
+  elegant.set_sddsMode(true);
+
+  std::vector<std::string> columnKeys = {"s", "x", "y"};
+  pal::SimToolTable tab = elegant.readTable(elegant.orbit(), columnKeys);
+
+  EXPECT_EQ(333u, tab.rows());
+  EXPECT_EQ(3u, tab.columns());
+  EXPECT_NEAR(164.4008, tab.getd(332,"s"), 0.0001);
+}
 
 
 int main(int argc, char **argv) {

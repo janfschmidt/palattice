@@ -30,24 +30,38 @@ namespace pal
 
   enum SimTool{madx,elegant};
   enum SimToolMode{online,offline};
+
+  template<typename T> inline T sdds_cast(void *mem) {return *static_cast<T *>(mem);}
   
 
   // a table with columns accessible by column key (string) and row index (int).
   // values are set as string and allow get<T>(key,index) with any type T.
+  //
+  // alternatively it is connected to an SDDS table file via init_sdds() (previous table data is deleted!)
+  // this data is then also accessible with get<T>(key,index) casted to any type T.
   class SimToolTable {
   protected:
     map< string, vector<string> > table;
     std::string tabname;
+    SDDS_TABLE *table_sdds;
+    bool sdds;
+
+    template<class T> T get_sdds(unsigned int index, string keyX, string keyZ="", string keyS="") const;
+    
 
   public:
-    SimToolTable(std::string _name="") : tabname(_name) {}
-    void push_back(string key, string value) {table[key].push_back(value);}
-    template<class T> T get(unsigned int index, string keyX, string keyZ="", string keyS="") const; //keyZ,keyS for AccPair,AccTriple
+    SimToolTable(std::string _name="") : tabname(_name), sdds(false) {}
+    ~SimToolTable() {if(sdds) delete table_sdds;}
     
-    unsigned int rows() const {return table.begin()->second.size();}
-    unsigned int columns() const {return table.size();}
+    void push_back(string key, string value) {table[key].push_back(value);} //set data for "normal" mode
+    void init_sdds(const string &filename, vector<string> columnKeys=vector<string>()); //connect with an SDDS file (previous data is deleted!)
+    
+    unsigned int rows() const {if(sdds) return SDDS_CountRowsOfInterest(table_sdds); else return table.begin()->second.size();}
+    unsigned int columns() const {if(sdds) return SDDS_ColumnCount(table_sdds); else return table.size();}
     std::string name() const {return tabname;}
+    bool sddsMode() const {return sdds;}
 
+    template<class T> T get(unsigned int index, string keyX, string keyZ="", string keyS="") const; //keyZ,keyS for AccPair,AccTriple
     //short forms: getd = get<double> and gets = get<string>
     double getd(unsigned int index, string key) const {return get<double>(index,key);}
     string gets(unsigned int index, string key) const {return get<string>(index,key);}
@@ -60,6 +74,7 @@ namespace pal
   class SimToolInstance {
   protected:
     bool executed;
+    bool sdds;
     unsigned int trackingTurns;
     unsigned int trackingNumParticles;
     bool trackingTurnsTouched;
@@ -72,11 +87,14 @@ namespace pal
     void replaceInFile(string variable, string value, string delim, string file);
     void replaceTagInFile(string name, string extension, string newTag, string file);
 
+    template<class T> T readParameter_sdds(const string &file, const string &label);
+    void* getPointerToParameter_sdds(const string &file, const string &label);
+
+
   public:
     const SimTool tool;
     const SimToolMode mode;
     bool verbose;
-    bool SDDS;
 
     //SimToolInstance constructor:
     //-fileIn: mode=online: latticeInput, mode=offline: SimTool Output
@@ -87,13 +105,14 @@ namespace pal
     void run();
     unsigned int turns() const {return trackingTurns;}
     unsigned int numParticles() const {return trackingNumParticles;}
+    
     void setTurns(unsigned int t);  // if turns!=0 (default) single particle tracking is performed while madx/elegant run
     void setNumParticles(unsigned int n);
     void setRunFile(string file) {runFile = file;}
+    void set_sddsMode(bool s) {sdds = s;}
+    
     SimToolTable readTable(string file, vector<string> columnKeys, unsigned int maxRows=0); // read specified columns from a madx/elegant table format output file (reading stopped after [maxRows] rows, if !=0)
-    template<class T> T readParameter(string file, string label); // read specified parameter from file header
-
-    SimToolTable readSDDSTable(string file, map<string, sddsi::sdds_type> columnKeys);
+    template<class T> T readParameter(const string &file, const string &label); // read specified parameter from file header
 
     // readParameter() implementations for some parameters (labels):
     double readCircumference();
@@ -114,11 +133,13 @@ namespace pal
     string trajectory(unsigned int obs, unsigned int particle) const;
 
     bool runDone() const {return executed;}
+    bool sddsMode() const {if(sdds && tool==elegant) return true; else return false;}
   };
 
 
   //SimToolInstance template function specialization
-  template<> string SimToolInstance::readParameter(string file, string label);
+  template<> inline string sdds_cast(void *mem) {string s(*static_cast<char **>(mem)); return std::move(s);}
+  template<> string SimToolInstance::readParameter(const string &file, const string &label);
   template<> AccPair SimToolTable::get(unsigned int index, string keyX, string keyZ, string keyS) const;
   template<> AccTriple SimToolTable::get(unsigned int index, string keyX, string keyZ, string keyS) const;
 
@@ -134,6 +155,17 @@ namespace pal
 template<class T>
 T pal::SimToolTable::get(unsigned int index, string key, string keyZ, string keyS) const
 {
+  if (index >= this->rows()) {
+    stringstream msg;
+    msg << "pal::SimToolTable::get<T>(): row " <<index<< ">=" <<this->rows()
+	<< " rows in column \"" <<key<< "\" in table " << this->name();
+    throw std::out_of_range(msg.str());
+  }
+
+  if(sdds) {
+    return get_sdds<T>(index,key,keyZ,keyS);
+  }
+
   map< string, vector<string> >::const_iterator it = table.find(key);
   if (it == table.end()) {
     stringstream msg;
@@ -141,30 +173,40 @@ T pal::SimToolTable::get(unsigned int index, string key, string keyZ, string key
     throw palatticeError(msg.str());
   }
 
-  if (index >= table.at(key).size()) {
-    stringstream msg;
-    msg << "pal::SimToolTable::get<T>(): row " <<index<< ">=" <<table.at(key).size()
-	<< "rows in column \"" <<key<< "\" in table " << this->name();
-    throw std::out_of_range(msg.str());
-  }
   stringstream s(table.at(key)[index]);
   T value;
   s >> value;
   return value;
 }
 
+template<class T>
+T pal::SimToolTable::get_sdds(unsigned int index, string key, string keyZ, string keyS) const
+{
+  void *mem = SDDS_GetValue(table_sdds, const_cast<char*>(key.c_str()), index, NULL);
+  if (mem == NULL) {
+    stringstream msg;
+    msg << "pal::SimToolTable::get<T>(): No column \"" <<key<< "\" in SDDS table " << this->name();
+    throw palatticeError(msg.str());
+  }
+  return sdds_cast<T>(mem);
+}
+
 
 //SimToolInstance template function implementation:
 template<class T>
-T pal::SimToolInstance::readParameter(string file, string label)
+T pal::SimToolInstance::readParameter(const string &file, const string &label)
 {
+   // run?
+  if (!executed && mode==online)
+    this->run();
+  
+  if(sddsMode()) {
+    return readParameter_sdds<T>(file, label);
+  }
+  
   fstream f;
   string tmp;
   T val;
-
-  // run?
-  if (!executed && mode==online)
-    this->run();
 
   f.open(file.c_str(), ios::in);
   if (!f.is_open())
@@ -186,6 +228,13 @@ T pal::SimToolInstance::readParameter(string file, string label)
   throw palatticeError(msg.str());
 }
 
+
+template<class T>
+T pal::SimToolInstance::readParameter_sdds(const string &file, const string &label)
+{
+  void *mem = getPointerToParameter_sdds(file, label);
+  return *static_cast<T *>(mem);
+}
 
 #endif
 /*__LIBPALATTICE_SIMTOOLS_HPP_*/
