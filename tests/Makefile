@@ -1,5 +1,5 @@
 CC=g++
-ccflags = -std=c++11 -Wall -fPIC -g #-O0
+ccflags = -std=c++11 -Wall -fPIC -g
 
 GTEST_DIR=/home/thiry/dev/gtest-1.7.0
 
