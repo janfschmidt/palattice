@@ -388,13 +388,13 @@ void FunctionOfPos<T>::readSimToolColumn(SimToolInstance &s, string file, string
   columns.push_back(valX);
   if (!valZ.empty()) columns.push_back(valZ);
   if (!valS.empty()) columns.push_back(valS);
-  
+
   tab = s.readTable(file, columns);
   
-  
   T tmp;
-
-  for (unsigned int i=0; i<tab.rows(); i++) {
+  auto rows = tab.rows();
+  
+  for (unsigned int i=0; i<rows; i++) {
     double pos = tab.get<double>(i,posColumn);
     // values at pos=circ are ignored to avoid #turns problem
     // see simToolTrajectory() for another solution

@@ -238,10 +238,13 @@ TEST(sddsFoP, SimToolColumn) {
   elegant.set_sddsMode(true);
   
   pal::FunctionOfPos<double> betax(elegant);
+  std::cout << "FoP constructed" << std::endl;
   EXPECT_NEAR(164.4008, betax.circumference(), 0.0001);
+  std::cout << "FoP circ. done" << std::endl;
   
   betax.readSimToolColumn(elegant, elegant.twiss(), "s", "betax");
   EXPECT_EQ(333u,betax.size());
+  std::cout << "FoP column read" << std::endl;
   betax.print("sdds-betax.dat");
 }
 

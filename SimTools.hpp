@@ -20,6 +20,7 @@
 #include <fstream>
 #include <vector>
 #include <map>
+#include <memory>
 #include "libsddsi/sdds-interface.hpp"
 #include "types.hpp"
 
@@ -43,7 +44,7 @@ namespace pal
   protected:
     map< string, vector<string> > table;
     std::string tabname;
-    SDDS_TABLE *table_sdds;
+    std::unique_ptr<SDDS_TABLE> table_sdds;
     bool sdds;
 
     template<class T> T get_sdds(unsigned int index, string keyX, string keyZ="", string keyS="") const;
@@ -51,13 +52,12 @@ namespace pal
 
   public:
     SimToolTable(std::string _name="") : tabname(_name), sdds(false) {}
-    ~SimToolTable() {if(sdds) delete table_sdds;}
     
     void push_back(string key, string value) {table[key].push_back(value);} //set data for "normal" mode
     void init_sdds(const string &filename, vector<string> columnKeys=vector<string>()); //connect with an SDDS file (previous data is deleted!)
     
-    unsigned int rows() const {if(sdds) return SDDS_CountRowsOfInterest(table_sdds); else return table.begin()->second.size();}
-    unsigned int columns() const {if(sdds) return SDDS_CountColumnsOfInterest(table_sdds); else return table.size();}
+    unsigned int rows() const {if(sdds) return SDDS_CountRowsOfInterest(table_sdds.get()); else return table.begin()->second.size();}
+    unsigned int columns() const {if(sdds) return SDDS_CountColumnsOfInterest(table_sdds.get()); else return table.size();}
     std::string name() const {return tabname;}
     bool sddsMode() const {return sdds;}
 
@@ -182,9 +182,7 @@ T pal::SimToolTable::get(unsigned int index, string key, string keyZ, string key
 template<class T>
 T pal::SimToolTable::get_sdds(unsigned int index, string key, string keyZ, string keyS) const
 {
-  cout << "jo" << endl;
-  void *mem = SDDS_GetValue(table_sdds, const_cast<char*>(key.c_str()), index, NULL);
-  cout << "jojo" << endl;
+  void *mem = SDDS_GetValue(table_sdds.get(), const_cast<char*>(key.c_str()), index, NULL);
   if (mem == NULL) {
     stringstream msg;
     msg << "pal::SimToolTable::get<T>(): No column \"" <<key<< "\" in SDDS table " << this->name();

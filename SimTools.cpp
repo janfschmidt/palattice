@@ -27,21 +27,23 @@ using namespace pal;
 using namespace std;
 
 
+
+
 void SimToolTable::init_sdds(const string &filename, std::vector<string> columnKeys)
 {
-  table_sdds = new SDDS_TABLE;
-  if( SDDS_InitializeInput(table_sdds,const_cast<char*>(filename.c_str())) != 1 )
+  table_sdds = std::unique_ptr<SDDS_TABLE>(new SDDS_TABLE);
+  if( SDDS_InitializeInput(table_sdds.get(),const_cast<char*>(filename.c_str())) != 1 )
     throw sddsi::SDDSFailure();
   
-  SDDS_ReadPage(table_sdds);
+  SDDS_ReadPage(table_sdds.get());
 
   //select columns
    if (columnKeys.size() > 0) {
     std::stringstream tmp;
     for (auto &key : columnKeys)
       tmp << key << " ";
-    SDDS_SetColumnFlags(table_sdds,0); // unselect all columns first
-    if( SDDS_SetColumnsOfInterest(table_sdds, SDDS_NAMES_STRING, tmp.str().c_str()) != 1 )
+    SDDS_SetColumnFlags(table_sdds.get(),0); // unselect all columns first
+    if( SDDS_SetColumnsOfInterest(table_sdds.get(), SDDS_NAMES_STRING, tmp.str().c_str()) != 1 )
     throw sddsi::SDDSFailure();
    }
 
