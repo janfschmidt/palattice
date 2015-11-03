@@ -17,6 +17,8 @@ TEST(sdds, Parameter) {
   
   double p = *static_cast<double *>(mem);
   EXPECT_NEAR(4.500987e+03, p, 0.001);
+  
+  free(mem);
   delete t;
 }
 
@@ -32,6 +34,8 @@ TEST(sdds, StringParameter) {
 
   std::string s(*static_cast<char **>(mem));
   EXPECT_STREQ("BPM02", s.c_str());
+
+  free(mem);
   delete t;
 }
 
@@ -56,6 +60,8 @@ TEST(sdds, Column) {
   EXPECT_EQ(333u, x.size());
   EXPECT_DOUBLE_EQ(0.0, x[0]);
   EXPECT_NEAR(164.4008, x[332],0.0001);
+
+  free(mem);
   delete t;
 }
 
@@ -80,6 +86,8 @@ TEST(sdds, ColumnValues) {
   EXPECT_EQ(333u, x.size());
   EXPECT_DOUBLE_EQ(0.0, x[0]);
   EXPECT_NEAR(164.4008, x[332],0.0001);
+
+  free(mem);
   delete t;
 }
 
@@ -108,9 +116,11 @@ TEST(sdds, Pages) {
     unsigned int turn = *static_cast<unsigned int *>(parmem);
     EXPECT_EQ(i, turn);
 
+    free(parmem);
     i++;
     status = SDDS_ReadTable(t);
   }
+
   delete t;
 }
 
@@ -146,25 +156,51 @@ TEST(sdds, FilterParticleId) {
     unsigned int turn = *static_cast<unsigned int *>(parmem);
     EXPECT_EQ(i, turn);
 
+    free(parmem);
     i++;
     status = SDDS_ReadTable(t);
     int ret = SDDS_FilterRowsOfInterest(t,const_cast<char*>("particleID"),id,id,SDDS_0_PREVIOUS);
     if (ret == -1) throw sddsi::SDDSFailure();
   }
+
+  delete t;
+}
+
+TEST(sdds, FilterColumns) {
+  SDDS_TABLE *t = new SDDS_TABLE;
+  if( SDDS_InitializeInput(t,const_cast<char*>("libpalattice.clo")) != 1 )
+    throw sddsi::SDDSFailure();
+  
+  SDDS_ReadTable(t);
+  SDDS_SetColumnFlags(t,0); // unselect all columns first
+  if( SDDS_SetColumnsOfInterest(t, SDDS_NAMES_STRING, "s x ") != 1 )
+    throw sddsi::SDDSFailure();
+  
+  void *mem = SDDS_GetColumn(t, const_cast<char*>("s"));
+  if (mem == NULL)
+    throw sddsi::SDDSFailure();
+
+  double *array = static_cast<double *>(mem);
+  unsigned int length=SDDS_CountRowsOfInterest(t); 
+  std::vector<double> s(array, array+length);
+
+  //std::cout <<"s[20]="<< s[20] << std::endl;
+  
+  EXPECT_EQ(333u, s.size());
+
+  // "Column of interest" not really useful:
+  // Other columns are ignored by CountColumnsOfInterest()
+  // but not by ColumnCount(). Still all columns are accessible !?!
+  EXPECT_EQ(2, SDDS_CountColumnsOfInterest(t));
+  EXPECT_EQ(8, SDDS_ColumnCount(t));
+  EXPECT_DOUBLE_EQ(0.0, s[0]);
+
+  free(mem);
   delete t;
 }
 
 
 
-
-// TEST(sddsFoP, OrbitTest) {
-//   pal::SimToolInstance elegant(pal::elegant, pal::online, "elsa.lte");
-//   elegant.SDDS = true;
-  
-//   pal::FunctionOfPos<pal::AccPair> orbit(elegant);
-//   orbit.simToolClosedOrbit(elegant);
-//   orbit.print("sdds-orbit.dat");
-// }
 
 TEST(sddsSimTool, Parameter) {
   pal::SimToolInstance elegant(pal::elegant, pal::offline, "libpalattice.param");
@@ -184,7 +220,44 @@ TEST(sddsSimTool, Table) {
   EXPECT_EQ(333u, tab.rows());
   EXPECT_EQ(3u, tab.columns());
   EXPECT_NEAR(164.4008, tab.getd(332,"s"), 0.0001);
+  EXPECT_DOUBLE_EQ(0.0, tab.get<double>(0,"s"));
+  
+  std::cout << "xp[20]="<<tab.getd(20,"xp") << std::endl;
 }
+
+TEST(sddsSimTool, Circumference) {
+  pal::SimToolInstance elegant(pal::elegant, pal::offline, "libpalattice.param");
+  elegant.set_sddsMode(true);
+
+  EXPECT_NEAR(164.4008, elegant.readCircumference(), 0.0001);
+}
+
+
+TEST(sddsFoP, SimToolColumn) {
+  pal::SimToolInstance elegant(pal::elegant, pal::offline, "libpalattice.param");
+  elegant.set_sddsMode(true);
+  
+  pal::FunctionOfPos<double> betax(elegant);
+  EXPECT_NEAR(164.4008, betax.circumference(), 0.0001);
+  
+  betax.readSimToolColumn(elegant, elegant.twiss(), "s", "betax");
+  EXPECT_EQ(333u,betax.size());
+  betax.print("sdds-betax.dat");
+}
+
+// TEST(sddsFoP, OrbitTest) {
+//   pal::SimToolInstance elegant(pal::elegant, pal::offline, "libpalattice.param");
+//   elegant.set_sddsMode(true);
+  
+//   pal::FunctionOfPos<pal::AccPair> orbit(elegant);
+//   EXPECT_NEAR(164.4008, orbit.circumference(), 0.0001);
+  
+//   //orbit.simToolClosedOrbit(elegant);
+//   EXPECT_EQ(333u,orbit.size());
+//   orbit.print("sdds-orbit.dat");
+// }
+
+
 
 
 int main(int argc, char **argv) {

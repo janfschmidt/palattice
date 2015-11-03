@@ -20,8 +20,8 @@ echo -e "circumference\t $circ" > elegant$tag.param #overwrite existing file
 # pCentral
 echo -e "pCentral/m_e*c\t `sdds2stream $2.twi -par=pCentral`" >> elegant$tag.param #append..
 # tunes 
-echo -e "tune:Qx\t `sdds2stream $2.twi -par=nux`" >> elegant$tag.param
-echo -e "tune:Qz\t `sdds2stream $2.twi -par=nuy`" >> elegant$tag.param
+echo -e "tune:Qx\t `sdds2stream $2.twi -par=nux`" >> elegant$tag.twi
+echo -e "tune:Qz\t `sdds2stream $2.twi -par=nuy`" >> elegant$tag.twi
 
 # ascii closed orbit file elegant.clo
 sddsprocess $2.clo -pipe=out -match=column,ElementType=WATCH,! -match=column,ElementName=_BEG_,! | sddsprintout -pipe=in elegant$tag.clo -Title='***' -col='(ElementName,ElementType,s,x,y)'
@@ -32,7 +32,9 @@ cat tmp.param >> elegant$tag.param
 rm tmp.param
 
 # ascii twiss file elegant.twi
-sddsprocess $2.twi -pipe=out -match=column,ElementType=WATCH,! -match=column,ElementName=_BEG_,! | sddsprintout -pipe=in elegant$tag.twi -Title='***' -width=200 -col='(ElementName,ElementType,s,betax,alphax,psix,etax,etaxp,betay,alphay,psiy)'
+sddsprocess $2.twi -pipe=out -match=column,ElementType=WATCH,! -match=column,ElementName=_BEG_,! | sddsprintout -pipe=in tmp.twi -Title='***' -width=200 -col='(ElementName,ElementType,s,betax,alphax,psix,etax,etaxp,betay,alphay,psiy)'
+cat tmp.twi >> elegant$tag.twi
+rm tmp.twi
 
 # ascii single particle trajectory files for all particles, e.g. elegant.w02.p1
 # from watch-files:

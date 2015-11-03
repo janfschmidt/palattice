@@ -57,7 +57,7 @@ namespace pal
     void init_sdds(const string &filename, vector<string> columnKeys=vector<string>()); //connect with an SDDS file (previous data is deleted!)
     
     unsigned int rows() const {if(sdds) return SDDS_CountRowsOfInterest(table_sdds); else return table.begin()->second.size();}
-    unsigned int columns() const {if(sdds) return SDDS_ColumnCount(table_sdds); else return table.size();}
+    unsigned int columns() const {if(sdds) return SDDS_CountColumnsOfInterest(table_sdds); else return table.size();}
     std::string name() const {return tabname;}
     bool sddsMode() const {return sdds;}
 
@@ -138,7 +138,7 @@ namespace pal
 
 
   //SimToolInstance template function specialization
-  template<> inline string sdds_cast(void *mem) {string s(*static_cast<char **>(mem)); return std::move(s);}
+  template<> inline string sdds_cast(void *mem) {string s(*static_cast<char **>(mem)); free(mem); return std::move(s);}
   template<> string SimToolInstance::readParameter(const string &file, const string &label);
   template<> AccPair SimToolTable::get(unsigned int index, string keyX, string keyZ, string keyS) const;
   template<> AccTriple SimToolTable::get(unsigned int index, string keyX, string keyZ, string keyS) const;
@@ -182,13 +182,17 @@ T pal::SimToolTable::get(unsigned int index, string key, string keyZ, string key
 template<class T>
 T pal::SimToolTable::get_sdds(unsigned int index, string key, string keyZ, string keyS) const
 {
+  cout << "jo" << endl;
   void *mem = SDDS_GetValue(table_sdds, const_cast<char*>(key.c_str()), index, NULL);
+  cout << "jojo" << endl;
   if (mem == NULL) {
     stringstream msg;
     msg << "pal::SimToolTable::get<T>(): No column \"" <<key<< "\" in SDDS table " << this->name();
     throw palatticeError(msg.str());
   }
-  return sdds_cast<T>(mem);
+  T ret = sdds_cast<T>(mem);
+  free(mem);
+  return std::move(ret);
 }
 
 
@@ -233,7 +237,9 @@ template<class T>
 T pal::SimToolInstance::readParameter_sdds(const string &file, const string &label)
 {
   void *mem = getPointerToParameter_sdds(file, label);
-  return *static_cast<T *>(mem);
+  T ret = sdds_cast<T>(mem);
+  free(mem);
+  return std::move(ret);
 }
 
 #endif

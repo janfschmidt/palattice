@@ -32,20 +32,18 @@ void SimToolTable::init_sdds(const string &filename, std::vector<string> columnK
   table_sdds = new SDDS_TABLE;
   if( SDDS_InitializeInput(table_sdds,const_cast<char*>(filename.c_str())) != 1 )
     throw sddsi::SDDSFailure();
-
-  SDDS_ReadTable(table_sdds);
+  
+  SDDS_ReadPage(table_sdds);
 
   //select columns
-  if (columnKeys.size() > 0) {
+   if (columnKeys.size() > 0) {
     std::stringstream tmp;
     for (auto &key : columnKeys)
       tmp << key << " ";
-    std::cout << "-"<<tmp.str()<<"-" << std::endl; //DEBUG
-    
     SDDS_SetColumnFlags(table_sdds,0); // unselect all columns first
     if( SDDS_SetColumnsOfInterest(table_sdds, SDDS_NAMES_STRING, tmp.str().c_str()) != 1 )
-      throw sddsi::SDDSFailure();
-  }
+    throw sddsi::SDDSFailure();
+   }
 
   sdds = true;
   table.clear(); //delete non-sdds data
@@ -468,10 +466,15 @@ string SimToolInstance::readParameter(const string &file, const string &label)
 // readParameter() implementations for some parameters (labels):
 double SimToolInstance::readCircumference()
 {
+  if (sddsMode()) {
+    SimToolTable tmp = readTable(orbit(), {"s"});
+    return tmp.getd(tmp.rows()-1, "s");
+  }
+ 
   string label;
   if (tool==madx)
     label = "LENGTH";
-  else if (tool==elegant)
+  else if (tool==elegant && !sdds)
     label = "circumference";
   double c = this->readParameter<double>(this->lattice(), label);
   return c;
@@ -485,12 +488,17 @@ AccPair SimToolInstance::readTune()
     xLabel = "Q1";
     zLabel = "Q2";
   }
-  else if (tool==elegant) {
+  else if (tool==elegant && !sdds) {
     xLabel = "tune:Qx";
     zLabel = "tune:Qz";
   }
-  q.x = readParameter<double>(lattice(), xLabel);
-  q.z = readParameter<double>(lattice(), zLabel);
+  else if (sddsMode()) {
+    xLabel = "nux";
+    zLabel = "nuy";
+  }
+    
+  q.x = readParameter<double>(twiss(), xLabel);
+  q.z = readParameter<double>(twiss(), zLabel);
   return q;
 }
 
