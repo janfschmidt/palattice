@@ -40,6 +40,7 @@ FunctionOfPos<T>::FunctionOfPos(double circIn, const gsl_interp_type *t)
   : Interpolate<T>::Interpolate(t,circIn), n_turns(1), circ(circIn)
 {
   circCheck();
+  this->info.add("Circumference (set manually)", circ);
 }
 
 // constructor (set circumference from SimToolInstance)
@@ -49,6 +50,7 @@ FunctionOfPos<T>::FunctionOfPos(SimToolInstance &sim, const gsl_interp_type *t)
 {
   circCheck();
   this->period = circ; //set period (Interpolate class)
+  this->info.add("Circumference", circ);
 }
 
 
@@ -100,7 +102,7 @@ unsigned int FunctionOfPos<T>::samplesInTurn(unsigned int turn) const
 template <class T>
 T FunctionOfPos<T>::mean() const
 {
-  T sum;
+  T sum = T();
   for (auto &d : data)
     sum += d.second;
   return sum/data.size();
@@ -109,7 +111,7 @@ T FunctionOfPos<T>::mean() const
 template <class T>
 T FunctionOfPos<T>::rms() const
 {
-  T sum;
+  T sum = T();
   for (auto &d : data)
     sum += std::pow(d.second,2);
   return std::sqrt( sum/data.size() );

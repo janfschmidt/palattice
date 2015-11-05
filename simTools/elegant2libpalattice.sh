@@ -13,12 +13,12 @@ else
     tag="_"$1
 fi
 
-# header data for lattice parameter file elegant.param from .twi file:
+# header data for twiss file elegant.twi from .twi file:
 # circumference (position s of last element)
 circ=`sdds2stream $2.twi -col=s | tail -n1`
-echo -e "circumference\t $circ" > elegant$tag.param #overwrite existing file
+echo -e "circumference\t $circ" > elegant$tag.twi #overwrite existing file
 # pCentral
-echo -e "pCentral/m_e*c\t `sdds2stream $2.twi -par=pCentral`" >> elegant$tag.param #append..
+echo -e "pCentral/m_e*c\t `sdds2stream $2.twi -par=pCentral`" >> elegant$tag.twi #append..
 # tunes 
 echo -e "tune:Qx\t `sdds2stream $2.twi -par=nux`" >> elegant$tag.twi
 echo -e "tune:Qz\t `sdds2stream $2.twi -par=nuy`" >> elegant$tag.twi
@@ -27,9 +27,7 @@ echo -e "tune:Qz\t `sdds2stream $2.twi -par=nuy`" >> elegant$tag.twi
 sddsprocess $2.clo -pipe=out -match=column,ElementType=WATCH,! -match=column,ElementName=_BEG_,! | sddsprintout -pipe=in elegant$tag.clo -Title='***' -col='(ElementName,ElementType,s,x,y)'
 
 # ascii lattice parameter file elegant.param
-sddsprintout $2.param tmp.param -Title='***' -col=ElementName -col=ElementParameter -col=ParameterValue,format=%.12e -col=ElementType
-cat tmp.param >> elegant$tag.param
-rm tmp.param
+sddsprintout $2.param elegant$tag.param -Title='***' -col=ElementName -col=ElementParameter -col=ParameterValue,format=%.12e -col=ElementType
 
 # ascii twiss file elegant.twi
 sddsprocess $2.twi -pipe=out -match=column,ElementType=WATCH,! -match=column,ElementName=_BEG_,! | sddsprintout -pipe=in tmp.twi -Title='***' -width=200 -col='(ElementName,ElementType,s,betax,alphax,psix,etax,etaxp,betay,alphay,psiy)'

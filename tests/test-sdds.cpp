@@ -19,6 +19,7 @@ TEST(sdds, Parameter) {
   EXPECT_NEAR(4.500987e+03, p, 0.001);
   
   free(mem);
+  ASSERT_EQ(1,SDDS_Terminate(t));
   delete t;
 }
 
@@ -35,7 +36,8 @@ TEST(sdds, StringParameter) {
   std::string s(*static_cast<char **>(mem));
   EXPECT_STREQ("BPM02", s.c_str());
 
-  free(mem);
+  free(*((char**)mem));
+  ASSERT_EQ(1,SDDS_Terminate(t));
   delete t;
 }
 
@@ -62,6 +64,7 @@ TEST(sdds, Column) {
   EXPECT_NEAR(164.4008, x[332],0.0001);
 
   free(mem);
+  ASSERT_EQ(1,SDDS_Terminate(t));
   delete t;
 }
 
@@ -80,6 +83,7 @@ TEST(sdds, ColumnValues) {
     if (mem == NULL) throw sddsi::SDDSFailure();
     s = *static_cast<double *>(mem);
     x.push_back(std::move(*static_cast<double *>(mem)));
+    free(mem);
   }
   
   EXPECT_NEAR(164.4008, s, 0.0001);
@@ -87,7 +91,7 @@ TEST(sdds, ColumnValues) {
   EXPECT_DOUBLE_EQ(0.0, x[0]);
   EXPECT_NEAR(164.4008, x[332],0.0001);
 
-  free(mem);
+  ASSERT_EQ(1,SDDS_Terminate(t));
   delete t;
 }
 
@@ -96,10 +100,10 @@ TEST(sdds, Pages) {
   if( SDDS_InitializeInput(t,const_cast<char*>("libpalattice002.w")) != 1 )
     throw sddsi::SDDSFailure();
 
-  // SDDS_ReadTable gives first page, has to be repeated for every page.
+  // SDDS_ReadTable (or ReadPage) gives first page, has to be repeated for every page.
   // returns -1 if no more pages to read.
 
-  int status = SDDS_ReadTable(t);
+  int status = SDDS_ReadPage(t);
   unsigned int i=0;
   while (status != -1) {
     void *mem = SDDS_GetColumn(t, const_cast<char*>("p"));
@@ -116,11 +120,13 @@ TEST(sdds, Pages) {
     unsigned int turn = *static_cast<unsigned int *>(parmem);
     EXPECT_EQ(i, turn);
 
+    free(mem);
     free(parmem);
     i++;
-    status = SDDS_ReadTable(t);
+    status = SDDS_ReadPage(t);
   }
-
+  
+  ASSERT_EQ(1,SDDS_Terminate(t));
   delete t;
 }
 
@@ -134,7 +140,7 @@ TEST(sdds, FilterParticleId) {
   // Default are all Rows => use Logic Macro SDDS_AND to get only the filtered Rows
   unsigned int id=2u;
 
-  int status = SDDS_ReadTable(t);
+  int status = SDDS_ReadPage(t);
   int ret = SDDS_FilterRowsOfInterest(t,const_cast<char*>("particleID"),id,id,SDDS_AND);
   if (ret == -1) throw sddsi::SDDSFailure();
   ASSERT_EQ(1,ret);
@@ -156,13 +162,15 @@ TEST(sdds, FilterParticleId) {
     unsigned int turn = *static_cast<unsigned int *>(parmem);
     EXPECT_EQ(i, turn);
 
+    free(mem);
     free(parmem);
     i++;
-    status = SDDS_ReadTable(t);
+    status = SDDS_ReadPage(t);
     int ret = SDDS_FilterRowsOfInterest(t,const_cast<char*>("particleID"),id,id,SDDS_0_PREVIOUS);
     if (ret == -1) throw sddsi::SDDSFailure();
   }
 
+  ASSERT_EQ(1,SDDS_Terminate(t));
   delete t;
 }
 
@@ -171,7 +179,7 @@ TEST(sdds, FilterColumns) {
   if( SDDS_InitializeInput(t,const_cast<char*>("libpalattice.clo")) != 1 )
     throw sddsi::SDDSFailure();
   
-  SDDS_ReadTable(t);
+  SDDS_ReadPage(t);
   SDDS_SetColumnFlags(t,0); // unselect all columns first
   if( SDDS_SetColumnsOfInterest(t, SDDS_NAMES_STRING, "s x ") != 1 )
     throw sddsi::SDDSFailure();
@@ -196,6 +204,7 @@ TEST(sdds, FilterColumns) {
   EXPECT_DOUBLE_EQ(0.0, s[0]);
 
   free(mem);
+  ASSERT_EQ(1,SDDS_Terminate(t));
   delete t;
 }
 
@@ -208,6 +217,16 @@ TEST(sddsSimTool, Parameter) {
 
   double p = elegant.readParameter<double>(elegant.twiss(), "pCentral");
   EXPECT_NEAR(4.500987e+03, p, 0.001);
+}
+
+TEST(sddsSimTool, StringParameter) {
+  pal::SimToolInstance elegant(pal::elegant, pal::offline, "libpalattice.param");
+  elegant.set_sddsMode(true);
+
+  std::string p1 = elegant.readParameter<string>(elegant.twiss(), "Stage");
+  std::string p2 = elegant.readParameter<string>(elegant.twiss(), "pCentral");
+  EXPECT_STREQ("tunes uncorrected", p1.c_str());
+  EXPECT_STREQ("4500.99", p2.c_str());
 }
 
 TEST(sddsSimTool, Table) {
@@ -238,12 +257,10 @@ TEST(sddsFoP, SimToolColumn) {
   elegant.set_sddsMode(true);
   
   pal::FunctionOfPos<double> betax(elegant);
-  std::cout << "FoP constructed" << std::endl;
   EXPECT_NEAR(164.4008, betax.circumference(), 0.0001);
-  std::cout << "FoP circ. done" << std::endl;
   
   betax.readSimToolColumn(elegant, elegant.twiss(), "s", "betax");
-  EXPECT_EQ(333u,betax.size());
+  EXPECT_EQ(296u,betax.size());
   std::cout << "FoP column read" << std::endl;
   betax.print("sdds-betax.dat");
 }
@@ -266,4 +283,5 @@ TEST(sddsFoP, SimToolColumn) {
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
+
 }

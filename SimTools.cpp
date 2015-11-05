@@ -27,11 +27,18 @@ using namespace pal;
 using namespace std;
 
 
+SimToolTable::~SimToolTable()
+{
+  if (sdds) {
+    if (SDDS_Terminate(table_sdds.get()) !=1 )
+      std::cerr << "Error terminating SDDS table " << tabname << std::endl;
+  }
+}
 
 
 void SimToolTable::init_sdds(const string &filename, std::vector<string> columnKeys)
 {
-  table_sdds = std::unique_ptr<SDDS_TABLE>(new SDDS_TABLE);
+  table_sdds = std::shared_ptr<SDDS_TABLE>(new SDDS_TABLE);
   if( SDDS_InitializeInput(table_sdds.get(),const_cast<char*>(filename.c_str())) != 1 )
     throw sddsi::SDDSFailure();
   
@@ -48,6 +55,7 @@ void SimToolTable::init_sdds(const string &filename, std::vector<string> columnK
    }
 
   sdds = true;
+  tabname = filename;
   table.clear(); //delete non-sdds data
 }
 
@@ -409,18 +417,9 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
 
 
 
-void* SimToolInstance::getPointerToParameter_sdds(const string &file, const string &label)
-{
-  SDDS_TABLE *t = new SDDS_TABLE;
-  if( SDDS_InitializeInput(t,const_cast<char*>(file.c_str())) != 1 )
-    throw sddsi::SDDSFailure();
-  
-  SDDS_ReadTable(t);
-  void *mem = SDDS_GetParameter(t, const_cast<char*>(label.c_str()), NULL);
-  if (mem == NULL) throw sddsi::SDDSFailure();
-  delete t;
-  return mem;  
-}
+
+
+ 
 
 
 //specialization for string parameter -> accept space in parameter
@@ -463,6 +462,57 @@ string SimToolInstance::readParameter(const string &file, const string &label)
   throw palatticeError(msg.str());
 }
 
+//specialization for string parameter
+// -> allow every data type to be read as string
+template<>
+string SimToolInstance::readParameter_sdds(const string &file, const string &label)
+{
+  SDDS_TABLE *t = new SDDS_TABLE;
+  if( SDDS_InitializeInput(t,const_cast<char*>(file.c_str())) != 1 ) {
+    cout << file << endl;
+    throw sddsi::SDDSFailure();
+  }
+  
+  SDDS_ReadTable(t);
+  auto dataIndex = SDDS_GetParameterIndex(t, const_cast<char*>(label.c_str()));
+  if (dataIndex == -1) throw sddsi::SDDSFailure();
+  auto dataType = SDDS_GetParameterType(t, dataIndex);
+  void* mem = SDDS_GetParameterByIndex(t, dataIndex, NULL);
+  if (mem == NULL) throw sddsi::SDDSFailure();
+
+  stringstream s;
+
+  switch (dataType) {
+  case SDDS_DOUBLE:
+    s << *static_cast<double *>(mem);
+    break;
+  case SDDS_FLOAT:
+    s << *static_cast<float *>(mem);
+    break;
+  case SDDS_ULONG:
+    s << *static_cast<uint32_t *>(mem);
+    break;
+  case SDDS_LONG:
+    s << *static_cast<int32_t *>(mem);
+    break;
+  case SDDS_USHORT:
+    s << *static_cast<unsigned short *>(mem);
+    break;
+  case SDDS_SHORT:
+    s << *static_cast<short *>(mem);
+    break;
+  case SDDS_CHARACTER:
+    s << *static_cast<char *>(mem);
+    break;
+  case SDDS_STRING:
+    s << string( *static_cast<char **>(mem) );
+    break;
+  }
+  
+  free(mem);
+  delete t;
+  return s.str();
+}
 
 
 // readParameter() implementations for some parameters (labels):
