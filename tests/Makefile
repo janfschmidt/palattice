@@ -4,7 +4,9 @@ ccflags = -std=c++11 -Wall -fPIC -g
 GTEST_DIR=/home/thiry/dev/gtest-1.7.0
 
 SDDSLINKPATH=-L /home/control/epics/extensions/lib/linux-x86_64/ -L /home/control/epics/extensions/src/SDDS/SDDSlib/O.linux-x86_64/
-SDDSFLAGS =-lsddsi -lSDDS1c -lz -lmdbcommon -lmatlib -lfftpack -lnnetwork -lcsa -lrpnlib  -lmdblib -lmdbmth
+SDDSFLAGS =-lSDDS1c -lz -lmdbcommon -lmatlib -lfftpack -lnnetwork -lcsa -lrpnlib  -lmdblib -lmdbmth
+#SDDSLINKPATH=-L$(firstword $(wildcard /usr/lib/x86_64-linux-gnu/SDDS /usr/lib/i386-linux-gnu/SDDS /usr/lib64/SDDS /usr/lib/SDDS))
+#SDDSFLAGS =-lmdbcommon -lSDDS1 -lmdblib -llzma -lz
 LINKFLAGS=-lpthread -lgsl -lgslcblas -lm $(SDDSFLAGS)
 
 

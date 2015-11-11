@@ -82,12 +82,15 @@ double FunctionOfPos<T>::posInTurn(double pos) const
 template <class T>
 double FunctionOfPos<T>::posTotal(double posInTurn, unsigned int turnIn) const
 {
+  if(turnIn==0) throw palatticeError("FunctionOfPos<T>::posTotal: turn < 1 is invalid!");
   return  posInTurn + circumference()*(turnIn-1);
 }
 
 template <class T>
 unsigned int FunctionOfPos<T>::samplesInTurn(unsigned int turn) const
 {
+  if(turn==0) throw palatticeError("FunctionOfPos<T>::samplesInTurn: turn < 1 is invalid!");
+  
   unsigned int n=0;
   double posend = turn*circumference();
   for ( const_FoPiterator it=data.lower_bound((turn-1)*circumference()); it!=data.end(); it++) {
@@ -255,48 +258,10 @@ bool FunctionOfPos<T>::compatible(FunctionOfPos<T> &o, bool verbose) const
   }
 
   // tests for equal number of samples. not needed, because += and -= use interpolation of other objects data.
-  // if ( turns()!=o.turns() && o.turns()==1 ) {
-  //   // check if all turns have same number of samples as the turn of o
-  //   unsigned int osamples = o.samplesInTurn(1);
-  //   for (unsigned int t=1; t<=turns(); t++) {
-  //     if (samplesInTurn(t)!=osamples) {
-  // 	if (verbose) {
-  // 	  cout <<endl<< "=== FunctionOfPos<T> objects are not compatible! ===" << endl;
-  // 	  cout << "Number of samples is different in turn " <<t<< "("<<samplesInTurn(t) <<"/"<<osamples <<")." << endl;
-  // 	}
-  // 	return false;
-  //     }
-  //   }
-  // }
-  // if ( turns()==o.turns() ) {
-  //   // check if all turns have same number of samples
-  //   for (unsigned int t=1; t<=turns(); t++) {
-  //     if (samplesInTurn(t)!=o.samplesInTurn(t)) {
-  // 	if (verbose) {
-  // 	  cout <<endl<< "=== FunctionOfPos<T> objects are not compatible! ===" << endl;
-  // 	  cout << "Number of samples is different in turn " <<t<< "("<<samplesInTurn(t) <<"/"<<o.samplesInTurn(t) <<")." << endl;
-  // 	}
-  // 	return false;
-  //     }
-  //   }
-  // }
 
   return true;
 }
 
-
-
-// import a column of data from a madx/elegant file. if a latticeFile is given, madx/elegant is executed.
-// template <class T>
-// void FunctionOfPos<T>::readSimToolColumn(SimTool t, string file, string posColumn, vector<string> valColumn, string latticeFile)
-// {
-//   if (latticeFile=="")
-//     SimToolInstance s(t, pal::offline, file);
-//   else
-//     SimToolInstance s(t, pal::online, latticeFile);
-
-//   readSimToolColumn(s, file, posColumn, valColumn);
-// }
 
 
 
@@ -437,7 +402,7 @@ void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned in
     columns.push_back("S");
     columns.push_back("TURN");
   }
-  else if (s.tool == pal::elegant) {
+  else if (s.tool == pal::elegant && !s.sddsMode()) {
     // s: parameter in file header
     columns.push_back("Turn");
   }
@@ -446,6 +411,7 @@ void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned in
   if (!valZ.empty()) columns.push_back(valZ);
   if (!valS.empty()) columns.push_back(valS);
 
+  
   unsigned int obs;
   std::string trajFile;
   SimToolTable tab;
@@ -467,6 +433,7 @@ void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned in
   while (true) {
     // read table from file:
     trajFile=s.trajectory(obs,particle);
+    cout << "reading file " << trajFile << "\r" << std::flush;
     try {
      tab = s.readTable(trajFile, columns);
     }
@@ -474,38 +441,58 @@ void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned in
       obs--;
       break;
     }
+    if (s.sddsMode()) {
+      tab.filterRows("particleID", particle, particle);
+    }
     // read obs position
     if (s.tool==pal::madx) {
       obsPos = tab.getd(0,"S");
+    }
+    else if (s.sddsMode()) {
+      obsPos = s.readParameter<double>(trajFile,"s");
     }
     else if (s.tool==pal::elegant) {
       obsPos = s.readParameter<double>(trajFile,"position_s/m"); // read parameter in file header
     }
     // write table rows to FunctionOfPos:
-    //    if (s.tool==pal::elegant && obs==this->samples()) //elegant: obs-file at lattice end only needed for last turn
-    //  break;
-    for (unsigned int i=0; i<tab.rows(); i++) {
-      if (s.tool==pal::madx) {
-	turn = tab.get<unsigned int>(i,"TURN");
-	if (obs==1) { //see comment above ("madx & obs0001")
-	  turn += 1;
+    // ------
+    if (s.sddsMode()) {
+      while(true) {
+	turn = tab.getParameter<unsigned int>("Pass") + 1;      
+	otmp = tab.get<T>(0,valX,valZ,valS); //only 1 row per particle
+	this->set(otmp, obsPos, turn);
+	try {
+	  tab.nextPage();
+	}
+	catch(SDDSPageError) {
+	  break; //next obs point (=next file)
 	}
       }
-      else if (s.tool==pal::elegant) {
-	turn = tab.get<unsigned int>(i,"Turn");
-	// otmp.x = tab.getd("x",i);
-	// otmp.z = tab.getd("y",i);
-      }
-      otmp = tab.get<T>(i, valX, valZ, valS);
-      this->set(otmp, obsPos, turn);
     }
+    // ------
+    else {
+      for (unsigned int i=0; i<tab.rows(); i++) {
+	if (s.tool==pal::madx) {
+	  turn = tab.get<unsigned int>(i,"TURN");
+	  if (obs==1) { //see comment above ("madx & obs0001")
+	    turn += 1;
+	  }
+	}
+	else if (s.tool==pal::elegant) {
+	  turn = tab.get<unsigned int>(i,"Turn"); // +1 included in elegant2libpalattice.sh
+	}
+	otmp = tab.get<T>(i, valX, valZ, valS);
+	this->set(otmp, obsPos, turn);
+      }
+    }
+    // ------
     obs++;
   }
   //last turn has only one "real" entry: at the begin of the lattice to avoid extrapolation
   //it is read from:
   //- obs0001 for madx (see comment above)
   //- dedicated last obs (at lattice end) for elegant (implemented below)
-  if (s.tool==pal::elegant) {
+  if (!s.sddsMode() && s.tool==pal::elegant) {
     turn = tab.get<unsigned int>(tab.rows()-1,"Turn") + 1;
     otmp = tab.get<T>(tab.rows()-1, valX, valZ, valS);
     this->set(otmp, 0, turn);
@@ -532,7 +519,6 @@ void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned in
   stmp << samplesInTurn(1);
   this->info.add("number of obs. points", stmp.str());
 }
-
 
 
 

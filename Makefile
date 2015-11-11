@@ -1,8 +1,8 @@
 CC=g++
 ccflags = -std=c++11 -Wall -fPIC -g #-O0
 LIB_NAME=libpalattice
-Vmajor=3.6
-Vminor=2
+Vmajor=3.7
+Vminor=0
 INSTALL_PATH=/usr/local/
 
 ALL_O=Interpolate.o Metadata.o ELSASpuren.o FunctionOfPos.o Field.o AccElements.o AccLattice.o Spectrum.o SimTools.o ResStrengths.o
@@ -10,7 +10,9 @@ LIB_FILE=$(LIB_NAME).so
 SIMTOOL_PATH=$(INSTALL_PATH)/lib/libpalattice_simTools
 
 SDDSLINKPATH=-L /home/control/epics/extensions/lib/linux-x86_64/ -L /home/control/epics/extensions/src/SDDS/SDDSlib/O.linux-x86_64/
-SDDSFLAGS =-lsddsi -lSDDS1c -lz -lmdbcommon -lmatlib -lfftpack -lnnetwork -lcsa -lrpnlib  -lmdblib -lmdbmth
+SDDSFLAGS =-lSDDS1c -lz -lmdbcommon -lmatlib -lfftpack -lnnetwork -lcsa -lrpnlib  -lmdblib -lmdbmth
+#SDDSLINKPATH=-L$(firstword $(wildcard /usr/lib/x86_64-linux-gnu/SDDS /usr/lib/i386-linux-gnu/SDDS /usr/lib64/SDDS /usr/lib/SDDS))
+#SDDSFLAGS =-lmdbcommon -lSDDS1 -lmdblib -llzma -lz
 LINKFLAGS=-lgsl -lgslcblas -lm $(SDDSFLAGS)
 GTESTFLAGS=-lpthread $(LINKFLAGS)
 

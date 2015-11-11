@@ -32,6 +32,19 @@ namespace pal
   enum SimTool{madx,elegant};
   enum SimToolMode{online,offline};
 
+
+  class SddsColumnFilter {
+  public:
+    std::string column;
+    double min;
+    double max;
+    bool on;
+    SddsColumnFilter() : on(false) {}
+    SddsColumnFilter(string _column, double _min, double _max) : column(_column), min(_min), max(_max), on(true) {}
+    void set(string _column, double _min, double _max) {column=_column; min=_min; max=_max; on=true;}
+    char* c_column() {return const_cast<char *>(column.c_str());}
+  };
+
   
   // a table with columns accessible by column key (string) and row index (int).
   // values are set as string and allow get<T>(key,index) with any type T.
@@ -43,9 +56,11 @@ namespace pal
     map< string, vector<string> > table;
     std::string tabname;
     std::shared_ptr<SDDS_TABLE> table_sdds;
+    SddsColumnFilter sddsFilter;
     bool sdds;
 
     template<class T> T get_sdds(unsigned int index, string keyX, string keyZ="", string keyS="") const;
+    void free_sdds();
     
 
   public:
@@ -66,6 +81,14 @@ namespace pal
     //short forms: getd = get<double> and gets = get<string>
     double getd(unsigned int index, string key) const {return get<double>(index,key);}
     string gets(unsigned int index, string key) const {return get<string>(index,key);}
+    template<class T> T getParameter(const string &label);
+
+    //special functions for sdds mode:
+    //go to next page of SDDS file. previously applied filter is used
+    void nextPage();
+    //ignore all lines from SDDS file, if value in given column is out of given range
+    //is immediately applied to current page 
+    void filterRows(string column, double min, double max);
   };
   
 
@@ -109,9 +132,13 @@ namespace pal
     void setNumParticles(unsigned int n);
     void setRunFile(string file) {runFile = file;}
     void set_sddsMode(bool s) {sdds = s;}
-    
-    SimToolTable readTable(string file, vector<string> columnKeys, unsigned int maxRows=0); // read specified columns from a madx/elegant table format output file (reading stopped after [maxRows] rows, if !=0)
-    template<class T> T readParameter(const string &file, const string &label); // read specified parameter from file header
+
+    // read specified columns from a madx/elegant table format output file
+    // - if columnKeys is not given, all columns are read
+    // - reading stopped after [maxRows] rows, if !=0
+    SimToolTable readTable(string file, vector<string> columnKeys=vector<string>(), unsigned int maxRows=0);
+    // read specified parameter from file
+    template<class T> T readParameter(const string &file, const string &label);
 
     // readParameter() implementations for some parameters (labels):
     double readCircumference();
@@ -130,18 +157,35 @@ namespace pal
     string twiss() const {return outCases("twiss", "twi");}
     string orbit() const {return outCases("twiss", "clo");}
     string trajectory(unsigned int obs, unsigned int particle) const;
+    string trajectory_sdds(unsigned int obs) const;
 
     bool runDone() const {return executed;}
     bool sddsMode() const {if(sdds && tool==elegant) return true; else return false;}
   };
 
 
-  //SimToolInstance template function specialization
+  //template function specialization
   template<> string SimToolInstance::readParameter(const string &file, const string &label);
-  template<> string SimToolInstance::readParameter_sdds(const string &file, const string &label);
   template<> AccPair SimToolTable::get(unsigned int index, string keyX, string keyZ, string keyS) const;
   template<> AccTriple SimToolTable::get(unsigned int index, string keyX, string keyZ, string keyS) const;
+  template<> string SimToolTable::getParameter(const string &label);
 
+
+  class SDDSError : public std::exception
+  {
+    virtual const char* what() const throw()
+    {
+      SDDS_PrintErrors(stdout,SDDS_VERBOSE_PrintErrors);
+      return "SDDS ERROR description above";
+    }
+  };
+
+  class SDDSPageError : public SDDSError {
+    virtual const char* what() const throw()
+    {
+      return "End of SDDS file reached.";
+    }
+  };
   
 } //namespace pal
 
@@ -230,24 +274,29 @@ T pal::SimToolInstance::readParameter(const string &file, const string &label)
 }
 
 
+
 template<class T>
 T pal::SimToolInstance::readParameter_sdds(const string &file, const string &label)
 {
-  SDDS_TABLE *t = new SDDS_TABLE;
-  if( SDDS_InitializeInput(t,const_cast<char*>(file.c_str())) != 1 )
-    throw sddsi::SDDSFailure();
-  
-  SDDS_ReadTable(t);
-  void* mem = SDDS_GetParameter(t, const_cast<char*>(label.c_str()), NULL);
-  if (mem == NULL) throw sddsi::SDDSFailure();
+  SimToolTable t;
+  t.init_sdds(file);
+  return t.getParameter<T>(label);
+}
+
+template<class T>
+T pal::SimToolTable::getParameter(const string &label)
+{
+  if (!sdds)
+    throw palatticeError("SimToolTable::getParameter(): Can only be used in SDDS mode. Use SimToolInstamce::readParameter() instead");
+
+  void* mem = SDDS_GetParameter(table_sdds.get(), const_cast<char*>(label.c_str()), NULL);
+  if (mem == NULL) throw SDDSError();
   T ret = *static_cast<T *>(mem);
   
   free(mem);
-  if (SDDS_Terminate(t) !=1 )
-    std::cerr << "Error terminating SDDS table in SimToolInstance::readParameter_sdds()" << std::endl;
-  delete t;
   return ret;
 }
+
 
 #endif
 /*__LIBPALATTICE_SIMTOOLS_HPP_*/

@@ -136,7 +136,7 @@ TEST(sdds, FilterParticleId) {
     throw sddsi::SDDSFailure();
 
   // filter single particle id
-  // by SDDS_FilterRowsOfInterest AFTER(!) EACH(!) SDDS_ReadTable call
+  // by SDDS_FilterRowsOfInterest AFTER(!) EACH(!) SDDS_ReadPage call
   // Default are all Rows => use Logic Macro SDDS_AND to get only the filtered Rows
   unsigned int id=2u;
 
@@ -211,6 +211,7 @@ TEST(sdds, FilterColumns) {
 
 
 
+
 TEST(sddsSimTool, Parameter) {
   pal::SimToolInstance elegant(pal::elegant, pal::offline, "libpalattice.param");
   elegant.set_sddsMode(true);
@@ -234,7 +235,8 @@ TEST(sddsSimTool, Table) {
   elegant.set_sddsMode(true);
 
   std::vector<std::string> columnKeys = {"s", "x", "y"};
-  pal::SimToolTable tab = elegant.readTable(elegant.orbit(), columnKeys);
+  pal::SimToolTable tab;
+  tab = elegant.readTable(elegant.orbit(), columnKeys);
 
   EXPECT_EQ(333u, tab.rows());
   EXPECT_EQ(3u, tab.columns());
@@ -252,7 +254,12 @@ TEST(sddsSimTool, Circumference) {
 }
 
 
-TEST(sddsFoP, SimToolColumn) {
+
+
+
+
+
+TEST(sddsFoP, Column) {
   pal::SimToolInstance elegant(pal::elegant, pal::offline, "libpalattice.param");
   elegant.set_sddsMode(true);
   
@@ -261,21 +268,36 @@ TEST(sddsFoP, SimToolColumn) {
   
   betax.readSimToolColumn(elegant, elegant.twiss(), "s", "betax");
   EXPECT_EQ(296u,betax.size());
-  std::cout << "FoP column read" << std::endl;
   betax.print("sdds-betax.dat");
 }
 
-// TEST(sddsFoP, OrbitTest) {
-//   pal::SimToolInstance elegant(pal::elegant, pal::offline, "libpalattice.param");
-//   elegant.set_sddsMode(true);
+
+TEST(sddsFoP, Orbit) {
+  pal::SimToolInstance elegant(pal::elegant, pal::offline, "libpalattice.param");
+  elegant.set_sddsMode(true);
   
-//   pal::FunctionOfPos<pal::AccPair> orbit(elegant);
-//   EXPECT_NEAR(164.4008, orbit.circumference(), 0.0001);
+  pal::FunctionOfPos<pal::AccPair> orbit(elegant);
+  EXPECT_NEAR(164.4008, orbit.circumference(), 0.0001);
   
-//   //orbit.simToolClosedOrbit(elegant);
-//   EXPECT_EQ(333u,orbit.size());
-//   orbit.print("sdds-orbit.dat");
-// }
+  orbit.simToolClosedOrbit(elegant);
+  EXPECT_EQ(296u,orbit.size());
+  orbit.print("sdds-orbit.dat");
+}
+
+
+TEST(sddsFoP, Trajectory) {
+  pal::SimToolInstance elegant(pal::elegant, pal::offline, "libpalattice.param");
+  elegant.set_sddsMode(true);
+  
+  pal::FunctionOfPos<AccPair> traj(elegant);
+  EXPECT_NEAR(164.4008, traj.circumference(), 0.0001);
+
+  traj.simToolTrajectory(elegant, 3);
+  EXPECT_EQ(1000u, traj.turns());
+  EXPECT_EQ(33u, traj.samplesInTurn(1));
+  EXPECT_EQ(33u, traj.samplesInTurn(986));
+  traj.print("sdds-trajectory.dat");
+}
 
 
 

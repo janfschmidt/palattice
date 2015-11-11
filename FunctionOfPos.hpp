@@ -45,6 +45,7 @@ protected:
 private:
   void hide_last_turn() {n_turns-=1;} // reduce turns by one (only do this, if you need pos=0. value to avoid extrapolation for non-periodic function!)
   void circCheck();
+  void readSimToolParticleColumn_sdds(SimToolInstance &s, unsigned int particle, string valX, string valZ="", string valS="");
 
 
 public:
@@ -83,7 +84,7 @@ public:
 
   void readSimToolColumn(SimToolInstance &s, string file, string posColumn, string valX, string valZ="", string valS=""); // import a column of data from usual madx/elegant table files like twiss, closed-orbit etc.
   void readSimToolParticleColumn(SimToolInstance &s, unsigned int particle, string valX, string valZ="", string valS=""); // import single particle data from madx/elegant tracking "obs"/"watch" files
-
+  
   // orbit import
   void simToolClosedOrbit(SimToolInstance &s);                  //import closed orbit from madx (twiss file) or elegant (clo file)
   void madxClosedOrbit(string madxFile, SimToolMode m=online) {SimToolInstance mad(pal::madx, m, madxFile); simToolClosedOrbit(mad);}

@@ -29,7 +29,11 @@ using namespace std;
 
 SimToolTable::~SimToolTable()
 {
-  if (sdds) {
+  free_sdds();
+}
+
+void SimToolTable::free_sdds() {
+  if (sdds && table_sdds.unique()) {
     if (SDDS_Terminate(table_sdds.get()) !=1 )
       std::cerr << "Error terminating SDDS table " << tabname << std::endl;
   }
@@ -38,9 +42,11 @@ SimToolTable::~SimToolTable()
 
 void SimToolTable::init_sdds(const string &filename, std::vector<string> columnKeys)
 {
-  table_sdds = std::shared_ptr<SDDS_TABLE>(new SDDS_TABLE);
+  free_sdds(); //close & free previous sdds data
+  
+  table_sdds = std::make_shared<SDDS_TABLE>();
   if( SDDS_InitializeInput(table_sdds.get(),const_cast<char*>(filename.c_str())) != 1 )
-    throw sddsi::SDDSFailure();
+    throw palatticeFileError(filename);
   
   SDDS_ReadPage(table_sdds.get());
 
@@ -51,7 +57,7 @@ void SimToolTable::init_sdds(const string &filename, std::vector<string> columnK
       tmp << key << " ";
     SDDS_SetColumnFlags(table_sdds.get(),0); // unselect all columns first
     if( SDDS_SetColumnsOfInterest(table_sdds.get(), SDDS_NAMES_STRING, tmp.str().c_str()) != 1 )
-    throw sddsi::SDDSFailure();
+    throw SDDSError();
    }
 
   sdds = true;
@@ -72,10 +78,10 @@ template<> AccPair SimToolTable::get(unsigned int i, string keyX, string keyZ, s
 
 template<> AccTriple SimToolTable::get(unsigned int i, string keyX, string keyZ, string keyS) const
 {
-    if (keyZ.empty())
-      throw palatticeError("SimToolTable::get<AccPair>: No key for z column given!");
-    if (keyS.empty())
-      throw palatticeError("SimToolTable::get<AccPair>: No key for s column given!");
+  if (keyZ.empty())
+    throw palatticeError("SimToolTable::get<AccPair>: No key for z column given!");
+  if (keyS.empty())
+    throw palatticeError("SimToolTable::get<AccPair>: No key for s column given!");
   AccTriple tmp;
   tmp.x = this->getd(i,keyX);
   tmp.z = this->getd(i,keyZ);
@@ -83,6 +89,36 @@ template<> AccTriple SimToolTable::get(unsigned int i, string keyX, string keyZ,
   return tmp;
 }
 
+void SimToolTable::nextPage()
+{
+  if(!sddsMode()) {
+    std::cout << "SimToolTable::nextPage() - useless in non-SDDS-mode" << std::endl;
+    return;
+  }
+
+  auto ret = SDDS_ReadPage(table_sdds.get());
+  if( ret == -1 )
+    throw SDDSPageError();
+  else if (ret == 0)
+    throw SDDSError();
+  
+  if (sddsFilter.on) {
+    if ( SDDS_FilterRowsOfInterest(table_sdds.get(), sddsFilter.c_column(),sddsFilter.min,sddsFilter.max,SDDS_AND) == -1)
+      throw SDDSError();
+  }
+}
+
+void SimToolTable::filterRows(string column, double min, double max)
+{
+  if(!sddsMode()) {
+    std::cout << "SimToolTable::filterRows() - not implemented in non-SDDS-mode" << std::endl;
+    return;
+  }
+
+  sddsFilter.set(column,min,max);
+  if ( SDDS_FilterRowsOfInterest(table_sdds.get(), sddsFilter.c_column(),sddsFilter.min,sddsFilter.max,SDDS_AND) == -1)
+    throw SDDSError();
+}
 
 
 
@@ -142,10 +178,27 @@ string SimToolInstance::trajectory(unsigned int obs, unsigned int particle) cons
   int n = 1024;
   char tmp[n];
   string out;
-  if (tool == madx)
+  
+  if (sddsMode())
+    return trajectory_sdds(obs);
+  else if (tool == madx)
     snprintf(tmp, n, "%s%s.obs%04d.p%04d", path().c_str(), filebase().c_str(), obs, particle);
   else if (tool== elegant)
     snprintf(tmp, n, "%s%s.w%04d.p%d", path().c_str(), filebase().c_str(), obs, particle);
+  out = tmp;
+
+  return out;
+}
+
+string SimToolInstance::trajectory_sdds(unsigned int obs) const
+{
+  int n = 1024;
+  char tmp[n];
+  string out;
+  if (sddsMode())
+    snprintf(tmp, n, "%s%s%03d.w", path().c_str(), filebase().c_str(), obs);
+  else
+    std::cout << "SimToolInstance::trajectory_sdds(): use trajectory() if not in sdds mode.";
   out = tmp;
 
   return out;
@@ -206,14 +259,8 @@ void SimToolInstance::run()
   else if (tool== elegant)
     replaceInFile("lattice", tmp.str(), ",", runFile);
 
-  // set output file tag in runFile:
-  if (tool== elegant) {
-    string tmpcmd;
-    if (tag=="") tmpcmd = "\"elegant2libpalattice none ";
-    else tmpcmd = "\"elegant2libpalattice " + tag + " ";
-    replaceInFile("command", tmpcmd, "%s", runFile);
-  }
-  else if (tool== madx) {
+  // set output file tag in madx runFile:
+  if (tool== madx) {
     replaceTagInFile("madx", "twiss", tag, runFile);      // twiss file
     replaceTagInFile("madx", "dipealign", tag, runFile);  // dipealign file
     replaceTagInFile("madx", "quadealign", tag, runFile); // quadealign file
@@ -266,6 +313,14 @@ void SimToolInstance::run()
     stringstream msg;
     msg << tool_string() << " Error! (see " << log() <<")";
     throw palatticeError(msg.str());
+  }
+
+  //elegant: run shell script for sdds to ascii conversion
+  if ( !sddsMode() && tool==elegant ) {
+    string tmpcmd;
+    if (tag=="") tmpcmd = "elegant2libpalattice none " + filebase();
+    else tmpcmd = "elegant2libpalattice " + tag + " " + filebase();
+    system(tmpcmd.c_str());
   }
 
 
@@ -322,6 +377,10 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
   string tmp;
   map<unsigned int,string> columnPos;
   unsigned int col = 0;
+  bool readAllColumns = false;
+  if (columnKeys.size() == 0)
+    readAllColumns = true;
+  
   tabFile >> tmp;
   //look for headline:
   while (!tabFile.eof()) {
@@ -336,15 +395,18 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
       while (!line.fail()) {
 	line >> tmp;
 	//check against all requested column keys
-	for (unsigned int k=0; k<columnKeys.size(); k++) {
-	  if (tmp == columnKeys[k]) {
-	    columnPos[col] = tmp;
-	    break;
-	  }
-	}//check against column keys
+	if (readAllColumns) {
+	  columnPos[col] = tmp;
+	}
+	else {
+	  for (unsigned int k=0; k<columnKeys.size(); k++) {
+	    if (tmp == columnKeys[k]) {
+	      columnPos[col] = tmp;
+	      break;
+	    }
+	  }//check against column keys
+	}
 	col++;
-	if (columnPos.size() == columnKeys.size()) //break if all keys found
-	  break;
       }//check single columns of headline
       break;
     }//begin of headline
@@ -465,20 +527,16 @@ string SimToolInstance::readParameter(const string &file, const string &label)
 //specialization for string parameter
 // -> allow every data type to be read as string
 template<>
-string SimToolInstance::readParameter_sdds(const string &file, const string &label)
+string SimToolTable::getParameter(const string &label)
 {
-  SDDS_TABLE *t = new SDDS_TABLE;
-  if( SDDS_InitializeInput(t,const_cast<char*>(file.c_str())) != 1 ) {
-    cout << file << endl;
-    throw sddsi::SDDSFailure();
-  }
-  
-  SDDS_ReadTable(t);
-  auto dataIndex = SDDS_GetParameterIndex(t, const_cast<char*>(label.c_str()));
-  if (dataIndex == -1) throw sddsi::SDDSFailure();
-  auto dataType = SDDS_GetParameterType(t, dataIndex);
-  void* mem = SDDS_GetParameterByIndex(t, dataIndex, NULL);
-  if (mem == NULL) throw sddsi::SDDSFailure();
+  if (!sdds)
+    throw palatticeError("SimToolTable::getParameter(): Can only be used in SDDS mode. Use SimToolInstamce::readParameter() instead");
+
+  auto dataIndex = SDDS_GetParameterIndex(table_sdds.get(), const_cast<char*>(label.c_str()));
+  if (dataIndex == -1) throw SDDSError();
+  auto dataType = SDDS_GetParameterType(table_sdds.get(), dataIndex);
+  void* mem = SDDS_GetParameterByIndex(table_sdds.get(), dataIndex, NULL);
+  if (mem == NULL) throw SDDSError();
 
   stringstream s;
 
@@ -510,7 +568,6 @@ string SimToolInstance::readParameter_sdds(const string &file, const string &lab
   }
   
   free(mem);
-  delete t;
   return s.str();
 }
 
