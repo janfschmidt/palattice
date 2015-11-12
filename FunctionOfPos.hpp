@@ -45,8 +45,10 @@ protected:
 private:
   void hide_last_turn() {n_turns-=1;} // reduce turns by one (only do this, if you need pos=0. value to avoid extrapolation for non-periodic function!)
   void circCheck();
-  void readSimToolParticleColumn_sdds(SimToolInstance &s, unsigned int particle, string valX, string valZ="", string valS="");
-
+  //parts of readSimToolParticleColumn:
+  vector<string> getTrajectoryColumns(const SimToolInstance &s, const string &valX, const string &valZ, const string &valS) const;
+  double readObsPos(SimToolInstance &s, SimToolTable &tab, const string &trajFile) const;
+  void writeTrajectoryMetadata(SimToolInstance &s, unsigned int particle, const string &valX, const string &valZ, const string &valS);
 
 public:
   //Metadata info -> is inherited from Interpolate<T>

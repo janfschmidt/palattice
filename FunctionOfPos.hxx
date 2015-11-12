@@ -396,7 +396,81 @@ void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned in
   
   this->clear(); //delete old data
 
-  //SimTool columns
+  auto columns = getTrajectoryColumns(s, valX,valZ,valS);
+
+  //for chosen particle: read data from all observation points
+  //-----------------------------------------------------------------------------------------------------
+  //madx & obs0001 is a special case: it corresponds to s=0.0m (START marker in MAD-X), but counts the turns different:
+  //turn=0, s=0.0 are the initial conditions (beginning of turn 1)
+  //turn=1, s=0.0 is the beginning of turn 2 or END of turn 1.
+  //So the data of obs0001 is used with s=0.0 but one turn later than written in MAD-X to fit our notation
+  //-----------------------------------------------------------------------------------------------------
+  unsigned int obs = 0;
+  if (s.tool==pal::madx) obs=1;
+
+  //iterate all existing obs files:
+  while (true) {
+    string trajFile=s.trajectory(obs,particle);
+    cout << "reading file " << trajFile << "\r" << std::flush;
+    try {
+      SimToolTable tab = s.readTable(trajFile, columns);
+      if (s.sddsMode()) {
+	tab.filterRows("particleID", particle, particle);
+      }
+    
+      double obsPos = readObsPos(s, tab, trajFile);
+ 
+      // write table rows to FunctionOfPos:
+      unsigned int turn;
+      // ------
+      if (s.sddsMode()) {
+	while(true) {
+	  turn = tab.getParameter<unsigned int>("Pass") + 1;      
+	  T otmp = tab.get<T>(0,valX,valZ,valS); //only 1 row per particle
+	  this->set(otmp, obsPos, turn);
+	  try {
+	    tab.nextPage();
+	  }
+	  catch(SDDSPageError) {
+	    break; //next obs point (=next file)
+	  }
+	}
+      }
+      // ------
+      else {
+	for (unsigned int i=0; i<tab.rows(); i++) {
+	  if (s.tool==pal::madx) {
+	    turn = tab.get<unsigned int>(i,"TURN");
+	    if (obs==1) { //see comment above ("madx & obs0001")
+	      turn += 1;
+	    }
+	  }
+	  else if (s.tool==pal::elegant) {
+	    turn = tab.get<unsigned int>(i,"Turn"); // +1 included in elegant2libpalattice.sh
+	  }
+	  T otmp = tab.get<T>(i, valX, valZ, valS);
+	  this->set(otmp, obsPos, turn);
+	}
+      }
+      // ------
+      obs++;
+    }
+    catch (palatticeFileError) { //thrown by readTable if file not found
+      break;
+    }
+  }
+
+  hide_last_turn(); //last data point is at begin of next turn (pos=0), but this should not be shown as additional turn
+  if (this->periodic)
+    this->period = circumference() * n_turns;
+  writeTrajectoryMetadata(s,particle, valX,valZ,valS);
+}
+
+
+
+template <class T>
+vector<string> FunctionOfPos<T>::getTrajectoryColumns(const SimToolInstance &s, const string &valX, const string &valZ, const string &valS) const
+{
   vector<string> columns;
   if (s.tool == pal::madx) {
     columns.push_back("S");
@@ -406,102 +480,34 @@ void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned in
     // s: parameter in file header
     columns.push_back("Turn");
   }
-
   columns.push_back(valX);
   if (!valZ.empty()) columns.push_back(valZ);
   if (!valS.empty()) columns.push_back(valS);
+  return std::move(columns);
+}
 
-  
-  unsigned int obs;
-  std::string trajFile;
-  SimToolTable tab;
-
-
-  //for chosen particle: read data from all observation points
-  //-----------------------------------------------------------------------------------------------------
-  //madx & obs0001 is a special case: it corresponds to s=0.0m (START marker in MAD-X), but counts the turns different:
-  //turn=0, s=0.0 are the initial conditions (beginning of turn 1)
-  //turn=1, s=0.0 is the beginning of turn 2 or END of turn 1.
-  //So the data of obs0001 is used with s=0.0 but one turn later than written in MAD-X to fit our notation
-  //-----------------------------------------------------------------------------------------------------
-  T otmp;
-  unsigned int turn;
+template <class T>
+double FunctionOfPos<T>::readObsPos(SimToolInstance &s, SimToolTable &tab, const string &trajFile) const
+{
   double obsPos;
-  if (s.tool==pal::madx) obs=1;
-  else if (s.tool==pal::elegant) obs=0;
-  //iterate all existing obs files:
-  while (true) {
-    // read table from file:
-    trajFile=s.trajectory(obs,particle);
-    cout << "reading file " << trajFile << "\r" << std::flush;
-    try {
-     tab = s.readTable(trajFile, columns);
-    }
-    catch (palatticeFileError) {
-      obs--;
-      break;
-    }
-    if (s.sddsMode()) {
-      tab.filterRows("particleID", particle, particle);
-    }
-    // read obs position
-    if (s.tool==pal::madx) {
-      obsPos = tab.getd(0,"S");
-    }
-    else if (s.sddsMode()) {
-      obsPos = s.readParameter<double>(trajFile,"s");
-    }
-    else if (s.tool==pal::elegant) {
-      obsPos = s.readParameter<double>(trajFile,"position_s/m"); // read parameter in file header
-    }
-    // write table rows to FunctionOfPos:
-    // ------
-    if (s.sddsMode()) {
-      while(true) {
-	turn = tab.getParameter<unsigned int>("Pass") + 1;      
-	otmp = tab.get<T>(0,valX,valZ,valS); //only 1 row per particle
-	this->set(otmp, obsPos, turn);
-	try {
-	  tab.nextPage();
-	}
-	catch(SDDSPageError) {
-	  break; //next obs point (=next file)
-	}
-      }
-    }
-    // ------
-    else {
-      for (unsigned int i=0; i<tab.rows(); i++) {
-	if (s.tool==pal::madx) {
-	  turn = tab.get<unsigned int>(i,"TURN");
-	  if (obs==1) { //see comment above ("madx & obs0001")
-	    turn += 1;
-	  }
-	}
-	else if (s.tool==pal::elegant) {
-	  turn = tab.get<unsigned int>(i,"Turn"); // +1 included in elegant2libpalattice.sh
-	}
-	otmp = tab.get<T>(i, valX, valZ, valS);
-	this->set(otmp, obsPos, turn);
-      }
-    }
-    // ------
-    obs++;
+  if (s.tool==pal::madx) {
+    obsPos = tab.getd(0,"S");
   }
-  //last turn has only one "real" entry: at the begin of the lattice to avoid extrapolation
-  //it is read from:
-  //- obs0001 for madx (see comment above)
-  //- dedicated last obs (at lattice end) for elegant (implemented below)
-  if (!s.sddsMode() && s.tool==pal::elegant) {
-    turn = tab.get<unsigned int>(tab.rows()-1,"Turn") + 1;
-    otmp = tab.get<T>(tab.rows()-1, valX, valZ, valS);
-    this->set(otmp, 0, turn);
+  else if (s.sddsMode()) {
+    obsPos = tab.getParameter<double>("s");
   }
-  this->hide_last_turn();
-  //this->pop_back_turn();
-  if(this->periodic) this->period=circumference()*n_turns;
+  else if (s.tool==pal::elegant) {
+    obsPos = s.readParameter<double>(trajFile,"position_s/m");
+  }
+  else {
+    throw palatticeError("Illegal SimTool in FunctionOfPos<T>::readObsPos");
+  }
+  return std::move(obsPos);
+}
 
-   //metadata
+template <class T>
+void FunctionOfPos<T>::writeTrajectoryMetadata(SimToolInstance &s, unsigned int particle, const string &valX, const string &valZ, const string &valS)
+{
   stringstream stmp;
   this->info.add("Single Particle Data from", s.tool_string());
   this->info.add("Data Source path", s.path());
@@ -519,8 +525,6 @@ void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned in
   stmp << samplesInTurn(1);
   this->info.add("number of obs. points", stmp.str());
 }
-
-
 
 
 

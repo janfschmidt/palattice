@@ -27,24 +27,17 @@ using namespace pal;
 using namespace std;
 
 
-SimToolTable::~SimToolTable()
-{
-  free_sdds();
-}
-
-void SimToolTable::free_sdds() {
-  if (sdds && table_sdds.unique()) {
-    if (SDDS_Terminate(table_sdds.get()) !=1 )
-      std::cerr << "Error terminating SDDS table " << tabname << std::endl;
-  }
-}
-
 
 void SimToolTable::init_sdds(const string &filename, std::vector<string> columnKeys)
 {
-  free_sdds(); //close & free previous sdds data
+
+  // SDDS_TABLE pointer with custom deleter
+  table_sdds = std::shared_ptr<SDDS_TABLE>(new SDDS_TABLE, [](SDDS_TABLE *t){
+      if (SDDS_Terminate(t) !=1 )
+	std::cerr << "Error terminating SDDS table" << std::endl;
+      delete t;
+    });
   
-  table_sdds = std::make_shared<SDDS_TABLE>();
   if( SDDS_InitializeInput(table_sdds.get(),const_cast<char*>(filename.c_str())) != 1 )
     throw palatticeFileError(filename);
   
@@ -380,6 +373,8 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
   bool readAllColumns = false;
   if (columnKeys.size() == 0)
     readAllColumns = true;
+  vector<string> remainingColumnKeys(columnKeys);
+    
   
   tabFile >> tmp;
   //look for headline:
@@ -391,7 +386,7 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
       //read headline:
       getline(tabFile, tmp);
       stringstream line(tmp);
-      //check single columns of headline
+      //check each column of headline
       while (!line.fail()) {
 	line >> tmp;
 	//check against all requested column keys
@@ -399,15 +394,16 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
 	  columnPos[col] = tmp;
 	}
 	else {
-	  for (unsigned int k=0; k<columnKeys.size(); k++) {
-	    if (tmp == columnKeys[k]) {
+	  for (auto it=remainingColumnKeys.begin(); it!=remainingColumnKeys.end(); ++it) {
+	    if (tmp == *it) {
 	      columnPos[col] = tmp;
+	      remainingColumnKeys.erase(it);
 	      break;
 	    }
 	  }//check against column keys
 	}
 	col++;
-      }//check single columns of headline
+      }//check each column of headline
       break;
     }//begin of headline
     tabFile >> tmp;
@@ -419,7 +415,7 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
     msg << "ERROR: SimToolInstance::readTable(): " << filename << " is not a valid "<<tool_string()<<" output file. No column headline found.";
     throw palatticeError(msg.str());
   }
-  if (columnPos.size() != columnKeys.size()) {
+  if (!readAllColumns && columnPos.size()!=columnKeys.size()) {
     stringstream msg;
     msg << "ERROR: SimToolInstance::readTable(): " <<columnPos.size()<< " of " <<columnKeys.size()<< " requested columns found in " << filename;
     if (columnPos.size()>0) {
@@ -450,7 +446,6 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
 
 
   //read data:
-
   bool stop=false;
   if (maxRows!=0) stop=true;
   unsigned int nLines=0;

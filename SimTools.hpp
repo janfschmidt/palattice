@@ -60,12 +60,11 @@ namespace pal
     bool sdds;
 
     template<class T> T get_sdds(unsigned int index, string keyX, string keyZ="", string keyS="") const;
-    void free_sdds();
     
 
   public:
     SimToolTable(std::string _name="") : tabname(_name), sdds(false) {}
-    ~SimToolTable();
+    ~SimToolTable() {};
     SimToolTable(const SimToolTable & other) = default;
     SimToolTable& operator=(const SimToolTable & other) = default;
     
