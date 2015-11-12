@@ -59,7 +59,7 @@ namespace pal
     SddsColumnFilter sddsFilter;
     bool sdds;
 
-    template<class T> T get_sdds(unsigned int index, string keyX, string keyZ="", string keyS="") const;
+    template<class T> T get_sdds(unsigned int index, string key) const;
     
 
   public:
@@ -168,6 +168,7 @@ namespace pal
   template<> AccPair SimToolTable::get(unsigned int index, string keyX, string keyZ, string keyS) const;
   template<> AccTriple SimToolTable::get(unsigned int index, string keyX, string keyZ, string keyS) const;
   template<> string SimToolTable::getParameter(const string &label);
+  template<> string SimToolTable::get_sdds(unsigned int index, string key) const;
 
 
   class SDDSError : public std::exception
@@ -205,7 +206,7 @@ T pal::SimToolTable::get(unsigned int index, string key, string keyZ, string key
   }
 
   if(sdds) {
-    return get_sdds<T>(index,key,keyZ,keyS);
+    return get_sdds<T>(index,key);
   }
 
   map< string, vector<string> >::const_iterator it = table.find(key);
@@ -222,7 +223,7 @@ T pal::SimToolTable::get(unsigned int index, string key, string keyZ, string key
 }
 
 template<class T>
-T pal::SimToolTable::get_sdds(unsigned int index, string key, string keyZ, string keyS) const
+T pal::SimToolTable::get_sdds(unsigned int index, string key) const
 {
   void* mem = SDDS_GetValue(table_sdds.get(), const_cast<char*>(key.c_str()), index, NULL);
   if (mem == NULL) {

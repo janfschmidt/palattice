@@ -37,6 +37,7 @@ TEST(sdds, StringParameter) {
   EXPECT_STREQ("BPM02", s.c_str());
 
   free(*((char**)mem));
+  free(mem);
   ASSERT_EQ(1,SDDS_Terminate(t));
   delete t;
 }
@@ -242,6 +243,7 @@ TEST(sddsSimTool, Table) {
   EXPECT_EQ(3u, tab.columns());
   EXPECT_NEAR(164.4008, tab.getd(332,"s"), 0.0001);
   EXPECT_DOUBLE_EQ(0.0, tab.get<double>(0,"s"));
+  EXPECT_STREQ("0", tab.get<std::string>(0,"s").c_str());
   
   std::cout << "xp[20]="<<tab.getd(20,"xp") << std::endl;
 }

@@ -561,8 +561,60 @@ string SimToolTable::getParameter(const string &label)
     s << string( *static_cast<char **>(mem) );
     break;
   }
+
+  if(dataType == SDDS_STRING)
+    if(*((char**)mem)) free(*((char**)mem));
+  if(mem) free(mem);
+  return s.str();
+}
+
+//specialization for string parameter
+// -> allow every data type to be read as string
+template<>
+string SimToolTable::get_sdds(unsigned int index, string key) const
+{
+  auto dataIndex = SDDS_GetColumnIndex(table_sdds.get(), const_cast<char*>(key.c_str()));
+  if (dataIndex == -1) throw SDDSError();
+  auto dataType = SDDS_GetColumnType(table_sdds.get(), dataIndex);
+  void* mem = SDDS_GetValueByIndex(table_sdds.get(), dataIndex, index, NULL);
+  if (mem == NULL) {
+    stringstream msg;
+    msg << "pal::SimToolTable::get<T>(): No column \"" <<key<< "\" in SDDS table " << this->name();
+    throw palatticeError(msg.str());
+  }
   
-  free(mem);
+  stringstream s;
+
+  switch (dataType) {
+  case SDDS_DOUBLE:
+    s << *static_cast<double *>(mem);
+    break;
+  case SDDS_FLOAT:
+    s << *static_cast<float *>(mem);
+    break;
+  case SDDS_ULONG:
+    s << *static_cast<uint32_t *>(mem);
+    break;
+  case SDDS_LONG:
+    s << *static_cast<int32_t *>(mem);
+    break;
+  case SDDS_USHORT:
+    s << *static_cast<unsigned short *>(mem);
+    break;
+  case SDDS_SHORT:
+    s << *static_cast<short *>(mem);
+    break;
+  case SDDS_CHARACTER:
+    s << *static_cast<char *>(mem);
+    break;
+  case SDDS_STRING:
+    s << string( *static_cast<char **>(mem) );
+    break;
+  }
+  
+  if(dataType == SDDS_STRING)
+    if(*((char**)mem)) free(*((char**)mem));
+  if(mem) free(mem);
   return s.str();
 }
 
