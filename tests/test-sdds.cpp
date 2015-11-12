@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 #include "../FunctionOfPos.hpp"
-#include "SDDS.h"
+#include "SDDS/SDDS.h"
 
 
 
@@ -8,12 +8,12 @@
 TEST(sdds, Parameter) {
   SDDS_TABLE *t = new SDDS_TABLE;
   if( SDDS_InitializeInput(t,const_cast<char*>("libpalattice.twi")) != 1 )
-    throw sddsi::SDDSFailure();
+    throw pal::SDDSError();
   
   SDDS_ReadTable(t);
   void *mem = SDDS_GetParameter(t, const_cast<char*>("pCentral"), NULL);
   if (mem == NULL)
-    throw sddsi::SDDSFailure();
+    throw pal::SDDSError();
   
   double p = *static_cast<double *>(mem);
   EXPECT_NEAR(4.500987e+03, p, 0.001);
@@ -26,12 +26,12 @@ TEST(sdds, Parameter) {
 TEST(sdds, StringParameter) {
   SDDS_TABLE *t = new SDDS_TABLE;
   if( SDDS_InitializeInput(t,const_cast<char*>("libpalattice002.w")) != 1 )
-    throw sddsi::SDDSFailure();
+    throw pal::SDDSError();
   
   SDDS_ReadTable(t);
   void *mem = SDDS_GetParameter(t, const_cast<char*>("PreviousElementName"), NULL);
   if (mem == NULL)
-    throw sddsi::SDDSFailure();
+    throw pal::SDDSError();
 
   std::string s(*static_cast<char **>(mem));
   EXPECT_STREQ("BPM02", s.c_str());
@@ -45,12 +45,12 @@ TEST(sdds, StringParameter) {
 TEST(sdds, Column) {
   SDDS_TABLE *t = new SDDS_TABLE;
   if( SDDS_InitializeInput(t,const_cast<char*>("libpalattice.twi")) != 1 )
-    throw sddsi::SDDSFailure();
+    throw pal::SDDSError();
   
   SDDS_ReadTable(t);
   void *mem = SDDS_GetColumn(t, const_cast<char*>("s"));
   if (mem == NULL)
-    throw sddsi::SDDSFailure();
+    throw pal::SDDSError();
 
   double *array = static_cast<double *>(mem);
   unsigned int length=SDDS_CountRowsOfInterest(t); 
@@ -72,7 +72,7 @@ TEST(sdds, Column) {
 TEST(sdds, ColumnValues) {
  SDDS_TABLE *t = new SDDS_TABLE;
   if( SDDS_InitializeInput(t,const_cast<char*>("libpalattice.twi")) != 1 )
-    throw sddsi::SDDSFailure();
+    throw pal::SDDSError();
 
   SDDS_ReadTable(t);
   void *mem;
@@ -81,7 +81,7 @@ TEST(sdds, ColumnValues) {
   unsigned int length=SDDS_CountRowsOfInterest(t);
   for (auto i=0u; i<length; i++) {
     mem = SDDS_GetValue(t, const_cast<char*>("s"), i, NULL);
-    if (mem == NULL) throw sddsi::SDDSFailure();
+    if (mem == NULL) throw pal::SDDSError();
     s = *static_cast<double *>(mem);
     x.push_back(std::move(*static_cast<double *>(mem)));
     free(mem);
@@ -99,7 +99,7 @@ TEST(sdds, ColumnValues) {
 TEST(sdds, Pages) {
   SDDS_TABLE *t = new SDDS_TABLE;
   if( SDDS_InitializeInput(t,const_cast<char*>("libpalattice002.w")) != 1 )
-    throw sddsi::SDDSFailure();
+    throw pal::SDDSError();
 
   // SDDS_ReadTable (or ReadPage) gives first page, has to be repeated for every page.
   // returns -1 if no more pages to read.
@@ -109,7 +109,7 @@ TEST(sdds, Pages) {
   while (status != -1) {
     void *mem = SDDS_GetColumn(t, const_cast<char*>("p"));
     if (mem == NULL)
-      throw sddsi::SDDSFailure();
+      throw pal::SDDSError();
     
     double *array = static_cast<double *>(mem);
     unsigned int length=SDDS_CountRowsOfInterest(t); 
@@ -117,7 +117,7 @@ TEST(sdds, Pages) {
     EXPECT_EQ(100u, x.size());
 
     void *parmem = SDDS_GetParameter(t, const_cast<char*>("Pass"), NULL);
-    if (parmem == NULL) throw sddsi::SDDSFailure();
+    if (parmem == NULL) throw pal::SDDSError();
     unsigned int turn = *static_cast<unsigned int *>(parmem);
     EXPECT_EQ(i, turn);
 
@@ -134,7 +134,7 @@ TEST(sdds, Pages) {
 TEST(sdds, FilterParticleId) {
   SDDS_TABLE *t = new SDDS_TABLE;
   if( SDDS_InitializeInput(t,const_cast<char*>("libpalattice002.w")) != 1 )
-    throw sddsi::SDDSFailure();
+    throw pal::SDDSError();
 
   // filter single particle id
   // by SDDS_FilterRowsOfInterest AFTER(!) EACH(!) SDDS_ReadPage call
@@ -143,14 +143,14 @@ TEST(sdds, FilterParticleId) {
 
   int status = SDDS_ReadPage(t);
   int ret = SDDS_FilterRowsOfInterest(t,const_cast<char*>("particleID"),id,id,SDDS_AND);
-  if (ret == -1) throw sddsi::SDDSFailure();
+  if (ret == -1) throw pal::SDDSError();
   ASSERT_EQ(1,ret);
 
   unsigned int i=0;
   while (status != -1) {
     void *mem = SDDS_GetColumn(t, const_cast<char*>("p"));
     if (mem == NULL)
-      throw sddsi::SDDSFailure();
+      throw pal::SDDSError();
     
     double *array = static_cast<double *>(mem);
     unsigned int length=SDDS_CountRowsOfInterest(t); 
@@ -159,7 +159,7 @@ TEST(sdds, FilterParticleId) {
     EXPECT_EQ(1u, x.size());
 
     void *parmem = SDDS_GetParameter(t, const_cast<char*>("Pass"), NULL);
-    if (parmem == NULL) throw sddsi::SDDSFailure();
+    if (parmem == NULL) throw pal::SDDSError();
     unsigned int turn = *static_cast<unsigned int *>(parmem);
     EXPECT_EQ(i, turn);
 
@@ -168,7 +168,7 @@ TEST(sdds, FilterParticleId) {
     i++;
     status = SDDS_ReadPage(t);
     int ret = SDDS_FilterRowsOfInterest(t,const_cast<char*>("particleID"),id,id,SDDS_0_PREVIOUS);
-    if (ret == -1) throw sddsi::SDDSFailure();
+    if (ret == -1) throw pal::SDDSError();
   }
 
   ASSERT_EQ(1,SDDS_Terminate(t));
@@ -178,16 +178,16 @@ TEST(sdds, FilterParticleId) {
 TEST(sdds, FilterColumns) {
   SDDS_TABLE *t = new SDDS_TABLE;
   if( SDDS_InitializeInput(t,const_cast<char*>("libpalattice.clo")) != 1 )
-    throw sddsi::SDDSFailure();
+    throw pal::SDDSError();
   
   SDDS_ReadPage(t);
   SDDS_SetColumnFlags(t,0); // unselect all columns first
   if( SDDS_SetColumnsOfInterest(t, SDDS_NAMES_STRING, "s x ") != 1 )
-    throw sddsi::SDDSFailure();
+    throw pal::SDDSError();
   
   void *mem = SDDS_GetColumn(t, const_cast<char*>("s"));
   if (mem == NULL)
-    throw sddsi::SDDSFailure();
+    throw pal::SDDSError();
 
   double *array = static_cast<double *>(mem);
   unsigned int length=SDDS_CountRowsOfInterest(t); 

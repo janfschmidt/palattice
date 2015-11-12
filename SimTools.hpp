@@ -21,7 +21,7 @@
 #include <vector>
 #include <map>
 #include <memory>
-#include "libsddsi/sdds-interface.hpp"
+#include "SDDS/SDDS.h"
 #include "types.hpp"
 
 using namespace std;
