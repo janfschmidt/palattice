@@ -562,8 +562,9 @@ string SimToolTable::getParameter(const string &label)
     break;
   }
 
-  if(dataType == SDDS_STRING)
+  if(dataType == SDDS_STRING) {
     if(*((char**)mem)) free(*((char**)mem));
+  }
   if(mem) free(mem);
   return s.str();
 }
@@ -612,9 +613,12 @@ string SimToolTable::get_sdds(unsigned int index, string key) const
     break;
   }
   
-  if(dataType == SDDS_STRING)
-    if(*((char**)mem)) free(*((char**)mem));
-  if(mem) free(mem);
+  // DO NOT FREE MANUALLY HERE - causes double free by SDDS_Terminate !?!
+  // if(dataType == SDDS_STRING) {
+  //   if(*((char**)mem)) free(*((char**)mem));
+  // }
+  //free(mem); 
+
   return s.str();
 }
 
