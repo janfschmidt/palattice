@@ -52,6 +52,7 @@ private:
 
 public:
   //Metadata info -> is inherited from Interpolate<T>
+  bool verbose;
 
   FunctionOfPos(double circIn, const gsl_interp_type *t=gsl_interp_akima);
   FunctionOfPos(SimToolInstance &sim, const gsl_interp_type *t=gsl_interp_akima_periodic); //get circ from SimToolInstance
@@ -99,7 +100,7 @@ public:
 
   // tests
   bool exists(double pos, unsigned int turn=1) const; // is there data at pos?
-  bool compatible(FunctionOfPos<T> &other, bool verbose=true) const; // can I add/subract with other? (data at same pos?)
+  bool compatible(FunctionOfPos<T> &other) const; // can I add/subract with other? (data at same pos?)
 
   // output
   void print(string filename="") const;

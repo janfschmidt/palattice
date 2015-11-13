@@ -37,7 +37,7 @@ void FunctionOfPos<T>::circCheck()
 // constructor (set circumference & interpolation)
 template <class T>
 FunctionOfPos<T>::FunctionOfPos(double circIn, const gsl_interp_type *t)
-  : Interpolate<T>::Interpolate(t,circIn), n_turns(1), circ(circIn)
+  : Interpolate<T>::Interpolate(t,circIn), n_turns(1), circ(circIn), verbose(false)
 {
   circCheck();
   this->info.add("Circumference (set manually)", circ);
@@ -46,7 +46,7 @@ FunctionOfPos<T>::FunctionOfPos(double circIn, const gsl_interp_type *t)
 // constructor (set circumference from SimToolInstance)
 template <class T>
 FunctionOfPos<T>::FunctionOfPos(SimToolInstance &sim, const gsl_interp_type *t)
-  : Interpolate<T>::Interpolate(t), n_turns(1), circ(sim.readCircumference())
+  : Interpolate<T>::Interpolate(t), n_turns(1), circ(sim.readCircumference()), verbose(false)
 {
   circCheck();
   this->period = circ; //set period (Interpolate class)
@@ -235,7 +235,7 @@ bool FunctionOfPos<T>::exists(double pos, unsigned int turnIn) const
 //   1. circumferences are equal
 //   2. same number of turns or "other" has only 1 turn  (+= or -= add/sub. this 1 turn to/from each turn)
 template <class T>
-bool FunctionOfPos<T>::compatible(FunctionOfPos<T> &o, bool verbose) const
+bool FunctionOfPos<T>::compatible(FunctionOfPos<T> &o) const
 {
   if ( turns() == 0 || o.turns() == 0 ) {
     if (verbose)
@@ -411,7 +411,7 @@ void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned in
   //iterate all existing obs files:
   while (true) {
     string trajFile=s.trajectory(obs,particle);
-    cout << "reading file " << trajFile << "\r" << std::flush;
+    if(verbose) cout << "reading file " << trajFile << "\r" << std::flush;
     try {
       SimToolTable tab = s.readTable(trajFile, columns);
       if (s.sddsMode()) {

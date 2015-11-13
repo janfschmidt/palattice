@@ -38,8 +38,10 @@ void SimToolTable::init_sdds(const string &filename, std::vector<string> columnK
       delete t;
     });
   
-  if( SDDS_InitializeInput(table_sdds.get(),const_cast<char*>(filename.c_str())) != 1 )
+  if( SDDS_InitializeInput(table_sdds.get(),const_cast<char*>(filename.c_str())) != 1 ) {
+    SDDS_PrintErrors(stdout, SDDS_VERBOSE_PrintErrors);
     throw palatticeFileError(filename);
+  }
   
   SDDS_ReadPage(table_sdds.get());
 
@@ -514,7 +516,7 @@ string SimToolInstance::readParameter(const string &file, const string &label)
       break;
   }
   stringstream msg;
-  msg << "ERROR: pal::SimToolInstance::readParameter(): No parameter label "
+  msg << "pal::SimToolInstance::readParameter(): No parameter label "
       << label << " in " << file;
   throw palatticeError(msg.str());
 }
@@ -636,7 +638,20 @@ double SimToolInstance::readCircumference()
     label = "LENGTH";
   else if (tool==elegant && !sdds)
     label = "circumference";
-  double c = this->readParameter<double>(this->lattice(), label);
+  double c = this->readParameter<double>(this->twiss(), label);
+  return c;
+}
+
+double SimToolInstance::readGammaCentral()
+{
+  string label;
+  if (tool==madx)
+    label = "GAMMA";
+  else if (sddsMode())
+    label = "pCentral";
+  else if (tool==elegant)
+    label = "pCentral/m_e*c";
+  double c = this->readParameter<double>(this->twiss(), label);
   return c;
 }
 

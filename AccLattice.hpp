@@ -63,7 +63,7 @@ public:
 
   AccLattice(string _name="my lattice", double _circumference=0., Anchor _refPos=begin);
   AccLattice(string _name, SimToolInstance &sim, Anchor _refPos=end, string ignoreFile="");    //direct madx/elegant import
-  AccLattice(AccLattice &other);
+  AccLattice(const AccLattice &other);
   ~AccLattice();
   AccLattice& operator= (const AccLattice &other);
 

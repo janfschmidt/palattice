@@ -141,6 +141,7 @@ namespace pal
 
     // readParameter() implementations for some parameters (labels):
     double readCircumference();
+    double readGammaCentral();
     AccPair readTune();
 
     string tool_string() const {if (tool==madx) return "madx"; else if (tool==elegant) return "elegant"; else return "";}
@@ -269,7 +270,7 @@ T pal::SimToolInstance::readParameter(const string &file, const string &label)
   }
   stringstream msg;
   msg << "ERROR: pal::SimToolInstance::readParameter(): No parameter label "
-      << label << "in " << file;
+      << label << " in " << file;
   throw palatticeError(msg.str());
 }
 
@@ -287,7 +288,7 @@ template<class T>
 T pal::SimToolTable::getParameter(const string &label)
 {
   if (!sdds)
-    throw palatticeError("SimToolTable::getParameter(): Can only be used in SDDS mode. Use SimToolInstamce::readParameter() instead");
+    throw palatticeError("SimToolTable::getParameter(): Can only be used in SDDS mode. Use SimToolInstance::readParameter() instead");
 
   void* mem = SDDS_GetParameter(table_sdds.get(), const_cast<char*>(label.c_str()), NULL);
   if (mem == NULL) throw SDDSError();

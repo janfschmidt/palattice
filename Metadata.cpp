@@ -45,6 +45,7 @@ void Metadata::simToolImport(SimToolInstance &sim, string file, string labels)
 {
   add("Imported from", sim.tool_string());
   add("Lattice Source file", sim.lattice());
+  add("Lattice circumference / m", sim.readCircumference());
 
   if (file == "default")
     file = sim.twiss();
@@ -105,17 +106,6 @@ string Metadata::getbyLabel(string inLabel) const
       return entry[i];
   }
   return "NA";
-}
-
-double Metadata::getGamma(SimTool t) const
-{
-  std::string label;
-  if (t==madx)
-    label = "GAMMA";
-  else if (t==elegant)
-    label = "pCentral/m_e*c";
-
-  return std::stod( getbyLabel(label) );
 }
 
 

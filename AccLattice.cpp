@@ -59,7 +59,7 @@ AccLattice::AccLattice(string _name, SimToolInstance &sim, Anchor _refPos, strin
 }
 
 //copy constructor
-AccLattice::AccLattice(AccLattice &other)
+AccLattice::AccLattice(const AccLattice &other)
   : circ(other.circumference()), ignoreList(other.ignoreList), refPos(other.refPos), info(other.info)
 {
   empty_space = new Drift;
@@ -113,7 +113,7 @@ void AccLattice::setCircumference(double c)
     throw std::logic_error("DEBUG: This should not have happened! AccLattice circumference was decreased.");
 
   circ = c;
-  info.add("AccLattice circumference / m", std::to_string(c));
+  info.add("AccLattice circumference / m", c);
 }
 
 
@@ -602,15 +602,15 @@ void AccLattice::madximport(SimToolInstance &madx)
   if (madx.tool != pal::madx)
     throw palatticeError("AccLattice::madximport() is only allowed for SimToolInstance::tool=madx");
 
+  // run MadX
+  if (madx.mode == pal::online)
+    madx.run();
+
   string madxTwissFile=madx.lattice();
   
   //get metadata and set circumference
   info.simToolImport(madx);
-  string circTmp = info.getbyLabel("LENGTH");
-  if (circTmp == "NA")
-    throw palatticeError("AccLattice::madximport(): Cannot read circumference from "+madxTwissFile);
-  else
-    setCircumference( strtod(circTmp.c_str(), NULL) );
+  setCircumference( madx.readCircumference() );
 
   if (refPos != end)
     cout << "WARNING: AccLattice::madximport(): The input file (MAD-X twiss) uses element end as positions." << endl
@@ -767,9 +767,8 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
   string elegantParamFile = elegant.lattice();
 
   // run Elegant
-  if (elegant.mode == pal::online && !elegant.runDone())
+  if (elegant.mode == pal::online)
     elegant.run();
-
 
   double s, pos;
   double l, k1, k2, angle, kick, hkick, vkick, tilt, e1,e2; //parameter values
@@ -784,31 +783,21 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
 
   //get metadata and set circumference
   info.simToolImport(elegant);
-  string circTmp = info.getbyLabel("circumference");
-  if (circTmp == "NA")
-    throw palatticeError("AccLattice::elegantimport(): Cannot read circumference from "+elegantParamFile);
-  else
-    setCircumference( strtod(circTmp.c_str(), NULL) );
+  setCircumference(elegant.readCircumference());
 
   if (refPos != end)
     cout << "WARNING: AccLattice::elegantimport(): The input file (elegant parameter) uses element end as positions." << endl
 	 << "They are transformed to the current Anchor set for this lattice: " << refPos_string() << endl;
 
-  elegantParam.open(elegantParamFile.c_str(), ios::in);
-  if (!elegantParam.is_open()) {
-    throw palatticeFileError(elegantParamFile);
-  }
-
+  std::vector<std::string> columns = {"ElementName", "ElementParameter", "ParameterValue", "ElementType"};
+  SimToolTable tab = elegant.readTable(elegant.lattice(), columns);
   
-  // goto first line with data (*** marks end of parameters, two header lines below it)
-  elegantParam >> tmp;
-  while (tmp != "***") elegantParam >> tmp;
-  for (int i=0; i<3; i++)   getline(elegantParam, tmp);
+  for (auto i=0u; i<tab.rows(); i++) {
+    row.name = tab.gets(i, "ElementName");
+    row.type = tab.gets(i, "ElementType");
+    row.param = tab.gets(i, "ElementParameter");
+    row.value = tab.getd(i, "ParameterValue");
 
-  //read each row of .param file data
-  while (!elegantParam.eof()) {
-    elegantParam >> row.name >> row.param >> row.value >> row.type;
-    getline(elegantParam, tmp); //ignore additional columns
     if (firstElement) {
       row_old = row;
       firstElement = false;
@@ -887,9 +876,6 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
    row_old = row;
   }
   
-  elegantParam.close();
-
-
   //info stdout
   cout << this->sizeSummary() << " read" << endl
        <<"  as " <<this->circumference() << "m lattice from " <<elegantParamFile<<endl;
