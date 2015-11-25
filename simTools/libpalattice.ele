@@ -3,7 +3,6 @@
 	lattice = "test.lte",
 !	use_beamline = 
 ! -----------------------------------
-!	magnets = "%s.mag",
 	parameters = "%s.param",
 	combine_bunch_statistics = 1,
 	wrap_around = 0,
@@ -127,7 +126,7 @@
 ! TRACKING
 ! -------------------------------------------------
 &bunched_beam
-       n_particles_per_bunch = 1,
+       n_particles_per_bunch = 20,
        enforce_rms_values[0] = 3*0,
        distribution_type[0] = 3*gaussian,
        symmetrize = 1,

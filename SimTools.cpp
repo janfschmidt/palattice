@@ -39,11 +39,15 @@ void SimToolTable::init_sdds(const string &filename, std::vector<string> columnK
     });
   
   if( SDDS_InitializeInput(table_sdds.get(),const_cast<char*>(filename.c_str())) != 1 ) {
-    SDDS_PrintErrors(stdout, SDDS_VERBOSE_PrintErrors);
+    //SDDS_PrintErrors(stdout, SDDS_VERBOSE_PrintErrors);
     throw palatticeFileError(filename);
   }
   
-  SDDS_ReadPage(table_sdds.get());
+  auto ret = SDDS_ReadPage(table_sdds.get());
+  if( ret == -1 )
+    throw SDDSPageError();
+  else if (ret == 0)
+    throw SDDSError();
 
   //select columns
    if (columnKeys.size() > 0) {

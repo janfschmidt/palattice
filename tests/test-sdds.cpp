@@ -210,6 +210,42 @@ TEST(sdds, FilterColumns) {
 }
 
 
+TEST(sdds, FileTwice) {
+  SDDS_TABLE *t1 = new SDDS_TABLE;
+  SDDS_TABLE *t2 = new SDDS_TABLE;
+
+  unsigned int id=1u;
+  
+  ASSERT_EQ(1, SDDS_InitializeInput(t1, const_cast<char*>("libpalattice002.w")) );
+  ASSERT_EQ(1, SDDS_InitializeInput(t2, const_cast<char*>("libpalattice002.w")) );
+  ASSERT_NE(0, SDDS_ReadPage(t1));
+  ASSERT_NE(0, SDDS_ReadPage(t2));
+  ASSERT_EQ(1, SDDS_FilterRowsOfInterest(t1, const_cast<char*>("particleID"),id,id,SDDS_AND));
+  ASSERT_EQ(1, SDDS_FilterRowsOfInterest(t2, const_cast<char*>("particleID"),id,id,SDDS_AND));
+  
+  void *mem1 = SDDS_GetValue(t1, const_cast<char*>("x"), 0, NULL);
+  if (mem1 == NULL) throw pal::SDDSError();
+  double x1 = *static_cast<double *>(mem1);
+  void *mem2 = SDDS_GetValue(t2, const_cast<char*>("x"), 0, NULL);
+  if (mem2 == NULL) throw pal::SDDSError();
+  double x2 = *static_cast<double *>(mem2);
+  ASSERT_DOUBLE_EQ(x1,x2);
+  std::cout << x1 <<" / "<< x2 <<std::endl;
+
+  ASSERT_NE(0, SDDS_ReadPage(t1));
+  ASSERT_NE(0, SDDS_ReadPage(t2));
+  ASSERT_EQ(1, SDDS_FilterRowsOfInterest(t1, const_cast<char*>("particleID"),id,id,SDDS_AND));
+  ASSERT_EQ(1, SDDS_FilterRowsOfInterest(t2, const_cast<char*>("particleID"),id,id,SDDS_AND));
+  
+  
+  free(mem1); free(mem2);
+  ASSERT_EQ(1,SDDS_Terminate(t1));
+  ASSERT_EQ(1,SDDS_Terminate(t2));
+  delete t1;
+  delete t2;
+}
+
+
 
 
 
