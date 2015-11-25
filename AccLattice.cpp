@@ -1483,3 +1483,15 @@ void AccLattice::latexexport(string filename) const
   }
 }
 
+
+
+//energy loss per turn in keV for electron beam with energy given by gamma
+double AccLattice::Erev_keV_syli(const double& gamma) const
+{
+  double dE = 0;
+  for(auto it=firstCIt(dipole); it!=getItEnd(); it=nextCIt(it, dipole)) {
+    dE += std::pow(it->second->k0.abs(), 2) * it->second->length;
+  }
+  dE *= std::pow(gamma, 4) * GSL_CONST_MKSA_ELECTRON_CHARGE / (6*M_PI*GSL_CONST_MKSA_VACUUM_PERMITTIVITY); // in eV
+  return std::move(dE/1000.); //in keV
+}

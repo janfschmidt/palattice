@@ -137,6 +137,9 @@ public:
   AccTriple B(double pos, const AccPair &orbit) const;
 
 
+  //additional Physical Quantities
+  double Erev_keV_syli(const double& gamma) const; //energy loss per turn in keV for electron beam with energy given by gamma
+  
   // output (stdout or file)
   // If no filename is given, print to stdout.
   void print(string filename="") const;                     // print lattice.

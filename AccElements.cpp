@@ -281,7 +281,18 @@ string AccElement::printHeader() const
 
 
 
-
+// ====== synchrotron radiation ======
+//critical photon energy in keV at electron beam energy given as gamma
+double Magnet::Ecrit_keV_syli(const double& gamma) const
+{
+  double E = 3./2. * GSL_CONST_MKSA_PLANCKS_CONSTANT_HBAR * GSL_CONST_MKSA_SPEED_OF_LIGHT * std::pow(gamma,3) * k0.abs(); //k0 = 1/R
+  return E / GSL_CONST_MKSA_ELECTRON_VOLT / 1000.; // in keV
+}
+//mean number of photons emmited in this magnet by electron beam with energy given as gamma
+double Magnet::meanPhotons_syli(const double& gamma) const
+{
+  return 5./(2*std::sqrt(3)) * gamma/137. * length*k0.abs();
+} 
 
 // ========= magnetic field calculation =================
 
