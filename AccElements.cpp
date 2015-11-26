@@ -14,6 +14,7 @@
 #include <string>
 #include <iomanip>
 #include <vector>
+#include <map>
 #include <cmath>
 #include "AccElements.hpp"
 
@@ -23,6 +24,20 @@ using namespace pal;
 // static member definition
 AccPair AccElement::zeroPair;
 AccTriple AccElement::zeroTriple;
+
+
+string pal::filterCharactersForLaTeX(string in) {
+  std::map<string,string> list = {{"_","-"}, {"$", ""}};
+  for(auto& it : list) {
+    size_t start_pos = 0;
+    while((start_pos = in.find(it.first, start_pos)) != std::string::npos) {
+      in.replace(start_pos, it.first.length(), it.second);
+      start_pos += it.second.length();
+    }
+  }
+  return in;
+}
+
 
 AccElement::AccElement(element_type _type, string _name, double _length)
   : type(_type),name(_name),length(_length),plane(noplane),family(nofamily)
@@ -238,6 +253,10 @@ string AccElement::type_string() const
     return "Multipole";
   case cavity:
     return "Cavity";
+  case marker:
+    return "Marker";
+  case rcollimator:
+    return "Rcollimator";
   case drift:
     return "Drift";
   }
@@ -260,7 +279,8 @@ string AccElement::print() const
   s <<std::setw(w)<< name <<std::setw(w)<< type_string() <<std::setw(w) << length
     <<std::setw(w)<< k0.x <<std::setw(w)<< k0.z <<std::setw(w)<< k0.s
     <<std::setw(w)<< k1 <<std::setw(w)<< k2 <<std::setw(w)<< dpsi
-    <<std::setw(w)<< e1 <<std::setw(w)<< e2 << std::endl;
+    <<std::setw(w)<< e1 <<std::setw(w)<< e2
+    <<std::setw(w)<< halfWidth.x <<std::setw(w)<< halfWidth.z << std::endl;
 
   return s.str();
 }
@@ -274,7 +294,8 @@ string AccElement::printHeader() const
   s <<std::setw(w)<< "Name" <<std::setw(w)<< "Type" <<std::setw(w)<< "Length/m"
     <<std::setw(w)<< "k0.x / 1/m" <<std::setw(w)<< "k0.z / 1/m" <<std::setw(w)<< "k0.s / 1/m" <<std::setw(w)<< "k1 / 1/m^2" <<std::setw(w)<< "k2 / 1/m^3" 
     <<std::setw(w)<< "Rotation(s)/rad"
-    <<std::setw(w)<< "e1 / rad" <<std::setw(w)<< "e2 / rad" << std::endl;
+    <<std::setw(w)<< "e1 / rad" <<std::setw(w)<< "e2 / rad"
+    <<std::setw(w)<< "halfWidth.x / m" <<std::setw(w)<< "halfWidth.z / m" << std::endl;
 
   return s.str();
 }
@@ -391,6 +412,17 @@ string AccElement::printStrength() const
     if (k1!=0.) s <<", K1="<< -k1;
     if (k2!=0.) s <<", K2="<< -k2;
   }
+  return s.str();
+}
+
+string AccElement::printAperture(SimTool t) const
+{
+  stringstream s;
+  s << " ,";
+  if (t == madx)
+    s << "APERTYPE=2, APERTURE={" <<halfWidth.x<<","<<halfWidth.z<<"}";
+  else if (t == elegant)
+    s << "X_MAX="<<halfWidth.x<<", "<<"Y_MAX="<<halfWidth.z;
   return s.str();
 }
 
@@ -523,6 +555,21 @@ string Multipole::printSimTool(SimTool t) const
   return s.str();
 }
 
+string Marker::printSimTool(SimTool t) const
+{
+  stringstream s;
+  s << name <<" : "<< nameInTool("MARKER","MARK",t) <<";"<<endl;
+  return s.str();
+}
+
+string Rcollimator::printSimTool(SimTool t) const
+{
+  stringstream s;
+  s << name <<" : "<< nameInTool("RCOLLIMATOR","RCOL",t) <<", "
+    <<"L="<< length;
+  s << printAperture(t) <<";"<<endl;
+  return s.str();
+}
 
 
 
@@ -536,7 +583,7 @@ string Drift::printLaTeX() const
 string Cavity::printLaTeX() const
 {
   stringstream s;
-  s << "\\cavity{"<< name <<"}{"<< length <<"}" << endl;
+  s << "\\cavity{"<< filterCharactersForLaTeX(name) <<"}{"<< length <<"}" << endl;
   return s.str();
 }
 
@@ -546,7 +593,7 @@ string Dipole::printLaTeX() const
   if (k0.x!=0. || k0.s!=0.) 
     std::cout << "WARNING: " << name << "nonzero horizontal or longitudinal bending is not exported!" << std::endl;
 
-  s << "\\dipole{"<< name <<"}{"<< length <<"}{"<< k0.z*length*180/M_PI <<"}" << endl;
+  s << "\\dipole{"<< filterCharactersForLaTeX(name) <<"}{"<< length <<"}{"<< k0.z*length*180/M_PI <<"}" << endl;
   return s.str();
 }
 
@@ -554,30 +601,44 @@ string Corrector::printLaTeX() const
 {
   stringstream s;
   if (this->plane == noplane)
-    s << "\\kicker{"<< name <<"}{"<< length <<"}" << endl;
+    s << "\\kicker{"<< filterCharactersForLaTeX(name) <<"}{"<< length <<"}" << endl;
   else
-    s << "\\corrector{"<< name <<"}{"<< length <<"}" << endl;
+    s << "\\corrector{"<< filterCharactersForLaTeX(name) <<"}{"<< length <<"}" << endl;
   return s.str();
 }
 
 string Quadrupole::printLaTeX() const
 {
   stringstream s;
-  s << "\\quadrupole{"<< name <<"}{"<< length <<"}" << endl;
+  s << "\\quadrupole{"<< filterCharactersForLaTeX(name) <<"}{"<< length <<"}" << endl;
   return s.str();
 }
 
 string Sextupole::printLaTeX() const
 {
  stringstream s;
-  s << "\\sextupole{"<< name <<"}{"<< length <<"}" << endl;
+  s << "\\sextupole{"<< filterCharactersForLaTeX(name) <<"}{"<< length <<"}" << endl;
   return s.str();
 }
 
 string Multipole::printLaTeX() const //Multipole is exported as Sextupole
 {
  stringstream s;
-  s << "\\sextupole{"<< name <<"}{"<< length <<"} % multipole exported as sextupole" << endl;
+  s << "\\sextupole{"<< filterCharactersForLaTeX(name) <<"}{"<< length <<"} % multipole exported as sextupole" << endl;
+  return s.str();
+}
+
+string Marker::printLaTeX() const
+{
+  stringstream s;
+  s << "\\marker{"<< filterCharactersForLaTeX(name) <<"}" << endl;
+  return s.str();
+}
+
+string Rcollimator::printLaTeX() const //Rcollimator is exported as Kicker
+{
+  stringstream s;
+  s << "\\kicker{"<< filterCharactersForLaTeX(name) <<"}{"<< length <<"}" << endl;
   return s.str();
 }
 

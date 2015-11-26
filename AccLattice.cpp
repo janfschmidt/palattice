@@ -630,6 +630,9 @@ void AccLattice::madximport(SimToolInstance &madx)
   columns.push_back("VKICK");
   columns.push_back("E1");
   columns.push_back("E2");
+  columns.push_back("APERTYPE");
+  columns.push_back("APER_1");
+  columns.push_back("APER_2");
 
   //read columns from file (execute madx if mode=online)
   SimToolTable twi;
@@ -671,6 +674,12 @@ void AccLattice::madximport(SimToolInstance &madx)
     else if (key == "\"MULTIPOLE\"") {
       element = new Multipole(name, l);
     }
+    else if (key == "\"MARKER\"") {
+      element = new Marker(name);
+    }
+    else if (key == "\"RCOLLIMATOR\"") {
+      element = new Rcollimator(name, l);
+    }
     else continue; //Drifts are not mounted explicitly
     
     // rf magnet
@@ -684,6 +693,10 @@ void AccLattice::madximport(SimToolInstance &madx)
     if (vkick!=0. && element->plane!=H)  element->k0.x += sin(vkick) / l;
     element->e1 = twi.getd(i,"E1");
     element->e2 = twi.getd(i,"E2");
+    if (twi.gets(i,"APERTYPE")=="RECTANGLE") {
+      element->halfWidth.x = twi.getd(i,"APER_1");
+      element->halfWidth.z = twi.getd(i,"APER_2");
+    }
     element->k1 = twi.getd(i,"K1L")/l;
     element->k2 = twi.getd(i,"K2L")/l;
     //misalignments in AccLattice::madximportMisalignments()
@@ -772,6 +785,7 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
 
   double s, pos;
   double l, k1, k2, angle, kick, hkick, vkick, tilt, e1,e2; //parameter values
+  AccPair halfWidth;
   paramRow row, row_old;
   AccElement *element;
   fstream elegantParam;
@@ -831,6 +845,12 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
      else if (row_old.type=="RFCA") {
        element = new Cavity(row_old.name, l);
      }
+     else if (row_old.type=="MARK") {
+       element = new Marker(row_old.name);
+     }
+     else if (row_old.type=="RCOL") {
+       element = new Rcollimator(row_old.name, l);
+     }
      else
        element = new Drift(); //Drifts are not mounted explicitly
      
@@ -847,13 +867,16 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
        element->dpsi = tilt;
        element->e1 = e1;
        element->e2 = e2;
+       element->halfWidth = halfWidth;
        if (refPos == begin) pos = s-l;
        else if (refPos == center) pos = s-l/2;
        else pos = s; 
        this->mount(pos, *element); // mount element
      }
      delete element;
-     pos=l=k1=k2=angle=kick=hkick=vkick=tilt=e1=e2=0.;   // clear param. values to avoid reuse of an old value
+     // clear param. values to avoid reuse of an old value
+     pos=l=k1=k2=angle=kick=hkick=vkick=tilt=e1=e2=0.;
+     halfWidth = AccPair();
     }
 
     //read parameter in row (if needed)
@@ -871,6 +894,8 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
     else if (row.param == "TILT") tilt += row.value;
     else if (row.param == "E1") e1 = row.value;
     else if (row.param == "E2") e2 = row.value;
+    else if (row.param == "X_MAX") halfWidth.x = row.value;
+    else if (row.param == "Y_MAX") halfWidth.z = row.value;
     //... add more parameters here
 
    row_old = row;

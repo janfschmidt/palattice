@@ -29,10 +29,12 @@ using namespace std;
 namespace pal
 {
 
-  enum element_type{dipole=0, quadrupole=1, corrector=2, sextupole=3, cavity=4, multipole=5, drift=6}; //! keep dipole as first and drift as last
+  enum element_type{dipole=0, quadrupole=1, corrector=2, sextupole=3, cavity=4, multipole=5, marker=6, rcollimator=7, drift=8}; //! keep dipole as first and drift as last
   enum element_plane{H,V,L,noplane};    //horizontal,vertical,longitudinal
                                         //used for export and filtering only, NO INFLUENCE ON FIELD B()!
   enum element_family{F,D,nofamily};    //focus,defocus, CHANGES SIGN OF FIELD!
+
+  string filterCharactersForLaTeX(string in);
 
 // abstract base class
 class AccElement {
@@ -45,6 +47,7 @@ protected:
   string printTilt(SimTool t) const;
   string printEdges() const;
   string printStrength() const;
+  string printAperture(SimTool t) const;
   string rfComment() const;
 
   // following data can be accessed and modified. Only type and length of an element must not be changed.
@@ -68,6 +71,9 @@ public:
   
   //alignment errors:
   double dpsi;           //rotation around s axis in rad
+
+  //rectangular aperture, only used for rcollimator!
+  AccPair halfWidth;
 
   AccElement(element_type _type, string _name, double _length);
   virtual ~AccElement() {};
@@ -116,38 +122,74 @@ public:
 };
 
 
-
+  // no magnet, B-Field=0 (abstract)
+  class NoMagnet : public AccElement {
+  public:
+    NoMagnet(element_type _type, string _name, double _length)
+      : AccElement(_type,_name,_length) {}
+    
+    virtual NoMagnet* clone() const =0;
+    
+    virtual AccTriple B() const {return zeroTriple;}
+    virtual AccTriple B(const AccPair &orbit) const {return B();}
+    virtual string printSimTool(SimTool t) const =0;
+    virtual string printLaTeX() const =0;
+  };
+  
+  
 // drift
-class Drift : public AccElement {
+class Drift : public NoMagnet {
 public:
   Drift(string _name="drift", double _length=0.)
-    : AccElement(drift,_name,_length) {}
+    : NoMagnet(drift,_name,_length) {}
   ~Drift() {}
   
   virtual Drift* clone() const {return new Drift(*this);}
 
-  virtual AccTriple B() const {return zeroTriple;}
-  virtual AccTriple B(const AccPair &orbit) const {return B();}
   virtual string printSimTool(SimTool t) const;
   virtual string printLaTeX() const;
 };
 
+  // marker
+  class Marker : public NoMagnet {
+  public:
+    Marker(string _name)
+      : NoMagnet(marker,_name,0.0) {}
+    ~Marker() {}
+    
+    virtual Marker* clone() const {return new Marker(*this);}
+
+    virtual string printSimTool(SimTool t) const;
+    virtual string printLaTeX() const;
+  };
 
 
-// cavity (no B-field)
-class Cavity : public AccElement {
+// cavity (E-Field not implemented)
+class Cavity : public NoMagnet {
 public:
   Cavity(string _name, double _length)
-    : AccElement(cavity,_name,_length) {}
+    : NoMagnet(cavity,_name,_length) {}
   ~Cavity() {}
 
   virtual Cavity* clone() const {return new Cavity(*this);}
   
-  virtual AccTriple B() const {return zeroTriple;}
-  virtual AccTriple B(const AccPair &orbit) const {return B();}
   virtual string printSimTool(SimTool t) const;
   virtual string printLaTeX() const;
 };
+
+  
+  // rectangular collimator
+  class Rcollimator : public NoMagnet {
+  public:
+    Rcollimator(string _name, double _length)
+      : NoMagnet(rcollimator,_name,_length) {}
+    ~Rcollimator() {}
+
+    virtual Rcollimator* clone() const {return new Rcollimator(*this);}
+  
+    virtual string printSimTool(SimTool t) const;
+    virtual string printLaTeX() const;
+  };
 
 
   // magnet (abstract, due to export)
