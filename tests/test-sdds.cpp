@@ -1,9 +1,14 @@
 #include "gtest/gtest.h"
 #include "../FunctionOfPos.hpp"
+#include "../config.hpp"
+
+
+
+//======================================================================================
+#ifdef LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY
+//======================================================================================
+
 #include "SDDS/SDDS.h"
-
-
-
 
 TEST(sdds, Parameter) {
   SDDS_TABLE *t = new SDDS_TABLE;
@@ -114,7 +119,7 @@ TEST(sdds, Pages) {
     double *array = static_cast<double *>(mem);
     unsigned int length=SDDS_CountRowsOfInterest(t); 
     std::vector<double> x(array, array+length);
-    EXPECT_EQ(100u, x.size());
+    EXPECT_EQ(5u, x.size());
 
     void *parmem = SDDS_GetParameter(t, const_cast<char*>("Pass"), NULL);
     if (parmem == NULL) throw pal::SDDSError();
@@ -245,48 +250,60 @@ TEST(sdds, FileTwice) {
   delete t2;
 }
 
+//======================================================================================
+#endif
+//======================================================================================
+
 
 
 
 
 TEST(sddsSimTool, Parameter) {
-  pal::SimToolInstance elegant(pal::elegant, pal::offline, "libpalattice.param");
-  elegant.set_sddsMode(true);
+  pal::SimToolInstance elegant(pal::elegant, pal::online, "elsa.lte");
+  //elegant.set_sddsMode(true);
+  elegant.setTurns(0);
 
   double p = elegant.readParameter<double>(elegant.twiss(), "pCentral");
   EXPECT_NEAR(4.500987e+03, p, 0.001);
 }
 
 TEST(sddsSimTool, StringParameter) {
-  pal::SimToolInstance elegant(pal::elegant, pal::offline, "libpalattice.param");
-  elegant.set_sddsMode(true);
+  pal::SimToolInstance elegant(pal::elegant, pal::online, "elsa.lte");
+  //elegant.set_sddsMode(true);
 
-  std::string p1 = elegant.readParameter<string>(elegant.twiss(), "Stage");
-  std::string p2 = elegant.readParameter<string>(elegant.twiss(), "pCentral");
-  EXPECT_STREQ("tunes uncorrected", p1.c_str());
-  EXPECT_STREQ("4500.99", p2.c_str());
+  std::string p = elegant.readParameter<string>(elegant.twiss(), "pCentral");
+  if(elegant.sddsMode()) {
+    EXPECT_STREQ("4500.99", p.c_str());
+    std::string p2 = elegant.readParameter<string>(elegant.twiss(), "Stage");
+    EXPECT_STREQ("tunes uncorrected", p2.c_str());
+  }
+  else
+    EXPECT_STREQ("4.500986753282873e+03", p.c_str());
 }
 
 TEST(sddsSimTool, Table) {
-  pal::SimToolInstance elegant(pal::elegant, pal::offline, "libpalattice.param");
-  elegant.set_sddsMode(true);
+  pal::SimToolInstance elegant(pal::elegant, pal::online, "elsa.lte");
+  //elegant.set_sddsMode(true);
 
   std::vector<std::string> columnKeys = {"s", "x", "y"};
   pal::SimToolTable tab;
   tab = elegant.readTable(elegant.orbit(), columnKeys);
 
-  EXPECT_EQ(333u, tab.rows());
+  EXPECT_EQ(298u, tab.rows());
   EXPECT_EQ(3u, tab.columns());
-  EXPECT_NEAR(164.4008, tab.getd(332,"s"), 0.0001);
+  EXPECT_NEAR(164.4008, tab.getd(297,"s"), 0.0001);
   EXPECT_DOUBLE_EQ(0.0, tab.get<double>(0,"s"));
-  EXPECT_STREQ("0", tab.get<std::string>(0,"s").c_str());
+  if(elegant.sddsMode())
+    EXPECT_STREQ("0", tab.get<std::string>(0,"s").c_str());
+  else
+    EXPECT_STREQ("0.000000e+00", tab.get<std::string>(0,"s").c_str());
   
-  std::cout << "xp[20]="<<tab.getd(20,"xp") << std::endl;
+  //std::cout << "xp[20]="<<tab.getd(20,"xp") << std::endl;
 }
 
 TEST(sddsSimTool, Circumference) {
-  pal::SimToolInstance elegant(pal::elegant, pal::offline, "libpalattice.param");
-  elegant.set_sddsMode(true);
+  pal::SimToolInstance elegant(pal::elegant, pal::online, "elsa.lte");
+  //elegant.set_sddsMode(true);
 
   EXPECT_NEAR(164.4008, elegant.readCircumference(), 0.0001);
 }
@@ -298,8 +315,8 @@ TEST(sddsSimTool, Circumference) {
 
 
 TEST(sddsFoP, Column) {
-  pal::SimToolInstance elegant(pal::elegant, pal::offline, "libpalattice.param");
-  elegant.set_sddsMode(true);
+  pal::SimToolInstance elegant(pal::elegant, pal::online, "elsa.lte");
+  //elegant.set_sddsMode(true);
   
   pal::FunctionOfPos<double> betax(elegant);
   EXPECT_NEAR(164.4008, betax.circumference(), 0.0001);
@@ -311,8 +328,8 @@ TEST(sddsFoP, Column) {
 
 
 TEST(sddsFoP, Orbit) {
-  pal::SimToolInstance elegant(pal::elegant, pal::offline, "libpalattice.param");
-  elegant.set_sddsMode(true);
+  pal::SimToolInstance elegant(pal::elegant, pal::online, "elsa.lte");
+  //elegant.set_sddsMode(true);
   
   pal::FunctionOfPos<pal::AccPair> orbit(elegant);
   EXPECT_NEAR(164.4008, orbit.circumference(), 0.0001);
@@ -324,16 +341,20 @@ TEST(sddsFoP, Orbit) {
 
 
 TEST(sddsFoP, Trajectory) {
-  pal::SimToolInstance elegant(pal::elegant, pal::offline, "libpalattice.param");
-  elegant.set_sddsMode(true);
+  pal::SimToolInstance elegant(pal::elegant, pal::online, "elsa.lte");
+  //elegant.set_sddsMode(true);
+  elegant.setTurns(10);
+  elegant.setNumParticles(5);
+  //elegant.verbose = true;
   
   pal::FunctionOfPos<AccPair> traj(elegant);
   EXPECT_NEAR(164.4008, traj.circumference(), 0.0001);
 
   traj.simToolTrajectory(elegant, 3);
-  EXPECT_EQ(1000u, traj.turns());
+  EXPECT_EQ(10u, traj.turns());
   EXPECT_EQ(33u, traj.samplesInTurn(1));
-  EXPECT_EQ(33u, traj.samplesInTurn(986));
+  EXPECT_EQ(33u, traj.samplesInTurn(10));
+  EXPECT_EQ(0u, traj.samplesInTurn(900));
   traj.print("sdds-trajectory.dat");
 }
 

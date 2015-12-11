@@ -21,16 +21,26 @@
 #include <vector>
 #include <map>
 #include <memory>
-#include "SDDS/SDDS.h"
 #include "types.hpp"
+#include "config.hpp"
+
+#ifdef LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY
+#include "SDDS/SDDS.h"
+#endif
 
 using namespace std;
 
 namespace pal
 {
-
+  
   enum SimTool{madx,elegant};
   enum SimToolMode{online,offline};
+  
+#ifdef LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY
+  enum SimToolFileFormat{ascii,sdds};
+#else
+  enum SimToolFileFormat{ascii};
+#endif
 
 
   class SddsColumnFilter {
@@ -55,15 +65,15 @@ namespace pal
   protected:
     map< string, vector<string> > table;
     std::string tabname;
+    bool sdds;
+#ifdef LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY
     std::shared_ptr<SDDS_TABLE> table_sdds;
     SddsColumnFilter sddsFilter;
-    bool sdds;
-
+#endif
     template<class T> T get_sdds(unsigned int index, string key) const;
     
-
   public:
-    SimToolTable(std::string _name="") : tabname(_name), sdds(false) {}
+    SimToolTable(string _name="") : tabname(_name), sdds(false) {}
     ~SimToolTable() {};
     SimToolTable(const SimToolTable & other) = default;
     SimToolTable& operator=(const SimToolTable & other) = default;
@@ -71,8 +81,8 @@ namespace pal
     void push_back(string key, string value) {table[key].push_back(value);} //set data for "normal" mode
     void init_sdds(const string &filename, vector<string> columnKeys=vector<string>()); //connect with an SDDS file (previous data is deleted!)
     
-    unsigned int rows() const {if(sdds) return SDDS_CountRowsOfInterest(table_sdds.get()); else return table.begin()->second.size();}
-    unsigned int columns() const {if(sdds) return SDDS_CountColumnsOfInterest(table_sdds.get()); else return table.size();}
+    unsigned int rows() const;
+    unsigned int columns() const;
     std::string name() const {return tabname;}
     bool sddsMode() const {return sdds;}
 
@@ -97,7 +107,7 @@ namespace pal
   class SimToolInstance {
   protected:
     bool executed;
-    bool sdds;
+    SimToolFileFormat preferedFormat;
     unsigned int trackingTurns;
     unsigned int trackingNumParticles;
     bool trackingTurnsTouched;
@@ -130,7 +140,7 @@ namespace pal
     void setTurns(unsigned int t);  // if turns!=0 (default) single particle tracking is performed while madx/elegant run
     void setNumParticles(unsigned int n);
     void setRunFile(string file) {runFile = file;}
-    void set_sddsMode(bool s) {sdds = s;}
+    void setPreferedFileFormat(SimToolFileFormat f) {preferedFormat = f; executed = false;}
 
     // read specified columns from a madx/elegant table format output file
     // - if columnKeys is not given, all columns are read
@@ -142,6 +152,7 @@ namespace pal
     // readParameter() implementations for some parameters (labels):
     double readCircumference();
     double readGammaCentral();
+    double readAlphaC();
     AccPair readTune();
 
     string tool_string() const {if (tool==madx) return "madx"; else if (tool==elegant) return "elegant"; else return "";}
@@ -157,10 +168,9 @@ namespace pal
     string twiss() const {return outCases("twiss", "twi");}
     string orbit() const {return outCases("twiss", "clo");}
     string trajectory(unsigned int obs, unsigned int particle) const;
-    string trajectory_sdds(unsigned int obs) const;
 
     bool runDone() const {return executed;}
-    bool sddsMode() const {if(sdds && tool==elegant) return true; else return false;}
+    bool sddsMode() const;
   };
 
 
@@ -168,9 +178,14 @@ namespace pal
   template<> string SimToolInstance::readParameter(const string &file, const string &label);
   template<> AccPair SimToolTable::get(unsigned int index, string keyX, string keyZ, string keyS) const;
   template<> AccTriple SimToolTable::get(unsigned int index, string keyX, string keyZ, string keyS) const;
+
+
+//======================================================================================
+#ifdef LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY
+//======================================================================================
+  
   template<> string SimToolTable::getParameter(const string &label);
   template<> string SimToolTable::get_sdds(unsigned int index, string key) const;
-
 
   class SDDSError : public std::exception
   {
@@ -188,6 +203,16 @@ namespace pal
     }
   };
   
+//======================================================================================
+  #else
+//======================================================================================
+
+  typedef std::exception SDDSError; //dummy
+  typedef std::runtime_error SDDSPageError; //dummy
+  
+//======================================================================================
+  #endif
+//======================================================================================
 } //namespace pal
 
 
@@ -197,7 +222,7 @@ namespace pal
 //SimToolTable template function implementation:
 //keyZ & keyS ignored for 1D data (used with AccPair&AccTriple specializations)
 template<class T>
-T pal::SimToolTable::get(unsigned int index, string key, string keyZ, string keyS) const
+inline T pal::SimToolTable::get(unsigned int index, string key, string keyZ, string keyS) const
 {
   if (index >= this->rows()) {
     stringstream msg;
@@ -206,7 +231,7 @@ T pal::SimToolTable::get(unsigned int index, string key, string keyZ, string key
     throw std::out_of_range(msg.str());
   }
 
-  if(sdds) {
+  if(sddsMode()) {
     return get_sdds<T>(index,key);
   }
 
@@ -223,19 +248,6 @@ T pal::SimToolTable::get(unsigned int index, string key, string keyZ, string key
   return value;
 }
 
-template<class T>
-T pal::SimToolTable::get_sdds(unsigned int index, string key) const
-{
-  void* mem = SDDS_GetValue(table_sdds.get(), const_cast<char*>(key.c_str()), index, NULL);
-  if (mem == NULL) {
-    stringstream msg;
-    msg << "pal::SimToolTable::get<T>(): No column \"" <<key<< "\" in SDDS table " << this->name();
-    throw palatticeError(msg.str());
-  }
-  T ret = *static_cast<T *>(mem);
-  free(mem);
-  return ret;
-}
 
 
 //SimToolInstance template function implementation:
@@ -276,16 +288,32 @@ T pal::SimToolInstance::readParameter(const string &file, const string &label)
 
 
 
+
+
+
+
+
+
+//======================================================================================
+#ifdef LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY
+//======================================================================================
+
 template<class T>
-T pal::SimToolInstance::readParameter_sdds(const string &file, const string &label)
+inline T pal::SimToolTable::get_sdds(unsigned int index, string key) const
 {
-  SimToolTable t;
-  t.init_sdds(file);
-  return t.getParameter<T>(label);
+  void* mem = SDDS_GetValue(table_sdds.get(), const_cast<char*>(key.c_str()), index, NULL);
+  if (mem == NULL) {
+    stringstream msg;
+    msg << "pal::SimToolTable::get<T>(): No column \"" <<key<< "\" in SDDS table " << this->name();
+    throw palatticeError(msg.str());
+  }
+  T ret = *static_cast<T *>(mem);
+  free(mem);
+  return ret;
 }
 
 template<class T>
-T pal::SimToolTable::getParameter(const string &label)
+inline T pal::SimToolTable::getParameter(const string &label)
 {
   if (!sdds)
     throw palatticeError("SimToolTable::getParameter(): Can only be used in SDDS mode. Use SimToolInstance::readParameter() instead");
@@ -297,6 +325,31 @@ T pal::SimToolTable::getParameter(const string &label)
   free(mem);
   return ret;
 }
+
+template<class T>
+inline T pal::SimToolInstance::readParameter_sdds(const string &file, const string &label)
+{
+  SimToolTable t;
+  t.init_sdds(file);
+  return t.getParameter<T>(label);
+}
+
+//======================================================================================
+#else
+//======================================================================================
+
+template<class T>
+inline T pal::SimToolTable::get_sdds(unsigned int index, string key) const {return T();} //dummy
+
+template<class T>
+inline T pal::SimToolTable::getParameter(const string &label) {return T();} //dummy
+
+template<class T>
+inline T pal::SimToolInstance::readParameter_sdds(const string &file, const string &label) {return T();} //dummy
+  
+//======================================================================================
+#endif
+//======================================================================================
 
 
 #endif

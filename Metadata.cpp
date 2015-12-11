@@ -53,9 +53,7 @@ void Metadata::simToolImport(SimToolInstance &sim, string file, string labels)
   if (labels == "default") {
     if (sim.tool==madx)
       labels = "TITLE,ORIGIN,GAMMA,Q1,Q2";
-    else if (sim.tool==elegant && !sim.sddsMode())
-      labels = "pCentral/m_e*c,tune:Qx,tune:Qz";
-    else if (sim.sddsMode())
+    else if (sim.tool==elegant)
       labels = "pCentral,nux,nuy";
   }
 

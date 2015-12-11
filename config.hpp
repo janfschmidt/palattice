@@ -11,6 +11,12 @@
 #ifndef __LIBPALATTICE__CONFIG_HPP_
 #define __LIBPALATTICE__CONFIG_HPP_
 
+// configure if SDDSToolKit-devel library from Argonne National Lab (Elegant) is used
+// It allows reading Elegant output from binary SDDS files. This avoids conversion to ascii files
+// and is HIGHLY RECOMMENDED if you can install SDDSToolKit-devel
+// can be downloaded at: www.aps.anl.gov/Accelerator_Systems_Division/Accelerator_Operations_Physics/software.shtml
+#define LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY
+
 
 // system commands:
 #define MADXCOMMAND "madx"        // system command to run MadX

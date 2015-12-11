@@ -27,7 +27,7 @@ AccTriple AccElement::zeroTriple;
 
 
 string pal::filterCharactersForLaTeX(string in) {
-  std::map<string,string> list = {{"_","-"}, {"$", ""}};
+  std::map<string,string> list = {{"_","\\_"}, {"$", "\\$"}};
   for(auto& it : list) {
     size_t start_pos = 0;
     while((start_pos = in.find(it.first, start_pos)) != std::string::npos) {

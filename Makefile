@@ -9,7 +9,7 @@ ALL_O=Interpolate.o Metadata.o ELSASpuren.o FunctionOfPos.o Field.o AccElements.
 LIB_FILE=$(LIB_NAME).so
 SIMTOOL_PATH=$(INSTALL_PATH)/lib/libpalattice_simTools
 
-SDDSLINKPATH=-L$(firstword $(wildcard /usr/lib/x86_64-linux-gnu/SDDS /usr/lib/i386-linux-gnu/SDDS /usr/lib64/SDDS /usr/lib/SDDS))
+SDDSLINKPATH= -L$(firstword $(wildcard /usr/lib/x86_64-linux-gnu/SDDS /usr/lib/i386-linux-gnu/SDDS /usr/lib64/SDDS /usr/lib/SDDS))
 SDDSFLAGS =-lmdbcommon -lSDDS1 -lmdblib -llzma -lz
 LINKFLAGS=-lgsl -lgslcblas -lm $(SDDSFLAGS)
 GTESTFLAGS=-lpthread $(LINKFLAGS)

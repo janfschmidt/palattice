@@ -18,10 +18,12 @@ fi
 circ=`sdds2stream $2.twi -col=s | tail -n1`
 echo -e "circumference\t $circ" > elegant$tag.twi #overwrite existing file
 # pCentral
-echo -e "pCentral/m_e*c\t `sdds2stream $2.twi -par=pCentral`" >> elegant$tag.twi #append..
+echo -e "pCentral `sdds2stream $2.twi -par=pCentral`" >> elegant$tag.twi #append..
 # tunes 
-echo -e "tune:Qx\t `sdds2stream $2.twi -par=nux`" >> elegant$tag.twi
-echo -e "tune:Qz\t `sdds2stream $2.twi -par=nuy`" >> elegant$tag.twi
+echo -e "nux\t `sdds2stream $2.twi -par=nux`" >> elegant$tag.twi
+echo -e "nuy\t `sdds2stream $2.twi -par=nuy`" >> elegant$tag.twi
+# momentum compaction factor
+echo -e "alphac\t `sdds2stream $2.twi -par=alphac`" >> elegant$tag.twi
 
 # ascii closed orbit file elegant.clo
 sddsprocess $2.clo -pipe=out -match=column,ElementType=WATCH,! -match=column,ElementName=_BEG_,! | sddsprintout -pipe=in elegant$tag.clo -Title='***' -col='(ElementName,ElementType,s,x,y)'
