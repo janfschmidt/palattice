@@ -26,6 +26,25 @@ during first Mad-X/Elegant execution in this directory.
 If you made any custom changes you should copy them to the new files.
 
 
+
+--------------------------------------------------------------------------
+Requirements: libSDDS
+--------------------------------------------------------------------------
+From version 3.7.2 libpalattice can read SDDS binary files directly, which
+are the default output of Elegant. This requires libSDDS1 by the
+SDDS/Elegant developers from Argonne National Lab. A package
+called "SDDSToolKit-devel" can be downloaded at
+www.aps.anl.gov/Accelerator_Systems_Division/Accelerator_Operations_Physics/software.shtml
+If it is not available for your system, I recommend to ask in the Elegant forum:
+www.aps.anl.gov/Accelerator_Systems_Division/Accelerator_Operations_Physics/phpBB3/
+
+If you cannot install libSDDS, you can deactivate the SDDS support in
+libpalattice/config.hpp by removing "#define LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY".
+Then you can compile libpalattice without SDDS. But I really recommend
+using SDDS :-)
+
+
+
 --------------------------------------------------------------------------
 Installation
 --------------------------------------------------------------------------
@@ -39,6 +58,7 @@ Installation
    - compilation requires the gcc (g++) compiler, can be changed in Makefile
    - libpalattice requires the Gnu Scientific Library GSL,
      in Ubuntu it can be installed via "sudo apt-get install libgsl0-dev"
+   - libpalattice requires the SDDS library libSDDS, see section above
 3) install the library for all users of your system:
    "sudo make install"
    - the default install path is /usr/local and can be changed in Makefile
