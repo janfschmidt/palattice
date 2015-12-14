@@ -1,4 +1,5 @@
 *.o
+*.so
 *.so.*
 *.dat
 *.a
@@ -8,7 +9,14 @@
 simToolPath.hpp
 programs/convertlattice
 programs/interptwiss
+programs/fields
+programs/lattice
+tests/test-sdds
+tests/test-syli
+tests/libpalattice.ele
 doc/*
+tests/*.w
+tests/*.w*.p*
 *.log
 *.lte
 *.clo
