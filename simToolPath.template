@@ -1,0 +1,8 @@
+#ifndef __LIBPALATTICE__SIMTOOLPATH_HPP_
+#define __LIBPALATTICE__SIMTOOLPATH_HPP_
+
+namespace pal {
+inline const std::string simToolPath() {return "@SIMTOOL_PATH@";}
+}
+
+#endif
