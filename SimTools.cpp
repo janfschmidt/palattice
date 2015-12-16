@@ -21,7 +21,6 @@
 #include "types.hpp"
 #include "simToolPath.hpp"
 #include "config.hpp"
-#include "SDDS/SDDS.h"
 
 using namespace pal;
 using namespace std;

@@ -1,5 +1,10 @@
 # this is executed via cmake in libpalattice/ (..) as subdirectory
 
+
+project(palattice-programs CXX)
+set(CMAKE_BUILD_TYPE Debug)
+
+
 # build
 add_executable(lattice lattice.cpp)
 add_executable(convertlattice convertlattice.cpp)

@@ -9,12 +9,14 @@ set(LIB_VERSION_MAJOR 3.7)
 set(LIB_VERSION_MINOR 2)
 set(LIB_VERSION ${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR})
 
-# googletest path (used in tests/CMakeLists.txt)
-set(GTEST_PATH /home/thiry/dev/gtest-1.7.0/)
-
 # Install Path
 set(INSTALL_PATH "/usr/local")
 set(SIMTOOL_PATH ${INSTALL_PATH}/lib/libpalattice_simTools)
+
+# Googletest Path
+# optional, used to compile tests in tests/ directory
+set(GTEST_PATH /set/googletest/path/here)
+
 
 # CXX-Standard & All Warnings
 if (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.1)
@@ -29,13 +31,6 @@ if ( CMAKE_COMPILER_IS_GNUCXX )
   endif (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.1)
 endif ( CMAKE_COMPILER_IS_GNUCXX )
 
-
-
-# gtest mitbauen
-# set(GTEST_PATH /sgt/gtest/googletest)
-# add_subdirectory(${GTEST_PATH} gtest)
-# testing innerhalb cmake aktivieren
-#enable_testing()
 
 
 
@@ -55,17 +50,25 @@ if(NOT GSL_LIBRARY OR NOT GSLCBLAS_LIBRARY)
 endif()
   
 find_library(SDDS_LIBRARY SDDS1)
-find_library(MDBCOMMON_LIBRARY mdbcommon)
-find_library(MDB_LIBRARY mdblib)
-find_library(LZMA_LIBRARY lzma)
-if(NOT SDDS_LIBRARY OR NOT MDBCOMMON_LIBRARY OR NOT MDB_LIBRARY OR NOT LZMA_LIBRARY)
-  message(FATAL_ERROR "libSDDS1 not found! Please have a look at README file")
-endif()
+if(NOT SDDS_LIBRARY)
+  message("WARNING: libSDDS1 not found! Compile libpalattice without SDDS support.\nPlease have a look at README file for details.")
+  remove_definitions(-DLIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY)
+else(NOT SDDS_LIBRARY)
+  message("libSDDS1 found! Compile libpalattice with SDDS support.")
+  add_definitions(-DLIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY)
+  find_library(MDBCOMMON_LIBRARY mdbcommon)
+  find_library(MDB_LIBRARY mdblib)
+  find_library(LZMA_LIBRARY lzma)
+  if(NOT MDBCOMMON_LIBRARY OR NOT MDB_LIBRARY OR NOT LZMA_LIBRARY)
+    message(FATAL_ERROR "library not found, which is needed for libSDDS1: mdbcommon, mdblib or lzma")
+  endif()
+  find_library(Z_LIBRARY z)
+  if(NOT Z_LIBRARY)
+    message(FATAL_ERROR "libz not found!")
+  endif()
+endif(NOT SDDS_LIBRARY)
 
-find_library(Z_LIBRARY z)
-if(NOT Z_LIBRARY)
-  message(FATAL_ERROR "libz not found!")
-endif()
+
 
 
 
@@ -94,35 +97,25 @@ execute_process(
   COMMAND git log -n 1 --date=iso --pretty=format:"%h from %ad"
   OUTPUT_VARIABLE GIT_HASH
   )
-configure_file(gitversion.template ${CMAKE_SOURCE_DIR}/gitversion.hpp ESCAPE_QUOTES)
-configure_file(simToolPath.template ${CMAKE_SOURCE_DIR}/simToolPath.hpp ESCAPE_QUOTES)
+configure_file(gitversion.hpp.in ${CMAKE_SOURCE_DIR}/gitversion.hpp ESCAPE_QUOTES)
+configure_file(simToolPath.hpp.in ${CMAKE_SOURCE_DIR}/simToolPath.hpp ESCAPE_QUOTES)
 
 
 
 # link 'libpalattice'
-target_link_libraries(
-  palattice ${GSL_LIBRARY}
+target_link_libraries(palattice
+  ${GSL_LIBRARY}
   ${GSLCBLAS_LIBRARY}
+  )
+if(SDDS_LIBRARY)
+  target_link_libraries(palattice
   ${SDDS_LIBRARY}
   ${MDBCOMMON_LIBRARY}
   ${MDB_LIBRARY}
   ${LZMA_LIBRARY}
   ${Z_LIBRARY}
   )
-
-
-
-# add_executable(test-resocalc test-resocalc.cpp)
-# target_link_libraries(test-resocalc resocalc)
-# target_link_libraries(test-resocalc gtest)
-# # zusätzliche include-pfade angeben
-# target_include_directories(test-resocalc PUBLIC ${GTEST_PATH})
-# target_include_directories(test-resocalc PUBLIC ${GTEST_PATH}/include)
-# # 'test-resocalc' als test definieren
-# add_test(test-resocalc test-resocalc)
-# if (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.1)
-#   set_property(TARGET test-resocalc PROPERTY CXX_STANDARD 11)
-# endif (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.1)
+endif()
 
 
 
@@ -166,9 +159,17 @@ install (FILES
   )
 
 
+# uninstall
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+  IMMEDIATE @ONLY)
+add_custom_target(uninstall
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+
 
 # programs, including convertlattice
-add_subdirectory(${CMAKE_SOURCE_DIR}/programs)
+add_subdirectory(${CMAKE_SOURCE_DIR}/programs EXCLUDE_FROM_ALL)
 
 # googletests
 add_subdirectory(${CMAKE_SOURCE_DIR}/tests)

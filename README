@@ -28,20 +28,22 @@ If you made any custom changes you should copy them to the new files.
 
 
 --------------------------------------------------------------------------
-Requirements: libSDDS
+Requirements: libSDDS1
 --------------------------------------------------------------------------
 From version 3.7.2 libpalattice can read SDDS binary files directly, which
 are the default output of Elegant. This requires libSDDS1 by the
-SDDS/Elegant developers from Argonne National Lab. A package
-called "SDDSToolKit-devel" can be downloaded at
+SDDS/Elegant developers from Argonne National Lab.
+A package called "SDDSToolKit-devel" can be downloaded at
 www.aps.anl.gov/Accelerator_Systems_Division/Accelerator_Operations_Physics/software.shtml
 If it is not available for your system, I recommend to ask in the Elegant forum:
 www.aps.anl.gov/Accelerator_Systems_Division/Accelerator_Operations_Physics/phpBB3/
 
-If you cannot install libSDDS, you can deactivate the SDDS support in
-libpalattice/config.hpp by removing "#define LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY".
-Then you can compile libpalattice without SDDS. But I really recommend
-using SDDS :-)
+cmake automatically detects, if libSDDS1 is installed on your system and deactivates
+the SDDS support otherwise, so that you can still use libpalattice.
+But I really recommend using SDDS :-)
+
+If you installed or uninstalled "SDDSToolKit-devel" and cmake does not recognize,
+try deleting libpalattice/build/CMakeCache.txt and then run "cmake .." again.
 
 
 
@@ -53,16 +55,20 @@ Installation
    - requires git, in Ubuntu it can be installed via "sudo apt-get install git"
    - has to be unlocked for your user/computer. Send your ssh public key
      to schmidt@physik.uni-bonn.de
-2) go to libpalattice directory and compile the library by the command:
+2) go to directory libpalattice/build and compile the library by the commands:
+   "cmake .."
    "make"
-   - compilation requires the gcc (g++) compiler, can be changed in Makefile
    - libpalattice requires the Gnu Scientific Library GSL,
      in Ubuntu it can be installed via "sudo apt-get install libgsl0-dev"
-   - libpalattice requires the SDDS library libSDDS, see section above
+   - the SDDS library libSDDS1 is recommended, see section above
 3) install the library for all users of your system:
+   in libpalattice/build type:
    "sudo make install"
-   - the default install path is /usr/local and can be changed in Makefile
+   - the default install path is /usr/local and can be changed in
+     libpalattice/CMakeLists.txt
 4) compile & install example programs including convertlattice:
+   in libpalattice/build type:
+   THIS HAS TO BE INCLUDED IN CMAKE
    "make programs"
    "sudo make install_programs"
 
@@ -72,17 +78,18 @@ Update
 --------------------------------------------------------------------------
 To get updated versions of the code just go to libpalattice directory
 and type: "git pull"
-If there are any changes compile and install themby step 2)-4) of
-"Installation" ("make", "sudo make install", "make programs", "sudo make install_programs")
+If there are any changes compile and install them by going to the
+build/ subdirectory again and typing:
+"make", "sudo make install", "make programs", "sudo make install_programs"
 
 
 --------------------------------------------------------------------------
 Uninstall
 --------------------------------------------------------------------------
 To remove all library files from the installation path (/usr/local)
-go to libpalattice directory and type
+go to libpalattice/build directory and type
 "sudo make uninstall".
-To remove all compiled files from the libpalattice directory type
+To remove all compiled files from the build directory type
 "make clean".
 To delete all source files just delete the libpalattice directory.
 
@@ -106,8 +113,8 @@ To allow for automatic execution of Mad-X/Elegant, the library:
 2. writes the name of your lattice file (and a few other settings)
    to libpalattice.madx/libpalattice.ele.
 3. executes "madx libpalattice.madx" or "elegant libpalattice.elegant".
-(4. Elegant only) executes /usr/local/bin/elegant2libpalattice to convert
-    SDDS files to ascii.
+(4. if Elegant is used without libSDDS1) executes
+   /usr/local/bin/elegant2libpalattice to convert SDDS files to ascii.
 
 If execution fails for your lattice, you can edit libpalattice.madx/libpal.ele
 in your lattice folder or edit the original template in

@@ -13,7 +13,8 @@
 
 #include <iostream>
 #include <getopt.h>
-#include <libpalattice/libpalattice.hpp>
+#include <libpalattice/FunctionOfPos.hpp>
+#include <libpalattice/Spectrum.hpp>
 
 using namespace std;
 
