@@ -19,9 +19,13 @@ target_link_libraries(interptwiss palattice ${GSL_LIBRARY} ${GSLCBLAS_LIBRARY} $
 target_link_libraries(fields palattice ${GSL_LIBRARY} ${GSLCBLAS_LIBRARY} ${Z_LIBRARY})
 
 
+# target 'programs'
+add_custom_target(programs
+  DEPENDS lattice convertlattice interptwiss fields
+  )
 
 
 # install convertlattice
 install(TARGETS convertlattice
-   RUNTIME DESTINATION ${INSTALL_PATH}/bin
+   DESTINATION bin
   )

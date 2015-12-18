@@ -10,8 +10,8 @@ set(LIB_VERSION_MINOR 2)
 set(LIB_VERSION ${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR})
 
 # Install Path
-set(INSTALL_PATH "/usr/local")
-set(SIMTOOL_PATH ${INSTALL_PATH}/lib/libpalattice_simTools)
+set(CMAKE_INSTALL_PREFIX "/usr/local")
+set(SIMTOOL_PATH ${CMAKE_INSTALL_PREFIX}/lib/libpalattice_simTools)
 
 # Googletest Path
 # optional, used to compile tests in tests/ directory
@@ -92,12 +92,23 @@ SET_TARGET_PROPERTIES(
   SOVERSION ${LIB_VERSION}
   )
 
-# automatically generated header files
-execute_process(
-  COMMAND git log -n 1 --date=iso --pretty=format:"%h from %ad"
-  OUTPUT_VARIABLE GIT_HASH
+
+# custom target: write header with current version
+add_custom_target(version
+  ${CMAKE_COMMAND}
+  -DSRC=gitversion.hpp.in
+  -DDST=gitversion.hpp
+  -DLIB_VERSION=${LIB_VERSION}
+  -P gitversion.cmake
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  DEPENDS .git/HEAD .git/index
+  COMMENT "Write current version to gitversion.hpp"
   )
-configure_file(gitversion.hpp.in ${CMAKE_SOURCE_DIR}/gitversion.hpp ESCAPE_QUOTES)
+add_dependencies(palattice version)
+
+
+
+# automatically generated header files (by cmake, not build-time!)
 configure_file(simToolPath.hpp.in ${CMAKE_SOURCE_DIR}/simToolPath.hpp ESCAPE_QUOTES)
 
 
@@ -122,15 +133,15 @@ endif()
 
 # install
 install(TARGETS palattice
-  LIBRARY DESTINATION ${INSTALL_PATH}/lib
+  LIBRARY DESTINATION lib
   )
 
-install (PROGRAMS simTools/elegant2libpalattice.sh
-  DESTINATION ${INSTALL_PATH}/bin
+install(PROGRAMS simTools/elegant2libpalattice.sh
+  DESTINATION bin
   RENAME elegant2libpalattice
   )
 
-install (FILES
+install(FILES
   AccElements.hpp
   AccLattice.hpp
   Metadata.hpp
@@ -148,10 +159,10 @@ install (FILES
   gitversion.hpp
   simToolPath.hpp
   libpalattice.hpp
-  DESTINATION ${INSTALL_PATH}/include/libpalattice
+  DESTINATION include/libpalattice
   )
 
-install (FILES
+install(FILES
   simTools/libpalattice.ele
   simTools/libpalattice.madx
   simTools/libpalattice_twissonly.madx
@@ -165,11 +176,11 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
   IMMEDIATE @ONLY)
 add_custom_target(uninstall
-  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/cmake_uninstall.cmake)
 
 
 # programs, including convertlattice
-add_subdirectory(${CMAKE_SOURCE_DIR}/programs EXCLUDE_FROM_ALL)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/programs EXCLUDE_FROM_ALL)
 
-# googletests
-add_subdirectory(${CMAKE_SOURCE_DIR}/tests)
+# some tests with googletest
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
