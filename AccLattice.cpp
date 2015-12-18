@@ -633,6 +633,8 @@ void AccLattice::madximport(SimToolInstance &madx)
   columns.push_back("APERTYPE");
   columns.push_back("APER_1");
   columns.push_back("APER_2");
+  columns.push_back("VOLT");
+  columns.push_back("FREQ");
 
   //read columns from file (execute madx if mode=online)
   SimToolTable twi;
@@ -696,6 +698,10 @@ void AccLattice::madximport(SimToolInstance &madx)
     if (twi.gets(i,"APERTYPE")=="RECTANGLE") {
       element->halfWidth.x = twi.getd(i,"APER_1");
       element->halfWidth.z = twi.getd(i,"APER_2");
+    }
+    if (element->type == cavity) {
+      element->volt = twi.getd(i,"VOLT") * 1e6;
+      element->freq = twi.getd(i,"FREQ") * 1e6;
     }
     element->k1 = twi.getd(i,"K1L")/l;
     element->k2 = twi.getd(i,"K2L")/l;
@@ -784,7 +790,7 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
     elegant.run();
 
   double s, pos;
-  double l, k1, k2, angle, kick, hkick, vkick, tilt, e1,e2; //parameter values
+  double l, k1, k2, angle, kick, hkick, vkick, tilt, e1,e2,volt,freq; //parameter values
   AccPair halfWidth;
   paramRow row, row_old;
   AccElement *element;
@@ -792,7 +798,7 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
   bool firstElement = true;
   string tmp;
 
-  pos=l=k1=k2=angle=kick=tilt=e1=e2=0.;   // initialize param. values
+  pos=l=k1=k2=angle=kick=tilt=e1=e2=volt=freq=0.;   // initialize param. values
   s = 0.;
 
   //get metadata and set circumference
@@ -868,6 +874,11 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
        element->e1 = e1;
        element->e2 = e2;
        element->halfWidth = halfWidth;
+       if (element->type == cavity) {
+	 element->volt = volt;
+	 element->freq = freq;
+       }
+	      
        if (refPos == begin) pos = s-l;
        else if (refPos == center) pos = s-l/2;
        else pos = s; 
@@ -875,7 +886,7 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
      }
      delete element;
      // clear param. values to avoid reuse of an old value
-     pos=l=k1=k2=angle=kick=hkick=vkick=tilt=e1=e2=0.;
+     pos=l=k1=k2=angle=kick=hkick=vkick=tilt=e1=e2=volt=freq=0.;
      halfWidth = AccPair();
     }
 
@@ -896,6 +907,8 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
     else if (row.param == "E2") e2 = row.value;
     else if (row.param == "X_MAX") halfWidth.x = row.value;
     else if (row.param == "Y_MAX") halfWidth.z = row.value;
+    else if (row.param == "VOLT") volt = row.value;
+    else if (row.param == "FREQ") freq = row.value;
     //... add more parameters here
 
    row_old = row;

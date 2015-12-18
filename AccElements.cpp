@@ -426,7 +426,23 @@ string AccElement::printAperture(SimTool t) const
   return s.str();
 }
 
-string AccElement::rfComment() const
+string AccElement::printRF(SimTool t) const
+{
+  stringstream s;
+  s << "VOLT=";
+  if(t == madx)
+    s << volt / 1e6;
+  else if (t == elegant)
+    s << volt;
+  s << ", FREQ=";
+  if(t == madx)
+    s << freq / 1e6;
+  else if (t == elegant)
+    s << freq;
+  return s.str();
+}
+
+string AccElement::rfMagComment() const
 {
   stringstream s;
   if (Qrf1!=0. || dQrf!=0.)
@@ -452,10 +468,7 @@ string Cavity::printSimTool(SimTool t) const
 
   s << name <<" : "<< nameInTool("RFCAVITY","RFCA",t) <<", "
     <<"L="<< length <<", "
-    <<"VOLT=0.0";
-  if (t==madx)
-    s << ", HARMON=0;";
-  s << " ! Voltage and frequency not implemented in libpal. Please set manually." <<endl;
+    << printRF(t) <<";"<< endl;
   return s.str();
 }
 
@@ -470,7 +483,7 @@ string Dipole::printSimTool(SimTool t) const
     <<"L="<< length <<", "
     <<"ANGLE="<< k0.z*length;
   s << printStrength();
-  s << printEdges() << printTilt(t) <<";"<< rfComment() << endl;
+  s << printEdges() << printTilt(t) <<";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -506,7 +519,7 @@ string Corrector::printSimTool(SimTool t) const
     s << "KICK="<< asin(kick*length);
 
   
-  s << printTilt(t) <<";"<< rfComment() << endl;
+  s << printTilt(t) <<";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -519,7 +532,7 @@ string Quadrupole::printSimTool(SimTool t) const
   s << name <<" : "<< nameInTool("QUADRUPOLE","KQUAD",t) <<", "
     <<"L="<< length;
   s << printStrength();
-  s << printEdges() << printTilt(t) <<";"<< rfComment() << endl;
+  s << printEdges() << printTilt(t) <<";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -530,7 +543,7 @@ string Sextupole::printSimTool(SimTool t) const
   s << name <<" : "<< nameInTool("SEXTUPOLE","KSEXT",t) <<", "
     <<"L="<< length;
   s << printStrength();
-  s << printEdges() << printTilt(t) <<";"<< rfComment() << endl;
+  s << printEdges() << printTilt(t) <<";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -551,7 +564,7 @@ string Multipole::printSimTool(SimTool t) const
   s << name <<" : "<< nameInTool("MULTIPOLE","MULT",t) <<", "
     <<"L="<< length;
   s << printStrength();
-  s << printEdges() << printTilt(t) <<";"<< rfComment() << endl;
+  s << printEdges() << printTilt(t) <<";"<< rfMagComment() << endl;
   return s.str();
 }
 

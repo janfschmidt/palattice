@@ -48,7 +48,8 @@ protected:
   string printEdges() const;
   string printStrength() const;
   string printAperture(SimTool t) const;
-  string rfComment() const;
+  string printRF(SimTool t) const;
+  string rfMagComment() const;
 
   // following data can be accessed and modified. Only type and length of an element must not be changed.
 public:
@@ -64,16 +65,20 @@ public:
   double Qrf1;           // RF magnet tune for turn=1
   double dQrf;           // RF magnet tune change per turn (linear frequency sweep)
 
-  //edge angles in rad
+  //edge angles / rad
   //used only for import/export and integrated field B_int(orbit)
   double e1;
   double e2;
   
   //alignment errors:
-  double dpsi;           //rotation around s axis in rad
+  double dpsi;           //rotation around s axis / rad
 
   //rectangular aperture, only used for rcollimator!
-  AccPair halfWidth;
+  AccPair halfWidth;    //half width of the beam pipe / m
+
+  // cavity stuff
+  double volt;          // RF amplitude / V
+  double freq;          // RF frequency / Hz
 
   AccElement(element_type _type, string _name, double _length);
   virtual ~AccElement() {};
