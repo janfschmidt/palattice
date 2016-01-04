@@ -200,7 +200,8 @@ public:
 
   class palatticeFileError : public palatticeError {
   public:
-    palatticeFileError(std::string file) : palatticeError("Cannot open "+file) {}
+    std::string filename;
+    palatticeFileError(std::string file) : palatticeError("Cannot open "+file), filename(file) {}
   };
 
 

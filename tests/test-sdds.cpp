@@ -12,7 +12,7 @@
 
 TEST(sdds, Parameter) {
   SDDS_TABLE *t = new SDDS_TABLE;
-  if( SDDS_InitializeInput(t,const_cast<char*>("libpalattice.twi")) != 1 )
+  if( SDDS_InitializeInput(t,const_cast<char*>(TEST_TWISS_FILE)) != 1 )
     throw pal::SDDSError();
   
   SDDS_ReadTable(t);
@@ -30,7 +30,7 @@ TEST(sdds, Parameter) {
 
 TEST(sdds, StringParameter) {
   SDDS_TABLE *t = new SDDS_TABLE;
-  if( SDDS_InitializeInput(t,const_cast<char*>("libpalattice002.w")) != 1 )
+  if( SDDS_InitializeInput(t,const_cast<char*>(TEST_WATCH_FILE)) != 1 )
     throw pal::SDDSError();
   
   SDDS_ReadTable(t);
@@ -49,7 +49,7 @@ TEST(sdds, StringParameter) {
 
 TEST(sdds, Column) {
   SDDS_TABLE *t = new SDDS_TABLE;
-  if( SDDS_InitializeInput(t,const_cast<char*>("libpalattice.twi")) != 1 )
+  if( SDDS_InitializeInput(t,const_cast<char*>(TEST_TWISS_FILE)) != 1 )
     throw pal::SDDSError();
   
   SDDS_ReadTable(t);
@@ -76,7 +76,7 @@ TEST(sdds, Column) {
 
 TEST(sdds, ColumnValues) {
  SDDS_TABLE *t = new SDDS_TABLE;
-  if( SDDS_InitializeInput(t,const_cast<char*>("libpalattice.twi")) != 1 )
+  if( SDDS_InitializeInput(t,const_cast<char*>(TEST_TWISS_FILE)) != 1 )
     throw pal::SDDSError();
 
   SDDS_ReadTable(t);
@@ -103,7 +103,7 @@ TEST(sdds, ColumnValues) {
 
 TEST(sdds, Pages) {
   SDDS_TABLE *t = new SDDS_TABLE;
-  if( SDDS_InitializeInput(t,const_cast<char*>("libpalattice002.w")) != 1 )
+  if( SDDS_InitializeInput(t,const_cast<char*>(TEST_WATCH_FILE)) != 1 )
     throw pal::SDDSError();
 
   // SDDS_ReadTable (or ReadPage) gives first page, has to be repeated for every page.
@@ -138,7 +138,7 @@ TEST(sdds, Pages) {
 
 TEST(sdds, FilterParticleId) {
   SDDS_TABLE *t = new SDDS_TABLE;
-  if( SDDS_InitializeInput(t,const_cast<char*>("libpalattice002.w")) != 1 )
+  if( SDDS_InitializeInput(t,const_cast<char*>(TEST_WATCH_FILE)) != 1 )
     throw pal::SDDSError();
 
   // filter single particle id
@@ -182,7 +182,7 @@ TEST(sdds, FilterParticleId) {
 
 TEST(sdds, FilterColumns) {
   SDDS_TABLE *t = new SDDS_TABLE;
-  if( SDDS_InitializeInput(t,const_cast<char*>("libpalattice.clo")) != 1 )
+  if( SDDS_InitializeInput(t,const_cast<char*>(TEST_ORBIT_FILE)) != 1 )
     throw pal::SDDSError();
   
   SDDS_ReadPage(t);
@@ -221,8 +221,8 @@ TEST(sdds, FileTwice) {
 
   unsigned int id=1u;
   
-  ASSERT_EQ(1, SDDS_InitializeInput(t1, const_cast<char*>("libpalattice002.w")) );
-  ASSERT_EQ(1, SDDS_InitializeInput(t2, const_cast<char*>("libpalattice002.w")) );
+  ASSERT_EQ(1, SDDS_InitializeInput(t1, const_cast<char*>(TEST_WATCH_FILE)) );
+  ASSERT_EQ(1, SDDS_InitializeInput(t2, const_cast<char*>(TEST_WATCH_FILE)) );
   ASSERT_NE(0, SDDS_ReadPage(t1));
   ASSERT_NE(0, SDDS_ReadPage(t2));
   ASSERT_EQ(1, SDDS_FilterRowsOfInterest(t1, const_cast<char*>("particleID"),id,id,SDDS_AND));
@@ -259,8 +259,7 @@ TEST(sdds, FileTwice) {
 
 
 TEST(sddsSimTool, Parameter) {
-  pal::SimToolInstance elegant(pal::elegant, pal::online, "elsa.lte");
-  //elegant.set_sddsMode(true);
+  pal::SimToolInstance elegant(pal::elegant, pal::offline, TEST_PARAM_FILE);
   elegant.setTurns(0);
 
   double p = elegant.readParameter<double>(elegant.twiss(), "pCentral");
@@ -268,8 +267,7 @@ TEST(sddsSimTool, Parameter) {
 }
 
 TEST(sddsSimTool, StringParameter) {
-  pal::SimToolInstance elegant(pal::elegant, pal::online, "elsa.lte");
-  //elegant.set_sddsMode(true);
+  pal::SimToolInstance elegant(pal::elegant, pal::offline, TEST_PARAM_FILE);
 
   std::string p = elegant.readParameter<string>(elegant.twiss(), "pCentral");
   if(elegant.sddsMode()) {
@@ -282,16 +280,15 @@ TEST(sddsSimTool, StringParameter) {
 }
 
 TEST(sddsSimTool, Table) {
-  pal::SimToolInstance elegant(pal::elegant, pal::online, "elsa.lte");
-  //elegant.set_sddsMode(true);
+  pal::SimToolInstance elegant(pal::elegant, pal::offline, TEST_PARAM_FILE);
 
   std::vector<std::string> columnKeys = {"s", "x", "y"};
   pal::SimToolTable tab;
   tab = elegant.readTable(elegant.orbit(), columnKeys);
 
-  EXPECT_EQ(298u, tab.rows());
+  EXPECT_EQ(333u, tab.rows());
   EXPECT_EQ(3u, tab.columns());
-  EXPECT_NEAR(164.4008, tab.getd(297,"s"), 0.0001);
+  EXPECT_NEAR(164.4008, tab.getd(332,"s"), 0.0001);
   EXPECT_DOUBLE_EQ(0.0, tab.get<double>(0,"s"));
   if(elegant.sddsMode())
     EXPECT_STREQ("0", tab.get<std::string>(0,"s").c_str());
@@ -302,8 +299,7 @@ TEST(sddsSimTool, Table) {
 }
 
 TEST(sddsSimTool, Circumference) {
-  pal::SimToolInstance elegant(pal::elegant, pal::online, "elsa.lte");
-  //elegant.set_sddsMode(true);
+  pal::SimToolInstance elegant(pal::elegant, pal::offline, TEST_PARAM_FILE);
 
   EXPECT_NEAR(164.4008, elegant.readCircumference(), 0.0001);
 }
@@ -315,8 +311,7 @@ TEST(sddsSimTool, Circumference) {
 
 
 TEST(sddsFoP, Column) {
-  pal::SimToolInstance elegant(pal::elegant, pal::online, "elsa.lte");
-  //elegant.set_sddsMode(true);
+  pal::SimToolInstance elegant(pal::elegant, pal::offline, TEST_PARAM_FILE);
   
   pal::FunctionOfPos<double> betax(elegant);
   EXPECT_NEAR(164.4008, betax.circumference(), 0.0001);
@@ -328,8 +323,7 @@ TEST(sddsFoP, Column) {
 
 
 TEST(sddsFoP, Orbit) {
-  pal::SimToolInstance elegant(pal::elegant, pal::online, "elsa.lte");
-  //elegant.set_sddsMode(true);
+  pal::SimToolInstance elegant(pal::elegant, pal::offline, TEST_PARAM_FILE);
   
   pal::FunctionOfPos<pal::AccPair> orbit(elegant);
   EXPECT_NEAR(164.4008, orbit.circumference(), 0.0001);
@@ -341,8 +335,7 @@ TEST(sddsFoP, Orbit) {
 
 
 TEST(sddsFoP, Trajectory) {
-  pal::SimToolInstance elegant(pal::elegant, pal::online, "elsa.lte");
-  //elegant.set_sddsMode(true);
+  pal::SimToolInstance elegant(pal::elegant, pal::online, TEST_LATTICE_FILE);
   elegant.setTurns(10);
   elegant.setNumParticles(5);
   //elegant.verbose = true;

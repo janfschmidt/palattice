@@ -15,7 +15,7 @@ set(SIMTOOL_PATH ${CMAKE_INSTALL_PREFIX}/lib/libpalattice_simTools)
 
 # Googletest Path
 # optional, used to compile tests in tests/ directory
-set(GTEST_PATH /set/googletest/path/here)
+set(GTEST_PATH /home/thiry/dev/gtest-1.7.0) #/set/googletest/path/here
 
 
 # CXX-Standard & All Warnings
@@ -176,11 +176,12 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
   IMMEDIATE @ONLY)
 add_custom_target(uninstall
-  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/cmake_uninstall.cmake)
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/cmake_uninstall.cmake)
 
 
 # programs, including convertlattice
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/programs EXCLUDE_FROM_ALL)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/programs)
 
 # some tests with googletest
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
+

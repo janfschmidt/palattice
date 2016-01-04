@@ -139,6 +139,7 @@ public:
 
   //additional Physical Quantities
   double Erev_keV_syli(const double& gamma) const; //energy loss per turn in keV for electron beam with energy given by gamma
+  double integralDipoleRadius(int exponent=1) const; // integral over bending radius around ring: R^exponent ds
   
   // output (stdout or file)
   // If no filename is given, print to stdout.

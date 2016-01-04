@@ -609,8 +609,13 @@ void AccLattice::madximport(SimToolInstance &madx)
   string madxTwissFile=madx.lattice();
   
   //get metadata and set circumference
-  info.simToolImport(madx);
-  setCircumference( madx.readCircumference() );
+    try {
+      info.simToolImport(madx);
+      setCircumference(madx.readCircumference());
+    } catch(palatticeFileError &e) {
+      std::cout << "WARNING: Cannot read circumference & SimTool metadata from " <<std::endl
+		<<e.filename << std::endl;
+    }
 
   if (refPos != end)
     cout << "WARNING: AccLattice::madximport(): The input file (MAD-X twiss) uses element end as positions." << endl
@@ -802,8 +807,13 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
   s = 0.;
 
   //get metadata and set circumference
-  info.simToolImport(elegant);
-  setCircumference(elegant.readCircumference());
+  try {
+    info.simToolImport(elegant);
+    setCircumference(elegant.readCircumference());
+  } catch(palatticeFileError &e) {
+    std::cout << "WARNING: Cannot read circumference & SimTool metadata from " <<std::endl
+	      << e.filename << std::endl;
+  }
 
   if (refPos != end)
     cout << "WARNING: AccLattice::elegantimport(): The input file (elegant parameter) uses element end as positions." << endl
@@ -1326,22 +1336,40 @@ string AccLattice::getElementDefs(SimTool tool, element_type _type) const
 // including definition of drifts in-between elements
 string AccLattice::getLine(SimTool tool) const
 {
-  std::stringstream s, line;
+  std::stringstream s;    //drift definitions
+  std::stringstream line; //lattice line 
   double driftlength, lastend;
-
-  line << "BEGIN : ";
-  if (tool==elegant)
-    line << "MARK";
-  else
-    line << "MARKER;";
-  line << endl << endl;
-
-  s << "! Drifts (caculated from element positions)" << endl; //Drifts
-  line << "LATTICE_BY_LIBPALATTICE : LINE=(BEGIN, ";          //line
-
   const_AccIterator it=elements.begin();
-  unsigned int n=0, nInRow=0;
+
+  line << "LATTICE_BY_LIBPALATTICE : LINE=(";
+
+  //marker at pos=0.0 if lattice starts with drift
+  if (it->first > ZERO_DISTANCE) {
+    s << "BEGIN : ";
+    if (tool==elegant)
+      s << "MARK";
+    else
+      s << "MARKER;";
+    s << endl << endl;
+    line << "BEGIN, ";
+  }
+  s << "! Drifts (caculated from element positions)" << endl; //Drifts
+
+
+  unsigned int n=0u, nInRow=1u;
   for (; it!=elements.end(); ++it) {
+    //comma
+    if (it != elements.begin()) line << ", ";
+    
+    //line break
+    if (nInRow >= EXPORT_LINE_ELEMENTS_PER_ROW) {
+      if (tool==elegant)
+	line <<"&";
+      line << std::endl << "                    ";
+      nInRow = 0;
+    }
+
+    //calc, define and insert Drift
     if (it == elements.begin()) {
       driftlength = locate(it, begin);
     }
@@ -1357,17 +1385,15 @@ string AccLattice::getLine(SimTool tool) const
 	s << "DRIFT, L=";
       s << driftlength <<";"<< endl;  //drift definition
       line << "DRIFT_" << n << ", ";  //insert drift in line
+      nInRow++;
       n++;
     }
-    line << it->second->name << ", "; //insert element in line
-    nInRow+=2;
-    if (nInRow >= EXPORT_LINE_ELEMENTS_PER_ROW) {
-      if (tool==elegant)
-	line <<"&";
-      line << std::endl << "                    ";
-      nInRow = 0;
-    }
-  }
+    
+    //insert element
+    line << it->second->name;
+    nInRow++;
+  }//loop elements in lattice
+  
   //final drift to end
   if ( (circumference() - lastend) > ZERO_DISTANCE ) { //ignore very short drift
     s << "DRIFT_" << n << " : ";
@@ -1532,4 +1558,17 @@ double AccLattice::Erev_keV_syli(const double& gamma) const
   }
   dE *= std::pow(gamma, 4) * GSL_CONST_MKSA_ELECTRON_CHARGE / (6*M_PI*GSL_CONST_MKSA_VACUUM_PERMITTIVITY); // in eV
   return std::move(dE/1000.); //in keV
+}
+
+
+// integral over bending radius around ring: R^exponent ds
+double AccLattice::integralDipoleRadius(int exponent) const
+{
+  double sum = 0;
+  double totalLength = 0;
+  for(auto it=firstCIt(dipole); it!=getItEnd(); it=nextCIt(it, dipole)) {
+    sum += std::pow(it->second->k0.abs(), -1*exponent) * it->second->length;
+    totalLength += it->second->length;
+  }
+  return sum / totalLength;
 }

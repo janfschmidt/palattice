@@ -8,6 +8,12 @@ if(EXISTS ${GTEST_PATH})
   add_subdirectory(${GTEST_PATH} gtest)
   include_directories(${GTEST_PATH} ${GTEST_PATH}/include)
 
+  add_definitions(-DTEST_PARAM_FILE="${CMAKE_CURRENT_SOURCE_DIR}/test-sdds.param")
+  add_definitions(-DTEST_TWISS_FILE="${CMAKE_CURRENT_SOURCE_DIR}/test-sdds.twi")
+  add_definitions(-DTEST_ORBIT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/test-sdds.clo")
+  add_definitions(-DTEST_WATCH_FILE="${CMAKE_CURRENT_SOURCE_DIR}/test-sdds.w")
+  add_definitions(-DTEST_LATTICE_FILE="${CMAKE_CURRENT_SOURCE_DIR}/test-sdds.lte")
+
   # build
   add_executable(test-syli test-syli.cpp)
   add_executable(test-sdds test-sdds.cpp)
