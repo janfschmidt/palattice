@@ -11,10 +11,10 @@
  */
 
 
-#include "libpalattice/AccLattice.hpp"
-#include "libpalattice/FunctionOfPos.hpp"
-#include "libpalattice/Field.hpp"
-#include "libpalattice/ResStrengths.hpp"
+#include <libpalattice/AccLattice.hpp>
+#include <libpalattice/FunctionOfPos.hpp>
+#include <libpalattice/Field.hpp>
+#include <libpalattice/ResStrengths.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
   
   //import lattice and closed orbit
   pal::SimToolInstance sim(pal::madx, pal::online, latticefile);
-  pal::AccLattice elsa("ELSA", sim);
+  pal::AccLattice elsa(sim);
 
   pal::FunctionOfPos<pal::AccPair> orbit(sim);
   orbit.simToolClosedOrbit(sim);

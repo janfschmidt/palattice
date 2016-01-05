@@ -29,7 +29,7 @@ using namespace std;
 namespace pal
 {
 
-  enum element_type{dipole=0, quadrupole=1, corrector=2, sextupole=3, cavity=4, multipole=5, marker=6, rcollimator=7, drift=8}; //! keep dipole as first and drift as last
+  enum element_type{dipole=0, quadrupole=1, corrector=2, sextupole=3, cavity=4, multipole=5, marker=6, monitor=7, rcollimator=8, drift=9}; //! keep dipole as first and drift as last
   enum element_plane{H,V,L,noplane};    //horizontal,vertical,longitudinal
                                         //used for export and filtering only, NO INFLUENCE ON FIELD B()!
   enum element_family{F,D,nofamily};    //focus,defocus, CHANGES SIGN OF FIELD!
@@ -49,6 +49,7 @@ protected:
   string printStrength() const;
   string printAperture(SimTool t) const;
   string printRF(SimTool t) const;
+  string printSyli(SimTool t) const;
   string rfMagComment() const;
 
   // following data can be accessed and modified. Only type and length of an element must not be changed.
@@ -163,6 +164,19 @@ public:
     ~Marker() {}
     
     virtual Marker* clone() const {return new Marker(*this);}
+
+    virtual string printSimTool(SimTool t) const;
+    virtual string printLaTeX() const;
+  };
+
+   // monitor
+  class Monitor : public NoMagnet {
+  public:
+    Monitor(string _name, double _length)
+      : NoMagnet(monitor,_name,_length) {}
+    ~Monitor() {}
+    
+    virtual Monitor* clone() const {return new Monitor(*this);}
 
     virtual string printSimTool(SimTool t) const;
     virtual string printLaTeX() const;

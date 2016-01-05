@@ -125,7 +125,8 @@ int main (int argc, char *argv[])
   try {
     // import lattice
     pal::SimToolInstance sim(tool, mode, file);
-    pal::AccLattice lattice("convertlattice", sim);
+    pal::AccLattice lattice(sim);
+    lattice.setComment("created by convertlattice");
   
 
     // remove path from input file name

@@ -26,6 +26,7 @@
 
 // MadX/Elegant export:
 #define EXPORT_LINE_ELEMENTS_PER_ROW 10 // number of elements per line in beamline export
+#define ELEGANT_SYNCH_RAD_SETTING 1     // def. of elegant dipole for export: synchrotron radiation (1=on, 0=off)
 
 
 #define VCPOS_WARNDIFF 0.05  // ELSAimport: warning for larger VC pos.diff. in MadX & ELSA-Spuren

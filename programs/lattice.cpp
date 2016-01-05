@@ -11,7 +11,7 @@
  */
 
 
-#include "libpalattice/AccLattice.hpp"
+#include <libpalattice/AccLattice.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
   // ! for rings with drift at the end circumference should be set in constructor (or drift mounted explicitly)
   // ! via madx/elegant import the circumference is set automatically
   // default element reference position (refPos) = pal::begin
-  pal::AccLattice beamline("test");       //all arguments: pal::AccLattice beamline("test", 5.0, pal::end);
+  pal::AccLattice beamline;       //all arguments: pal::AccLattice beamline(5.0, pal::end);
 
   double R = 11;
   pal::Corrector ssh1("SSH1", 0.15);
@@ -72,7 +72,8 @@ int main(int argc, char *argv[])
   string latticefile = argv[1];
   
   pal::SimToolInstance sim(pal::madx, pal::online, latticefile);
-  pal::AccLattice elsa("ELSA", sim);
+  pal::AccLattice elsa(sim);
+  elsa.setComment("I am a lattice from a file!");
 
   //print lattice to file
   elsa.print("elsa.lattice");

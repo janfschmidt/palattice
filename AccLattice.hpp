@@ -44,6 +44,7 @@ protected:
   const Drift* empty_space;
   vector<string> ignoreList;              // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted (set) in this lattice
   unsigned int ignoreCounter;
+  string comment;
 
   AccIterator firstIt(element_type _type, element_plane p=noplane, element_family f=nofamily); // get iterator to first element of given type
   AccIterator lastIt(element_type _type, element_plane p=noplane, element_family f=nofamily);  // get iterator to last element of given type
@@ -61,13 +62,16 @@ public:
   const Anchor refPos;
   Metadata info;
 
-  AccLattice(string _name="my lattice", double _circumference=0., Anchor _refPos=begin);
-  AccLattice(string _name, SimToolInstance &sim, Anchor _refPos=end, string ignoreFile="");    //direct madx/elegant import
+  AccLattice(double _circumference=0., Anchor _refPos=begin);
+  AccLattice(SimToolInstance &sim, Anchor _refPos=end, string ignoreFile=""); //direct madx/elegant import
   AccLattice(const AccLattice &other);
   ~AccLattice();
   AccLattice& operator= (const AccLattice &other);
 
   double circumference() const {return circ;}
+
+  void setComment(string _comment) {comment=_comment; info.add("Comment", comment);}
+  string getComment() const {return comment;}
 
   // ------- these functions may be replaced soon by a new API for lattice iteration -------------------------
   const_AccIterator getIt(double pos) const;      // get const_Iterator to element, if pos is inside it
@@ -94,7 +98,7 @@ public:
   bool inside(string name, double here) const {return inside(operator[](name),here);}   // test if "here" is inside lattice element with name
   double distance(double pos, const_AccIterator it, Anchor itRef) const;// distance from itRef of element it to pos (>0 if pos is after itRef)
   double distanceRing(double pos, const_AccIterator it, Anchor itRef) const;// distance in a ring (both directions, shorter distance returned)
-  double distanceNext(const_AccIterator it) const;                      // |distance| from it to next element (circulating)
+  double distanceNext(const_AccIterator it) const;                      // |distance| from it to next element (circulating, using refPos of both elements)
 
   const AccElement* operator[](double pos) const;                    // get element (any position, Drift returned if not inside any element)
   const_AccIterator operator[](string name) const;                   // get iterator by name (first match in lattice, Drift returned otherwise)

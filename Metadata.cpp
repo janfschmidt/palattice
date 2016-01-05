@@ -45,14 +45,14 @@ void Metadata::simToolImport(SimToolInstance &sim, string file, string labels)
 {
   add("Imported from", sim.tool_string());
   add("Lattice Source file", sim.lattice());
-  add("Lattice circumference / m", sim.readCircumference());
+  add("Circumference from "+sim.tool_string()+" / m", sim.readCircumference());
 
   if (file == "default")
     file = sim.twiss();
 
   if (labels == "default") {
     if (sim.tool==madx)
-      labels = "TITLE,ORIGIN,GAMMA,Q1,Q2";
+      labels = "SEQUENCE,GAMMA,Q1,Q2";
     else if (sim.tool==elegant)
       labels = "pCentral,nux,nuy";
   }

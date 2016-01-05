@@ -57,6 +57,7 @@ AccElement::AccElement(element_type _type, string _name, double _length)
 Dipole::Dipole(string _name, double _length, element_plane p, double _k0)
   : Magnet(dipole,_name,_length)
 {
+  family = F;
   plane = p;
   switch(plane) {
   case V:
@@ -75,7 +76,7 @@ Dipole::Dipole(string _name, double _length, element_plane p, double _k0)
 }
 
 Dipole::Dipole(string _name, double _length, AccTriple _k0)
-  : Magnet(dipole,_name,_length) {k0 = _k0;}
+  : Magnet(dipole,_name,_length) {family = F; k0 = _k0;}
 
 Corrector::Corrector(string _name, double _length, element_plane p, double _k0)
   : Magnet(corrector,_name,_length)
@@ -108,8 +109,8 @@ void AccElement::checkPhysLength()
     if (pl > 0)
       physLength = pl;
     else {
-      cout <<"WARNING: DEFAULT_LENGTH_DIFFERENCE (config.hpp) > length for AccElement "<< this->name
-	   << ". physical length set to zero." << endl;
+      // cout <<"WARNING: DEFAULT_LENGTH_DIFFERENCE (config.hpp) > length for AccElement "<< this->name
+      // 	   << ". physical length set to zero." << endl;
       physLength = 0.;
     }
   }
@@ -255,6 +256,8 @@ string AccElement::type_string() const
     return "Cavity";
   case marker:
     return "Marker";
+  case monitor:
+    return "Monitor";
   case rcollimator:
     return "Rcollimator";
   case drift:
@@ -418,11 +421,10 @@ string AccElement::printStrength() const
 string AccElement::printAperture(SimTool t) const
 {
   stringstream s;
-  s << " ,";
   if (t == madx)
-    s << "APERTYPE=2, APERTURE={" <<halfWidth.x<<","<<halfWidth.z<<"}";
+    s << ", APERTYPE=RECTANGLE, APERTURE={" <<halfWidth.x<<","<<halfWidth.z<<"}";
   else if (t == elegant)
-    s << "X_MAX="<<halfWidth.x<<", "<<"Y_MAX="<<halfWidth.z;
+    s << ", X_MAX="<<halfWidth.x<<", "<<"Y_MAX="<<halfWidth.z;
   return s.str();
 }
 
@@ -439,6 +441,16 @@ string AccElement::printRF(SimTool t) const
     s << freq / 1e6;
   else if (t == elegant)
     s << freq;
+  return s.str();
+}
+
+string AccElement::printSyli(SimTool t) const
+{
+  stringstream s;
+  
+  if(t==elegant)
+    s << ", synch_rad="<<ELEGANT_SYNCH_RAD_SETTING<<", isr="<<ELEGANT_SYNCH_RAD_SETTING;
+
   return s.str();
 }
 
@@ -483,7 +495,7 @@ string Dipole::printSimTool(SimTool t) const
     <<"L="<< length <<", "
     <<"ANGLE="<< k0.z*length;
   s << printStrength();
-  s << printEdges() << printTilt(t) <<";"<< rfMagComment() << endl;
+  s << printEdges() << printTilt(t) << printSyli(t) << ";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -575,6 +587,14 @@ string Marker::printSimTool(SimTool t) const
   return s.str();
 }
 
+string Monitor::printSimTool(SimTool t) const
+{
+  stringstream s;
+  s << name <<" : "<< nameInTool("MONITOR","MONI",t) <<", "
+    <<"L="<< length <<";"<<endl;
+  return s.str();
+}
+
 string Rcollimator::printSimTool(SimTool t) const
 {
   stringstream s;
@@ -645,6 +665,13 @@ string Marker::printLaTeX() const
 {
   stringstream s;
   s << "\\marker{"<< filterCharactersForLaTeX(name) <<"}" << endl;
+  return s.str();
+}
+
+string Monitor::printLaTeX() const
+{
+  stringstream s;
+  s << "\\screen{"<< filterCharactersForLaTeX(name) <<"}["<< length <<"]" << endl;
   return s.str();
 }
 

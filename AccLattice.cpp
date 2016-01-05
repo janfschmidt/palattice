@@ -35,23 +35,21 @@ string pal::removeQuote(string s)
 
 
 //constructor
-AccLattice::AccLattice(string _name, double _circumference, Anchor _refPos)
+AccLattice::AccLattice(double _circumference, Anchor _refPos)
   : circ(0.), ignoreCounter(0), refPos(_refPos)
 {
   empty_space = new Drift;
 
-  info.add("Lattice name", _name);
   info.add("Reference pos.", this->refPos_string());
 
   setCircumference(_circumference);
 }
 
-AccLattice::AccLattice(string _name, SimToolInstance &sim, Anchor _refPos, string ignoreFile)
+AccLattice::AccLattice(SimToolInstance &sim, Anchor _refPos, string ignoreFile)
   : circ(0.), ignoreCounter(0), refPos(_refPos)
 {
   empty_space = new Drift;
 
-  info.add("Lattice name", _name);
   info.add("Reference pos.", this->refPos_string());
 
   if (ignoreFile != "") this->setIgnoreList(ignoreFile);
@@ -684,6 +682,9 @@ void AccLattice::madximport(SimToolInstance &madx)
     else if (key == "\"MARKER\"") {
       element = new Marker(name);
     }
+    else if (key == "\"MONITOR\"") {
+      element = new Monitor(name, l);
+    }
     else if (key == "\"RCOLLIMATOR\"") {
       element = new Rcollimator(name, l);
     }
@@ -700,7 +701,7 @@ void AccLattice::madximport(SimToolInstance &madx)
     if (vkick!=0. && element->plane!=H)  element->k0.x += sin(vkick) / l;
     element->e1 = twi.getd(i,"E1");
     element->e2 = twi.getd(i,"E2");
-    if (twi.gets(i,"APERTYPE")=="RECTANGLE") {
+    if (twi.gets(i,"APERTYPE")=="\"RECTANGLE\"") {
       element->halfWidth.x = twi.getd(i,"APER_1");
       element->halfWidth.z = twi.getd(i,"APER_2");
     }
@@ -863,6 +864,9 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
      }
      else if (row_old.type=="MARK") {
        element = new Marker(row_old.name);
+     }
+     else if (row_old.type=="MONI") {
+       element = new Monitor(row_old.name, l);
      }
      else if (row_old.type=="RCOL") {
        element = new Rcollimator(row_old.name, l);
@@ -1112,7 +1116,7 @@ void AccLattice::subtractCorrectorStrengths(AccLattice &other)
   if (tmp != "NA")
     info.add("subtracted corrector strengths", tmp);
   else
-    info.add("subtracted corrector strengths", other.info.getbyLabel("Lattice name"));
+    info.add("subtracted corrector strengths", "no lattice source file");
 }
 
 
@@ -1156,7 +1160,7 @@ void AccLattice::subtractMisalignments(const AccLattice &other)
   if (tmp != "NA")
     info.add("subtracted misalignments", tmp);
   else
-    info.add("subtracted misalignments", other.info.getbyLabel("Lattice name"));
+    info.add("subtracted misalignments", "no lattice source file");
 }
 
 
@@ -1341,7 +1345,7 @@ string AccLattice::getLine(SimTool tool) const
   double driftlength, lastend;
   const_AccIterator it=elements.begin();
 
-  line << "LATTICE_BY_LIBPALATTICE : LINE=(";
+  line << "LIBPALATTICE : LINE=(";
 
   //marker at pos=0.0 if lattice starts with drift
   if (it->first > ZERO_DISTANCE) {
