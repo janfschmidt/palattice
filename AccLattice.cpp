@@ -1348,7 +1348,7 @@ string AccLattice::getLine(SimTool tool) const
   line << "LIBPALATTICE : LINE=(";
 
   //marker at pos=0.0 if lattice starts with drift
-  if (it->first > ZERO_DISTANCE) {
+  if (it->first > ZERO_DISTANCE || it->second->type != marker) {
     s << "BEGIN : ";
     if (tool==elegant)
       s << "MARK";
