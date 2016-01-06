@@ -118,6 +118,5 @@
 
 &track 
        center_on_orbit = 1,
-       stop_tracking_particle_limit = 0
 &end
 ! -------------------------------------------------------------------
