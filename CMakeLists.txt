@@ -50,12 +50,9 @@ if(NOT GSL_LIBRARY OR NOT GSLCBLAS_LIBRARY)
 endif()
   
 find_library(SDDS_LIBRARY SDDS1)
-if(NOT SDDS_LIBRARY)
-  message("WARNING: libSDDS1 not found! Compile libpalattice without SDDS support.\nPlease have a look at README file for details.")
-  remove_definitions(-DLIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY)
-else(NOT SDDS_LIBRARY)
+if(SDDS_LIBRARY)
   message("libSDDS1 found! Compile libpalattice with SDDS support.")
-  add_definitions(-DLIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY)
+  set(LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY true)
   find_library(MDBCOMMON_LIBRARY mdbcommon)
   find_library(MDB_LIBRARY mdblib)
   find_library(LZMA_LIBRARY lzma)
@@ -66,7 +63,14 @@ else(NOT SDDS_LIBRARY)
   if(NOT Z_LIBRARY)
     message(FATAL_ERROR "libz not found!")
   endif()
-endif(NOT SDDS_LIBRARY)
+else(SDDS_LIBRARY)
+  message("WARNING: libSDDS1 not found! Compile libpalattice without SDDS support.\nPlease have a look at README file for details.")
+  unset(LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY)
+endif(SDDS_LIBRARY)
+
+# automatically generated header file (by cmake, not build-time!)
+# defines LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY and simToolPath
+configure_file(systemconfig.hpp.in ${CMAKE_SOURCE_DIR}/systemconfig.hpp ESCAPE_QUOTES)
 
 
 
@@ -108,8 +112,6 @@ add_dependencies(palattice version)
 
 
 
-# automatically generated header files (by cmake, not build-time!)
-configure_file(simToolPath.hpp.in ${CMAKE_SOURCE_DIR}/simToolPath.hpp ESCAPE_QUOTES)
 
 
 
@@ -156,8 +158,8 @@ install(FILES
   ELSASpuren.hpp
   types.hpp
   config.hpp
+  systemconfig.hpp
   gitversion.hpp
-  simToolPath.hpp
   libpalattice.hpp
   DESTINATION include/libpalattice
   )
@@ -179,9 +181,15 @@ add_custom_target(uninstall
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/cmake_uninstall.cmake)
 
 
-# programs, including convertlattice
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/programs)
-
 # some tests with googletest
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
+
+# programs, including convertlattice
+# programs are excluded from default target (all), because they
+# are linked against INSTALLED libpalattice.
+# use 'make', 'make install' first to install libpalattice
+# and then 'make programs' followed by another 'make install', which
+# now installs convertlattice
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/programs)
+
 

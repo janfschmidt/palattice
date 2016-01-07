@@ -1,0 +1,13 @@
+#ifndef __LIBPALATTICE__SYSTEM_CONFIG_HPP_
+#define __LIBPALATTICE__SYSTEM_CONFIG_HPP_
+
+// if LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY is defined here
+// elegant output is read from binary sdds files via libSDDS1
+#cmakedefine LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY
+
+
+namespace pal {
+inline const std::string simToolPath() {return "@SIMTOOL_PATH@";}
+}
+
+#endif

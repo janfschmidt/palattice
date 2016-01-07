@@ -12,9 +12,12 @@
 #define __LIBPALATTICE__CONFIG_HPP_
 
 
+#include "systemconfig.hpp"       // system specific config, created by cmake
+
+
 // system commands:
 #define MADXCOMMAND "madx"        // system command to run MadX
-#define ELEGANTCOMMAND "elegant"  // system command to run Elegant
+#define ELEGANTCOMMAND "mpirun -n 12 Pelegant"  // system command to run Elegant
 
 
 // minimum numeric values e.g. for comparisons:

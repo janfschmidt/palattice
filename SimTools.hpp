@@ -110,7 +110,6 @@ namespace pal
     SimToolFileFormat preferedFormat;
     unsigned int trackingTurns;
     unsigned int trackingNumParticles;
-    bool trackingTurnsTouched;
     bool trackingNumParticlesTouched;
     string tag;
     string _path;
@@ -213,6 +212,14 @@ namespace pal
 //======================================================================================
   #endif
 //======================================================================================
+
+
+  class sddsDummyCalled : public palatticeError {
+  public:
+    sddsDummyCalled()
+      : palatticeError("FATAL! Dies hätte nicht passieren dürfen!\nSDDS dummy function should NEVER be called.") {}
+  };
+  
 } //namespace pal
 
 
@@ -337,15 +344,17 @@ inline T pal::SimToolInstance::readParameter_sdds(const string &file, const stri
 //======================================================================================
 #else
 //======================================================================================
+// dummy function implementations. they should never be called, because sddsMode() is
+// always false if LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY is not defined.
 
 template<class T>
-inline T pal::SimToolTable::get_sdds(unsigned int index, string key) const {return T();} //dummy
+inline T pal::SimToolTable::get_sdds(unsigned int index, string key) const {throw sddsDummyCalled();}
 
 template<class T>
-inline T pal::SimToolTable::getParameter(const string &label) {return T();} //dummy
+inline T pal::SimToolTable::getParameter(const string &label) {throw sddsDummyCalled();}
 
 template<class T>
-inline T pal::SimToolInstance::readParameter_sdds(const string &file, const string &label) {return T();} //dummy
+inline T pal::SimToolInstance::readParameter_sdds(const string &file, const string &label) {throw sddsDummyCalled();}
   
 //======================================================================================
 #endif

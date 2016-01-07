@@ -38,15 +38,15 @@
 ! -------------------------------------------------------------------
 ! modify the value of a parameter for one or more elements
 ! &alter_elements
-! 	name=VC10
-! 	item=KICK
-! 	value=0.0002
+! 	name=VC10,
+! 	item=KICK,
+! 	value=0.0002,
 ! &end
 
 ! load parameters for elements from an SDDS file (e.g. misalignments)
 ! &load_parameters
-!          filename = "dipole.errors"
-!          verbose = 1
+!          filename = "dipole.errors",
+!          verbose = 1,
 ! &end
 ! -------------------------------------------------------------------
 
@@ -54,7 +54,7 @@
 ! Tracking: Number of turns
 ! -------------------------------------------------------------------
 &run_control
-	n_passes = 0  ! number of turns
+	n_passes = 0,  ! number of turns
 &end
 ! -------------------------------------------------------------------
 
@@ -88,7 +88,7 @@
 
 ! closed orbit computation setup
 &closed_orbit
-	output = "%s.clo"
+	output = "%s.clo",
     	verbosity = 1,
 &end
 
@@ -97,7 +97,7 @@
 ! &rf_setup
 ! 	filename = "%s.rf",
 ! 	harmonic = 274,
-! 	over_voltage = 5
+! 	over_voltage = 5,
 ! &end
 
 

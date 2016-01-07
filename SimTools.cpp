@@ -19,7 +19,6 @@
 #include <cstdlib>
 #include "SimTools.hpp"
 #include "types.hpp"
-#include "simToolPath.hpp"
 #include "config.hpp"
 
 using namespace pal;
@@ -282,7 +281,7 @@ template<> AccTriple SimToolTable::get(unsigned int i, string keyX, string keyZ,
 
 
 SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string fileIn, string fileTag)
-  : executed(false), trackingTurns(0), trackingNumParticles(1), trackingTurnsTouched(false),
+  : executed(false), trackingTurns(0), trackingNumParticles(1),
     trackingNumParticlesTouched(false), tag(fileTag), tool(toolIn), mode(modeIn), verbose(false)
 {
   
@@ -416,14 +415,12 @@ void SimToolInstance::run()
   }
 
   // set tracking turns in runFile:
-  if (trackingTurnsTouched) {
     tmp.str(std::string());
     tmp << trackingTurns;
     if (tool== madx)
       replaceInFile("turns", tmp.str(), ",", runFile);
     else if (tool== elegant)
       replaceInFile("n_passes", tmp.str(), ",", runFile);
-  }
 
   // set tracking number of particles in runFile:
   if (trackingNumParticlesTouched) {
@@ -463,12 +460,18 @@ void SimToolInstance::run()
     throw palatticeError(msg.str());
   }
 
-  //elegant: run shell script for sdds to ascii conversion
+  //elegant without sdds: run shell script for sdds to ascii conversion
   if ( !sddsMode() && tool==elegant ) {
-    string tmpcmd;
-    if (tag=="") tmpcmd = "elegant2libpalattice none libpalattice";
-    else tmpcmd = "elegant2libpalattice " + tag + " libpalattice";
-    system(tmpcmd.c_str());
+    tmp.str(std::string());
+    tmp << "cd "<<path()<<"; elegant2libpalattice ";
+    if (tag=="") tmp << "none";
+    else tmp << tag;
+    tmp << " libpalattice ";
+    if (trackingTurns !=0)
+      tmp << "watchfiles";
+    else
+      tmp << "NO";
+    system(tmp.str().c_str());
   }
 
 
@@ -734,11 +737,10 @@ AccPair SimToolInstance::readTune()
 // if turns!=0 (default) single particle tracking is performed while madx/elegant run
 void SimToolInstance::setTurns(unsigned int t)
 {
-  if (t!=trackingTurns) {
+  if (!executed || t!=trackingTurns) {
     trackingTurns=t;
     executed=false;
-  }
-  trackingTurnsTouched = true;
+    }
 }
 
 
