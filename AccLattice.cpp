@@ -1422,7 +1422,7 @@ string AccLattice::getSequence(Anchor refer) const
 {
   std::stringstream s;
 
-  s << "LATTICE_BY_LIBPALATTICE : SEQUENCE, REFER=";
+  s << "LIBPALATTICE : SEQUENCE, REFER=";
   if (refer==center)
     s << "CENTRE, ";
   else if (refer==begin)
@@ -1431,8 +1431,12 @@ string AccLattice::getSequence(Anchor refer) const
     s << "EXIT, ";
   s << "L=" << this->circumference() <<";"<< endl;
 
-  s << "BEGIN : MARKER, AT=0.0;" << endl;
-  const_AccIterator it=elements.begin();
+    const_AccIterator it=elements.begin();
+    
+    //marker at pos=0.0 if lattice starts with drift
+    if (it->first > ZERO_DISTANCE || it->second->type != marker)
+      s << "BEGIN : MARKER, AT=0.0;" << endl;
+
   for (; it!=elements.end(); ++it) {
     s << it->second->name << ", AT=" << this->locate(it, refer) << ";" << endl;
   }

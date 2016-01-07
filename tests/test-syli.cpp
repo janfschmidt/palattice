@@ -8,7 +8,7 @@ TEST(SyliTests, GSLevolt) {
 }
 
 TEST(SyliTests, Erev) {
-  pal::SimToolInstance s(pal::elegant, pal::offline, TEST_PARAM_FILE);
+  pal::SimToolInstance s(pal::elegant, pal::online, TEST_LATTICE_FILE);
   pal::AccLattice l(s);
   
   EXPECT_NEAR(225., l.Erev_keV_syli(4500.), 1.);
@@ -16,7 +16,7 @@ TEST(SyliTests, Erev) {
 }
 
 TEST(SyliTests, syliElement) {
-  pal::SimToolInstance s(pal::elegant, pal::offline, TEST_PARAM_FILE);
+  pal::SimToolInstance s(pal::elegant, pal::online, TEST_LATTICE_FILE);
   pal::AccLattice l(s);
 
   EXPECT_NEAR(2.5, l.firstCIt(pal::dipole)->second->Ecrit_keV_syli(2300./0.511), 0.05);
@@ -24,7 +24,7 @@ TEST(SyliTests, syliElement) {
 }
 
 TEST(SyliTests, integralRadius) {
-  pal::SimToolInstance s(pal::elegant, pal::offline, TEST_PARAM_FILE);
+  pal::SimToolInstance s(pal::elegant, pal::online, TEST_LATTICE_FILE);
   pal::AccLattice l(s);
 
   EXPECT_NEAR(11, l.integralDipoleRadius(), 0.05);

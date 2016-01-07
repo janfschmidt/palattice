@@ -256,7 +256,8 @@ TEST(sdds, FileTwice) {
 
 
 
-
+// the following tests fail without libsdds, because the input files
+// are binary sdds files, which cannot be read without libsdds.
 
 TEST(sddsSimTool, Parameter) {
   pal::SimToolInstance elegant(pal::elegant, pal::offline, TEST_PARAM_FILE);
@@ -334,10 +335,12 @@ TEST(sddsFoP, Orbit) {
 }
 
 
+//this test is in online mode, so it also succeeds without sdds,
+//because in this case it creates & parses ascii output automatically.
 TEST(sddsFoP, Trajectory) {
   pal::SimToolInstance elegant(pal::elegant, pal::online, TEST_LATTICE_FILE);
   elegant.setTurns(10);
-  elegant.setNumParticles(5);
+  elegant.setNumParticles(12);
   //elegant.verbose = true;
   
   pal::FunctionOfPos<AccPair> traj(elegant);

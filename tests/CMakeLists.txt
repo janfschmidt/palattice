@@ -21,7 +21,10 @@ if(EXISTS ${GTEST_PATH})
   # link
   target_link_libraries(test-syli palattice ${Z_LIBRARY} gtest)
   target_link_libraries(test-sdds palattice ${Z_LIBRARY} gtest)
-  target_link_libraries(test-sdds ${SDDS_LIBRARY} ${MDBCOMMON_LIBRARY} ${MDB_LIBRARY} ${LZMA_LIBRARY})
+  
+  if(LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY)
+    target_link_libraries(test-sdds ${SDDS_LIBRARY} ${MDBCOMMON_LIBRARY} ${MDB_LIBRARY} ${LZMA_LIBRARY})
+  endif()
   
   add_test(allTests test-syli)
   add_test(allTests test-sdds)

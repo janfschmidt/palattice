@@ -3,9 +3,8 @@
 # from elegant output, via sdds-tools
 # argument 1: tag for filename. if tag is "none", no tag is used 
 # argument 2: filename (the "%s" part in elegant)
-# NOT USED ANYMORE!!! (argument 3: particleID, which trajectory is exported (irrelevant for closed orbit and lattice))
+# argument 3: switch for watch file ascii export. if $3 is "watchfiles", export is done
 
-echo $1
 if [ "$1" == "none" ];
 then
     tag=""
@@ -38,7 +37,7 @@ rm tmp.twi
 
 # ascii single particle trajectory files for all particles, e.g. elegant.w02.p1
 # from watch-files:
-if [ -e ${2}000.w ]; then
+if [ "$3" == "watchfiles" ]; then
     numParticles=`sdds2stream ${2}000.w -par=Particles -page=1`
     numfiles=`ls $2*.w | wc -w`
     echo "write $numfiles watch files for each of $numParticles particles"
