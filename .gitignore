@@ -4,9 +4,8 @@
 *.dat
 *.a
 *~
-*gitversion*.hpp
-*Gitversion*.hpp
-simToolPath.hpp
+gitversion.hpp
+systemconfig.hpp
 programs/convertlattice
 programs/interptwiss
 programs/fields

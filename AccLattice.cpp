@@ -633,6 +633,7 @@ void AccLattice::madximport(SimToolInstance &madx)
   columns.push_back("VKICK");
   columns.push_back("E1");
   columns.push_back("E2");
+  columns.push_back("TILT");
   columns.push_back("APERTYPE");
   columns.push_back("APER_1");
   columns.push_back("APER_2");
@@ -711,6 +712,7 @@ void AccLattice::madximport(SimToolInstance &madx)
     }
     element->k1 = twi.getd(i,"K1L")/l;
     element->k2 = twi.getd(i,"K2L")/l;
+    element->dpsi += - twi.getd(i,"TILT"); // non-error tilt (e.g. skew magnets), sign see misalignments
     //misalignments in AccLattice::madximportMisalignments()
     s = twi.getd(i,"S");
     if (refPos == begin) s -= l;
@@ -763,7 +765,7 @@ void AccLattice::madximportMisalignments(element_type t, string madxEalignFile)
   for (; it!=elements.end(); it=nextIt(it,t)) {
     for (unsigned int i=0; i<ealign.rows(); i++) {
       if (it->second->name == removeQuote(ealign.gets(i,"NAME"))) {
-	it->second->dpsi = - ealign.getd(i,"DPSI");    // <<<<<<!!! sign of rotation angle (see comment above)
+	it->second->dpsi += - ealign.getd(i,"DPSI");    // <<<<<<!!! sign of rotation angle (see comment above)
       }
     }
   }
@@ -1316,7 +1318,7 @@ string AccLattice::getElementDefs(SimTool tool, element_type _type) const
     return "";
   s << "! " << it->second->type_string() << "s";
   if (_type==dipole && tool==elegant)
-    s <<" (use synch_rad=1, isr=1 for synchrotron radiation)";
+    s <<" (synch_rad & isr for synchrotron radiation)";
   s << endl;
   for (; it!=elements.end(); it=nextCIt(it, _type)) {
     //only list identical elements once
