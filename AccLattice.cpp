@@ -1570,6 +1570,15 @@ double AccLattice::Erev_keV_syli(const double& gamma) const
   return std::move(dE/1000.); //in keV
 }
 
+// overvoltage factor q, from total voltage of all cavities
+double AccLattice::overvoltageFactor(const double& gamma) const {
+  double U = 0;
+  for(auto it=firstCIt(cavity); it!=getItEnd(); it=nextCIt(it, cavity)) {
+    U += it->second->volt;
+  }
+  return U / (Erev_keV_syli(gamma) * 1000.);
+}
+
 
 // integral over bending radius around ring: R^exponent ds
 double AccLattice::integralDipoleRadius(int exponent) const
@@ -1581,4 +1590,17 @@ double AccLattice::integralDipoleRadius(int exponent) const
     totalLength += it->second->length;
   }
   return sum / totalLength;
+}
+
+// harmonic number h, from cavity frequency and circumference
+unsigned int AccLattice::harmonicNumber() const {
+  auto it=firstCIt(cavity);
+  double freq = it->second->freq;
+  
+  for(; it!=getItEnd(); it=nextCIt(it, cavity)) {
+    if (it->second->freq != freq)
+      throw palatticeError("harmonicNumber(): Cavities with different frequencies in Lattice. What is the definition of h in this case??");
+  }
+
+  return (unsigned int) std::round( freq / (GSL_CONST_MKSA_SPEED_OF_LIGHT/circumference()) );
 }
