@@ -732,6 +732,24 @@ AccPair SimToolInstance::readTune()
   return q;
 }
 
+AccTriple SimToolInstance::readDampingPartitionNumber_syli()
+{
+  AccTriple J;
+  if (tool==madx) {
+    double I2 = readParameter<double>(twiss(), "SYNCH_2");
+    double I4 = readParameter<double>(twiss(), "SYNCH_4");
+    J.x = 1. - I4/I2;
+    J.z = 1.;
+    J.s = 2 + I4/I2;
+  }
+  else if (tool==elegant) {
+    J.x = readParameter<double>(twiss(), "Jx");
+    J.z = readParameter<double>(twiss(), "Jy");
+    J.s = readParameter<double>(twiss(), "Jdelta");
+  }
+  return J;
+}
+
 
 
 // if turns!=0 (default) single particle tracking is performed while madx/elegant run

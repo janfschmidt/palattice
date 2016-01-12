@@ -74,6 +74,7 @@ public:
   //statistics of data (no interpolation used)
   T mean() const;
   T rms() const;
+  T stddev() const;
 
   // these functions depend on data. thus they can throw palatticeError exception
   T get(unsigned int i) const;          //get value-DATA by index or by index(1turn) and turn

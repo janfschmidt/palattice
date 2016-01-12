@@ -120,6 +120,16 @@ T FunctionOfPos<T>::rms() const
   return std::sqrt( sum/data.size() );
 }
 
+template <class T>
+T FunctionOfPos<T>::stddev() const
+{
+  T sum = T();
+  T mean = this->mean();
+  for (auto &d : data)
+    sum += std::pow(d.second-mean, 2);
+  return std::sqrt( sum/data.size() );
+}
+
 
 
 
@@ -290,7 +300,7 @@ void FunctionOfPos<T>::operator+=(FunctionOfPos<T> &other)
   if (tmp != "NA") {
     this->info.add("added Orbit", tmp);
   }
-  this->info.addStatistics(mean(),rms());
+  this->info.addStatistics(mean(),stddev());
 }
 
 template <class T>
@@ -315,7 +325,7 @@ void FunctionOfPos<T>::operator-=(FunctionOfPos<T> &other)
   if (tmp != "NA") {
     this->info.add("subtracted Orbit", tmp);
   }
-  this->info.addStatistics(mean(),rms());
+  this->info.addStatistics(mean(),stddev());
 }
 
 // construct Spectrum (FFT) from this FunctionOfPos
@@ -380,7 +390,7 @@ void FunctionOfPos<T>::readSimToolColumn(SimToolInstance &s, string file, string
   if (!valZ.empty()) stmp << ", " << valZ;
   if (!valS.empty()) stmp << ", " << valS;
   this->info.add("read Parameters", stmp.str());
-  this->info.addStatistics(mean(),rms());
+  this->info.addStatistics(mean(),stddev());
   
   this->headerString = valX; //output column header. For 2D/3D AccPair/AccTriple.header() is used
 }
@@ -524,6 +534,7 @@ void FunctionOfPos<T>::writeTrajectoryMetadata(SimToolInstance &s, unsigned int 
   stmp.str(std::string());
   stmp << samplesInTurn(1);
   this->info.add("number of obs. points", stmp.str());
+  this->info.addStatistics(mean(),stddev());
 }
 
 

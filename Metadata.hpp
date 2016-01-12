@@ -74,10 +74,10 @@ void pal::Metadata::add(string inLabel, T inEntry)
 }
 
 template <class T>
-void pal::Metadata::addStatistics(T mean, T rms)
+void pal::Metadata::addStatistics(T mean, T stddev)
 {
   add("mean", mean);
-  add("rms", rms);
+  add("standard deviation", stddev);
 }
 
 

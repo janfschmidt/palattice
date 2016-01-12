@@ -153,6 +153,7 @@ namespace pal
     double readGammaCentral();
     double readAlphaC();
     AccPair readTune();
+    AccTriple readDampingPartitionNumber_syli();
 
     string tool_string() const {if (tool==madx) return "madx"; else if (tool==elegant) return "elegant"; else return "";}
     string mode_string() const {if (mode==online) return "online"; else if (mode==offline) return "offline"; else return "";}
