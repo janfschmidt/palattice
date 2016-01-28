@@ -5,7 +5,7 @@ This is unpublished testing software. Please do not copy/distribute it
 without prior agreement of the author.
 Open Source publication coming soon :-)
 
-(c) Jan Schmidt <schmidt@physik.uni-bonn.de>, 2015
+(c) Jan Schmidt <schmidt@physik.uni-bonn.de>, 2016
 ********************************************************************
 
 
@@ -53,24 +53,43 @@ Installation
 1) get a copy of the source code:
    "git clone git@elsafs1.physik.uni-bonn.de:lib/libpalattice"
    - requires git, in Ubuntu it can be installed via "sudo apt-get install git"
-   - has to be unlocked for your user/computer. Send your ssh public key
-     to schmidt@physik.uni-bonn.de
-2) go to directory libpalattice/build and compile the library by the commands:
+   - repository has to be unlocked for your user/computer:
+     Send your ssh public key to schmidt@physik.uni-bonn.de
+2) CMake is used to configure the project for your system and generate the build files.
+   Go to directory libpalattice/build and run CMake by the command:
    "cmake .."
-   "make"
+   - requires CMake, in Ubuntu it can be installed via "sudo apt-get install cmake"
    - libpalattice requires the Gnu Scientific Library GSL,
      in Ubuntu it can be installed via "sudo apt-get install libgsl0-dev"
    - the SDDS library libSDDS1 is recommended, see section above
+3) compile the library:
+   in libpalattice/build run
+   "make"
 3) install the library for all users of your system:
    in libpalattice/build type:
    "sudo make install"
    - the default install path is /usr/local and can be changed in
-     libpalattice/CMakeLists.txt
-4) compile & install example programs including convertlattice:
+     libpalattice/CMakeLists.txt (look for "CMAKE_INSTALL_PREFIX")
+4) compile example programs including convertlattice:
    in libpalattice/build type:
-   THIS HAS TO BE INCLUDED IN CMAKE
    "make programs"
-   "sudo make install_programs"
+   Now the binaries can be found in libpalattice/build/programs/src/programs-build/.
+   They can be copied anywhere for execution.   
+5) install convertlattice for all users of your system:
+   "sudo make install" again
+   Expert Info: convertlattice is linked against installed libpalattice. This is
+   why its is build seperately ("make programs"). But it is installed during 
+   'make install' if the binary exists.
+
+4-5) Alternative:
+   Alternatively, the example programs can be compiled from their own project folder:
+   in libpalattice/programs/build run
+   "cmake .."
+   "make"
+   The binaries are now located in libpalattice/programs/build.
+   convertlattice can be installed here with
+   "sudo make install"
+
 
 
 --------------------------------------------------------------------------
@@ -80,7 +99,7 @@ To get updated versions of the code just go to libpalattice directory
 and type: "git pull"
 If there are any changes compile and install them by going to the
 build/ subdirectory again and typing:
-"make", "sudo make install", "make programs", "sudo make install_programs"
+"make", "sudo make install", "make programs", "sudo make install"
 
 
 --------------------------------------------------------------------------
@@ -95,7 +114,7 @@ To delete all source files just delete the libpalattice directory.
 
 
 --------------------------------------------------------------------------
-requirements for automatic execution of Mad-X/Elegant by libpalattice
+Requirements for automatic execution of Mad-X/Elegant by libpalattice
 --------------------------------------------------------------------------
 The commands to run Mad-X and Elegant can be set in libpalattice/config.hpp.
 Default values are:
@@ -104,7 +123,7 @@ Default values are:
 
 
 --------------------------------------------------------------------------
-comment on automatic execution of Mad-X/Elegant by libpalattice
+Comment on automatic execution of Mad-X/Elegant by libpalattice
 --------------------------------------------------------------------------
 To allow for automatic execution of Mad-X/Elegant, the library:
 1. copies file libpalattice.madx/libpal.ele
@@ -123,6 +142,8 @@ E.g. for a beamline (no ring) MadX twiss module fails, because of missing
 start values (betx, bety). Add them to the twiss command in libpalattice.madx
 to run MadX successfully.
 
+The manipulation of libpalattice.madx/libpalattice.ele is done really
+quick-and-dirty so far (using sed...) and works only if "sed" is available!
 
 
 --------------------------------------------------------------------------

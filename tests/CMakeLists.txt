@@ -1,4 +1,4 @@
-# this is executed via cmake in libpalattice/ (..) as subdirectory
+# this is executed via cmake in ../ (libpalattice) as subdirectory
 
 
 # compile and use googletest

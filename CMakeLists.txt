@@ -18,19 +18,19 @@ set(SIMTOOL_PATH ${CMAKE_INSTALL_PREFIX}/lib/libpalattice_simTools)
 set(GTEST_PATH /home/thiry/dev/gtest-1.7.0) #/set/googletest/path/here
 
 
-# CXX-Standard & All Warnings
-if (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.1)
-  set_property(TARGET palattice PROPERTY CXX_STANDARD 11)
-  set_property(TARGET palattice PROPERTY CXX_STANDARD_REQUIRED ON)
-endif ()
-if ( CMAKE_COMPILER_IS_GNUCXX )
-  if (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.1)
-    list(APPEND CMAKE_CXX_FLAGS "-Wall")
-  else (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.1)
-    list(APPEND CMAKE_CXX_FLAGS "-std=c++11 -Wall")
-  endif (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.1)
-endif ( CMAKE_COMPILER_IS_GNUCXX )
-
+# CXX-Standard
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+if(COMPILER_SUPPORTS_CXX11)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+elseif(COMPILER_SUPPORTS_CXX0X)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+else()
+  message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+endif()
+# CXX All Warnings
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 
 
 
@@ -171,7 +171,6 @@ install(FILES
   DESTINATION ${SIMTOOL_PATH}
   )
 
-
 # uninstall
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
@@ -181,15 +180,31 @@ add_custom_target(uninstall
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/cmake_uninstall.cmake)
 
 
-# some tests with googletest
+
+
+
+# some tests with googletest (optional, only compiled if GTEST_PATH is found)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
-# programs, including convertlattice
+
+
+
+# example programs, including convertlattice
 # programs are excluded from default target (all), because they
 # are linked against INSTALLED libpalattice.
 # use 'make', 'make install' first to install libpalattice
 # and then 'make programs' followed by another 'make install', which
 # now installs convertlattice
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/programs)
+include(ExternalProject)
+ExternalProject_Add(programs
+  PREFIX programs
+  SOURCE_DIR ${CMAKE_SOURCE_DIR}/programs
+  INSTALL_COMMAND ""
+  )
+set_target_properties(programs PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
-
+# install convertlattice
+install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/programs/src/programs-build/convertlattice
+  DESTINATION bin
+  OPTIONAL
+  )
