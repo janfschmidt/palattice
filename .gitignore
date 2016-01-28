@@ -15,6 +15,7 @@ tests/test-syli
 tests/libpalattice.ele
 doc/*
 build/*
+programs/build/*
 tests/*.w
 tests/*.w*.p*
 *.log
