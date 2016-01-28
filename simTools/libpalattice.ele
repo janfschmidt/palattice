@@ -110,7 +110,7 @@
        symmetrize = 1,   ! =1 => automatically centroid=0
 ! examples for other options to define bunch:
 !      sigma_s = "(Sz0)",      !set by &rf_setup
-!      sigma_dp = "(Sdelta0)", !set by &rf_setup
+!      sigma_dp = "(Sdelta0)", !set by &twiss_output
 !      emit_x = 1e-7,
 !      emit_y = 1e-7,
 !      centroid[5]=1e-4,
