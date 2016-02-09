@@ -30,17 +30,21 @@ If you made any custom changes you should copy them to the new files.
 --------------------------------------------------------------------------
 Requirements: libSDDS1
 --------------------------------------------------------------------------
-From version 3.7.2 libpalattice can read SDDS binary files directly, which
+From version 3.7.2, libpalattice can read SDDS binary files directly, which
 are the default output of Elegant. This requires libSDDS1 by the
 SDDS/Elegant developers from Argonne National Lab.
 A package called "SDDSToolKit-devel" can be downloaded at
 www.aps.anl.gov/Accelerator_Systems_Division/Accelerator_Operations_Physics/software.shtml
-If it is not available for your system, I recommend to ask in the Elegant forum:
+If you have any questions about it, I recommend asking in the Elegant forum:
 www.aps.anl.gov/Accelerator_Systems_Division/Accelerator_Operations_Physics/phpBB3/
 
 cmake automatically detects, if libSDDS1 is installed on your system and deactivates
 the SDDS support otherwise, so that you can still use libpalattice.
 But I really recommend using SDDS :-)
+
+Since version SDDSToolKit-devel-3.3.1-2 "Most of the important functions should
+now be thread safe" (Elegant forum, "libSDDS and threads"). Using this, libpalattice
+was successfully tested with a parallelized application.
 
 If you installed or uninstalled "SDDSToolKit-devel" and cmake does not recognize,
 try deleting libpalattice/build/CMakeCache.txt and then run "cmake .." again.

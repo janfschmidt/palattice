@@ -3,6 +3,10 @@
  * SimToolInstance is connected to a lattice file and can be executed,
  * SimToolTable contains columns of simulation tool results
  *
+ * Elegant output can be read directly from binary SDDS files
+ * if libSDDS1 (SDDSToolKit-devel package) is installed.
+ * See README for details.
+ *
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
  *
  * This is unpublished software. Please do not copy/distribute it without
@@ -35,6 +39,17 @@ namespace pal
   
   enum SimTool{madx,elegant};
   enum SimToolMode{online,offline};
+
+  inline bool fileExists(const std::string& filename)
+  {
+    if (FILE *file = fopen(filename.c_str(), "r")) {
+      fclose(file);
+      return true;
+    }
+    else
+      return false;
+  }
+
   
 #ifdef LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY
   enum SimToolFileFormat{ascii,sdds};
@@ -69,6 +84,7 @@ namespace pal
 #ifdef LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY
     std::shared_ptr<SDDS_TABLE> table_sdds;
     SddsColumnFilter sddsFilter;
+    bool sddsFileIsOpen;
 #endif
     template<class T> T get_sdds(unsigned int index, string key) const;
     

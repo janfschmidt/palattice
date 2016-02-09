@@ -3,6 +3,10 @@
  * SimToolInstance is connected to a lattice file and can be executed,
  * SimToolTable contains columns of simulation tool results
  *
+ * Elegant output can be read directly from binary SDDS files
+ * if libSDDS1 (SDDSToolKit-devel package) is installed.
+ * See README for details.
+ *
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
  *
  * This is unpublished software. Please do not copy/distribute it without
@@ -49,18 +53,28 @@ unsigned int SimToolTable::columns() const
 
 void SimToolTable::init_sdds(const string &filename, std::vector<string> columnKeys)
 {
-
+  sddsFileIsOpen = false;
+  
   // SDDS_TABLE pointer with custom deleter
-  table_sdds = std::shared_ptr<SDDS_TABLE>(new SDDS_TABLE, [](SDDS_TABLE *t){
-      if (SDDS_Terminate(t) !=1 )
-	std::cerr << "Error terminating SDDS table" << std::endl;
+  table_sdds = std::shared_ptr<SDDS_TABLE>(new SDDS_TABLE, [this](SDDS_TABLE *t){
+      if (sddsFileIsOpen) {
+	if (SDDS_Terminate(t) !=1 )
+	  std::cerr << "Error terminating SDDS table" << std::endl;
+      }
       delete t;
     });
-  
-  if( SDDS_InitializeInput(table_sdds.get(),const_cast<char*>(filename.c_str())) != 1 ) {
-    //SDDS_PrintErrors(stdout, SDDS_VERBOSE_PrintErrors);
+
+  // check file existence (without SDDS-Errors, which are not thread safe)
+  if( !pal::fileExists(filename) ) {
     throw palatticeFileError(filename);
   }
+  
+   if ( SDDS_InitializeInput(table_sdds.get(),const_cast<char*>(filename.c_str())) != 1 ) {
+     //SDDS_PrintErrors(stdout, SDDS_VERBOSE_PrintErrors);
+     throw SDDSError();
+   }
+   
+   sddsFileIsOpen = true;
   
   auto ret = SDDS_ReadPage(table_sdds.get());
   if( ret == -1 )
@@ -519,10 +533,10 @@ SimToolTable SimToolInstance::readTable(string filename, vector<string> columnKe
   
 
   fstream tabFile;
-  tabFile.open(filename.c_str(), ios::in);
-  if (!tabFile.is_open()) {
+  if( pal::fileExists(filename) )
+    tabFile.open(filename.c_str(), ios::in);
+  else
     throw palatticeFileError(filename);
-  }
 
   // read column names (=> column position)
   string tmp;
@@ -777,7 +791,4 @@ void SimToolInstance::setNumParticles(unsigned int n)
 }
 
 
-
-
-
-
+  
