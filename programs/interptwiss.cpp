@@ -41,8 +41,7 @@ int main (int argc, char *argv[])
   pal::FunctionOfPos<double> twiss(sim);
   //pal::FunctionOfPos<pal::AccPair> twiss(sim);
 
-  //write the name of the twiss variable to a string vector
-  //vector, because it allows 2 (3) columns for FunctionOfPos<AccPair> (<AccTriple>)
+  //write the name of the twiss variable(s)
   string s;
   string valueX, valueZ;
   if (tool==madx) {

@@ -620,29 +620,28 @@ void AccLattice::madximport(SimToolInstance &madx)
 	 << "They are transformed to the current Anchor set for this lattice: " << refPos_string() << endl;
 
 
-  // madx columns
-  vector<string> columns;
-  columns.push_back("KEYWORD");
-  columns.push_back("NAME");
-  columns.push_back("S");
-  columns.push_back("L");
-  columns.push_back("ANGLE");
-  columns.push_back("K1L");
-  columns.push_back("K2L");
-  columns.push_back("HKICK");
-  columns.push_back("VKICK");
-  columns.push_back("E1");
-  columns.push_back("E2");
-  columns.push_back("TILT");
-  columns.push_back("APERTYPE");
-  columns.push_back("APER_1");
-  columns.push_back("APER_2");
-  columns.push_back("VOLT");
-  columns.push_back("FREQ");
-
   //read columns from file (execute madx if mode=online)
   SimToolTable twi;
-  twi = madx.readTable(madxTwissFile, columns);
+  twi = madx.readTable(madxTwissFile, {
+      "KEYWORD",
+	"NAME",
+	"S",
+	"L",
+	"ANGLE",
+	"K1L",
+	"K2L",
+	"HKICK",
+	"VKICK",
+	"E1",
+	"E2",
+	"TILT",
+	"APERTYPE",
+	"APER_1",
+	"APER_2",
+	"VOLT",
+	"FREQ"
+	}
+    );
 
 
   //mount elements
@@ -750,14 +749,9 @@ void AccLattice::madximportMisalignments(element_type t, string madxEalignFile)
 {
   SimToolInstance madx(pal::madx, pal::offline, madxEalignFile);
 
-  //madx columns
-  vector<string> columns;
-  columns.push_back("NAME");
-  columns.push_back("DPSI");
-
   //read columns from file (execute madx if mode=online)
   SimToolTable ealign;
-  ealign = madx.readTable(madxEalignFile, columns);
+  ealign = madx.readTable(madxEalignFile, {"NAME", "DPSI"});
 
   //set misalignments to AccLattice elements
   AccIterator it=firstIt(t);
@@ -822,8 +816,7 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
     cout << "WARNING: AccLattice::elegantimport(): The input file (elegant parameter) uses element end as positions." << endl
 	 << "They are transformed to the current Anchor set for this lattice: " << refPos_string() << endl;
 
-  std::vector<std::string> columns = {"ElementName", "ElementParameter", "ParameterValue", "ElementType"};
-  SimToolTable tab = elegant.readTable(elegant.lattice(), columns);
+  SimToolTable tab = elegant.readTable(elegant.lattice(), {"ElementName", "ElementParameter", "ParameterValue", "ElementType"});
   
   for (auto i=0u; i<tab.rows(); i++) {
     row.name = tab.gets(i, "ElementName");

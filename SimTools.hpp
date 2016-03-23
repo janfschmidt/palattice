@@ -25,6 +25,7 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <initializer_list>
 #include "types.hpp"
 #include "config.hpp"
 
@@ -96,6 +97,7 @@ namespace pal
     
     void push_back(string key, string value) {table[key].push_back(value);} //set data for "normal" mode
     void init_sdds(const string &filename, vector<string> columnKeys=vector<string>()); //connect with an SDDS file (previous data is deleted!)
+    void init_sdds(const string &filename, std::initializer_list<string> columnKeys) {init_sdds(filename, vector<string>(columnKeys));}
     
     unsigned int rows() const;
     unsigned int columns() const;
@@ -161,6 +163,7 @@ namespace pal
     // - if columnKeys is not given, all columns are read
     // - reading stopped after [maxRows] rows, if !=0
     SimToolTable readTable(string file, vector<string> columnKeys=vector<string>(), unsigned int maxRows=0);
+    SimToolTable readTable(string file, std::initializer_list<string> columnKeys, unsigned int maxRows=0) {return readTable(file, vector<string>(columnKeys), maxRows);}
     // read specified parameter from file
     template<class T> T readParameter(const string &file, const string &label);
 
