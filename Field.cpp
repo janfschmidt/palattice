@@ -101,7 +101,7 @@ int Field::magnetlengths(AccLattice &lattice, const char *filename) const
 
       //write deviations from exact values to file
       file <<setw(w)<< dipIt->second->name;
-      file <<setw(w)<< (tmp_start - lattice.locate(dipIt,begin))*1000 <<setw(w)<< (tmp_end - lattice.locate(dipIt,end))*1000;
+      file <<setw(w)<< (tmp_start - lattice.locate(dipIt,Anchor::begin))*1000 <<setw(w)<< (tmp_end - lattice.locate(dipIt,Anchor::end))*1000;
       file <<setw(w)<< ((tmp_end-tmp_start) - dipIt->second->length)*1000 << endl; 
       
       if (dipIt == lattice.lastCIt(dipole)) break;

@@ -121,14 +121,14 @@ double AccLattice::theta(double posIn) const
 {
   double theta = 0.;
   // sum theta of all bending dipoles that end is at a pos < posIn
-  for (const_AccIterator it=firstCIt(dipole); locate(it,end) < posIn; it=nextCIt(it,dipole)) {
+  for (const_AccIterator it=firstCIt(dipole); locate(it,Anchor::end) < posIn; it=nextCIt(it,dipole)) {
     theta += it->second->length * it->second->k0.z; // theta= l/R = l*k0.z
   }
   // if posIn is inside a dipole, add theta of this magnet up to posIn
   try {
     const_AccIterator atPosIn = getIt(posIn); // throws if there is no element
     if (atPosIn->second->type == dipole) {
-      theta += (posIn - locate(atPosIn,begin)) * atPosIn->second->k0.z;
+      theta += (posIn - locate(atPosIn,Anchor::begin)) * atPosIn->second->k0.z;
     }
   }
   catch (eNoElement) {}
@@ -143,15 +143,15 @@ double AccLattice::locate(double pos, const AccElement *obj, Anchor here) const
 {
   double l = obj->length;        //element length
 
-  if (refPos == center) pos -= l/2;
-  else if (refPos == end) pos -= l;
+  if (refPos == Anchor::center) pos -= l/2;
+  else if (refPos == Anchor::end) pos -= l;
 
   switch(here) {
-  case begin:
+  case Anchor::begin:
     return pos;
-  case center:
+  case Anchor::center:
     return pos + l/2;
-  case end:
+  case Anchor::end:
     return pos + l;
   }
 
@@ -174,7 +174,7 @@ double AccLattice::locate(const_AccIterator it, Anchor here) const
 // test if "here" is inside obj at position pos
 bool AccLattice::inside(double pos, const AccElement *obj, double here) const
 {
-  if (here >= locate(pos,obj,begin) && here <= locate(pos,obj,end))
+  if (here >= locate(pos,obj,Anchor::begin) && here <= locate(pos,obj,Anchor::end))
     return true;
   else
     return false;
@@ -183,7 +183,7 @@ bool AccLattice::inside(double pos, const AccElement *obj, double here) const
 // test if "here" is inside lattice element "it"
 bool AccLattice::inside(const_AccIterator it, double here) const
 {
-  if (here >= locate(it,begin) && here <= locate(it,end))
+  if (here >= locate(it,Anchor::begin) && here <= locate(it,Anchor::end))
     return true;
   else
     return false;
@@ -358,14 +358,14 @@ const_AccIterator AccLattice::getIt(double pos) const
   
   if (candidate_next != elements.begin()) {
     candidate_previous--;
-    if (refPos == begin || refPos == center) {
+    if (refPos == Anchor::begin || refPos == Anchor::center) {
       if (inside(candidate_previous, pos))
 	return candidate_previous;
     }
   }
   
   if (candidate_next != elements.end()) {
-    if (refPos == end || refPos == center) {
+    if (refPos == Anchor::end || refPos == Anchor::center) {
       if (inside(candidate_next, pos))
 	return candidate_next;
     }
@@ -472,8 +472,8 @@ void AccLattice::mount(double pos, const AccElement& obj, bool verbose)
   bool first_element = false;
   bool last_element = false;
   const AccElement *objPtr = &obj;
-  double newBegin = locate(pos, objPtr, begin);
-  double newEnd = locate(pos, objPtr, end);
+  double newBegin = locate(pos, objPtr, Anchor::begin);
+  double newEnd = locate(pos, objPtr, Anchor::end);
   stringstream msg;
   
   if (pos < 0.) {
@@ -507,10 +507,10 @@ void AccLattice::mount(double pos, const AccElement& obj, bool verbose)
   catch(std::out_of_range &e){ }
 
   // avoid numerical problems when checking for "free space"
-  if (abs(newBegin - locate(previous,end)) < ZERO_DISTANCE) {
+  if (abs(newBegin - locate(previous,Anchor::end)) < ZERO_DISTANCE) {
     newBegin += ZERO_DISTANCE;
   }
-  if (abs(newEnd - locate(next,begin)) < ZERO_DISTANCE)
+  if (abs(newEnd - locate(next,Anchor::begin)) < ZERO_DISTANCE)
       newEnd -= ZERO_DISTANCE;
 
   // check for "free space" to insert obj
@@ -518,18 +518,18 @@ void AccLattice::mount(double pos, const AccElement& obj, bool verbose)
     msg << objPtr->name << " (" << newBegin <<" - "<< newEnd << "m) cannot be inserted --- overlap with lattice begin at 0.0m";
     throw eNoFreeSpace(msg.str());
   }
-  else if (!first_element &&  newBegin < locate(previous,end)) {
+  else if (!first_element &&  newBegin < locate(previous,Anchor::end)) {
     msg << objPtr->name << " (" << newBegin <<" - "<< newEnd << "m) cannot be inserted --- overlap with "
-	<< previous->second->name << " ("<< locate(previous,begin) <<" - "<<locate(previous,end) << "m)";
+	<< previous->second->name << " ("<< locate(previous,Anchor::begin) <<" - "<<locate(previous,Anchor::end) << "m)";
     throw eNoFreeSpace(msg.str());
   }
   //else if (newEnd > circumference()) {
     // msg << objPtr->name << " (" << newBegin <<" - "<< newEnd <<  "m) cannot be inserted --- overlap with lattice end at " << circumference() << "m";
     // throw eNoFreeSpace(msg.str());
   //}
-  else if (!last_element && newEnd > locate(next,begin)) {
+  else if (!last_element && newEnd > locate(next,Anchor::begin)) {
     msg << objPtr->name << " (" << newBegin <<" - "<< newEnd << "m) cannot be inserted --- overlap with "
-	<< next->second->name << " ("<< locate(next,begin) <<" - " << locate(next,end) << "m)";
+	<< next->second->name << " ("<< locate(next,Anchor::begin) <<" - " << locate(next,Anchor::end) << "m)";
     throw eNoFreeSpace(msg.str());
   }
   //if there is free space:
@@ -615,7 +615,7 @@ void AccLattice::madximport(SimToolInstance &madx)
 		<<e.filename << std::endl;
     }
 
-  if (refPos != end)
+  if (refPos != Anchor::end)
     cout << "WARNING: AccLattice::madximport(): The input file (MAD-X twiss) uses element end as positions." << endl
 	 << "They are transformed to the current Anchor set for this lattice: " << refPos_string() << endl;
 
@@ -714,8 +714,8 @@ void AccLattice::madximport(SimToolInstance &madx)
     element->dpsi += - twi.getd(i,"TILT"); // non-error tilt (e.g. skew magnets), sign see misalignments
     //misalignments in AccLattice::madximportMisalignments()
     s = twi.getd(i,"S");
-    if (refPos == begin) s -= l;
-    else if (refPos == center) s -= l/2;
+    if (refPos == Anchor::begin) s -= l;
+    else if (refPos == Anchor::center) s -= l/2;
     this->mount(s, *element);
     delete element;
   }
@@ -812,7 +812,7 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
 	      << e.filename << std::endl;
   }
 
-  if (refPos != end)
+  if (refPos != Anchor::end)
     cout << "WARNING: AccLattice::elegantimport(): The input file (elegant parameter) uses element end as positions." << endl
 	 << "They are transformed to the current Anchor set for this lattice: " << refPos_string() << endl;
 
@@ -888,8 +888,8 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
 	 element->freq = freq;
        }
 	      
-       if (refPos == begin) pos = s-l;
-       else if (refPos == center) pos = s-l/2;
+       if (refPos == Anchor::begin) pos = s-l;
+       else if (refPos == Anchor::center) pos = s-l/2;
        else pos = s; 
        this->mount(pos, *element); // mount element
      }
@@ -1033,7 +1033,7 @@ unsigned int AccLattice::setELSACorrectors(ELSASpuren &spuren, unsigned int t)
      throw palatticeError(strMsg.str());
    }
    //...check by position
-   diff = spuren.vcorrs[i].pos - locate(it,center);
+   diff = spuren.vcorrs[i].pos - locate(it,Anchor::center);
    if (fabs(diff) > VCPOS_WARNDIFF) {
      cout << "! Position of " <<name2<< " differs by " <<diff<< "m in Mad-X and ELSA-Spuren. Use ELSA-Spuren." << endl;
    }
@@ -1186,11 +1186,11 @@ string AccLattice::sizeSummary() const
 string AccLattice::refPos_string() const
 {
   switch (refPos) {
-  case begin:
+  case Anchor::begin:
     return "begin";
-  case center:
+  case Anchor::center:
     return "center";
-  case end:
+  case Anchor::end:
     return "end";
   }
   
@@ -1202,8 +1202,8 @@ double AccLattice::slope(double pos, const_AccIterator it) const
 {
   double x=1.;
   double dl = it->second->dl()/2; // half of dl() at each magnet end
-  double distBegin = distanceRing(pos,it,begin) - dl; // distance to phys. begin of it
-  double distEnd = distanceRing(pos,it,end) + dl;     // distance to phys. end of it
+  double distBegin = distanceRing(pos,it,Anchor::begin) - dl; // distance to phys. begin of it
+  double distEnd = distanceRing(pos,it,Anchor::end) + dl;     // distance to phys. end of it
   if (distBegin < 0) x = distBegin;
   else if (distEnd > 0) x = distEnd;
   else return 1.;
@@ -1218,7 +1218,7 @@ AccTriple AccLattice::B(double posIn, const AccPair &orbit) const
   double pos = posMod(posIn);
   unsigned int t = turn(posIn);
   // next magnet with center > pos:
-  const_AccIterator it = nextCIt(pos,center);
+  const_AccIterator it = nextCIt(pos,Anchor::center);
   AccTriple field;
   field = it->second->B_rf(t,orbit) * slope(pos, it); //B_rf includes rf magnets
   // previous magnet (center <= pos):
@@ -1370,12 +1370,12 @@ string AccLattice::getLine(SimTool tool) const
 
     //calc, define and insert Drift
     if (it == elements.begin()) {
-      driftlength = locate(it, begin);
+      driftlength = locate(it, Anchor::begin);
     }
     else {
-      driftlength = locate(it, begin) - lastend;
+      driftlength = locate(it, Anchor::begin) - lastend;
     }
-    lastend = locate(it, end);
+    lastend = locate(it, Anchor::end);
     if (driftlength > ZERO_DISTANCE) { //ignore very short drifts
       s << "DRIFT_" << n << " : ";
       if (tool==elegant)
@@ -1418,11 +1418,11 @@ string AccLattice::getSequence(Anchor refer) const
   std::stringstream s;
 
   s << "LIBPALATTICE : SEQUENCE, REFER=";
-  if (refer==center)
+  if (refer==Anchor::center)
     s << "CENTRE, ";
-  else if (refer==begin)
+  else if (refer==Anchor::begin)
     s << "ENTRY, ";
-  else if (refer==end)
+  else if (refer==Anchor::end)
     s << "EXIT, ";
   s << "L=" << this->circumference() <<";"<< endl;
 
@@ -1518,12 +1518,12 @@ void AccLattice::latexexport(string filename) const
   it=elements.begin();
   for (; it!=elements.end(); ++it) {
     if (it == elements.begin()) {
-      driftlength = locate(it, begin);
+      driftlength = locate(it, Anchor::begin);
     }
     else {
-      driftlength = locate(it, begin) - lastend;
+      driftlength = locate(it, Anchor::begin) - lastend;
     }
-    lastend = locate(it, end);
+    lastend = locate(it, Anchor::end);
     s << getLaTeXDrift(driftlength);    //drift
     s << it->second->printLaTeX(); //element
   }

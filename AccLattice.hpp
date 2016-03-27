@@ -25,6 +25,7 @@
 #include "config.hpp"
 #include "types.hpp"
 #include "SimTools.hpp"
+#include "AccIterator.hpp"
 
 namespace pal
 {
@@ -33,10 +34,10 @@ namespace pal
 typedef std::map<double,AccElement*>::iterator AccIterator;
 typedef std::map<double,AccElement*>::const_iterator const_AccIterator;
 
-enum Anchor{begin,center,end};
+  enum class Anchor{begin,center,end};
 
 
-class AccLattice {
+  class AccLattice {
 
 protected:
   double circ;
@@ -51,7 +52,7 @@ protected:
   AccIterator nextIt(double pos, element_plane p=noplane, element_family f=nofamily);                         // get iterator to next element after pos
   AccIterator nextIt(double pos, element_type _type, element_plane p=noplane, element_family f=nofamily);     // get iterator to next element of given type after pos
   AccIterator nextIt(AccIterator it, element_type _type, element_plane p=noplane, element_family f=nofamily); // get iterator to next element of given type after it (for any type just use it++ ;) )
-  AccIterator nextIt(double pos, Anchor anchor);       // get iterator to first element, whose begin/center/end is > pos. circulating.
+    AccIterator nextIt(double pos, Anchor anchor);       // get iterator to first element, whose begin/center/end is > pos. circulating.
   AccIterator revolve(AccIterator it);                 // like it++, but starts at begin() after last element (never reaches end()!)
 
   double slope(double pos, const_AccIterator it) const; // helper function for magnetic field edges
@@ -59,11 +60,11 @@ protected:
 
 
 public:
-  const Anchor refPos;
+    const Anchor refPos;
   Metadata info;
 
-  AccLattice(double _circumference=0., Anchor _refPos=begin);
-  AccLattice(SimToolInstance &sim, Anchor _refPos=end, string ignoreFile=""); //direct madx/elegant import
+    AccLattice(double _circumference=0., Anchor _refPos=Anchor::begin);
+  AccLattice(SimToolInstance &sim, Anchor _refPos=Anchor::end, string ignoreFile=""); //direct madx/elegant import
   AccLattice(const AccLattice &other);
   ~AccLattice();
   AccLattice& operator= (const AccLattice &other);
@@ -100,6 +101,10 @@ public:
   double distanceRing(double pos, const_AccIterator it, Anchor itRef) const;// distance in a ring (both directions, shorter distance returned)
   double distanceNext(const_AccIterator it) const;                      // |distance| from it to next element (circulating, using refPos of both elements)
 
+  // new AccLatticeIterator
+  AccLatticeIterator begin() {return AccLatticeIterator(elements.begin(), *this);}
+  AccLatticeIterator end() {return AccLatticeIterator(elements.end(), *this);}
+
   const AccElement* operator[](double pos) const;                    // get element (any position, Drift returned if not inside any element)
   const_AccIterator operator[](string name) const;                   // get iterator by name (first match in lattice, Drift returned otherwise)
   void mount(double pos, const AccElement &obj, bool verbose=false); // mount an element (throws eNoFreeSpace if no free space for obj)
@@ -128,7 +133,7 @@ public:
   string refPos_string() const;
   string getElementDefs(SimTool tool,element_type _type) const; // return elegant or madx compliant element definitions for given type
   string getLine(SimTool tool) const; // return lattice in elegant or madx compliant "LINE=(..." format
-  string getSequence(Anchor refer=center) const;    // return lattice in madx compliant "SEQUENCE" format
+  string getSequence(Anchor refer=Anchor::center) const;    // return lattice in madx compliant "SEQUENCE" format
 
   //magnetic field, including continuous slope at start/end
   // - "verlängern" um l_eff - l_metric = d

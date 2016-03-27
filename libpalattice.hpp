@@ -19,6 +19,8 @@
 
 #include "AccElements.hpp"   // particle accelerator elements (e.g. dipole,quadrupole). used by AccLattice.
 
+#include "AccIterator.hpp"   // special iterator to access and iterate AccLattice
+
 #include "FunctionOfPos.hpp" // data of any type as a function of position (and turn) in a particle accelerator (e.g. orbit,trajectory,twiss). Interpolation and Spectrum (FFT) included.
 
 #include "Spectrum.hpp"      // spectrum of any data, calculated by GSL FFT. used by FunctionOfPos.

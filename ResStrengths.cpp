@@ -61,7 +61,7 @@ std::complex<double> ResStrengths::calculate(double agamma)
       // dipole: epsilon = 1/2pi * omega * R/(i*agamma) * (e^{i*agamma*theta2}-e^{i*agamma*theta1})
       if (it->second->type == dipole) {
 	double R = 1/it->second->k0.z; // bending radius
-	epsilon += 1/(2*M_PI) * omega * R/(im*agamma) * (std::exp(im*agamma*(lattice->theta(lattice->locate(it,end))+turn*2*M_PI)) - std::exp(im*agamma*(lattice->theta(lattice->locate(it,begin))+turn*2*M_PI)));
+	epsilon += 1/(2*M_PI) * omega * R/(im*agamma) * (std::exp(im*agamma*(lattice->theta(lattice->locate(it,Anchor::end))+turn*2*M_PI)) - std::exp(im*agamma*(lattice->theta(lattice->locate(it,Anchor::begin))+turn*2*M_PI)));
       }
       // all others: epsilon = 1/2pi * e^{i*agamma*theta} *  omega * l
       else {

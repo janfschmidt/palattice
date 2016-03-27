@@ -1,0 +1,59 @@
+AccLattice elsa();
+
+for(const_AccLatticeIterator it : elsa) {
+  it.pos();
+  it.element();
+  it.element()->name;
+ }
+
+for(const_AccLatticeIterator it=elsa.begin(); it!=elsa.end(); it++) {
+  it.pos();
+  it.element();
+  it.element()->name;
+ }
+
+const_AccLatticeIterator it = elsa.begin();
+it = elsa.end();
+it = elsa.rbegin();
+it = elsa[pos];
+it = elsa[name];
+it = elsa.next(pos, anchor); // benötigt?
+
+elsa[pos].element()->B();
+elsa["M9"].pos(pal::begin);
+
+
+for(const_AccLatticeIterator<pal::dipole> it : elsa) {
+  ...
+ }
+
+AccLatticeIterator<ElementType type=all>
+const_AccLatticeIterator<ElementType type=all>
+// enthält (const_)iterator zur Lattice-internen map
+// template parameter bestimmt ob alle oder nur ein bestimmter Typ erreichbar ist
+
+
+* DONE it.pos();
+* DONE it.element();
+* DONE it.elementModifier();
+* DONE it++;
+* DONE it--;
+* DONE it.next();
+* DONE it.previous();
+* DONE it.next(pal::quadrupole);
+* TODO it.distance(pos, anchor);
+* TODO range loop
+* TODO it.revolve();
+  - braucht begin & end !
+* TODO it.pos(anchor);
+  - braucht refPos !
+  - it.begin();
+  - it.center();
+  - it.end();
+* TODO it.at(pos);
+  - braucht refPos !
+  - ersetzt inside(): test, ob pos innerhalb dieses elements 
+* TODO it.distanceRing(pos, anchor);
+  - braucht circumference !
+  - it.distanceNext();
+* TODO AccLatticeIterator<pal::quadrupole> it;

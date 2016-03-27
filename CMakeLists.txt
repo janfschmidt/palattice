@@ -15,7 +15,7 @@ set(SIMTOOL_PATH ${CMAKE_INSTALL_PREFIX}/lib/libpalattice_simTools)
 
 # Googletest Path
 # optional, used to compile tests in tests/ directory
-set(GTEST_PATH /home/thiry/dev/gtest-1.7.0) #/set/googletest/path/here
+set(GTEST_PATH ~/git/googletest) #/set/googletest/path/here
 
 
 # CXX-Standard
@@ -80,6 +80,7 @@ configure_file(systemconfig.hpp.in ${CMAKE_SOURCE_DIR}/systemconfig.hpp ESCAPE_Q
 add_library(palattice SHARED
   AccElements.cpp
   AccLattice.cpp
+  AccIterator.cpp
   Metadata.cpp
   SimTools.cpp
   Interpolate.cpp
@@ -146,6 +147,7 @@ install(PROGRAMS simTools/elegant2libpalattice.sh
 install(FILES
   AccElements.hpp
   AccLattice.hpp
+  AccIterator.hpp
   Metadata.hpp
   SimTools.hpp
   Interpolate.hpp
