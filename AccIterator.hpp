@@ -20,22 +20,26 @@
 
 namespace pal {
 
+  enum class Anchor{begin,center,end};
+  
+
   class AccLatticeIterator {
     friend class AccLattice;
-
+    
   protected:
     std::map<double, AccElement*>::iterator it;
-    AccLatticeIterator(std::map<double, AccElement*>::iterator in) : it(in) {}
+    std::map<double, AccElement*>* latticeElements;
+    const Anchor* latticeRefPos;
+    const double* latticeCircumference;
+    AccLatticeIterator(std::map<double, AccElement*>::iterator in, std::map<double, AccElement*>* e, const Anchor* rP, const double* circ) : it(in), latticeElements(e), latticeRefPos(rP), latticeCircumference(circ) {}
+    void checkForEnd() const;
 
   public:
-    AccLatticeIterator(const AccLatticeIterator& other) {it = other.it;}
-    ~AccLatticeIterator() {}
-    
     // accessors
     double pos() const {return it->first;}
     const AccElement* element() const {return it->second;}
     AccElement* elementModifier() const {return it->second;}
-
+    
     // iteration
     AccLatticeIterator& operator++() {it++; return *this;}   //prefix
     AccLatticeIterator operator++(int) {it++; return *this;} //postfix
@@ -46,10 +50,20 @@ namespace pal {
     AccLatticeIterator& previous() {return operator--();}
     AccLatticeIterator& previous(element_type t);
     AccLatticeIterator& revolve();
+    
+    // comparison
+    bool operator==(const AccLatticeIterator& o) const {if(o.it==it) return true; else return false;}
+    bool operator!=(const AccLatticeIterator& o) const {return !operator==(o);}
 
-   // comparison
-   bool operator==(const AccLatticeIterator& other) const {if(other.it==it) return true; else return false;}
-   bool operator!=(const AccLatticeIterator& other) const {return !operator==(other);}
+    // position calculations
+    double pos(Anchor anchor) const;
+    double begin() const {return pos(Anchor::begin);}
+    double center() const {return pos(Anchor::center);}
+    double end() const {return pos(Anchor::end);}
+    bool at(double pos) const;
+    double distance(Anchor anchor, double pos) const;
+    double distanceRing(Anchor anchor, double pos) const;
+    double distanceNext(Anchor anchor) const;
   };
   
 } //namespace pal

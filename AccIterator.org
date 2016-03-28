@@ -41,19 +41,27 @@ const_AccLatticeIterator<ElementType type=all>
 * DONE it.next();
 * DONE it.previous();
 * DONE it.next(pal::quadrupole);
-* TODO it.distance(pos, anchor);
+* DONE it.distance(pos, anchor);
 * TODO range loop
-* TODO it.revolve();
+* DONE it.revolve();
   - braucht begin & end !
-* TODO it.pos(anchor);
+* DONE it.pos(anchor);
   - braucht refPos !
   - it.begin();
   - it.center();
   - it.end();
-* TODO it.at(pos);
+* DONE it.at(pos);
   - braucht refPos !
   - ersetzt inside(): test, ob pos innerhalb dieses elements 
-* TODO it.distanceRing(pos, anchor);
+* DONE it.distanceRing(pos, anchor);
   - braucht circumference !
   - it.distanceNext();
+* TODO End abfangen
+* TODO plane & family
 * TODO AccLatticeIterator<pal::quadrupole> it;
+* TODO lattice.rbegin() (& rend()?)
+* TODO lattice[pos]
+* TODO lattice[name]
+* TODO Altlasten aufräumen
+* TODO lib Funktionalität widerherstellen
+* TODO polematrix Funktionalität widerherstellen

@@ -15,7 +15,7 @@ set(SIMTOOL_PATH ${CMAKE_INSTALL_PREFIX}/lib/libpalattice_simTools)
 
 # Googletest Path
 # optional, used to compile tests in tests/ directory
-set(GTEST_PATH ~/git/googletest) #/set/googletest/path/here
+set(GTEST_PATH /home/jan/git/googletest) #/set/googletest/path/here
 
 
 # CXX-Standard

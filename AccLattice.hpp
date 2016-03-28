@@ -34,8 +34,6 @@ namespace pal
 typedef std::map<double,AccElement*>::iterator AccIterator;
 typedef std::map<double,AccElement*>::const_iterator const_AccIterator;
 
-  enum class Anchor{begin,center,end};
-
 
   class AccLattice {
 
@@ -102,8 +100,8 @@ public:
   double distanceNext(const_AccIterator it) const;                      // |distance| from it to next element (circulating, using refPos of both elements)
 
   // new AccLatticeIterator
-  AccLatticeIterator begin() {return AccLatticeIterator(elements.begin(), *this);}
-  AccLatticeIterator end() {return AccLatticeIterator(elements.end(), *this);}
+    AccLatticeIterator begin() {return AccLatticeIterator(elements.begin(),&elements,&refPos,&circ);}
+    AccLatticeIterator end() {return AccLatticeIterator(elements.end(),&elements,&refPos,&circ);}
 
   const AccElement* operator[](double pos) const;                    // get element (any position, Drift returned if not inside any element)
   const_AccIterator operator[](string name) const;                   // get iterator by name (first match in lattice, Drift returned otherwise)
