@@ -57,8 +57,9 @@ const_AccLatticeIterator<ElementType type=all>
   - braucht circumference !
   - it.distanceNext();
 * DONE End abfangen
-* TODO plane & family -> loop anpassen
+* DONE plane & family
 * TODO AccLatticeIterator<pal::quadrupole> it;
+* TODO Ersatz für "firstIt" zum Beginn der Type-Iteration
 * TODO lattice[pos]
 * TODO lattice[name]
 * TODO Altlasten aufräumen

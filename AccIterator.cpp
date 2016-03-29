@@ -32,7 +32,7 @@ AccElement* AccLatticeIterator::elementModifier() const {
 
 AccLatticeIterator& AccLatticeIterator::next(element_type t, element_plane p, element_family f)
 {
-  // do while??
+  ++it;
   for (; it!=latticeElements->end(); ++it) {
     if ( it->second->type==t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f) )
       return *this;
@@ -42,7 +42,9 @@ AccLatticeIterator& AccLatticeIterator::next(element_type t, element_plane p, el
 
 AccLatticeIterator& AccLatticeIterator::previous(element_type t, element_plane p, element_family f)
 {
-  for (; it!=latticeElements->begin(); --it) {
+  --it;
+  auto start = --latticeElements->begin();
+  for (; it!=start; --it) {
     if ( it->second->type==t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f) )
       return *this;
   }

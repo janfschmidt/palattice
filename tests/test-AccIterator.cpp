@@ -52,15 +52,24 @@ TEST_F(AccIteratorTest, Iteration) {
 TEST_F(AccIteratorTest, TypeIteration) {
   for (auto s : {"Q1","Q2","Q3","Q4","Q5"}) {
     it.next(pal::quadrupole);
-    ASSERT_STREQ(s, it.element()->name.c_str());
+    EXPECT_STREQ(s, it.element()->name.c_str());
   }
   ASSERT_THROW(it.next(pal::quadrupole), pal::noMatchingElement);
 
   for (auto s : {"M5","M4","M3","M2","M1"}) {
     it.previous(pal::dipole);
-    ASSERT_STREQ(s, it.element()->name.c_str());
+    EXPECT_STREQ(s, it.element()->name.c_str());
   }
   ASSERT_THROW(it.previous(pal::dipole), pal::noMatchingElement);
+}
+
+TEST_F(AccIteratorTest, PlaneIteration) {
+  ++it; ++it;
+  it.elementModifier()->plane = pal::V;
+  it = lattice.begin();
+  it.next(pal::dipole, pal::V);
+  ASSERT_STREQ("M2", it.element()->name.c_str());
+  ASSERT_THROW(it.next(pal::dipole, pal::V), pal::noMatchingElement);
 }
 
 TEST_F(AccIteratorTest, Loop) {
