@@ -50,16 +50,34 @@ TEST_F(AccIteratorTest, Iteration) {
 }
 
 TEST_F(AccIteratorTest, TypeIteration) {
-  for (auto s : {"Q1","Q2","Q3","Q4"}) {
+  for (auto s : {"Q1","Q2","Q3","Q4","Q5"}) {
     it.next(pal::quadrupole);
     ASSERT_STREQ(s, it.element()->name.c_str());
   }
+  ASSERT_THROW(it.next(pal::quadrupole), pal::noMatchingElement);
+
+  for (auto s : {"M5","M4","M3","M2","M1"}) {
+    it.previous(pal::dipole);
+    ASSERT_STREQ(s, it.element()->name.c_str());
+  }
+  ASSERT_THROW(it.previous(pal::dipole), pal::noMatchingElement);
+}
+
+TEST_F(AccIteratorTest, Loop) {
+  std::vector<std::string> list;
+  for (auto it=lattice.begin(); it!=lattice.end(); ++it) {
+    list.push_back(it.element()->name);
+  }
+  EXPECT_STREQ("M1", list[0].c_str());
+  EXPECT_STREQ("Q1", list[1].c_str());
+  EXPECT_STREQ("M2", list[2].c_str());
+  EXPECT_STREQ("M5", list[8].c_str());
+  EXPECT_STREQ("Q5", list[9].c_str());
 }
 
 TEST_F(AccIteratorTest, RangeLoop) {
   std::vector<std::string> list;
-  for (auto &it : lattice) {
-    //TODO: operator* ....
+  for (auto& it : lattice) {
     list.push_back(it.element()->name);
   }
   EXPECT_STREQ("M1", list[0].c_str());
@@ -79,6 +97,11 @@ TEST_F(AccIteratorTest, End) {
     ++it;
   }
   ASSERT_TRUE(it == lattice.end());
+  EXPECT_THROW(it.pos(), pal::palatticeError);
+  EXPECT_THROW(it.element(), pal::palatticeError);
+  EXPECT_THROW(it.pos(pal::Anchor::begin), pal::palatticeError);
+  EXPECT_THROW(it.distance(pal::Anchor::begin, 0.), pal::palatticeError);
+
 }
 
 TEST_F(AccIteratorTest, Revolve) {

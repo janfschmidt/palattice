@@ -42,7 +42,7 @@ const_AccLatticeIterator<ElementType type=all>
 * DONE it.previous();
 * DONE it.next(pal::quadrupole);
 * DONE it.distance(pos, anchor);
-* TODO range loop
+* DONE range loop
 * DONE it.revolve();
   - braucht begin & end !
 * DONE it.pos(anchor);
@@ -56,10 +56,9 @@ const_AccLatticeIterator<ElementType type=all>
 * DONE it.distanceRing(pos, anchor);
   - braucht circumference !
   - it.distanceNext();
-* TODO End abfangen
-* TODO plane & family
+* DONE End abfangen
+* TODO plane & family -> loop anpassen
 * TODO AccLatticeIterator<pal::quadrupole> it;
-* TODO lattice.rbegin() (& rend()?)
 * TODO lattice[pos]
 * TODO lattice[name]
 * TODO Altlasten aufräumen

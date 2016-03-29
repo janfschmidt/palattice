@@ -8,20 +8,45 @@ void AccLatticeIterator::checkForEnd() const
     throw palatticeError("Evaluation of lattice.end(), which is after last Element!");
 }
 
-AccLatticeIterator& AccLatticeIterator::next(element_type t)
+
+// accessors
+
+// position in Lattice in meter
+double AccLatticeIterator::pos() const {
+  checkForEnd(); 
+  return it->first;
+}
+// pointer to Element
+const AccElement* AccLatticeIterator::element() const {
+  checkForEnd();
+  return it->second;
+}
+// pointer to Element, edit allowed
+AccElement* AccLatticeIterator::elementModifier() const {
+  checkForEnd();
+  return it->second;
+} 
+
+
+// iteration
+
+AccLatticeIterator& AccLatticeIterator::next(element_type t, element_plane p, element_family f)
 {
-  ++it;
-  while (it->second->type != t)
-    ++it;
-  return *this;
+  // do while??
+  for (; it!=latticeElements->end(); ++it) {
+    if ( it->second->type==t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f) )
+      return *this;
+  }
+  throw noMatchingElement("type, plane, family");
 }
 
-AccLatticeIterator& AccLatticeIterator::previous(element_type t)
+AccLatticeIterator& AccLatticeIterator::previous(element_type t, element_plane p, element_family f)
 {
-  --it;
-  while (it->second->type != t)
-    --it;
-  return *this;
+  for (; it!=latticeElements->begin(); --it) {
+    if ( it->second->type==t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f) )
+      return *this;
+  }
+  throw noMatchingElement("type, plane, family");
 }
 
 AccLatticeIterator& AccLatticeIterator::revolve()
@@ -38,6 +63,8 @@ AccLatticeIterator& AccLatticeIterator::revolve()
 
 double AccLatticeIterator::pos(Anchor anchor) const
 {
+  checkForEnd();
+
   if (anchor==*latticeRefPos)
     return it->first;
 
@@ -96,3 +123,5 @@ double AccLatticeIterator::distanceNext(Anchor anchor) const
     d += *latticeCircumference;
   return d;
 }
+
+
