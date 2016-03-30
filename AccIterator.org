@@ -60,8 +60,9 @@ const_AccLatticeIterator<ElementType type=all>
 * DONE plane & family
 * DONE Ersatz für "firstIt" zum Beginn der Type-Iteration
 * DONE AccTypeIterator<pal::quadrupole> it;
-* TODO lattice[pos]
-* TODO lattice[name]
+* TODO AccElement* lattice[pos]; wie bisher (gibt auch Drift zurück, MIT LÄNGE)
+* TODO AccLatticeIterator lattice.at(pos); NEU, throw wenn pos in Driftstrecke
+* TODO AccLatticeIterator lattice[name] ändern (jetzt schon mit throw)
 * TODO Altlasten aufräumen
 * TODO lib Funktionalität widerherstellen
 * TODO polematrix Funktionalität widerherstellen

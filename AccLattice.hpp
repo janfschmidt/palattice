@@ -45,14 +45,14 @@ protected:
   unsigned int ignoreCounter;
   string comment;
 
-  AccIterator firstIt(element_type _type, element_plane p=noplane, element_family f=nofamily); // get iterator to first element of given type
-  AccIterator lastIt(element_type _type, element_plane p=noplane, element_family f=nofamily);  // get iterator to last element of given type
-  AccIterator nextIt(double pos, element_plane p=noplane, element_family f=nofamily);                         // get iterator to next element after pos
-  AccIterator nextIt(double pos, element_type _type, element_plane p=noplane, element_family f=nofamily);     // get iterator to next element of given type after pos
-  AccIterator nextIt(AccIterator it, element_type _type, element_plane p=noplane, element_family f=nofamily); // get iterator to next element of given type after it (for any type just use it++ ;) )
-    AccIterator nextIt(double pos, Anchor anchor);       // get iterator to first element, whose begin/center/end is > pos. circulating.
-  AccIterator revolve(AccIterator it);                 // like it++, but starts at begin() after last element (never reaches end()!)
-
+  // AccIterator firstIt(element_type _type, element_plane p=noplane, element_family f=nofamily); // get iterator to first element of given type
+  // AccIterator lastIt(element_type _type, element_plane p=noplane, element_family f=nofamily);  // get iterator to last element of given type
+  // AccIterator nextIt(double pos, element_plane p=noplane, element_family f=nofamily);                         // get iterator to next element after pos
+  // AccIterator nextIt(double pos, element_type _type, element_plane p=noplane, element_family f=nofamily);     // get iterator to next element of given type after pos
+  // AccIterator nextIt(AccIterator it, element_type _type, element_plane p=noplane, element_family f=nofamily); // get iterator to next element of given type after it (for any type just use it++ ;) )
+  //   AccIterator nextIt(double pos, Anchor anchor);       // get iterator to first element, whose begin/center/end is > pos. circulating.
+  // AccIterator revolve(AccIterator it);                 // like it++, but starts at begin() after last element (never reaches end()!)
+  double locate(double pos, const AccElement *obj, Anchor here) const;  // get here=begin/center/end (in meter) of obj at reference-position pos
   double slope(double pos, const_AccIterator it) const; // helper function for magnetic field edges
   void setCircumference(double c);
 
@@ -73,31 +73,30 @@ public:
   string getComment() const {return comment;}
 
   // ------- these functions may be replaced soon by a new API for lattice iteration -------------------------
-  const_AccIterator getIt(double pos) const;      // get const_Iterator to element, if pos is inside it
-  const_AccIterator getItBegin() const;           // get iterator to begin (first Element)
-  const_AccIterator getItEnd() const;             // get iterator to end (after last Element)
-  const_AccIterator firstCIt(element_type _type, element_plane p=noplane, element_family f=nofamily) const; // get iterator to first element of given type
-  const_AccIterator lastCIt(element_type _type, element_plane p=noplane, element_family f=nofamily) const;  // get iterator to last element of given type
-  const_AccIterator nextCIt(double pos, element_plane p=noplane, element_family f=nofamily) const;                               // get iterator to next element after pos
-  const_AccIterator nextCIt(double pos, element_type _type, element_plane p=noplane, element_family f=nofamily) const;           // get iterator to next element of given type after pos
-  const_AccIterator nextCIt(const_AccIterator it, element_type _type, element_plane p=noplane, element_family f=nofamily) const; // get iterator to next element of given type after it (for any type just use it++ ;) )
-  const_AccIterator nextCIt(double pos, Anchor anchor) const;       // get iterator to first element, whose begin/center/end is > pos. circulating.
-  const_AccIterator revolve(const_AccIterator it) const;            // like it++, but starts at begin() after last element (never reaches end()!)
+  // const_AccIterator getIt(double pos) const;      // get const_Iterator to element, if pos is inside it
+  // const_AccIterator getItBegin() const;           // get iterator to begin (first Element)
+  // const_AccIterator getItEnd() const;             // get iterator to end (after last Element)
+  // const_AccIterator firstCIt(element_type _type, element_plane p=noplane, element_family f=nofamily) const; // get iterator to first element of given type
+  // const_AccIterator lastCIt(element_type _type, element_plane p=noplane, element_family f=nofamily) const;  // get iterator to last element of given type
+  // const_AccIterator nextCIt(double pos, element_plane p=noplane, element_family f=nofamily) const;                               // get iterator to next element after pos
+  // const_AccIterator nextCIt(double pos, element_type _type, element_plane p=noplane, element_family f=nofamily) const;           // get iterator to next element of given type after pos
+  // const_AccIterator nextCIt(const_AccIterator it, element_type _type, element_plane p=noplane, element_family f=nofamily) const; // get iterator to next element of given type after it (for any type just use it++ ;) )
+  // const_AccIterator nextCIt(double pos, Anchor anchor) const;       // get iterator to first element, whose begin/center/end is > pos. circulating.
+  // const_AccIterator revolve(const_AccIterator it) const;            // like it++, but starts at begin() after last element (never reaches end()!)
 
 
-  double pos(const_AccIterator it) const {return it->first;}          // get position of element with iterator it
+    // double pos(const_AccIterator it) const {return it->first;}          // get position of element with iterator it
   double posMod(double posIn) const {return fmod(posIn,circ);}        // get position modulo circumference
   unsigned int turn(double posIn) const {return int(posIn/circ + ZERO_DISTANCE) + 1;} // get turn from position
   double theta(double posIn) const;                                     // get rotation angle [0,2pi]: increases lin. in bending dipoles, constant in-between. 
-  double locate(double pos, const AccElement *obj, Anchor here) const;  // get here=begin/center/end (in meter) of obj at reference-position pos
-  double locate(const_AccIterator it, Anchor here) const;               // get here=begin/center/end (in meter) of lattice element "it"
-  double locate(string name, Anchor here) const {return locate(operator[](name),here);} // get here=begin/center/end (in meter) of lattice element by name
-  bool inside(double pos, const AccElement *obj, double here) const;    // test if "here" is inside obj at position pos
-  bool inside(const_AccIterator it, double here) const;                 // test if "here" is inside lattice element "it"  
-  bool inside(string name, double here) const {return inside(operator[](name),here);}   // test if "here" is inside lattice element with name
-  double distance(double pos, const_AccIterator it, Anchor itRef) const;// distance from itRef of element it to pos (>0 if pos is after itRef)
-  double distanceRing(double pos, const_AccIterator it, Anchor itRef) const;// distance in a ring (both directions, shorter distance returned)
-  double distanceNext(const_AccIterator it) const;                      // |distance| from it to next element (circulating, using refPos of both elements)
+  // double locate(const_AccIterator it, Anchor here) const;               // get here=begin/center/end (in meter) of lattice element "it"
+  // double locate(string name, Anchor here) const {return locate(operator[](name),here);} // get here=begin/center/end (in meter) of lattice element by name
+  // bool inside(double pos, const AccElement *obj, double here) const;    // test if "here" is inside obj at position pos
+  // bool inside(const_AccIterator it, double here) const;                 // test if "here" is inside lattice element "it"  
+  // bool inside(string name, double here) const {return inside(operator[](name),here);}   // test if "here" is inside lattice element with name
+  // double distance(double pos, const_AccIterator it, Anchor itRef) const;// distance from itRef of element it to pos (>0 if pos is after itRef)
+  // double distanceRing(double pos, const_AccIterator it, Anchor itRef) const;// distance in a ring (both directions, shorter distance returned)
+  // double distanceNext(const_AccIterator it) const;                      // |distance| from it to next element (circulating, using refPos of both elements)
 
   // new AccLatticeIterator
     AccLatticeIterator begin() {return AccLatticeIterator(elements.begin(),&elements,&refPos,&circ);}
@@ -106,7 +105,9 @@ public:
     AccTypeIterator<TYPE,PLANE,FAMILY> begin();
 
   const AccElement* operator[](double pos) const;                    // get element (any position, Drift returned if not inside any element)
-  const_AccIterator operator[](string name) const;                   // get iterator by name (first match in lattice, Drift returned otherwise)
+  AccLatticeIterator at(double pos) const;                         // get iterator by position (throws eNoElement, if pos is in Drift)
+  AccLatticeIterator operator[](string name) const;                  // get iterator by name (first match in lattice, throws eNoElement otherwise)
+
   void mount(double pos, const AccElement &obj, bool verbose=false); // mount an element (throws eNoFreeSpace if no free space for obj)
   void dismount(double pos);                                         // dismount element at Ref.position pos (if no element at pos: do nothing)
 

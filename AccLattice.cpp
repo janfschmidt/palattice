@@ -62,8 +62,8 @@ AccLattice::AccLattice(const AccLattice &other)
 {
   empty_space = new Drift;
 
-  for (const_AccIterator it=other.getItBegin(); it!=other.getItEnd(); ++it) {
-    this->mount(it->first, *(it->second));
+  for (auto& it : *this) {
+    this->mount(it.pos(), *(it.element()));
   }
 }
 
@@ -95,8 +95,8 @@ AccLattice& AccLattice::operator= (const AccLattice &other)
   ignoreList = other.ignoreList;
   info = other.info;
   
-  for (const_AccIterator it=other.getItBegin(); it!=other.getItEnd(); ++it) {
-    this->mount(it->first, *(it->second));
+  for (auto& it : *this) {
+    this->mount(it.pos(), *(it.element()));
   }
 
   return *this;
@@ -121,14 +121,14 @@ double AccLattice::theta(double posIn) const
 {
   double theta = 0.;
   // sum theta of all bending dipoles that end is at a pos < posIn
-  for (const_AccIterator it=firstCIt(dipole); locate(it,Anchor::end) < posIn; it=nextCIt(it,dipole)) {
-    theta += it->second->length * it->second->k0.z; // theta= l/R = l*k0.z
+  for (auto it=begin<dipole>(); it.pos(Anchor::end) < posIn; ++it) {
+    theta += it.element()->length * it.element()->k0.z; // theta= l/R = l*k0.z
   }
   // if posIn is inside a dipole, add theta of this magnet up to posIn
   try {
-    const_AccIterator atPosIn = getIt(posIn); // throws if there is no element
-    if (atPosIn->second->type == dipole) {
-      theta += (posIn - locate(atPosIn,Anchor::begin)) * atPosIn->second->k0.z;
+    auto atPosIn = at(posIn); // throws if there is no element
+    if (atPosIn.element()->type == dipole) {
+      theta += (posIn - atPosIn.pos(Anchor::begin)) * atPosIn.element()->k0.z;
     }
   }
   catch (eNoElement) {}
@@ -158,261 +158,261 @@ double AccLattice::locate(double pos, const AccElement *obj, Anchor here) const
   return 0.;
 }
 
-// get here=begin/center/end (in meter)  of lattice element "it"
-// works for all Reference Anchors (refPos, it->first)
-double AccLattice::locate(const_AccIterator it, Anchor here) const
-{
-  if (it == elements.end())
-    return this->circumference();
-  else
-    return locate(it->first, it->second, here);
-}
+// // get here=begin/center/end (in meter)  of lattice element "it"
+// // works for all Reference Anchors (refPos, it->first)
+// double AccLattice::locate(const_AccIterator it, Anchor here) const
+// {
+//   if (it == elements.end())
+//     return this->circumference();
+//   else
+//     return locate(it->first, it->second, here);
+// }
 
 
 
 
-// test if "here" is inside obj at position pos
-bool AccLattice::inside(double pos, const AccElement *obj, double here) const
-{
-  if (here >= locate(pos,obj,Anchor::begin) && here <= locate(pos,obj,Anchor::end))
-    return true;
-  else
-    return false;
-}
+// // test if "here" is inside obj at position pos
+// bool AccLattice::inside(double pos, const AccElement *obj, double here) const
+// {
+//   if (here >= locate(pos,obj,Anchor::begin) && here <= locate(pos,obj,Anchor::end))
+//     return true;
+//   else
+//     return false;
+// }
 
-// test if "here" is inside lattice element "it"
-bool AccLattice::inside(const_AccIterator it, double here) const
-{
-  if (here >= locate(it,Anchor::begin) && here <= locate(it,Anchor::end))
-    return true;
-  else
-    return false;
-}
-
-
-
-
-
-// get first element of given type (returns iterator to end if there is none)
-AccIterator AccLattice::firstIt(element_type _type, element_plane p, element_family f)
-{
-  for (AccIterator it=elements.begin(); it!=elements.end(); ++it) {
-    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
-      return it;
-  }
-  return elements.end();
-}
-// get last element of given type (returns iterator to end if there is none)
-AccIterator AccLattice::lastIt(element_type _type, element_plane p, element_family f)
-{
-  AccIterator it = elements.end();
-  it--;
-  for (; it!=elements.begin(); it--) {
-    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
-      return it;
-  }
-  return elements.end();  
-}
-// get iterator to next element after pos (returns iterator to end if there is none)
-AccIterator AccLattice::nextIt(double posIn, element_plane p, element_family f)
-{
-  double pos = posMod(posIn);
-  for (AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
-    if ((p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
-      return it;
-  }
-  return elements.end();
-}
-// get iterator to next element of given type after pos (returns iterator to end if there is none)
-AccIterator AccLattice::nextIt(double posIn, element_type _type, element_plane p, element_family f)
-{
-  double pos = posMod(posIn);
-  for (AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
-    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
-      return it;
-  }
-  return elements.end();
-}
-// get iterator to next element of given type after it (returns iterator to end if there is none)
-AccIterator AccLattice::nextIt(AccIterator it, element_type _type, element_plane p, element_family f)
-{
-  it++; // check only elements AFTER it
- for (; it!=elements.end(); ++it) {
-   if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
-      return it;
-  }
-  return elements.end();  
-}
-// get iterator to first element, whose begin/center/end is > pos
-// circulating: "next" after "last" is "first", pos > circumference allowed
-AccIterator AccLattice::nextIt(double posIn, Anchor anchor)
-{
-  double pos = posMod(posIn);
-  AccIterator b = nextIt(pos);
-  AccIterator a = b; a--;
-  if (b == elements.end()) b = elements.begin(); // circulating (a="end--" is last element -> correct)
-  if (distanceRing(pos,a,anchor) < 0.) return a;
-  else if (distanceRing(pos,b,anchor) < 0.) return b;
-  else {
-    AccIterator c = b; c++;
-    if (c == elements.end()) c = elements.begin(); // circulating
-    return c;
-  }
-}
-AccIterator AccLattice::revolve(AccIterator it)
-{
-  it++;
-  if (it == elements.end())
-    return elements.begin();
-  else
-    return it;
-}
-
-
-// public const_AccIterator versions of first/last/nextIt
-// implemented AGAIN, because:
-// - they are const members (can be used in other const members like print())
-// - the above versions cannot be const (should allow modification)
-// - conversion from const_iterator to iterator is only possible via advance() & distance(), which would be slower
-const_AccIterator AccLattice::firstCIt(element_type t, element_plane p, element_family f) const
-{
-  for (const_AccIterator it=elements.begin(); it!=elements.end(); ++it) {
-    if (it->second->type == t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
-      return it;
-  }
-  return elements.end();
-}
-const_AccIterator AccLattice::lastCIt(element_type t, element_plane p, element_family f) const
-{
- const_AccIterator it = elements.end();
-  it--;
-  for (; it!=elements.begin(); it--) {
-    if (it->second->type == t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
-      return it;
-  }
-  return elements.end();  
-}
-const_AccIterator AccLattice::nextCIt(double posIn, element_plane p, element_family f) const
-{
-  double pos = posMod(posIn);
-  for (const_AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
-    if ((p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
-      return it;
-  }
-  return elements.end();
-}
-const_AccIterator AccLattice::nextCIt(double posIn, element_type t, element_plane p, element_family f) const
-{
-  double pos = posMod(posIn);
- for (const_AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
-    if (it->second->type == t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
-      return it;
-  }
-  return elements.end();
-}
-const_AccIterator AccLattice::nextCIt(const_AccIterator it, element_type t, element_plane p, element_family f) const
-{
-  it++; // check only elements AFTER it
- for (; it!=elements.end(); ++it) {
-   if (it->second->type == t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
-      return it;
-  }
-  return elements.end();  
-}
-const_AccIterator AccLattice::nextCIt(double posIn, Anchor anchor) const
-{
-  double pos = posMod(posIn);
-  const_AccIterator b = nextCIt(pos);
-  const_AccIterator a = b; a--;
-  if (b == elements.end()) b = elements.begin(); // circulating (a="end--" is last element -> correct)
-  if (distanceRing(pos,a,anchor) < 0.) return a;
-  else if (distanceRing(pos,b,anchor) < 0.) return b;
-  else {
-    const_AccIterator c = b; c++;
-    if (c == elements.end()) c = elements.begin(); // circulating
-    return c;
-  }
-}
-const_AccIterator AccLattice::revolve(const_AccIterator it) const
-{
-  it++;
-  if (it == elements.end())
-    return elements.begin();
-  else
-    return it;
-}
+// // test if "here" is inside lattice element "it"
+// bool AccLattice::inside(const_AccIterator it, double here) const
+// {
+//   if (here >= locate(it,Anchor::begin) && here <= locate(it,Anchor::end))
+//     return true;
+//   else
+//     return false;
+// }
 
 
 
 
 
+// // get first element of given type (returns iterator to end if there is none)
+// AccIterator AccLattice::firstIt(element_type _type, element_plane p, element_family f)
+// {
+//   for (AccIterator it=elements.begin(); it!=elements.end(); ++it) {
+//     if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+//       return it;
+//   }
+//   return elements.end();
+// }
+// // get last element of given type (returns iterator to end if there is none)
+// AccIterator AccLattice::lastIt(element_type _type, element_plane p, element_family f)
+// {
+//   AccIterator it = elements.end();
+//   it--;
+//   for (; it!=elements.begin(); it--) {
+//     if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+//       return it;
+//   }
+//   return elements.end();  
+// }
+// // get iterator to next element after pos (returns iterator to end if there is none)
+// AccIterator AccLattice::nextIt(double posIn, element_plane p, element_family f)
+// {
+//   double pos = posMod(posIn);
+//   for (AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
+//     if ((p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+//       return it;
+//   }
+//   return elements.end();
+// }
+// // get iterator to next element of given type after pos (returns iterator to end if there is none)
+// AccIterator AccLattice::nextIt(double posIn, element_type _type, element_plane p, element_family f)
+// {
+//   double pos = posMod(posIn);
+//   for (AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
+//     if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+//       return it;
+//   }
+//   return elements.end();
+// }
+// // get iterator to next element of given type after it (returns iterator to end if there is none)
+// AccIterator AccLattice::nextIt(AccIterator it, element_type _type, element_plane p, element_family f)
+// {
+//   it++; // check only elements AFTER it
+//  for (; it!=elements.end(); ++it) {
+//    if (it->second->type == _type && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+//       return it;
+//   }
+//   return elements.end();  
+// }
+// // get iterator to first element, whose begin/center/end is > pos
+// // circulating: "next" after "last" is "first", pos > circumference allowed
+// AccIterator AccLattice::nextIt(double posIn, Anchor anchor)
+// {
+//   double pos = posMod(posIn);
+//   AccIterator b = nextIt(pos);
+//   AccIterator a = b; a--;
+//   if (b == elements.end()) b = elements.begin(); // circulating (a="end--" is last element -> correct)
+//   if (distanceRing(pos,a,anchor) < 0.) return a;
+//   else if (distanceRing(pos,b,anchor) < 0.) return b;
+//   else {
+//     AccIterator c = b; c++;
+//     if (c == elements.end()) c = elements.begin(); // circulating
+//     return c;
+//   }
+// }
+// AccIterator AccLattice::revolve(AccIterator it)
+// {
+//   it++;
+//   if (it == elements.end())
+//     return elements.begin();
+//   else
+//     return it;
+// }
+
+
+// // public const_AccIterator versions of first/last/nextIt
+// // implemented AGAIN, because:
+// // - they are const members (can be used in other const members like print())
+// // - the above versions cannot be const (should allow modification)
+// // - conversion from const_iterator to iterator is only possible via advance() & distance(), which would be slower
+// const_AccIterator AccLattice::firstCIt(element_type t, element_plane p, element_family f) const
+// {
+//   for (const_AccIterator it=elements.begin(); it!=elements.end(); ++it) {
+//     if (it->second->type == t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+//       return it;
+//   }
+//   return elements.end();
+// }
+// const_AccIterator AccLattice::lastCIt(element_type t, element_plane p, element_family f) const
+// {
+//  const_AccIterator it = elements.end();
+//   it--;
+//   for (; it!=elements.begin(); it--) {
+//     if (it->second->type == t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+//       return it;
+//   }
+//   return elements.end();  
+// }
+// const_AccIterator AccLattice::nextCIt(double posIn, element_plane p, element_family f) const
+// {
+//   double pos = posMod(posIn);
+//   for (const_AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
+//     if ((p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+//       return it;
+//   }
+//   return elements.end();
+// }
+// const_AccIterator AccLattice::nextCIt(double posIn, element_type t, element_plane p, element_family f) const
+// {
+//   double pos = posMod(posIn);
+//  for (const_AccIterator it=elements.upper_bound(pos); it!=elements.end(); ++it) {
+//     if (it->second->type == t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+//       return it;
+//   }
+//   return elements.end();
+// }
+// const_AccIterator AccLattice::nextCIt(const_AccIterator it, element_type t, element_plane p, element_family f) const
+// {
+//   it++; // check only elements AFTER it
+//  for (; it!=elements.end(); ++it) {
+//    if (it->second->type == t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f))
+//       return it;
+//   }
+//   return elements.end();  
+// }
+// const_AccIterator AccLattice::nextCIt(double posIn, Anchor anchor) const
+// {
+//   double pos = posMod(posIn);
+//   const_AccIterator b = nextCIt(pos);
+//   const_AccIterator a = b; a--;
+//   if (b == elements.end()) b = elements.begin(); // circulating (a="end--" is last element -> correct)
+//   if (distanceRing(pos,a,anchor) < 0.) return a;
+//   else if (distanceRing(pos,b,anchor) < 0.) return b;
+//   else {
+//     const_AccIterator c = b; c++;
+//     if (c == elements.end()) c = elements.begin(); // circulating
+//     return c;
+//   }
+// }
+// const_AccIterator AccLattice::revolve(const_AccIterator it) const
+// {
+//   it++;
+//   if (it == elements.end())
+//     return elements.begin();
+//   else
+//     return it;
+// }
 
 
 
 
-// get const_Iterator to element, if pos is inside it
-const_AccIterator AccLattice::getIt(double pos) const
-{
-  const_AccIterator candidate_next = elements.upper_bound(pos); //"first element whose key goes after pos"
-  const_AccIterator candidate_previous = candidate_next;
+
+
+
+
+
+// // get const_Iterator to element, if pos is inside it
+// const_AccIterator AccLattice::getIt(double pos) const
+// {
+//   const_AccIterator candidate_next = elements.upper_bound(pos); //"first element whose key goes after pos"
+//   const_AccIterator candidate_previous = candidate_next;
   
-  if (candidate_next != elements.begin()) {
-    candidate_previous--;
-    if (refPos == Anchor::begin || refPos == Anchor::center) {
-      if (inside(candidate_previous, pos))
-	return candidate_previous;
-    }
-  }
+//   if (candidate_next != elements.begin()) {
+//     candidate_previous--;
+//     if (refPos == Anchor::begin || refPos == Anchor::center) {
+//       if (inside(candidate_previous, pos))
+// 	return candidate_previous;
+//     }
+//   }
   
-  if (candidate_next != elements.end()) {
-    if (refPos == Anchor::end || refPos == Anchor::center) {
-      if (inside(candidate_next, pos))
-	return candidate_next;
-    }
-  }
+//   if (candidate_next != elements.end()) {
+//     if (refPos == Anchor::end || refPos == Anchor::center) {
+//       if (inside(candidate_next, pos))
+// 	return candidate_next;
+//     }
+//   }
   
-  throw eNoElement();
-}
+//   throw eNoElement();
+// }
 
 
-// get iterator to begin (first Element)
-const_AccIterator AccLattice::getItBegin() const
-{
-  return elements.begin();
-}
+// // get iterator to begin (first Element)
+// const_AccIterator AccLattice::getItBegin() const
+// {
+//   return elements.begin();
+// }
 
-// get iterator to end (after last Element)
-const_AccIterator AccLattice::getItEnd() const
-{
-  return elements.end();
-}
+// // get iterator to end (after last Element)
+// const_AccIterator AccLattice::getItEnd() const
+// {
+//   return elements.end();
+// }
 
 
 
-// distance from itRef of element it to pos (>0 if pos is after itRef)
-double AccLattice::distance(double pos, const_AccIterator it, Anchor itRef) const
-{
-  return (pos - locate(it,itRef));
-}
-// distance from itRef of element it to pos (>0 if pos is after itRef) for a ring.
-// both directions are checked, shorter distance is returned.
-double AccLattice::distanceRing(double pos, const_AccIterator it, Anchor itRef) const
-{
-  double d_normal = distance(pos,it,itRef);
-  double d_other = circumference() - abs(d_normal);
-  if ( d_other >= 0.5*circumference() ) // regular direction shorter
-    return d_normal;
-  else {
-    if (d_normal>0) return - d_other;
-    else return d_other;
-  }
-}
-// |distance| from it to next element (circulating)
-double AccLattice::distanceNext(const_AccIterator it) const
-{
-  const_AccIterator next = revolve(it);
-  return distanceRing(next->first, it, refPos);
-}
+// // distance from itRef of element it to pos (>0 if pos is after itRef)
+// double AccLattice::distance(double pos, const_AccIterator it, Anchor itRef) const
+// {
+//   return (pos - locate(it,itRef));
+// }
+// // distance from itRef of element it to pos (>0 if pos is after itRef) for a ring.
+// // both directions are checked, shorter distance is returned.
+// double AccLattice::distanceRing(double pos, const_AccIterator it, Anchor itRef) const
+// {
+//   double d_normal = distance(pos,it,itRef);
+//   double d_other = circumference() - abs(d_normal);
+//   if ( d_other >= 0.5*circumference() ) // regular direction shorter
+//     return d_normal;
+//   else {
+//     if (d_normal>0) return - d_other;
+//     else return d_other;
+//   }
+// }
+// // |distance| from it to next element (circulating)
+// double AccLattice::distanceNext(const_AccIterator it) const
+// {
+//   const_AccIterator next = revolve(it);
+//   return distanceRing(next->first, it, refPos);
+// }
 
 
 
@@ -427,7 +427,7 @@ const AccElement* AccLattice::operator[](double pos) const
   }
 
   try {
-    return getIt(pos)->second;
+    return at(pos).element();
   }
   // otherwise pos not inside any element:
   catch (eNoElement &e) {
@@ -435,18 +435,34 @@ const AccElement* AccLattice::operator[](double pos) const
   }
 }
 
-// get iterator by name, returns lattice end, if name is not found
-// ! name can be ambiguous! always returns it. to first matching element
-const_AccIterator AccLattice::operator[](string _name) const
+// get iterator by name, throws eNoElement if name is not found
+// ! name can be ambiguous! always returns first match
+AccLatticeIterator AccLattice::operator[](string _name) const
 {
-  for (const_AccIterator it=elements.begin(); it!=elements.end(); it++) {
-    if (it->second->name == _name )
+  for (auto& it : *this) {
+    if (it.element()->name == _name )
       return it;
   }
   // otherwise name does not match any element:
-  //return elements.end();
   throw eNoElement("No element "+_name+" found");
 }
+
+// get iterator by position, throws eNoElement if pos is in Drift
+AccLatticeIterator AccLattice::at(double pos) const
+{
+  for (auto& it : *this) {
+    if (it.at(pos))
+      return it;
+    if (pos > it.pos())
+      break;
+  }
+  std::stringstream s;
+  s << "No element at " << pos << " m";
+  throw eNoElement(s.str());
+}
+
+
+
 
 
 // mount element (replace if key (pos) already used; check for "free space" to insert element)
@@ -754,12 +770,12 @@ void AccLattice::madximportMisalignments(element_type t, string madxEalignFile)
   ealign = madx.readTable(madxEalignFile, {"NAME", "DPSI"});
 
   //set misalignments to AccLattice elements
-  AccIterator it=firstIt(t);
-  string type=it->second->type_string();
-  for (; it!=elements.end(); it=nextIt(it,t)) {
+  auto it = begin<t>();
+  string type=it.element()->type_string();
+  for (; it!=end(); ++it) {
     for (unsigned int i=0; i<ealign.rows(); i++) {
-      if (it->second->name == removeQuote(ealign.gets(i,"NAME"))) {
-	it->second->dpsi += - ealign.getd(i,"DPSI");    // <<<<<<!!! sign of rotation angle (see comment above)
+      if (it.element()->name == removeQuote(ealign.gets(i,"NAME"))) {
+	it.elementModifier()->dpsi += - ealign.getd(i,"DPSI");    // <<<<<<!!! sign of rotation angle (see comment above)
       }
     }
   }
