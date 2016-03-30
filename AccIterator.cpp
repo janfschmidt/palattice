@@ -4,7 +4,7 @@ using namespace pal;
 
 void AccLatticeIterator::checkForEnd() const
 {
-  if (it == latticeElements->end())
+  if (isEnd())
     throw palatticeError("Evaluation of lattice.end(), which is after last Element!");
 }
 
@@ -35,20 +35,10 @@ AccLatticeIterator& AccLatticeIterator::next(element_type t, element_plane p, el
   ++it;
   for (; it!=latticeElements->end(); ++it) {
     if ( it->second->type==t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f) )
-      return *this;
+      break;
   }
-  throw noMatchingElement("type, plane, family");
-}
-
-AccLatticeIterator& AccLatticeIterator::previous(element_type t, element_plane p, element_family f)
-{
-  --it;
-  auto start = --latticeElements->begin();
-  for (; it!=start; --it) {
-    if ( it->second->type==t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f) )
-      return *this;
-  }
-  throw noMatchingElement("type, plane, family");
+  return *this;
+  //throw noMatchingElement("type, plane, family");
 }
 
 AccLatticeIterator& AccLatticeIterator::revolve()

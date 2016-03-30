@@ -48,9 +48,8 @@ namespace pal {
     AccLatticeIterator operator--(int) {it--; return *this;} //postfix
     AccLatticeIterator& revolve();                           // a circular ++: apply to last element to get lattice.begin() (NOT lattice.end())
     AccLatticeIterator& next() {return operator++();}
-    AccLatticeIterator& previous() {return operator--();}
     AccLatticeIterator& next(element_type t, element_plane p=noplane, element_family f=nofamily);
-    AccLatticeIterator& previous(element_type t, element_plane p=noplane, element_family f=nofamily);
+    bool isEnd() const {return (it==latticeElements->end());}
     
     // comparison
     bool operator==(const AccLatticeIterator& o) const {if(o.it==it) return true; else return false;}
@@ -67,7 +66,21 @@ namespace pal {
     double distanceNext(Anchor anchor) const;                // absolute value of distance from "anchor" of this element to "anchor" of next element. For last element: distance to first element (in a ring)
   };
 
-  
+
+  template <element_type TYPE, element_plane PLANE=noplane, element_family FAMILY=nofamily>
+  class AccTypeIterator : public AccLatticeIterator {
+    friend class AccLattice;
+
+  protected:
+    AccTypeIterator(std::map<double, AccElement*>::iterator in, std::map<double, AccElement*>* e, const Anchor* rP, const double* circ) : AccLatticeIterator(in,e,rP,circ) {}
+
+  public:
+    // iteration
+    AccLatticeIterator& operator++() {return next(TYPE, PLANE, FAMILY);}   //prefix
+    AccLatticeIterator operator++(int) {return next(TYPE, PLANE, FAMILY);} //postfix
+  };
+
+
 // exceptions
   class noMatchingElement : public pal::palatticeError {
   public:

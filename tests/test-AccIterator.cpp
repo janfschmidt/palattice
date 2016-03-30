@@ -54,13 +54,8 @@ TEST_F(AccIteratorTest, TypeIteration) {
     it.next(pal::quadrupole);
     EXPECT_STREQ(s, it.element()->name.c_str());
   }
-  ASSERT_THROW(it.next(pal::quadrupole), pal::noMatchingElement);
-
-  for (auto s : {"M5","M4","M3","M2","M1"}) {
-    it.previous(pal::dipole);
-    EXPECT_STREQ(s, it.element()->name.c_str());
-  }
-  ASSERT_THROW(it.previous(pal::dipole), pal::noMatchingElement);
+  ++it;
+  ASSERT_TRUE(it.isEnd());
 }
 
 TEST_F(AccIteratorTest, PlaneIteration) {
@@ -69,7 +64,8 @@ TEST_F(AccIteratorTest, PlaneIteration) {
   it = lattice.begin();
   it.next(pal::dipole, pal::V);
   ASSERT_STREQ("M2", it.element()->name.c_str());
-  ASSERT_THROW(it.next(pal::dipole, pal::V), pal::noMatchingElement);
+  it.next(pal::dipole, pal::V);
+  ASSERT_TRUE(it.isEnd());
 }
 
 TEST_F(AccIteratorTest, Loop) {
@@ -96,6 +92,30 @@ TEST_F(AccIteratorTest, RangeLoop) {
   EXPECT_STREQ("Q5", list[9].c_str());
 }
 
+TEST_F(AccIteratorTest, TypeLoop) {
+  std::vector<std::string> list;
+  // here it is AccTypeIterator<pal::quadrupole>
+  for (auto it=lattice.begin<pal::quadrupole>(); it!=lattice.end(); ++it) {
+    list.push_back(it.element()->name);
+  }
+  EXPECT_EQ(5, list.size());
+  EXPECT_STREQ("Q1", list[0].c_str());
+  EXPECT_STREQ("Q5", list[4].c_str());
+}
+
+TEST_F(AccIteratorTest, PlaneLoop) {
+  ++it; ++it;
+  it.elementModifier()->plane = pal::V;
+  std::vector<std::string> list;
+  // here it is AccTypeIterator<pal::dipole,pal::V>
+  for (auto it=lattice.begin<pal::dipole,pal::V>(); it!=lattice.end(); ++it) {
+    list.push_back(it.element()->name);
+  }
+  EXPECT_EQ(1, list.size());
+  EXPECT_STREQ("M2", list[0].c_str());
+}
+
+
 TEST_F(AccIteratorTest, ModifyElement) {
   it.elementModifier()->name = "NEU";
   ASSERT_STREQ("NEU", it.element()->name.c_str());
@@ -106,6 +126,7 @@ TEST_F(AccIteratorTest, End) {
     ++it;
   }
   ASSERT_TRUE(it == lattice.end());
+  ASSERT_TRUE(it.isEnd());
   EXPECT_THROW(it.pos(), pal::palatticeError);
   EXPECT_THROW(it.element(), pal::palatticeError);
   EXPECT_THROW(it.pos(pal::Anchor::begin), pal::palatticeError);

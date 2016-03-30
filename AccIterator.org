@@ -58,8 +58,8 @@ const_AccLatticeIterator<ElementType type=all>
   - it.distanceNext();
 * DONE End abfangen
 * DONE plane & family
-* TODO AccLatticeIterator<pal::quadrupole> it;
-* TODO Ersatz für "firstIt" zum Beginn der Type-Iteration
+* DONE Ersatz für "firstIt" zum Beginn der Type-Iteration
+* DONE AccTypeIterator<pal::quadrupole> it;
 * TODO lattice[pos]
 * TODO lattice[name]
 * TODO Altlasten aufräumen

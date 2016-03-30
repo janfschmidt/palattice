@@ -102,6 +102,8 @@ public:
   // new AccLatticeIterator
     AccLatticeIterator begin() {return AccLatticeIterator(elements.begin(),&elements,&refPos,&circ);}
     AccLatticeIterator end() {return AccLatticeIterator(elements.end(),&elements,&refPos,&circ);}
+    template <element_type TYPE, element_plane PLANE=noplane, element_family FAMILY=nofamily>
+    AccTypeIterator<TYPE,PLANE,FAMILY> begin();
 
   const AccElement* operator[](double pos) const;                    // get element (any position, Drift returned if not inside any element)
   const_AccIterator operator[](string name) const;                   // get iterator by name (first match in lattice, Drift returned otherwise)
@@ -189,6 +191,19 @@ public:
 string removeQuote(string s); //remove quotation marks ("" or '') from begin&end of string
 
 } //namespace pal
+
+
+// function template implementation
+template <pal::element_type TYPE, pal::element_plane PLANE, pal::element_family FAMILY>
+pal::AccTypeIterator<TYPE,PLANE,FAMILY> pal::AccLattice::begin()
+{
+  auto it=elements.begin();
+  for (; it!=elements.end(); ++it) {
+    if ( it->second->type==TYPE && (PLANE==noplane || it->second->plane==PLANE) && (FAMILY==nofamily || it->second->family==FAMILY) )
+      break;
+  }
+  return pal::AccTypeIterator<TYPE,PLANE,FAMILY>(it,&elements,&refPos,&circ);
+}
 
 #endif
 /*__LIBPALATTICE_ACCLATTICE_HPP_*/
