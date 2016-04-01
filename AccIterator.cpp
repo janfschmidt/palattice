@@ -16,39 +16,8 @@ double AccLatticeIterator::pos() const {
   checkForEnd(); 
   return it->first;
 }
-// pointer to Element
-const AccElement* AccLatticeIterator::element() const {
-  checkForEnd();
-  return it->second;
-}
-// pointer to Element, edit allowed
-AccElement* AccLatticeIterator::elementModifier() const {
-  checkForEnd();
-  return it->second;
-} 
 
 
-// iteration
-
-AccLatticeIterator& AccLatticeIterator::next(element_type t, element_plane p, element_family f)
-{
-  ++it;
-  for (; it!=latticeElements->end(); ++it) {
-    if ( it->second->type==t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f) )
-      break;
-  }
-  return *this;
-  //throw noMatchingElement("type, plane, family");
-}
-
-AccLatticeIterator& AccLatticeIterator::revolve()
-{
-  ++it;
-  if (it == latticeElements->end()) {
-    it = latticeElements->begin();
-  }
-  return *this;
-}
 
 
 // position calculations

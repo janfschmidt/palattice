@@ -70,8 +70,8 @@ AccLattice::AccLattice(const AccLattice &other)
 
 AccLattice::~AccLattice()
 {
-  for (AccIterator it=elements.begin(); it!=elements.end(); ++it) {
-    delete it->second;
+  for (auto it=begin(); it!=end(); ++it) {
+    delete it.elementModifier();
   }
   delete empty_space;
 }
@@ -437,9 +437,9 @@ const AccElement* AccLattice::operator[](double pos) const
 
 // get iterator by name, throws eNoElement if name is not found
 // ! name can be ambiguous! always returns first match
-AccLatticeIterator AccLattice::operator[](string _name) const
+AccIterator AccLattice::operator[](string _name) const
 {
-  for (auto& it : *this) {
+  for (auto it : *this) {
     if (it.element()->name == _name )
       return it;
   }
@@ -448,7 +448,7 @@ AccLatticeIterator AccLattice::operator[](string _name) const
 }
 
 // get iterator by position, throws eNoElement if pos is in Drift
-AccLatticeIterator AccLattice::at(double pos) const
+AccIterator AccLattice::at(double pos) const
 {
   for (auto& it : *this) {
     if (it.at(pos))
