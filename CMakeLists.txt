@@ -80,7 +80,6 @@ configure_file(systemconfig.hpp.in ${CMAKE_SOURCE_DIR}/systemconfig.hpp ESCAPE_Q
 add_library(palattice SHARED
   AccElements.cpp
   AccLattice.cpp
-  AccIterator.cpp
   Metadata.cpp
   SimTools.cpp
   Interpolate.cpp
@@ -148,6 +147,7 @@ install(FILES
   AccElements.hpp
   AccLattice.hpp
   AccIterator.hpp
+  AccIterator.hxx
   Metadata.hpp
   SimTools.hpp
   Interpolate.hpp

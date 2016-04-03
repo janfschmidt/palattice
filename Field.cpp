@@ -79,7 +79,7 @@ int Field::magnetlengths(AccLattice &lattice, const char *filename) const
   unsigned int w=10;
   double tmp_start, tmp_end;
   fstream file;
-  const_AccIterator dipIt=lattice.firstCIt(dipole);
+  AccTypeIterator<pal::dipole> dipIt=lattice.begin<pal::dipole>();
 
   file.open(filename, ios::out);
   if (!file.is_open()) {
@@ -94,18 +94,18 @@ int Field::magnetlengths(AccLattice &lattice, const char *filename) const
 
   for (std::map<double,AccTriple>::const_iterator it=data.begin(); it!=data.end() && turn(it->first)<2; it++) {
 
-    if ( lattice.inside(dipIt, it->first) ) {
+    if ( dipIt.at(it->first) ) {
       tmp_start = it->first;
-      while ( it!=data.end()&& turn(it->first)<2 && lattice.inside(dipIt, it->first) ) it++;
+      while ( it!=data.end()&& turn(it->first)<2 && dipIt.at(it->first) ) it++;
       tmp_end = (--it)->first;
 
       //write deviations from exact values to file
-      file <<setw(w)<< dipIt->second->name;
-      file <<setw(w)<< (tmp_start - lattice.locate(dipIt,Anchor::begin))*1000 <<setw(w)<< (tmp_end - lattice.locate(dipIt,Anchor::end))*1000;
-      file <<setw(w)<< ((tmp_end-tmp_start) - dipIt->second->length)*1000 << endl; 
+      file <<setw(w)<< dipIt.element()->name;
+      file <<setw(w)<< (tmp_start - dipIt.begin())*1000 <<setw(w)<< (tmp_end - dipIt.end())*1000;
+      file <<setw(w)<< ((tmp_end-tmp_start) - dipIt.element()->length)*1000 << endl; 
       
-      if (dipIt == lattice.lastCIt(dipole)) break;
-      dipIt=lattice.nextCIt(dipIt, dipole);
+      ++dipIt;
+      if (dipIt == lattice.end()) break;
     }
   }
 

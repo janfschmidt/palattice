@@ -19,8 +19,8 @@ TEST(SyliTests, syliElement) {
   pal::SimToolInstance s(pal::elegant, pal::online, TEST_LATTICE_FILE);
   pal::AccLattice l(s);
 
-  EXPECT_NEAR(2.5, l.firstCIt(pal::dipole)->second->Ecrit_keV_syli(2300./0.511), 0.05);
-  EXPECT_NEAR(12.4, l.firstCIt(pal::dipole)->second->meanPhotons_syli(2300./0.511), 0.05);
+  EXPECT_NEAR(2.5, l.begin(pal::dipole).element()->Ecrit_keV_syli(2300./0.511), 0.05);
+  EXPECT_NEAR(12.4, l.begin(pal::dipole).element()->meanPhotons_syli(2300./0.511), 0.05);
 }
 
 TEST(SyliTests, integralRadius) {

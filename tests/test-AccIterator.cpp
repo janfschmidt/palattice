@@ -5,7 +5,7 @@
 class AccIteratorTest : public ::testing::Test {
 public:
   pal::AccLattice lattice;
-  pal::AccLatticeIterator it;
+  pal::AccIterator it;
 
   AccIteratorTest() : lattice(30.), it(lattice.begin())
   {
@@ -13,8 +13,8 @@ public:
     for(std::string num : {"1","2","3","4","5"}) {
       pal::Dipole d("M"+num, 2.5);
       pal::Quadrupole q("Q"+num, 0.5, pal::F, 0.42);
-      lattice.mount(pos, d);
-      lattice.mount(pos+3., q);
+      lattice.mount(pos, d, true);
+      lattice.mount(pos+3., q, true);
       pos += 5.;
     }
     it = lattice.begin();
@@ -60,7 +60,7 @@ TEST_F(AccIteratorTest, TypeIteration) {
 
 TEST_F(AccIteratorTest, PlaneIteration) {
   ++it; ++it;
-  it.elementModifier()->plane = pal::V;
+  it.element()->plane = pal::V;
   it = lattice.begin();
   it.next(pal::dipole, pal::V);
   ASSERT_STREQ("M2", it.element()->name.c_str());
@@ -82,8 +82,8 @@ TEST_F(AccIteratorTest, Loop) {
 
 TEST_F(AccIteratorTest, RangeLoop) {
   std::vector<std::string> list;
-  for (auto& it : lattice) {
-    list.push_back(it.element()->name);
+  for (auto ele : lattice) {
+    list.push_back(ele->name);
   }
   EXPECT_STREQ("M1", list[0].c_str());
   EXPECT_STREQ("Q1", list[1].c_str());
@@ -105,7 +105,7 @@ TEST_F(AccIteratorTest, TypeLoop) {
 
 TEST_F(AccIteratorTest, PlaneLoop) {
   ++it; ++it;
-  it.elementModifier()->plane = pal::V;
+  it.element()->plane = pal::V;
   std::vector<std::string> list;
   // here it is AccTypeIterator<pal::dipole,pal::V>
   for (auto it=lattice.begin<pal::dipole,pal::V>(); it!=lattice.end(); ++it) {
@@ -117,7 +117,7 @@ TEST_F(AccIteratorTest, PlaneLoop) {
 
 
 TEST_F(AccIteratorTest, ModifyElement) {
-  it.elementModifier()->name = "NEU";
+  it.element()->name = "NEU";
   ASSERT_STREQ("NEU", it.element()->name.c_str());
 }
 

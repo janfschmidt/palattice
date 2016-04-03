@@ -64,20 +64,28 @@ public:
   unsigned int turn(double posIn) const {return int(posIn/circ + ZERO_DISTANCE) + 1;} // get turn from position
   double theta(double posIn) const;                                     // get rotation angle [0,2pi]: increases lin. in bending dipoles, constant in-between. 
 
-    // new AccIterator
+    // AccIterator
     AccIterator begin() {return AccIterator(elements.begin(),&elements,&refPos,&circ);}
     AccIterator end() {return AccIterator(elements.end(),&elements,&refPos,&circ);}
+    AccIterator begin(element_type t, element_plane p=noplane, element_family f=nofamily);
     template <element_type TYPE, element_plane PLANE=noplane, element_family FAMILY=nofamily> AccTypeIterator<TYPE,PLANE,FAMILY> begin();
+    // const_AccIterator
     const_AccIterator begin() const {return const_AccIterator(elements.begin(),&elements,&refPos,&circ);}
     const_AccIterator end() const {return const_AccIterator(elements.end(),&elements,&refPos,&circ);}
+    const_AccIterator begin(element_type t, element_plane p=noplane, element_family f=nofamily) const;
     template <element_type TYPE, element_plane PLANE=noplane, element_family FAMILY=nofamily> const_AccTypeIterator<TYPE,PLANE,FAMILY> begin() const;
 
-  const AccElement* operator[](double pos) const;                    // get element (any position, Drift returned if not inside any element)
-  AccIterator at(double pos) const;                         // get iterator by position (throws eNoElement, if pos is in Drift)
-  AccIterator operator[](string name) const;                  // get iterator by name (first match in lattice, throws eNoElement otherwise)
+  const AccElement* operator[](double pos) const;     // get element (any position, Drift returned if not inside any element)
+  AccIterator at(double pos);                         // get iterator by position (throws eNoElement, if pos is in Drift)
+  AccIterator behind(double pos, Anchor anchor);      // get iterator to next element with "anchor" behind given position
+  AccIterator operator[](string name);                  // get iterator by name (first match in lattice, throws eNoElement otherwise)
+  const_AccIterator at(double pos) const;
+  const_AccIterator behind(double pos, Anchor anchor) const;
+  const_AccIterator operator[](string name) const;
 
   void mount(double pos, const AccElement &obj, bool verbose=false); // mount an element (throws eNoFreeSpace if no free space for obj)
   void dismount(double pos);                                         // dismount element at Ref.position pos (if no element at pos: do nothing)
+  void dismount(AccIterator& it) {dismount(it.pos());}
 
   void setIgnoreList(string ignoreFile);                      // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted in this lattice
   void simToolImport(SimToolInstance &sim) {if (sim.tool==madx) madximport(sim); else if (sim.tool==elegant) elegantimport(sim);}
@@ -166,23 +174,23 @@ string removeQuote(string s); //remove quotation marks ("" or '') from begin&end
 template <pal::element_type TYPE, pal::element_plane PLANE, pal::element_family FAMILY>
 pal::AccTypeIterator<TYPE,PLANE,FAMILY> pal::AccLattice::begin()
 {
-  auto it=elements.begin();
-  for (; it!=elements.end(); ++it) {
-    if ( it->second->type==TYPE && (PLANE==noplane || it->second->plane==PLANE) && (FAMILY==nofamily || it->second->family==FAMILY) )
-      break;
-  }
-  return pal::AccTypeIterator<TYPE,PLANE,FAMILY>(it,&elements,&refPos,&circ);
+  // auto it=elements.begin();
+  // for (; it!=elements.end(); ++it) {
+  //   if ( it->second->type==TYPE && (PLANE==noplane || it->second->plane==PLANE) && (FAMILY==nofamily || it->second->family==FAMILY) )
+  //     break;
+  // }
+  return pal::AccTypeIterator<TYPE,PLANE,FAMILY>(this->begin(TYPE,PLANE,FAMILY));
 }
 
 template <pal::element_type TYPE, pal::element_plane PLANE, pal::element_family FAMILY>
-pal::AccTypeIterator<TYPE,PLANE,FAMILY> pal::AccLattice::begin() const
+pal::const_AccTypeIterator<TYPE,PLANE,FAMILY> pal::AccLattice::begin() const
 {
-  auto it=elements.cbegin();
-  for (; it!=elements.cend(); ++it) {
-    if ( it->second->type==TYPE && (PLANE==noplane || it->second->plane==PLANE) && (FAMILY==nofamily || it->second->family==FAMILY) )
-      break;
-  }
-  return pal::const_AccTypeIterator<TYPE,PLANE,FAMILY>(it,&elements,&refPos,&circ);
+  // auto it=elements.cbegin();
+  // for (; it!=elements.cend(); ++it) {
+  //   if ( it->second->type==TYPE && (PLANE==noplane || it->second->plane==PLANE) && (FAMILY==nofamily || it->second->family==FAMILY) )
+  //     break;
+  // }
+  return pal::const_AccTypeIterator<TYPE,PLANE,FAMILY>(this->begin(TYPE,PLANE,FAMILY));
 }
 
 

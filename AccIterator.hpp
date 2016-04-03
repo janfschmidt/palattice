@@ -77,6 +77,7 @@ namespace pal {
     AccLatticeTypeIterator(IT_T in, MAP_T* e, const Anchor* rP, const double* circ) : AccLatticeIterator<VAL_T,MAP_T,IT_T>(in,e,rP,circ) {}
 
   public:
+    AccLatticeTypeIterator(const AccLatticeIterator<VAL_T,MAP_T,IT_T>& other) : AccLatticeIterator<VAL_T,MAP_T,IT_T>(other) {if(this->element()->type!=TYPE) operator++();}
     // iteration
     AccLatticeIterator<VAL_T,MAP_T,IT_T>& operator++() {return this->next(TYPE, PLANE, FAMILY);}   //prefix
     AccLatticeIterator<VAL_T,MAP_T,IT_T> operator++(int) {return this->next(TYPE, PLANE, FAMILY);} //postfix
@@ -103,39 +104,7 @@ namespace pal {
 
 
 
-  //-------------- template implementations -----------------------
-  template<typename VAL_T, typename MAP_T, typename IT_T>
-  VAL_T AccLatticeIterator<VAL_T,MAP_T,IT_T>::element() const {
-    checkForEnd();
-    return it->second;
-  }
-  template<typename VAL_T, typename MAP_T, typename IT_T>
-  VAL_T AccLatticeIterator<VAL_T,MAP_T,IT_T>::elementModifier() const {
-    checkForEnd();
-    return it->second;
-  } 
-  template<typename VAL_T, typename MAP_T, typename IT_T>
-  AccLatticeIterator<VAL_T,MAP_T,IT_T>& AccLatticeIterator<VAL_T,MAP_T,IT_T>::next(element_type t, element_plane p, element_family f)
-  {
-    ++it;
-    for (; it!=latticeElements->end(); ++it) {
-      if ( it->second->type==t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f) )
-	break;
-  }
-    return *this;
-    //throw noMatchingElement("type, plane, family");
-  }
-  template<typename VAL_T, typename MAP_T, typename IT_T>
-  AccLatticeIterator<VAL_T,MAP_T,IT_T>& AccLatticeIterator<VAL_T,MAP_T,IT_T>::revolve()
-  {
-    ++it;
-    if (it == latticeElements->end()) {
-      it = latticeElements->begin();
-    }
-    return *this;
-  }
-
-  
+  #include "AccIterator.hxx"
 
 } //namespace pal
 
