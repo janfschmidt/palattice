@@ -37,6 +37,7 @@ namespace pal {
     void checkForEnd() const;
 
   public:
+    AccLatticeIterator(const AccIterator& o) : it(o.it), latticeElements(o.latticeElements), latticeRefPos(o.latticeRefPos), latticeCircumference(o.latticeCircumference) {}
     // accessors
     double pos() const;                                      // position in Lattice in meter
     VAL_T element() const;                                  // pointer to Element
@@ -77,7 +78,7 @@ namespace pal {
     AccLatticeTypeIterator(IT_T in, MAP_T* e, const Anchor* rP, const double* circ) : AccLatticeIterator<VAL_T,MAP_T,IT_T>(in,e,rP,circ) {}
 
   public:
-    AccLatticeTypeIterator(const AccLatticeIterator<VAL_T,MAP_T,IT_T>& other) : AccLatticeIterator<VAL_T,MAP_T,IT_T>(other) {if(this->element()->type!=TYPE) operator++();}
+    AccLatticeTypeIterator(const AccLatticeIterator<VAL_T,MAP_T,IT_T>& other) : AccLatticeIterator<VAL_T,MAP_T,IT_T>(other) {std::cout << "möp\n"; if(this->element()->type!=TYPE) operator++();}
     // iteration
     AccLatticeIterator<VAL_T,MAP_T,IT_T>& operator++() {return this->next(TYPE, PLANE, FAMILY);}   //prefix
     AccLatticeIterator<VAL_T,MAP_T,IT_T> operator++(int) {return this->next(TYPE, PLANE, FAMILY);} //postfix
