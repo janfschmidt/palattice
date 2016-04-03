@@ -13,8 +13,8 @@ public:
     for(std::string num : {"1","2","3","4","5"}) {
       pal::Dipole d("M"+num, 2.5);
       pal::Quadrupole q("Q"+num, 0.5, pal::F, 0.42);
-      lattice.mount(pos, d, true);
-      lattice.mount(pos+3., q, true);
+      lattice.mount(pos, d);
+      lattice.mount(pos+3., q);
       pos += 5.;
     }
     it = lattice.begin();
@@ -94,6 +94,7 @@ TEST_F(AccIteratorTest, RangeLoop) {
 
 TEST_F(AccIteratorTest, TypeLoop) {
   std::vector<std::string> list;
+  //const pal::AccLattice l = lattice;
   // here it is AccTypeIterator<pal::quadrupole>
   for (auto it=lattice.begin<pal::quadrupole>(); it!=lattice.end(); ++it) {
     list.push_back(it.element()->name);
