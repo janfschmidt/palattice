@@ -1,31 +1,16 @@
-template<typename VAL_T, typename MAP_T, typename IT_T>
-void AccLatticeIterator<VAL_T,MAP_T,IT_T>::checkForEnd() const
+template<bool IS_CONST>
+void AccLatticeIterator<IS_CONST>::checkForEnd() const
 {
   if (isEnd())
     throw palatticeError("Evaluation of lattice.end(), which is after last Element!");
 }
 
 
-// accessors
-
-// position in Lattice in meter
-template<typename VAL_T, typename MAP_T, typename IT_T>
-double AccLatticeIterator<VAL_T,MAP_T,IT_T>::pos() const {
-  checkForEnd(); 
-  return it->first;
-}
-
-template<typename VAL_T, typename MAP_T, typename IT_T>
-VAL_T AccLatticeIterator<VAL_T,MAP_T,IT_T>::element() const {
-  checkForEnd();
-  return it->second;
-}
-
 
 // iteration
 
-template<typename VAL_T, typename MAP_T, typename IT_T>
-AccLatticeIterator<VAL_T,MAP_T,IT_T>& AccLatticeIterator<VAL_T,MAP_T,IT_T>::next(element_type t, element_plane p, element_family f)
+template<bool IS_CONST>
+AccLatticeIterator<IS_CONST>& AccLatticeIterator<IS_CONST>::next(element_type t, element_plane p, element_family f)
 {
   ++it;
   for (; it!=latticeElements->end(); ++it) {
@@ -36,8 +21,8 @@ AccLatticeIterator<VAL_T,MAP_T,IT_T>& AccLatticeIterator<VAL_T,MAP_T,IT_T>::next
   //throw noMatchingElement("type, plane, family");
 }
 
-template<typename VAL_T, typename MAP_T, typename IT_T>
-AccLatticeIterator<VAL_T,MAP_T,IT_T>& AccLatticeIterator<VAL_T,MAP_T,IT_T>::revolve()
+template<bool IS_CONST>
+AccLatticeIterator<IS_CONST>& AccLatticeIterator<IS_CONST>::revolve()
 {
   ++it;
   if (it == latticeElements->end()) {
@@ -49,8 +34,8 @@ AccLatticeIterator<VAL_T,MAP_T,IT_T>& AccLatticeIterator<VAL_T,MAP_T,IT_T>::revo
 
 
 // position calculations
-template<typename VAL_T, typename MAP_T, typename IT_T>
-double AccLatticeIterator<VAL_T,MAP_T,IT_T>::pos(Anchor anchor) const
+template<bool IS_CONST>
+double AccLatticeIterator<IS_CONST>::pos(Anchor anchor) const
 {
   checkForEnd();
 
@@ -74,8 +59,8 @@ double AccLatticeIterator<VAL_T,MAP_T,IT_T>::pos(Anchor anchor) const
   return 0.;
 }
 
-template<typename VAL_T, typename MAP_T, typename IT_T>
-bool AccLatticeIterator<VAL_T,MAP_T,IT_T>::at(double pos) const
+template<bool IS_CONST>
+bool AccLatticeIterator<IS_CONST>::at(double pos) const
 {
   if (pos>=begin() && pos<=end())
     return true;
@@ -84,15 +69,15 @@ bool AccLatticeIterator<VAL_T,MAP_T,IT_T>::at(double pos) const
 }
 
 // distance from anchor of element to pos (>0 if pos is after anchor)
-template<typename VAL_T, typename MAP_T, typename IT_T>
-double AccLatticeIterator<VAL_T,MAP_T,IT_T>::distance(Anchor anchor, double pos) const
+template<bool IS_CONST>
+double AccLatticeIterator<IS_CONST>::distance(Anchor anchor, double pos) const
 {
   return pos - this->pos(anchor);
 }
 
 // both directions are checked, shorter distance is returned.
-template<typename VAL_T, typename MAP_T, typename IT_T>
-double AccLatticeIterator<VAL_T,MAP_T,IT_T>::distanceRing(Anchor anchor, double pos) const
+template<bool IS_CONST>
+double AccLatticeIterator<IS_CONST>::distanceRing(Anchor anchor, double pos) const
 {
   double d_normal = distance(anchor,pos);
   double d_other = *latticeCircumference - abs(d_normal);
@@ -106,8 +91,8 @@ double AccLatticeIterator<VAL_T,MAP_T,IT_T>::distanceRing(Anchor anchor, double 
 }
 
 // |distance| to next element (anchor to anchor, circulating)
-template<typename VAL_T, typename MAP_T, typename IT_T>
-double AccLatticeIterator<VAL_T,MAP_T,IT_T>::distanceNext(Anchor anchor) const
+template<bool IS_CONST>
+double AccLatticeIterator<IS_CONST>::distanceNext(Anchor anchor) const
 {
   auto nextIt = *this;
   nextIt.revolve();

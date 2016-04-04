@@ -24,38 +24,43 @@ namespace pal {
   typedef std::map<double,AccElement*> AccMap;
 
   
-  template <typename VAL_T, typename MAP_T, typename IT_T>
+  template <bool IS_CONST>
   class AccLatticeIterator {
     friend class AccLattice;
+    typedef typename std::conditional<IS_CONST, const AccElement*, AccElement*>::type ValueType;
+    typedef typename std::conditional<IS_CONST, const AccMap, AccMap>::type MapType;
+    typedef typename std::conditional<IS_CONST, AccMap::const_iterator, AccMap::iterator>::type IteratorType;
     
   protected:
-    IT_T it;
-    MAP_T* latticeElements;
+    IteratorType it;
+    MapType* latticeElements;
     const Anchor* latticeRefPos;
     const double* latticeCircumference;
-    AccLatticeIterator(IT_T in, MAP_T* e, const Anchor* rP, const double* circ) : it(in), latticeElements(e), latticeRefPos(rP), latticeCircumference(circ) {}
+    AccLatticeIterator(IteratorType in, MapType* e, const Anchor* rP, const double* circ) : it(in), latticeElements(e), latticeRefPos(rP), latticeCircumference(circ) {}
     void checkForEnd() const;
 
   public:
-    AccLatticeIterator(const AccIterator& o) : it(o.it), latticeElements(o.latticeElements), latticeRefPos(o.latticeRefPos), latticeCircumference(o.latticeCircumference) {}
+    friend class AccLatticeIterator<true>;
+    friend class AccLatticeIterator<false>;
+    AccLatticeIterator(const AccLatticeIterator<false>& o) : it(o.it), latticeElements(o.latticeElements), latticeRefPos(o.latticeRefPos), latticeCircumference(o.latticeCircumference) {}
     // accessors
-    double pos() const;                                      // position in Lattice in meter
-    VAL_T element() const;                                  // pointer to Element
-    VAL_T operator*() {return element();}
+    double pos() const {checkForEnd(); return it->first;}         // position in Lattice in meter
+    ValueType element() const {checkForEnd(); return it->second;}  // pointer to Element
+    ValueType operator*() {return element();}
     
     // iteration
-    AccLatticeIterator<VAL_T,MAP_T,IT_T>& operator++() {it++; return *this;}   //prefix
-    AccLatticeIterator<VAL_T,MAP_T,IT_T> operator++(int) {it++; return *this;} //postfix
-    AccLatticeIterator<VAL_T,MAP_T,IT_T>& operator--() {it--; return *this;}   //prefix
-    AccLatticeIterator<VAL_T,MAP_T,IT_T> operator--(int) {it--; return *this;} //postfix
-    AccLatticeIterator<VAL_T,MAP_T,IT_T>& revolve();                           // a circular ++: apply to last element to get lattice.begin() (NOT lattice.end())
-    AccLatticeIterator<VAL_T,MAP_T,IT_T>& next() {return operator++();}
-    AccLatticeIterator<VAL_T,MAP_T,IT_T>& next(element_type t, element_plane p=noplane, element_family f=nofamily);
+    AccLatticeIterator<IS_CONST>& operator++() {++it; return *this;}   //prefix
+    AccLatticeIterator<IS_CONST> operator++(int) {auto old=*this; ++it; return old;} //postfix
+    AccLatticeIterator<IS_CONST>& operator--() {--it; return *this;}   //prefix
+    AccLatticeIterator<IS_CONST> operator--(int) {auto old=*this; --it; return old;} //postfix
+    AccLatticeIterator<IS_CONST>& revolve();                           // a circular ++: apply to last element to get lattice.begin() (NOT lattice.end())
+    AccLatticeIterator<IS_CONST>& next() {return operator++();}
+    AccLatticeIterator<IS_CONST>& next(element_type t, element_plane p=noplane, element_family f=nofamily);
     bool isEnd() const {return (it==latticeElements->end());}
     
     // comparison
-    bool operator==(const AccLatticeIterator& o) const {if(o.it==it) return true; else return false;}
-    bool operator!=(const AccLatticeIterator& o) const {return !operator==(o);}
+    bool operator==(const AccLatticeIterator<true>& o) const {if(o.it==it) return true; else return false;}
+    bool operator!=(const AccLatticeIterator<true>& o) const {return !operator==(o);}
 
     // position calculations
     double pos(Anchor anchor) const;                         // get position of "anchor" of this element in meter
@@ -70,29 +75,33 @@ namespace pal {
 
 
   // ---------- TypeIterator class to iterate only a specific element_type (and plane and family) ----------------
-  template <typename VAL_T, typename MAP_T, typename IT_T, element_type TYPE, element_plane PLANE=noplane, element_family FAMILY=nofamily>
-  class AccLatticeTypeIterator : public AccLatticeIterator<VAL_T,MAP_T,IT_T> {
+  template <bool IS_CONST, element_type TYPE, element_plane PLANE=noplane, element_family FAMILY=nofamily>
+  class AccLatticeTypeIterator : public AccLatticeIterator<IS_CONST> {
     friend class AccLattice;
+    typedef typename std::conditional<IS_CONST, const AccElement*, AccElement*>::type ValueType;
+    typedef typename std::conditional<IS_CONST, const AccMap, AccMap>::type MapType;
+    typedef typename std::conditional<IS_CONST, AccMap::const_iterator, AccMap::iterator>::type IteratorType;
+
 
   protected:
-    AccLatticeTypeIterator(IT_T in, MAP_T* e, const Anchor* rP, const double* circ) : AccLatticeIterator<VAL_T,MAP_T,IT_T>(in,e,rP,circ) {}
+    AccLatticeTypeIterator(IteratorType in, MapType* e, const Anchor* rP, const double* circ) : AccLatticeIterator<IS_CONST>(in,e,rP,circ) {}
 
   public:
-    AccLatticeTypeIterator(const AccLatticeIterator<VAL_T,MAP_T,IT_T>& other) : AccLatticeIterator<VAL_T,MAP_T,IT_T>(other) {std::cout << "möp\n"; if(this->element()->type!=TYPE) operator++();}
+    AccLatticeTypeIterator(const AccLatticeIterator<IS_CONST>& other) : AccLatticeIterator<IS_CONST>(other) {std::cout << "möp\n"; if(this->element()->type!=TYPE) operator++();}
     // iteration
-    AccLatticeIterator<VAL_T,MAP_T,IT_T>& operator++() {return this->next(TYPE, PLANE, FAMILY);}   //prefix
-    AccLatticeIterator<VAL_T,MAP_T,IT_T> operator++(int) {return this->next(TYPE, PLANE, FAMILY);} //postfix
+    AccLatticeIterator<IS_CONST>& operator++() {return this->next(TYPE, PLANE, FAMILY);}   //prefix
+    AccLatticeIterator<IS_CONST> operator++(int) {auto old= *this; this->next(TYPE, PLANE, FAMILY); return old;} //postfix
   };
 
 
 
   // ---------- typedefs for the user -------------
-  typedef AccLatticeIterator<AccElement*,AccMap,AccMap::iterator> AccIterator;
-  typedef AccLatticeIterator<const AccElement*,const AccMap,AccMap::const_iterator> const_AccIterator;
+  typedef AccLatticeIterator<false> AccIterator;
+  typedef AccLatticeIterator<true> const_AccIterator;
   template <element_type TYPE, element_plane PLANE=noplane, element_family FAMILY=nofamily>
-  using AccTypeIterator = AccLatticeTypeIterator<AccElement*,AccMap,AccMap::iterator,TYPE,PLANE,FAMILY>;
+  using AccTypeIterator = AccLatticeTypeIterator<false,TYPE,PLANE,FAMILY>;
   template <element_type TYPE, element_plane PLANE=noplane, element_family FAMILY=nofamily>
-  using const_AccTypeIterator = AccLatticeTypeIterator<const AccElement*,const AccMap,AccMap::const_iterator,TYPE,PLANE,FAMILY>;
+  using const_AccTypeIterator = AccLatticeTypeIterator<true,TYPE,PLANE,FAMILY>;
 
 
 
