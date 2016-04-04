@@ -23,9 +23,9 @@ public:
 };
 
 TEST_F(AccIteratorTest, Initialization) {
-  ASSERT_EQ(10, lattice.size());
-  ASSERT_EQ(5, lattice.size(pal::dipole));
-  ASSERT_EQ(5, lattice.size(pal::quadrupole));
+  ASSERT_EQ(10u, lattice.size());
+  ASSERT_EQ(5u, lattice.size(pal::dipole));
+  ASSERT_EQ(5u, lattice.size(pal::quadrupole));
 }
 
 TEST_F(AccIteratorTest, Iteration) {
@@ -99,7 +99,7 @@ TEST_F(AccIteratorTest, TypeLoop) {
   for (auto it=lattice.begin<pal::quadrupole>(); it!=lattice.end(); ++it) {
     list.push_back(it.element()->name);
   }
-  EXPECT_EQ(5, list.size());
+  EXPECT_EQ(5u, list.size());
   EXPECT_STREQ("Q1", list[0].c_str());
   EXPECT_STREQ("Q5", list[4].c_str());
 }
@@ -112,7 +112,7 @@ TEST_F(AccIteratorTest, PlaneLoop) {
   for (auto it=lattice.begin<pal::dipole,pal::V>(); it!=lattice.end(); ++it) {
     list.push_back(it.element()->name);
   }
-  EXPECT_EQ(1, list.size());
+  EXPECT_EQ(1u, list.size());
   EXPECT_STREQ("M2", list[0].c_str());
 }
 

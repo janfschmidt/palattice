@@ -225,10 +225,31 @@ const_AccIterator AccLattice::behind(double pos, Anchor anchor) const
   return it;
 }
 
-AccIterator AccLattice::begin(element_type t, element_plane p, element_family f) {return static_cast<AccIterator>(begin(t,p,f));}
-AccIterator AccLattice::operator[](string _name) {return static_cast<AccIterator>(operator[](_name));}
-AccIterator AccLattice::at(double pos) {return static_cast<AccIterator>(at(pos));}
-AccIterator AccLattice::behind(double pos, Anchor anchor) {return static_cast<AccIterator>(behind(pos,anchor));}
+
+// non-const implementations:
+// no duplication: call const_iterator implementation, loop iterator and 
+// compare to result of const_iterator implementation (uses cast iterator -> const_iterator)
+// [no dirty trick to cast from const_iterator to iterator, but slower]
+AccIterator AccLattice::cast_helper(const const_AccIterator& result)
+{
+  for (AccIterator it=begin(); it!=end(); ++it) {
+    if (it==result)
+      return it;
+  }
+  return end();
+}
+AccIterator AccLattice::begin(element_type t, element_plane p, element_family f) {
+  return cast_helper(const_cast<const AccLattice*>(this)->begin(t,p,f));
+}
+AccIterator AccLattice::operator[](string _name) {
+  return cast_helper(const_cast<const AccLattice*>(this)->operator[](_name));
+}
+AccIterator AccLattice::at(double pos) {
+  return cast_helper(const_cast<const AccLattice*>(this)->at(pos));
+}
+AccIterator AccLattice::behind(double pos, Anchor anchor) {
+  return cast_helper(const_cast<const AccLattice*>(this)->behind(pos,anchor));
+}
 
 
 

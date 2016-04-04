@@ -64,8 +64,8 @@ for(const_AccLatticeIterator<pal::dipole> it : elsa) {
   -> range-loop für TypeIterator funtioniert eh nicht, wenn AccElement zurückgegeben wird
   -> template bleibt, Variable geht alternativ über AccIterator::begin(type) & AccIterator::next(type)
 * DONE Altlasten aufräumen
-* TODO avoid 4x duplication in AccLattice by loop over non-const it with comparison to const it result
+* DONE avoid 4x duplication in AccLattice by loop over non-const it with comparison to const it result
 * TODO test convert AccIterator -> const_AccIterator
-* TODO nicer const/non-const template with bool (http://www.sj-vs.net/c-implementing-const_iterator-and-non-const-iterator-without-code-duplication/)
+* DONE nicer const/non-const template with bool (http://www.sj-vs.net/c-implementing-const_iterator-and-non-const-iterator-without-code-duplication/)
 * TODO lib Funktionalität widerherstellen
 * TODO polematrix Funktionalität widerherstellen

@@ -139,6 +139,9 @@ public:
   void elegantexport(string file="") const {simToolExport(elegant,file);}
   void madxexport(string file="",MadxLatticeType t=sequence) const {simToolExport(madx,file,t);}
 
+  private:
+    AccIterator cast_helper(const const_AccIterator& it);
+
 };
 
 
