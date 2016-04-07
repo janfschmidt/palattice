@@ -1,5 +1,5 @@
 template<bool IS_CONST>
-void AccLatticeIterator<IS_CONST>::checkForEnd() const
+void AccLatticeIterator_Base<IS_CONST>::checkForEnd() const
 {
   if (isEnd())
     throw palatticeError("Evaluation of lattice.end(), which is after last Element!");
@@ -7,35 +7,43 @@ void AccLatticeIterator<IS_CONST>::checkForEnd() const
 
 
 
-// iteration
-
+// iteration helper functions
 template<bool IS_CONST>
-AccLatticeIterator<IS_CONST>& AccLatticeIterator<IS_CONST>::next(element_type t, element_plane p, element_family f)
+void AccLatticeIterator_Base<IS_CONST>::next_helper(element_type t, element_plane p, element_family f)
 {
   ++it;
   for (; it!=latticeElements->end(); ++it) {
     if ( it->second->type==t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f) )
       break;
   }
-  return *this;
   //throw noMatchingElement("type, plane, family");
 }
 
 template<bool IS_CONST>
-AccLatticeIterator<IS_CONST>& AccLatticeIterator<IS_CONST>::revolve()
+void AccLatticeIterator_Base<IS_CONST>::prev_helper(element_type t, element_plane p, element_family f)
 {
-  ++it;
-  if (it == latticeElements->end()) {
-    it = latticeElements->begin();
+  --it;
+  for (; it!=latticeElements->begin(); --it) {
+    if ( it->second->type==t && (p==noplane || it->second->plane==p) && (f==nofamily || it->second->family==f) )
+      break;
   }
-  return *this;
+  //throw noMatchingElement("type, plane, family");
 }
+
+template<bool IS_CONST>
+void AccLatticeIterator_Base<IS_CONST>::revolve_helper()
+{
+  if (it == latticeElements->end()) {
+    setBegin();
+  }
+}
+
 
 
 
 // position calculations
 template<bool IS_CONST>
-double AccLatticeIterator<IS_CONST>::pos(Anchor anchor) const
+double AccLatticeIterator_Base<IS_CONST>::pos(Anchor anchor) const
 {
   checkForEnd();
 
@@ -60,7 +68,7 @@ double AccLatticeIterator<IS_CONST>::pos(Anchor anchor) const
 }
 
 template<bool IS_CONST>
-bool AccLatticeIterator<IS_CONST>::at(double pos) const
+bool AccLatticeIterator_Base<IS_CONST>::at(double pos) const
 {
   if (pos>=begin() && pos<=end())
     return true;
@@ -70,14 +78,14 @@ bool AccLatticeIterator<IS_CONST>::at(double pos) const
 
 // distance from anchor of element to pos (>0 if pos is after anchor)
 template<bool IS_CONST>
-double AccLatticeIterator<IS_CONST>::distance(Anchor anchor, double pos) const
+double AccLatticeIterator_Base<IS_CONST>::distance(Anchor anchor, double pos) const
 {
   return pos - this->pos(anchor);
 }
 
 // both directions are checked, shorter distance is returned.
 template<bool IS_CONST>
-double AccLatticeIterator<IS_CONST>::distanceRing(Anchor anchor, double pos) const
+double AccLatticeIterator_Base<IS_CONST>::distanceRing(Anchor anchor, double pos) const
 {
   double d_normal = distance(anchor,pos);
   double d_other = *latticeCircumference - abs(d_normal);
@@ -90,16 +98,16 @@ double AccLatticeIterator<IS_CONST>::distanceRing(Anchor anchor, double pos) con
   }
 }
 
-// |distance| to next element (anchor to anchor, circulating)
-template<bool IS_CONST>
-double AccLatticeIterator<IS_CONST>::distanceNext(Anchor anchor) const
-{
-  auto nextIt = *this;
-  nextIt.revolve();
-  double d = distance(anchor,nextIt.pos(anchor));
-  if (d < 0)
-    d += *latticeCircumference;
-  return d;
-}
+// // |distance| to next element (anchor to anchor, circulating)
+// template<bool IS_CONST>
+// double AccLatticeIterator_Base<IS_CONST>::distanceNext(Anchor anchor) const
+// {
+//   auto nextIt = *this;
+//   nextIt.revolve();
+//   double d = distance(anchor,nextIt.pos(anchor));
+//   if (d < 0)
+//     d += *latticeCircumference;
+//   return d;
+// }
 
 

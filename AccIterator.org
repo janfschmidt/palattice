@@ -65,7 +65,11 @@ for(const_AccLatticeIterator<pal::dipole> it : elsa) {
   -> template bleibt, Variable geht alternativ über AccIterator::begin(type) & AccIterator::next(type)
 * DONE Altlasten aufräumen
 * DONE avoid 4x duplication in AccLattice by loop over non-const it with comparison to const it result
-* TODO test convert AccIterator -> const_AccIterator
 * DONE nicer const/non-const template with bool (http://www.sj-vs.net/c-implementing-const_iterator-and-non-const-iterator-without-code-duplication/)
+* DONE test convert AccIterator -> const_AccIterator
+* DONE test convert AccIterator -> AccTypeIterator
+* DONE test convert AccTypeIterator -> AccIterator
+* TODO std::iterator Kompatibilität
+* TODO cast_helper schneller mit std::distance + std::advance
 * TODO lib Funktionalität widerherstellen
 * TODO polematrix Funktionalität widerherstellen

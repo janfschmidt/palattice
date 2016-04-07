@@ -85,7 +85,7 @@ public:
 
   void mount(double pos, const AccElement &obj, bool verbose=false); // mount an element (throws eNoFreeSpace if no free space for obj)
   void dismount(double pos);                                         // dismount element at Ref.position pos (if no element at pos: do nothing)
-  void dismount(AccIterator& it) {dismount(it.pos());}
+  void dismount(AccIterator it) {dismount(it.pos());}
 
   void setIgnoreList(string ignoreFile);                      // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted in this lattice
   void simToolImport(SimToolInstance &sim) {if (sim.tool==madx) madximport(sim); else if (sim.tool==elegant) elegantimport(sim);}

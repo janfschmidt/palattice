@@ -102,6 +102,20 @@ TEST_F(AccIteratorTest, TypeLoop) {
   EXPECT_EQ(5u, list.size());
   EXPECT_STREQ("Q1", list[0].c_str());
   EXPECT_STREQ("Q5", list[4].c_str());
+
+  pal::AccTypeIterator<pal::quadrupole> it2 = lattice.begin<pal::quadrupole>();
+  EXPECT_STREQ("Q1", it2.element()->name.c_str());
+  it2++;
+  EXPECT_STREQ("Q2", it2.element()->name.c_str());
+  it2.next();
+  EXPECT_STREQ("Q3", it2.element()->name.c_str());
+  
+  pal::AccIterator it3 = lattice.begin(pal::quadrupole);
+  EXPECT_STREQ("Q1", it3.element()->name.c_str());
+  it3.next(pal::quadrupole);
+  EXPECT_STREQ("Q2", it3.element()->name.c_str());
+  it3.next();
+  EXPECT_STREQ("M3", it3.element()->name.c_str());
 }
 
 TEST_F(AccIteratorTest, PlaneLoop) {
@@ -143,6 +157,13 @@ TEST_F(AccIteratorTest, Revolve) {
   EXPECT_STREQ("M1", it.element()->name.c_str());
   it.revolve();
   EXPECT_STREQ("Q1", it.element()->name.c_str());
+
+  auto it2 = lattice.begin<pal::quadrupole>();
+  EXPECT_STREQ("Q1", it2.element()->name.c_str());
+  it2.revolve();  it2.revolve();
+  EXPECT_STREQ("Q3", it2.element()->name.c_str());
+  it2.revolve();  it2.revolve(); it2.revolve();
+  EXPECT_STREQ("Q1", it2.element()->name.c_str());
 }
 
 TEST_F(AccIteratorTest, RevolveAndModify) {
@@ -189,6 +210,51 @@ TEST_F(AccIteratorTest, DistanceNext) {
   for(auto i=0; i<9; i++)
     ++it;  
   EXPECT_NEAR(7., it.distanceNext(pal::Anchor::begin), 0.001);
+}
+
+
+TEST_F(AccIteratorTest, ConvertIterators) {
+  pal::const_AccIterator cit = it;
+  EXPECT_STREQ("M1", cit.element()->name.c_str());
+  ++cit;
+  EXPECT_STREQ("Q1", cit.element()->name.c_str());
+  ++cit;
+  EXPECT_STREQ("M2", cit.element()->name.c_str());
+
+  pal::AccTypeIterator<pal::quadrupole> qit = it;
+  EXPECT_STREQ("M1", qit.element()->name.c_str());
+  ++qit;
+  EXPECT_STREQ("Q1", qit.element()->name.c_str());
+  ++qit;
+  EXPECT_STREQ("Q2", qit.element()->name.c_str());
+
+  pal::const_AccTypeIterator<pal::quadrupole> cqit = cit;
+  EXPECT_STREQ("M2", cqit.element()->name.c_str());
+  ++cqit;
+  EXPECT_STREQ("Q2", cqit.element()->name.c_str());
+  ++cqit;
+  EXPECT_STREQ("Q3", cqit.element()->name.c_str());
+
+  ++cit;
+  EXPECT_TRUE(it==it);
+  EXPECT_FALSE(it==cit);
+  EXPECT_FALSE(it==qit);
+  EXPECT_FALSE(it==cqit);
+
+  EXPECT_FALSE(cit==it);
+  EXPECT_TRUE(cit==cit);
+  EXPECT_TRUE(cit==qit);
+  EXPECT_FALSE(cit==cqit);
+
+  EXPECT_FALSE(qit==it);
+  EXPECT_TRUE(qit==cit);
+  EXPECT_TRUE(qit==qit);
+  EXPECT_FALSE(qit==cqit);
+
+  EXPECT_FALSE(cqit==it);
+  EXPECT_FALSE(cqit==cit);
+  EXPECT_FALSE(cqit==qit);
+  EXPECT_TRUE(cqit==cqit);
 }
 
 

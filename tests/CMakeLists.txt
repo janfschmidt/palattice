@@ -32,4 +32,6 @@ if(EXISTS ${GTEST_PATH})
   add_test(allTests test-sdds)
   add_test(allTests test-AccIterator)
   
+else()
+  message(WARNING "googletest not found! Tests are not compiled.")
 endif()
