@@ -192,6 +192,10 @@ TEST_F(AccIteratorTest, At) {
   EXPECT_TRUE(it.at(3.129724));
   EXPECT_FALSE(it.at(1.999));
   EXPECT_FALSE(it.at(5.));
+  ++it; ++it;
+  EXPECT_TRUE(it.at(7.0));
+  EXPECT_TRUE(it.at(9.4));
+  EXPECT_FALSE(it.at(10.0));
 }
 
 TEST_F(AccIteratorTest, Distance) {
@@ -257,7 +261,15 @@ TEST_F(AccIteratorTest, ConvertIterators) {
   EXPECT_TRUE(cqit==cqit);
 }
 
-
+TEST_F(AccIteratorTest, LatticeByPosition) {
+  EXPECT_STREQ("M1", lattice[2.0]->name.c_str());
+  EXPECT_STREQ("Q1", lattice[5.0]->name.c_str());
+  EXPECT_STREQ("Q1", lattice[5.3]->name.c_str());
+  EXPECT_STREQ("Q1", lattice[5.5]->name.c_str());
+  EXPECT_STREQ("drift", lattice[5.6]->name.c_str());
+  EXPECT_STREQ("M2", lattice[7.0]->name.c_str());
+  EXPECT_STREQ("Q2", lattice[10.1]->name.c_str());
+}
 
 
 int main(int argc, char **argv) {

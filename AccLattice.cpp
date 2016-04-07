@@ -208,7 +208,7 @@ const_AccIterator AccLattice::at(double pos) const
   for (auto it=begin(); it!=end(); ++it) {
     if (it.at(pos))
       return it;
-    if (pos > it.pos())
+    if (it.end() > pos)
       break;
   }
   std::stringstream s;

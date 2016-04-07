@@ -78,7 +78,7 @@ public:
   const AccElement* operator[](double pos) const;     // get element (any position, Drift returned if not inside any element)
   AccIterator at(double pos);                         // get iterator by position (throws eNoElement, if pos is in Drift)
   AccIterator behind(double pos, Anchor anchor);      // get iterator to next element with "anchor" behind given position
-  AccIterator operator[](string name);                  // get iterator by name (first match in lattice, throws eNoElement otherwise)
+  AccIterator operator[](string name);                // get iterator by name (first match in lattice, throws eNoElement otherwise)
   const_AccIterator at(double pos) const;
   const_AccIterator behind(double pos, Anchor anchor) const;
   const_AccIterator operator[](string name) const;

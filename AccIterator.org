@@ -69,7 +69,10 @@ for(const_AccLatticeIterator<pal::dipole> it : elsa) {
 * DONE test convert AccIterator -> const_AccIterator
 * DONE test convert AccIterator -> AccTypeIterator
 * DONE test convert AccTypeIterator -> AccIterator
-* TODO std::iterator Kompatibilität
 * TODO cast_helper schneller mit std::distance + std::advance
-* TODO lib Funktionalität widerherstellen
+  -> erfordert std::random_access_iterator (sonst komplexität n)
+  -> random_access_iterator fordert u.a. *it = a ("OutputIterator"), was Lattice nicht erlaubt (mount!)
+* TODO Iteratoren als AccLattice::iterator ??
+* DONE lib Funktionalität widerherstellen
 * TODO polematrix Funktionalität widerherstellen
+* TODO aufräumen
