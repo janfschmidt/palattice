@@ -82,15 +82,15 @@ public:
     template <element_type TYPE, element_plane PLANE=noplane, element_family FAMILY=nofamily>
     const_type_iterator<TYPE,PLANE,FAMILY> begin() const {return const_type_iterator<TYPE,PLANE,FAMILY>(this->begin(TYPE,PLANE,FAMILY));}
 
-  const AccElement* operator[](double pos) const;     // get element (any position, Drift returned if not inside any element)
-  iterator at(double pos);                         // get iterator by position (throws eNoElement, if pos is in Drift)
+  const AccElement* operator[](double pos) const;  // get element (any position, Drift returned if not inside any element)
+  iterator at(double pos);                         // get iterator by position (throws noMatchingElement, if pos is in Drift)
   iterator behind(double pos, Anchor anchor);      // get iterator to next element with "anchor" behind given position
-  iterator operator[](string name);                // get iterator by name (first match in lattice, throws eNoElement otherwise)
+  iterator operator[](string name);                // get iterator by name (first match in lattice, throws noMatchingElement otherwise)
   const_iterator at(double pos) const;
   const_iterator behind(double pos, Anchor anchor) const;
   const_iterator operator[](string name) const;
 
-  void mount(double pos, const AccElement &obj, bool verbose=false); // mount an element (throws eNoFreeSpace if no free space for obj)
+  void mount(double pos, const AccElement &obj, bool verbose=false); // mount an element (throws noFreeSpace if no free space for obj)
   void dismount(double pos);                                         // dismount element at Ref.position pos (if no element at pos: do nothing)
   void dismount(iterator it) {dismount(it.pos());}
 
@@ -164,6 +164,8 @@ public:
       paramRow() : name(""), type(""), param(""), value(0.) {};
     };
 
+    
+  public:
     // exceptions
     class noMatchingElement : public pal::palatticeError {
     public:

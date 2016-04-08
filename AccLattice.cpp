@@ -205,24 +205,37 @@ AccLattice::const_iterator AccLattice::operator[](string _name) const
 // get iterator by position, throws noMatchingElement if pos is in Drift
 AccLattice::const_iterator AccLattice::at(double pos) const
 {
-  for (auto it=begin(); it!=end(); ++it) {
-    if (it.at(pos))
-      return it;
-    if (it.end() > pos)
-      break;
-  }
+  // pos can be within the following elements:
+  // | refPos | --upper_bound(pos) | upper_bound(pos) |
+  // |--------+--------------------+------------------|
+  // | begin  |          X         |                  |
+  // | center |          X         |        X         |
+  // | end    |                    |        X         |
+   auto it = const_iterator(elements.upper_bound(pos),&elements,&refPos,&circ);
+   if (it.at(pos))
+     return it;
+   --it;
+   if (it.at(pos))
+     return it;
+   
   std::stringstream s;
-  s << "No element at " << pos << " m";
+  s << "no element at " << pos << " m";
   throw noMatchingElement(s.str());
 }
 
 // get iterator to next element with "anchor" behind given position
 AccLattice::const_iterator AccLattice::behind(double pos, Anchor anchor) const
 {
-  auto it = const_iterator(elements.upper_bound(pos),&elements,&refPos,&circ);
-  if (it.pos(anchor) <= pos)
-    ++it;
-  return it;
+  try {
+    auto it = at(pos);
+    if (it.pos(anchor) > pos)
+      return it;
+    else
+      return ++it;
+  }
+  catch (noMatchingElement) {
+    return const_iterator(elements.upper_bound(pos),&elements,&refPos,&circ);
+  }
 }
 
 

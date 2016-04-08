@@ -267,6 +267,26 @@ TEST_F(AccIteratorTest, LatticeByPosition) {
   EXPECT_STREQ("drift", lattice[5.6]->name.c_str());
   EXPECT_STREQ("M2", lattice[7.0]->name.c_str());
   EXPECT_STREQ("Q2", lattice[10.1]->name.c_str());
+
+  EXPECT_STREQ("M1", lattice.at(2.0).element()->name.c_str());
+  EXPECT_STREQ("Q1", lattice.at(5.0).element()->name.c_str());
+  EXPECT_STREQ("Q1", lattice.at(5.3).element()->name.c_str());
+  EXPECT_STREQ("Q1", lattice.at(5.5).element()->name.c_str());
+  EXPECT_THROW(lattice.at(5.6).element()->name.c_str(), pal::AccLattice::noMatchingElement);
+  EXPECT_STREQ("M2", lattice.at(7.0).element()->name.c_str());
+  EXPECT_STREQ("Q2", lattice.at(10.1).element()->name.c_str());
+}
+
+TEST_F(AccIteratorTest, LatticeBehind) {
+  EXPECT_STREQ("M1", lattice.behind(2.0,pal::Anchor::center).element()->name.c_str());
+  EXPECT_STREQ("Q1", lattice.behind(5.3,pal::Anchor::end).element()->name.c_str());
+  EXPECT_STREQ("Q1", lattice.behind(4.9,pal::Anchor::begin).element()->name.c_str());
+  EXPECT_STREQ("Q1", lattice.behind(5.249,pal::Anchor::center).element()->name.c_str());
+  EXPECT_STREQ("M2", lattice.behind(5.25,pal::Anchor::center).element()->name.c_str());
+  EXPECT_STREQ("M2", lattice.behind(5.5,pal::Anchor::end).element()->name.c_str());
+  EXPECT_STREQ("M2", lattice.behind(6.0,pal::Anchor::begin).element()->name.c_str());
+  EXPECT_STREQ("M2", lattice.behind(6.0,pal::Anchor::center).element()->name.c_str());
+  EXPECT_STREQ("M2", lattice.behind(6.0,pal::Anchor::end).element()->name.c_str());
 }
 
 
