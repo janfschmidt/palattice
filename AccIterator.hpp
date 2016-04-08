@@ -122,7 +122,8 @@ class AccTypeIterator;
 
 
     // position calculations
-    double distanceNext(Anchor anchor) const override {auto n=*this; n.revolve(); return std::abs(this->distanceRing(anchor,n.pos(anchor)));} 
+    double distanceNext(Anchor anchor) const override {auto n=*this; n.revolve(); return std::abs(this->distanceRing(anchor,n.pos(anchor)));}
+    double distanceNext() const {return distanceNext(*(this->latticeRefPos));}
   };
 
 
@@ -159,7 +160,8 @@ class AccTypeIterator;
     bool operator!=(const AccIterator<true>& o) const {return !operator==(o);}
 
     // position calculations
-    double distanceNext(Anchor anchor) const override {auto n=*this; n.revolve(); return std::abs(this->distanceRing(anchor,n.pos(anchor)));} 
+    double distanceNext(Anchor anchor) const override {auto n=*this; n.revolve(); return std::abs(this->distanceRing(anchor,n.pos(anchor)));}
+    double distanceNext() const {return distanceNext(*(this->latticeRefPos));}
   };
 
 
