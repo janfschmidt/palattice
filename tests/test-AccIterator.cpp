@@ -1,11 +1,10 @@
 #include "gtest/gtest.h"
 #include "../AccLattice.hpp"
-#include "../AccIterator.hpp" 
 
 class AccIteratorTest : public ::testing::Test {
 public:
   pal::AccLattice lattice;
-  pal::AccIterator it;
+  pal::AccLattice::iterator it;
 
   AccIteratorTest() : lattice(30.), it(lattice.begin())
   {
@@ -94,8 +93,7 @@ TEST_F(AccIteratorTest, RangeLoop) {
 
 TEST_F(AccIteratorTest, TypeLoop) {
   std::vector<std::string> list;
-  //const pal::AccLattice l = lattice;
-  // here it is AccTypeIterator<pal::quadrupole>
+  // here it is AccLattice::type_iterator<pal::quadrupole>
   for (auto it=lattice.begin<pal::quadrupole>(); it!=lattice.end(); ++it) {
     list.push_back(it.element()->name);
   }
@@ -103,14 +101,14 @@ TEST_F(AccIteratorTest, TypeLoop) {
   EXPECT_STREQ("Q1", list[0].c_str());
   EXPECT_STREQ("Q5", list[4].c_str());
 
-  pal::AccTypeIterator<pal::quadrupole> it2 = lattice.begin<pal::quadrupole>();
+  pal::AccLattice::type_iterator<pal::quadrupole> it2 = lattice.begin<pal::quadrupole>();
   EXPECT_STREQ("Q1", it2.element()->name.c_str());
   it2++;
   EXPECT_STREQ("Q2", it2.element()->name.c_str());
   it2.next();
   EXPECT_STREQ("Q3", it2.element()->name.c_str());
   
-  pal::AccIterator it3 = lattice.begin(pal::quadrupole);
+  pal::AccLattice::iterator it3 = lattice.begin(pal::quadrupole);
   EXPECT_STREQ("Q1", it3.element()->name.c_str());
   it3.next(pal::quadrupole);
   EXPECT_STREQ("Q2", it3.element()->name.c_str());
@@ -218,21 +216,21 @@ TEST_F(AccIteratorTest, DistanceNext) {
 
 
 TEST_F(AccIteratorTest, ConvertIterators) {
-  pal::const_AccIterator cit = it;
+  pal::AccLattice::const_iterator cit = it;
   EXPECT_STREQ("M1", cit.element()->name.c_str());
   ++cit;
   EXPECT_STREQ("Q1", cit.element()->name.c_str());
   ++cit;
   EXPECT_STREQ("M2", cit.element()->name.c_str());
 
-  pal::AccTypeIterator<pal::quadrupole> qit = it;
+  pal::AccLattice::type_iterator<pal::quadrupole> qit = it;
   EXPECT_STREQ("M1", qit.element()->name.c_str());
   ++qit;
   EXPECT_STREQ("Q1", qit.element()->name.c_str());
   ++qit;
   EXPECT_STREQ("Q2", qit.element()->name.c_str());
 
-  pal::const_AccTypeIterator<pal::quadrupole> cqit = cit;
+  pal::AccLattice::const_type_iterator<pal::quadrupole> cqit = cit;
   EXPECT_STREQ("M2", cqit.element()->name.c_str());
   ++cqit;
   EXPECT_STREQ("Q2", cqit.element()->name.c_str());

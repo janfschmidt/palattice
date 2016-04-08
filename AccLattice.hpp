@@ -25,23 +25,28 @@
 #include "config.hpp"
 #include "types.hpp"
 #include "SimTools.hpp"
-#include "AccIterator.hpp"
 
 namespace pal
 {
 
-  class AccLattice {
+  enum class Anchor{begin,center,end};
+  typedef std::map<double,AccElement*> AccMap;
 
+  
+  class AccLattice {
+    public:
+    #include "AccIterator.hpp"
+    
 protected:
   double circ;
-  std::map<double,AccElement*> elements;  // first: position in lattice / m
+  AccMap elements;  // first: position in lattice / m
   const Drift* empty_space;
   vector<string> ignoreList;              // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted (set) in this lattice
   unsigned int ignoreCounter;
   string comment;
 
   double locate(double pos, const AccElement *obj, Anchor here) const;  // get here=begin/center/end (in meter) of obj at reference-position pos
-  double slope(double pos, const_AccIterator it) const; // helper function for magnetic field edges
+  double slope(double pos, const_iterator it) const; // helper function for magnetic field edges
   void setCircumference(double c);
 
 
@@ -62,31 +67,34 @@ public:
 
   double posMod(double posIn) const {return fmod(posIn,circ);}        // get position modulo circumference
   unsigned int turn(double posIn) const {return int(posIn/circ + ZERO_DISTANCE) + 1;} // get turn from position
-  double theta(double posIn) const;                                     // get rotation angle [0,2pi]: increases lin. in bending dipoles, constant in-between. 
+  double theta(double posIn) const;                                   // get rotation angle [0,2pi]: increases lin. in bending dipoles, constant in-between. 
 
-    // AccIterator
-    AccIterator begin() {return AccIterator(elements.begin(),&elements,&refPos,&circ);}
-    AccIterator end() {return AccIterator(elements.end(),&elements,&refPos,&circ);}
-    AccIterator begin(element_type t, element_plane p=noplane, element_family f=nofamily);
-    template <element_type TYPE, element_plane PLANE=noplane, element_family FAMILY=nofamily> AccTypeIterator<TYPE,PLANE,FAMILY> begin();
-    // const_AccIterator
-    const_AccIterator begin() const {return const_AccIterator(elements.begin(),&elements,&refPos,&circ);}
-    const_AccIterator end() const {return const_AccIterator(elements.end(),&elements,&refPos,&circ);}
-    const_AccIterator begin(element_type t, element_plane p=noplane, element_family f=nofamily) const;
-    template <element_type TYPE, element_plane PLANE=noplane, element_family FAMILY=nofamily> const_AccTypeIterator<TYPE,PLANE,FAMILY> begin() const;
+    // iterator
+    iterator begin() {return iterator(elements.begin(),&elements,&refPos,&circ);}
+    iterator end() {return iterator(elements.end(),&elements,&refPos,&circ);}
+    iterator begin(element_type t, element_plane p=noplane, element_family f=nofamily);
+    template <element_type TYPE, element_plane PLANE=noplane, element_family FAMILY=nofamily>
+    type_iterator<TYPE,PLANE,FAMILY> begin() {return type_iterator<TYPE,PLANE,FAMILY>(this->begin(TYPE,PLANE,FAMILY));}
+    // const_iterator
+    const_iterator begin() const {return const_iterator(elements.begin(),&elements,&refPos,&circ);}
+    const_iterator end() const {return const_iterator(elements.end(),&elements,&refPos,&circ);}
+    const_iterator begin(element_type t, element_plane p=noplane, element_family f=nofamily) const;
+    template <element_type TYPE, element_plane PLANE=noplane, element_family FAMILY=nofamily>
+    const_type_iterator<TYPE,PLANE,FAMILY> begin() const {return const_type_iterator<TYPE,PLANE,FAMILY>(this->begin(TYPE,PLANE,FAMILY));}
 
   const AccElement* operator[](double pos) const;     // get element (any position, Drift returned if not inside any element)
-  AccIterator at(double pos);                         // get iterator by position (throws eNoElement, if pos is in Drift)
-  AccIterator behind(double pos, Anchor anchor);      // get iterator to next element with "anchor" behind given position
-  AccIterator operator[](string name);                // get iterator by name (first match in lattice, throws eNoElement otherwise)
-  const_AccIterator at(double pos) const;
-  const_AccIterator behind(double pos, Anchor anchor) const;
-  const_AccIterator operator[](string name) const;
+  iterator at(double pos);                         // get iterator by position (throws eNoElement, if pos is in Drift)
+  iterator behind(double pos, Anchor anchor);      // get iterator to next element with "anchor" behind given position
+  iterator operator[](string name);                // get iterator by name (first match in lattice, throws eNoElement otherwise)
+  const_iterator at(double pos) const;
+  const_iterator behind(double pos, Anchor anchor) const;
+  const_iterator operator[](string name) const;
 
   void mount(double pos, const AccElement &obj, bool verbose=false); // mount an element (throws eNoFreeSpace if no free space for obj)
   void dismount(double pos);                                         // dismount element at Ref.position pos (if no element at pos: do nothing)
-  void dismount(AccIterator it) {dismount(it.pos());}
+  void dismount(iterator it) {dismount(it.pos());}
 
+  // import
   void setIgnoreList(string ignoreFile);                      // elements with a name in this list (can contain 1 wildcard * per entry) are not mounted in this lattice
   void simToolImport(SimToolInstance &sim) {if (sim.tool==madx) madximport(sim); else if (sim.tool==elegant) elegantimport(sim);}
   void madximport(SimToolInstance &madx);                      // mount elements from MAD-X Lattice (read from twiss-output, m=online: autom. madx run)
@@ -95,10 +103,14 @@ public:
                                                                        // !! currently only rotation (dpsi) around beam axis (s) is implemented!
   void elegantimport(SimToolInstance &elegant);                // mount elements from elegant Lattice (read from ascii parameter file ".param", m=online: autom. elegant run)
   void elegantimport(string elegantFile, SimToolMode m=online) {SimToolInstance e(pal::elegant, m, elegantFile); elegantimport(e);}
-  void setELSAoptics(string spurenFolder);                    // change quad&sext strengths to values from "ELSA-Spuren"
-  unsigned int setELSACorrectors(ELSASpuren &spuren, unsigned int t); // change corrector pos&strength to values from "ELSA-Spuren" at time t
+
   void subtractCorrectorStrengths(AccLattice &other);    // subtract other corrector strengths from the ones of this lattice
-  void subtractMisalignments(const AccLattice &other);         // subtract other misalignments from the ones of this lattice
+  void subtractMisalignments(const AccLattice &other);   // subtract other misalignments from the ones of this lattice
+
+  // ELSA specific import
+  void setELSAoptics(string spurenFolder);                            // change quad&sext strengths to values from "ELSA-Spuren"
+  unsigned int setELSACorrectors(ELSASpuren &spuren, unsigned int t); // change corrector pos&strength to values from "ELSA-Spuren" at time t
+
 
   // "information"
   unsigned int size(element_type _type, element_plane p=noplane, element_family f=nofamily) const;        // returns number of elements of a type in this lattice
@@ -129,7 +141,7 @@ public:
   double integralDipoleRadius(int exponent=1) const;   // integral over bending radius around ring: R^exponent ds
   unsigned int harmonicNumber() const;                 // harmonic number h, from cavity frequency and circumference
   
-  // output (stdout or file)
+  // output & export (stdout or file)
   // If no filename is given, print to stdout.
   void print(string filename="") const;                     // print lattice.
   void print(element_type _type, string filename="") const; // print all elements of one type.
@@ -140,61 +152,43 @@ public:
   void madxexport(string file="",MadxLatticeType t=sequence) const {simToolExport(madx,file,t);}
 
   private:
-    AccIterator cast_helper(const const_AccIterator& it);
+    iterator cast_helper(const const_iterator& it);
+    
+    // data format for elegant parameters file (".param")
+    class paramRow {
+    public:
+      string name;
+      string type;
+      string param;
+      double value;
+      paramRow() : name(""), type(""), param(""), value(0.) {};
+    };
 
+    // exceptions
+    class noMatchingElement : public pal::palatticeError {
+    public:
+      noMatchingElement(std::string elementDescription)
+	: palatticeError("No matching element found (" + elementDescription + ")") {}
+    };
+    
+    class noFreeSpace : public pal::palatticeError {
+    public:
+      noFreeSpace(string first, string second) : pal::palatticeError(first + " cannot be inserted --- overlap with " + second) {}
+    };
 };
 
 
-// exceptions
-class eNoElement : public pal::palatticeError {
-public:
-  eNoElement(string msg="eNoElement") : pal::palatticeError(msg) {}
-};
-
-class eNoFreeSpace : public pal::palatticeError {
-public:
-  eNoFreeSpace(string msg) : pal::palatticeError(msg) {}
-};
 
 
-// data format for elegant parameters file (".param")
-class paramRow {
-public:
-  string name;
-  string type;
-  string param;
-  double value;
-  paramRow() : name(""), type(""), param(""), value(0.) {};
-};
 
-
+  
 string removeQuote(string s); //remove quotation marks ("" or '') from begin&end of string
 
+
+  
+#include "AccIterator.hxx"
+
 } //namespace pal
-
-
-// function template implementation
-template <pal::element_type TYPE, pal::element_plane PLANE, pal::element_family FAMILY>
-pal::AccTypeIterator<TYPE,PLANE,FAMILY> pal::AccLattice::begin()
-{
-  // auto it=elements.begin();
-  // for (; it!=elements.end(); ++it) {
-  //   if ( it->second->type==TYPE && (PLANE==noplane || it->second->plane==PLANE) && (FAMILY==nofamily || it->second->family==FAMILY) )
-  //     break;
-  // }
-  return pal::AccTypeIterator<TYPE,PLANE,FAMILY>(this->begin(TYPE,PLANE,FAMILY));
-}
-
-template <pal::element_type TYPE, pal::element_plane PLANE, pal::element_family FAMILY>
-pal::const_AccTypeIterator<TYPE,PLANE,FAMILY> pal::AccLattice::begin() const
-{
-  // auto it=elements.cbegin();
-  // for (; it!=elements.cend(); ++it) {
-  //   if ( it->second->type==TYPE && (PLANE==noplane || it->second->plane==PLANE) && (FAMILY==nofamily || it->second->family==FAMILY) )
-  //     break;
-  // }
-  return pal::const_AccTypeIterator<TYPE,PLANE,FAMILY>(this->begin(TYPE,PLANE,FAMILY));
-}
 
 
 #endif

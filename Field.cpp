@@ -79,7 +79,7 @@ int Field::magnetlengths(AccLattice &lattice, const char *filename) const
   unsigned int w=10;
   double tmp_start, tmp_end;
   fstream file;
-  AccTypeIterator<pal::dipole> dipIt=lattice.begin<pal::dipole>();
+  AccLattice::const_type_iterator<pal::dipole> dipIt=lattice.begin<pal::dipole>();
 
   file.open(filename, ios::out);
   if (!file.is_open()) {

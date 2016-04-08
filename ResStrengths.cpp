@@ -51,7 +51,7 @@ std::complex<double> ResStrengths::calculate(double agamma)
   std::complex<double> epsilon (0,0);
 
   for (unsigned int turn=1; turn<=nturns; turn++) {
-    for (const_AccIterator it=lattice->begin(); it!=lattice->end(); ++it) {
+    for (AccLattice::const_iterator it=lattice->begin(); it!=lattice->end(); ++it) {
       //field from Thomas-BMT equation:
       // omega = (1+agamma) * B_x - i * (1+a) * B_s
       // assume particle velocity parallel to s-axis, B is already normalized to rigidity (BR)_0 = p_0/e

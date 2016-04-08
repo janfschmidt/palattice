@@ -1,7 +1,11 @@
-/* === AccIterator Class ===
- * a special iterator to access elements in an accelerator lattice and the position, where they are mounted.
- * It also allows to iterate / loop through the lattice.
- * Used by the "AccLattice" class
+/* === AccIterator Classes ===
+ * iterators to access elements in an accelerator lattice and the position, where they are mounted.
+ * It allows to iterate / loop through the lattice and perform calculations regarding their position (distances etc.).
+ * All these iterators are defined as inner classes within the "AccLattice" class and
+ * are accessible via the AccLattice::begin() and AccLattice::end() methods.
+ * There are four iterator types intended for external usage:
+ * AccLattice::iterator & AccLattice::const_iterator           -> iterate over all elements in lattice
+ * AccLattice::type_iterator & AccLattice::const_type_iterator -> iterate over all elements of one type in lattice
  *
  * by Jan Schmidt <schmidt@physik.uni-bonn.de>
  *
@@ -15,13 +19,10 @@
 #ifndef __LIBPALATTICE_ACCITERATOR_HPP_
 #define __LIBPALATTICE_ACCITERATOR_HPP_
 
-#include <map>
-#include "AccElements.hpp"
 
-namespace pal {
 
-  enum class Anchor{begin,center,end};
-  typedef std::map<double,AccElement*> AccMap;
+// !!! The following classes are inner classes of pal::AccLattice
+// !!! This file is included in AccLattice.hpp WITHIN AccLattice class
 
 
 
@@ -64,7 +65,7 @@ namespace pal {
     bool at(double pos) const;                               // test, if position "pos" is within this element
     double distance(Anchor anchor, double pos) const;        // get distance from "anchor" of this element to position "pos" in meter (>0 if pos is after/upstream anchor)
     double distanceRing(Anchor anchor, double pos) const;    // distance() for rings: considers both directions and returns shortest distance
-    virtual double distanceNext(Anchor anchor) const =0;             // absolute value of distance from "anchor" of this element to "anchor" of next element. For last element: distance to first element (in a ring)
+    virtual double distanceNext(Anchor anchor) const =0;     // absolute value of distance from "anchor" of this element to "anchor" of next element. For last element: distance to first element (in a ring)
 
   protected:
     virtual void setBegin() =0;
@@ -73,8 +74,12 @@ namespace pal {
     void revolve_helper();
   };
 
+// forward declaration of  AccLatticeTypeIterator
 template <bool IS_CONST, element_type TYPE, element_plane PLANE, element_family FAMILY>
 class AccLatticeTypeIterator;
+
+
+
 
   // Iterator class:
   template <bool IS_CONST>
@@ -164,27 +169,17 @@ class AccLatticeTypeIterator;
 
 
 
-  // ---------- typedefs for the user -------------
-  typedef AccLatticeIterator<false> AccIterator;
-  typedef AccLatticeIterator<true> const_AccIterator;
+
+  // typedefs: AccLattice::iterator and AccLattice::type_iterator
+  typedef AccLatticeIterator<false> iterator;
+  typedef AccLatticeIterator<true> const_iterator;
   template <element_type TYPE, element_plane PLANE=noplane, element_family FAMILY=nofamily>
-  using AccTypeIterator = AccLatticeTypeIterator<false,TYPE,PLANE,FAMILY>;
+  using type_iterator = AccLatticeTypeIterator<false,TYPE,PLANE,FAMILY>;
   template <element_type TYPE, element_plane PLANE=noplane, element_family FAMILY=nofamily>
-  using const_AccTypeIterator = AccLatticeTypeIterator<true,TYPE,PLANE,FAMILY>;
+  using const_type_iterator = AccLatticeTypeIterator<true,TYPE,PLANE,FAMILY>;
 
 
 
-  // ------------ exceptions ----------------------
-  class noMatchingElement : public pal::palatticeError {
-  public:
-    noMatchingElement(std::string elementDescription)
-      : palatticeError("No matching element found (" + elementDescription + ")") {}
-  };
 
-
-
-  #include "AccIterator.hxx"
-
-} //namespace pal
 
 #endif /*__LIBPALATTICE_ACCITERATOR_HPP_*/

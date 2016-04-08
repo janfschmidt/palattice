@@ -59,21 +59,21 @@ int main(int argc, char *argv[])
   // access AccElement* via it.element() or *it
   std::cout <<std::endl<< "types of elements mounted in beamline:" << std::endl;
   for (auto it=beamline.begin(); it!=beamline.end(); ++it) {
-    // it is pal::AccIterator
+    // it is pal::AccLattice::iterator
     std::cout << it.pos() << "m: " << it.element()->type_string() << std::endl;
   }
 
   // lattice type iterators
   std::cout <<std::endl<< "dipoles mounted in beamline:" << std::endl;
   for (auto it=beamline.begin<pal::dipole>(); it!=beamline.end(); ++it) {
-   // it is pal::AccTypeIterator<pal::Dipole>
+   // it is pal::AccLattice::type_iterator<pal::Dipole>
     std::cout << it.pos() << "m: " << it.element()->name << ", " << (*it)->type_string() << std::endl;
   }
   
    // lattice type iteration with usual lattice iterator (type can be chosen at runtime)
   std::cout <<std::endl<< "quadrupoles mounted in beamline:" << std::endl;
   for (auto it=beamline.begin(pal::quadrupole); it!=beamline.end(); it.next(pal::quadrupole)) {
-   // it is pal::AccIterator
+    // it is pal::AccLattice::iterator
     std::cout << it.pos() << "m: " << it.element()->name << ", " << (*it)->type_string() << std::endl;
   }
   
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
 
   // access by name
   string name = "MB2";
-  pal::const_AccIterator it = beamline[name];
+  pal::AccLattice::const_iterator it = beamline[name];
   cout <<std::endl<< "access by name:" << std::endl
        << name << " begins at " << it.begin() << "m and ends at " << it.end() << "m" << endl << endl;
 

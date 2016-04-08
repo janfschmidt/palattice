@@ -131,7 +131,7 @@ double AccLattice::theta(double posIn) const
       theta += (posIn - atPosIn.pos(Anchor::begin)) * atPosIn.element()->k0.z;
     }
   }
-  catch (eNoElement) {}
+  catch (noMatchingElement) {}
   return theta;
 }
 
@@ -173,14 +173,14 @@ const AccElement* AccLattice::operator[](double pos) const
     return at(pos).element();
   }
   // otherwise pos not inside any element:
-  catch (eNoElement &e) {
+  catch (noMatchingElement &e) {
     return empty_space;
   }
 }
 
 
 
-const_AccIterator AccLattice::begin(element_type t, element_plane p, element_family f) const
+AccLattice::const_iterator AccLattice::begin(element_type t, element_plane p, element_family f) const
 {
   auto it=begin();
   for (; it!=end(); ++it) {
@@ -190,20 +190,20 @@ const_AccIterator AccLattice::begin(element_type t, element_plane p, element_fam
   return it;
 }
 
-// get iterator by name, throws eNoElement if name is not found
+// get iterator by name, throws noMatchingElement if name is not found
 // ! name can be ambiguous! always returns first match
-const_AccIterator AccLattice::operator[](string _name) const
+AccLattice::const_iterator AccLattice::operator[](string _name) const
 {
   for (auto it=begin(); it!=end(); ++it) {
     if (it.element()->name == _name)
       return it;
   }
   // otherwise name does not match any element:
-  throw eNoElement("No element "+_name+" found");
+  throw noMatchingElement("No element "+_name+" found");
 }
 
-// get iterator by position, throws eNoElement if pos is in Drift
-const_AccIterator AccLattice::at(double pos) const
+// get iterator by position, throws noMatchingElement if pos is in Drift
+AccLattice::const_iterator AccLattice::at(double pos) const
 {
   for (auto it=begin(); it!=end(); ++it) {
     if (it.at(pos))
@@ -213,13 +213,13 @@ const_AccIterator AccLattice::at(double pos) const
   }
   std::stringstream s;
   s << "No element at " << pos << " m";
-  throw eNoElement(s.str());
+  throw noMatchingElement(s.str());
 }
 
 // get iterator to next element with "anchor" behind given position
-const_AccIterator AccLattice::behind(double pos, Anchor anchor) const
+AccLattice::const_iterator AccLattice::behind(double pos, Anchor anchor) const
 {
-  auto it = const_AccIterator(elements.upper_bound(pos),&elements,&refPos,&circ);
+  auto it = const_iterator(elements.upper_bound(pos),&elements,&refPos,&circ);
   if (it.pos(anchor) <= pos)
     ++it;
   return it;
@@ -230,24 +230,24 @@ const_AccIterator AccLattice::behind(double pos, Anchor anchor) const
 // no duplication: call const_iterator implementation, loop iterator and 
 // compare to result of const_iterator implementation (uses cast iterator -> const_iterator)
 // [no dirty trick to cast from const_iterator to iterator, but slower]
-AccIterator AccLattice::cast_helper(const const_AccIterator& result)
+AccLattice::iterator AccLattice::cast_helper(const const_iterator& result)
 {
-  for (AccIterator it=begin(); it!=end(); ++it) {
+  for (iterator it=begin(); it!=end(); ++it) {
     if (it==result)
       return it;
   }
   return end();
 }
-AccIterator AccLattice::begin(element_type t, element_plane p, element_family f) {
+AccLattice::iterator AccLattice::begin(element_type t, element_plane p, element_family f) {
   return cast_helper(const_cast<const AccLattice*>(this)->begin(t,p,f));
 }
-AccIterator AccLattice::operator[](string _name) {
+AccLattice::iterator AccLattice::operator[](string _name) {
   return cast_helper(const_cast<const AccLattice*>(this)->operator[](_name));
 }
-AccIterator AccLattice::at(double pos) {
+AccLattice::iterator AccLattice::at(double pos) {
   return cast_helper(const_cast<const AccLattice*>(this)->at(pos));
 }
-AccIterator AccLattice::behind(double pos, Anchor anchor) {
+AccLattice::iterator AccLattice::behind(double pos, Anchor anchor) {
   return cast_helper(const_cast<const AccLattice*>(this)->behind(pos,anchor));
 }
 
@@ -269,18 +269,12 @@ void AccLattice::mount(double pos, const AccElement& obj, bool verbose)
     return;
   }
 
-  // if (pos > circumference()) {
-  //   stringstream msg;
-  //   msg << pos << " m is larger than lattice circumference " << circumference() << " m.";
-  //   throw palatticeError(msg.str());
-  // }
-
   bool first_element = false;
   bool last_element = false;
   const AccElement *objPtr = &obj;
   double newBegin = locate(pos, objPtr, Anchor::begin);
   double newEnd = locate(pos, objPtr, Anchor::end);
-  stringstream msg;
+  stringstream msg, msg2;
   
   if (pos < 0.) {
     stringstream msg;
@@ -296,7 +290,7 @@ void AccLattice::mount(double pos, const AccElement& obj, bool verbose)
   }
 
   //"first element whose key goes after pos"
-  auto next = AccIterator(elements.upper_bound(pos),&elements,&refPos,&circ);
+  auto next = iterator(elements.upper_bound(pos),&elements,&refPos,&circ);
   auto previous = next;
   if (next == begin())
     first_element = true;
@@ -321,22 +315,18 @@ void AccLattice::mount(double pos, const AccElement& obj, bool verbose)
 
   // check for "free space" to insert obj
   if (newBegin < 0.) {
-    msg << objPtr->name << " (" << newBegin <<" - "<< newEnd << "m) cannot be inserted --- overlap with lattice begin at 0.0m";
-    throw eNoFreeSpace(msg.str());
+    msg << objPtr->name << " (" << newBegin <<" - "<< newEnd << "m)";
+    throw noFreeSpace(msg.str(), "lattice begin at 0.0m");
   }
   else if (!first_element &&  newBegin < previous.end()) {
-    msg << objPtr->name << " (" << newBegin <<" - "<< newEnd << "m) cannot be inserted --- overlap with "
-	<< previous.element()->name << " ("<< previous.begin() <<" - "<< previous.end() << "m)";
-    throw eNoFreeSpace(msg.str());
+    msg << objPtr->name << " (" << newBegin <<" - "<< newEnd << "m)";
+    msg2 << previous.element()->name << " ("<< previous.begin() <<" - "<< previous.end() << "m)";
+    throw noFreeSpace(msg.str(), msg2.str());
   }
-  //else if (newEnd > circumference()) {
-    // msg << objPtr->name << " (" << newBegin <<" - "<< newEnd <<  "m) cannot be inserted --- overlap with lattice end at " << circumference() << "m";
-    // throw eNoFreeSpace(msg.str());
-  //}
   else if (!last_element && newEnd > next.begin()) {
-    msg << objPtr->name << " (" << newBegin <<" - "<< newEnd << "m) cannot be inserted --- overlap with "
-	<< next.element()->name << " ("<< next.begin() <<" - " << next.end() << "m)";
-    throw eNoFreeSpace(msg.str());
+    msg << objPtr->name << " (" << newBegin <<" - "<< newEnd << "m)";
+    msg2 << next.element()->name << " ("<< next.begin() <<" - " << next.end() << "m)";
+    throw noFreeSpace(msg.str(), msg2.str());
   }
   //if there is free space:
   else elements[pos] = objPtr->clone();
@@ -815,8 +805,8 @@ unsigned int AccLattice::setELSACorrectors(ELSASpuren &spuren, unsigned int t)
  stringstream strMsg;
  double diff=0;
  double endPos;
- AccTypeIterator<pal::corrector,pal::V> it = begin<pal::corrector,pal::V>(); // only vertical correctors!
- AccTypeIterator<pal::corrector,pal::V> it_next = it;
+ type_iterator<pal::corrector,pal::V> it = begin<pal::corrector,pal::V>(); // only vertical correctors!
+ type_iterator<pal::corrector,pal::V> it_next = it;
 
  
  for (i=0; i<NVCORRS; i++) {
@@ -1000,7 +990,7 @@ string AccLattice::refPos_string() const
 }
 
 
-double AccLattice::slope(double pos, const_AccIterator it) const
+double AccLattice::slope(double pos, const_iterator it) const
 {
   double x=1.;
   double dl = it.element()->dl()/2; // half of dl() at each magnet end
@@ -1020,7 +1010,7 @@ AccTriple AccLattice::B(double posIn, const AccPair &orbit) const
   double pos = posMod(posIn);
   unsigned int t = turn(posIn);
   // next magnet with center > pos:
-  const_AccIterator it = behind(pos,Anchor::center);
+  const_iterator it = behind(pos,Anchor::center);
   AccTriple field;
   field = it.element()->B_rf(t,orbit) * slope(pos, it); //B_rf includes rf magnets
   // previous magnet (center <= pos):
@@ -1032,12 +1022,17 @@ AccTriple AccLattice::B(double posIn, const AccPair &orbit) const
 }
 
 
-// ----------- output (stdout or file) ----------------------
+
+
+
+
+
+// ----------- output & export (stdout or file) ----------------------
 
 // print lattice. If no filename is given, print to stdout
 void AccLattice::print(string filename) const
 {
-  const_AccIterator it=begin();
+  const_iterator it=begin();
   const int w = 12;
   std::stringstream s;
   std::stringstream msg;
@@ -1045,7 +1040,6 @@ void AccLattice::print(string filename) const
 
   //write text to s
   s << info.out("#");
-  // NO! s <<"# (* unit of Strength depends on magnet type! e.g. Quad: k1, Sext: k2, Dipole: 1/R)" <<endl;
   s <<"#"<< std::setw(w) << "Ref.Pos/m" << it.element()->printHeader();
 
   for (; it!=end(); ++it) {
@@ -1070,7 +1064,7 @@ void AccLattice::print(string filename) const
 // print all elements of one type If no filename is given, print to stdout
 void AccLattice::print(element_type _type, string filename) const
 {
-  const_AccIterator it=begin(_type);
+  const_iterator it=begin(_type);
   const int w = 12;
   std::stringstream s;
   std::stringstream msg;
@@ -1105,7 +1099,7 @@ void AccLattice::print(element_type _type, string filename) const
 string AccLattice::getElementDefs(SimTool tool, element_type _type) const
 {
   stringstream s;
-  const_AccIterator it=begin(_type);
+  const_iterator it=begin(_type);
 
   if (it == end())
     return "";
@@ -1116,14 +1110,9 @@ string AccLattice::getElementDefs(SimTool tool, element_type _type) const
   for (; it!=end(); it.next(_type)) {
     //only list identical elements once
     auto firstOccur = operator[](it.element()->name); //first element in lattice with this name
-    if ((it.pos()-firstOccur.pos()) > ZERO_DISTANCE && *(firstOccur.element()) == *(it.element())) {
-      //debug
-      // std::cout << "EXPORT-DEBUG: ignored element " << it->second->name << " @ " << it->first << "m," << std::endl
-      // 		<< "because it's not the first occurrence (" << firstOccur->first << "m)" << std::endl; 
-    }
-    else { 
+    if ((it.pos()-firstOccur.pos()) < ZERO_DISTANCE || *(firstOccur.element()) != *(it.element())) {
       s << it.element()->printSimTool(tool);
-    } 
+    }
   }
   s << endl;
 
@@ -1138,7 +1127,7 @@ string AccLattice::getLine(SimTool tool) const
   std::stringstream s;    //drift definitions
   std::stringstream line; //lattice line 
   double driftlength, lastend;
-  const_AccIterator it=begin();
+  const_iterator it=begin();
 
   line << "LIBPALATTICE : LINE=(";
 
@@ -1226,7 +1215,7 @@ string AccLattice::getSequence(Anchor refer) const
     s << "EXIT, ";
   s << "L=" << this->circumference() <<";"<< endl;
 
-    const_AccIterator it=begin();
+    const_iterator it=begin();
     
     //marker at pos=0.0 if lattice starts with drift
     if (it.pos() > ZERO_DISTANCE || it.element()->type != marker)
