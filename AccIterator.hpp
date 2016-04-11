@@ -32,7 +32,7 @@ class AccTypeIterator;
 
   // abstract base class:
   template <bool IS_CONST>
-  class AccIterator_Base {
+  class AccIterator_Base : public std::iterator<std::input_iterator_tag, std::conditional<IS_CONST, const AccElement*, AccElement*>>{
     friend class AccLattice;
     typedef typename std::conditional<IS_CONST, const AccElement*, AccElement*>::type ValueType;
     typedef typename std::conditional<IS_CONST, const AccMap, AccMap>::type MapType;

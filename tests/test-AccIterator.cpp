@@ -1,6 +1,8 @@
 #include "gtest/gtest.h"
 #include "../AccLattice.hpp"
 
+#include <iterator>
+
 class AccIteratorTest : public ::testing::Test {
 public:
   pal::AccLattice lattice;
@@ -30,6 +32,7 @@ TEST_F(AccIteratorTest, Initialization) {
 TEST_F(AccIteratorTest, Iteration) {
   ASSERT_DOUBLE_EQ(2.0, it.pos());
   ASSERT_STREQ("M1", it.element()->name.c_str());
+  ASSERT_STREQ("M1", (*it)->name.c_str());
 
   it++;
   ASSERT_DOUBLE_EQ(5.0, it.pos());
@@ -267,6 +270,7 @@ TEST_F(AccIteratorTest, LatticeByPosition) {
   EXPECT_STREQ("drift", lattice[5.6]->name.c_str());
   EXPECT_STREQ("M2", lattice[7.0]->name.c_str());
   EXPECT_STREQ("Q2", lattice[10.1]->name.c_str());
+  EXPECT_STREQ("Q5", lattice.at(25.47).element()->name.c_str());
 
   EXPECT_STREQ("M1", lattice.at(2.0).element()->name.c_str());
   EXPECT_STREQ("Q1", lattice.at(5.0).element()->name.c_str());
@@ -274,7 +278,7 @@ TEST_F(AccIteratorTest, LatticeByPosition) {
   EXPECT_STREQ("Q1", lattice.at(5.5).element()->name.c_str());
   EXPECT_THROW(lattice.at(5.6).element()->name.c_str(), pal::AccLattice::noMatchingElement);
   EXPECT_STREQ("M2", lattice.at(7.0).element()->name.c_str());
-  EXPECT_STREQ("Q2", lattice.at(10.1).element()->name.c_str());
+  EXPECT_STREQ("Q5", lattice.at(25.3).element()->name.c_str());
 }
 
 TEST_F(AccIteratorTest, LatticeBehind) {
@@ -287,6 +291,20 @@ TEST_F(AccIteratorTest, LatticeBehind) {
   EXPECT_STREQ("M2", lattice.behind(6.0,pal::Anchor::begin).element()->name.c_str());
   EXPECT_STREQ("M2", lattice.behind(6.0,pal::Anchor::center).element()->name.c_str());
   EXPECT_STREQ("M2", lattice.behind(6.0,pal::Anchor::end).element()->name.c_str());
+  EXPECT_STREQ("Q5", lattice.behind(25.0,pal::Anchor::end).element()->name.c_str());
+}
+
+TEST_F(AccIteratorTest, stdIteratorFunctions) {
+  auto it2 = it;
+  std::advance(it2, 3);
+  EXPECT_STREQ("Q2", it2.element()->name.c_str());
+  
+  EXPECT_EQ(3u, std::distance(it, it2));
+
+  auto it3 = std::next(it, 6);
+  EXPECT_STREQ("M1", it.element()->name.c_str());
+  EXPECT_STREQ("Q2", it2.element()->name.c_str());
+  EXPECT_STREQ("M4", it3.element()->name.c_str());
 }
 
 

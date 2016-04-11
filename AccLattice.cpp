@@ -212,7 +212,7 @@ AccLattice::const_iterator AccLattice::at(double pos) const
   // | center |          X         |        X         |
   // | end    |                    |        X         |
    auto it = const_iterator(elements.upper_bound(pos),&elements,&refPos,&circ);
-   if (it.at(pos))
+   if (it!=end() && it.at(pos))
      return it;
    --it;
    if (it.at(pos))
@@ -245,11 +245,9 @@ AccLattice::const_iterator AccLattice::behind(double pos, Anchor anchor) const
 // [no dirty trick to cast from const_iterator to iterator, but slower]
 AccLattice::iterator AccLattice::cast_helper(const const_iterator& result)
 {
-  for (iterator it=begin(); it!=end(); ++it) {
-    if (it==result)
-      return it;
-  }
-  return end();
+  iterator it=begin();
+  std::advance( it, std::distance(const_iterator(it), result) );
+  return it;
 }
 AccLattice::iterator AccLattice::begin(element_type t, element_plane p, element_family f) {
   return cast_helper(const_cast<const AccLattice*>(this)->begin(t,p,f));

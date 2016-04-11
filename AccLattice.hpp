@@ -19,6 +19,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <vector>
+#include <iterator>
 #include "AccElements.hpp"
 #include "ELSASpuren.hpp"
 #include "Metadata.hpp"
