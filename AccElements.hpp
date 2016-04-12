@@ -34,7 +34,10 @@ namespace pal
                                         //used for export and filtering only, NO INFLUENCE ON FIELD B()!
   enum element_family{F,D,nofamily};    //focus,defocus, CHANGES SIGN OF FIELD!
 
+  template <typename T=std::string> T simToolConditional(T madx, T elegant, SimTool t);
   string filterCharactersForLaTeX(string in);
+  string type_string(element_type t);
+  string type_string(element_type t, SimTool tool);
 
 // abstract base class
 class AccElement {
@@ -42,15 +45,6 @@ protected:
   static AccPair zeroPair;
   static AccTriple zeroTriple;
   double physLength;      // physical length (used for edge field calculation (pal::AccLattice::B()) / m
-  void checkPhysLength(); // check for valid value and (re-)calculate physLength from default (config.hpp)
-  string nameInTool(string madx, string elegant, SimTool t) const;
-  string printTilt(SimTool t) const;
-  string printEdges() const;
-  string printStrength() const;
-  string printAperture(SimTool t) const;
-  string printRF(SimTool t) const;
-  string printSyli(SimTool t) const;
-  string rfMagComment() const;
 
   // following data can be accessed and modified. Only type and length of an element must not be changed.
 public:
@@ -119,12 +113,26 @@ public:
   bool nameMatch(vector<string> &nameList) const; // true if element name matches entry in List (can include 1 wildcard *)
   bool nameMatch(string &pattern) const;          // true if element name matches pattern (can include 1 wildcard *)
 
-  string type_string() const;    // string output of element type
+  // string output of element type name (in simtool if given)
+  string type_string() const {return pal::type_string(type);}
+  string type_string(SimTool t) const {return pal::type_string(type, t);}
 
   string print() const;          // string output of (some) element properties
   string printHeader() const;    // string output of header-line(s) for print()
   virtual string printSimTool(SimTool t) const =0;  // string output of element definition in elegant or madx format
-  virtual string printLaTeX() const =0;  // string output of element definition in LaTeX format (using lattice package by Jan Schmidt <schmidt@physik.uni-bonn.de>)
+  virtual string printLaTeX() const =0;  // string output of element definition in LaTeX format (tikz-palattice package)
+
+  
+protected:
+  void checkPhysLength(); // check for valid value and (re-)calculate physLength from default (config.hpp)
+  string printNameType(SimTool t) const {return name + " : " + type_string(t);}
+  string printTilt(SimTool t) const;
+  string printEdges() const;
+  string printStrength() const;
+  string printAperture(SimTool t) const;
+  string printRF(SimTool t) const;
+  string printSyli(SimTool t) const;
+  string rfMagComment() const;
 };
 
 
@@ -312,6 +320,23 @@ public:
 string getLaTeXDrift(double driftlength); // Drift element for LaTeX (used by Drift::printLaTeX and AccLattice::latexexport)
 
 } //namespace pal
+
+
+
+// function template implementation
+template <typename T>
+T pal::simToolConditional(T madx, T elegant, pal::SimTool t)
+{
+  switch(t) {
+  case pal::madx:
+    return madx;
+  case pal::elegant:
+    return elegant;
+  default:
+    throw palatticeError("pal::simToolConditional(): unknown SimTool");
+  }
+}
+
 
 #endif
 /*__LIBPALATTICE_ACCELEMENTS_HPP_*/

@@ -26,7 +26,8 @@ AccPair AccElement::zeroPair;
 AccTriple AccElement::zeroTriple;
 
 
-string pal::filterCharactersForLaTeX(string in) {
+string pal::filterCharactersForLaTeX(string in)
+{
   std::map<string,string> list = {{"_","\\_"}, {"$", "\\$"}};
   for(auto& it : list) {
     size_t start_pos = 0;
@@ -37,6 +38,63 @@ string pal::filterCharactersForLaTeX(string in) {
   }
   return in;
 }
+
+string pal::type_string(pal::element_type type)
+{
+  switch (type) {
+  case dipole:
+    return "Dipole";
+  case quadrupole:
+    return "Quadrupole";
+  case corrector:
+    return "Corrector";
+  case sextupole:
+    return "Sextupole";
+  case multipole:
+    return "Multipole";
+  case cavity:
+    return "Cavity";
+  case marker:
+    return "Marker";
+  case monitor:
+    return "Monitor";
+  case rcollimator:
+    return "Rcollimator";
+  case drift:
+    return "Drift";
+  }
+  return "Please implement this type in pal::type_string()!";
+}
+
+string pal::type_string(element_type type, SimTool t)
+{
+  switch (type) {
+  case dipole:
+    return pal::simToolConditional("SBEND","CSBEND",t);
+  case quadrupole:
+    return pal::simToolConditional("QUADRUPOLE","KQUAD",t);
+  case corrector:
+    return pal::simToolConditional("KICKER","KICK",t);
+  case sextupole:
+    return pal::simToolConditional("SEXTUPOLE","KSEXT",t);
+  case multipole:
+    return pal::simToolConditional("MULTIPOLE","MULT",t);
+  case cavity:
+    return pal::simToolConditional("RFCAVITY","RFCA",t);
+  case marker:
+    return pal::simToolConditional("MARKER","MARK",t);
+  case monitor:
+    return pal::simToolConditional("MONITOR","MONI",t);
+  case rcollimator:
+    return pal::simToolConditional("RCOLLIMATOR","RCOL",t);
+  case drift:
+    return pal::simToolConditional("DRIFT","DRIF",t);
+  }
+  return "Please implement this type in pal::type_string(simTool)!";
+}
+
+
+
 
 
 AccElement::AccElement(element_type _type, string _name, double _length)
@@ -239,38 +297,6 @@ bool AccElement::operator!=(const AccElement &o) const
 
 
 
-string AccElement::type_string() const
-{
-  switch (type) {
-  case dipole:
-    return "Dipole";
-  case quadrupole:
-    return "Quadrupole";
-  case corrector:
-    return "Corrector";
-  case sextupole:
-    return "Sextupole";
-  case multipole:
-    return "Multipole";
-  case cavity:
-    return "Cavity";
-  case marker:
-    return "Marker";
-  case monitor:
-    return "Monitor";
-  case rcollimator:
-    return "Rcollimator";
-  case drift:
-    return "Drift";
-  }
-
-  return "Please implement this type in AccElement::type_string()!";
-}
-
-
-
-
-
 // string output of (some) element properties
 // ! if you change this function, !
 // ! also modify printHeader()    !
@@ -365,18 +391,7 @@ AccTriple Multipole::B() const
 
 
 // ============ printSimTool (elegant or madx) ======================
-string AccElement::nameInTool(string name_madx, string name_elegant, SimTool t) const
-{
-  switch(t) {
-  case madx:
-    return name_madx;
-  case elegant:
-    return name_elegant;
-  default:
-    throw palatticeError("AccElement::nameInTool(): unknown SimTool");
-  }
-  return "unknown SimTool";
-}
+
 
 // *************************sign of rotation angle dpsi:*********************************
 // test with influence of dpsi on vertical closed orbit in madx show
@@ -469,7 +484,7 @@ string Drift::printSimTool(SimTool t) const
 {
   stringstream s;
 
-  s << name <<" : "<< nameInTool("DRIFT","DRIF",t) <<", "
+  s << printNameType(t) <<", "
     <<"L="<< length <<";"<<endl;
   return s.str();
 }
@@ -478,7 +493,7 @@ string Cavity::printSimTool(SimTool t) const
 {
   stringstream s;
 
-  s << name <<" : "<< nameInTool("RFCAVITY","RFCA",t) <<", "
+  s << printNameType(t) <<", "
     <<"L="<< length <<", "
     << printRF(t) <<";"<< endl;
   return s.str();
@@ -491,7 +506,7 @@ string Dipole::printSimTool(SimTool t) const
   if (k0.x!=0. || k0.s!=0.) 
     std::cout << "WARNING: " << name << " nonzero horizontal or longitudinal field is not exported!" << std::endl;
 
-  s << name <<" : "<< nameInTool("SBEND","CSBEND",t) <<", "
+  s << printNameType(t) <<", "
     <<"L="<< length <<", "
     <<"ANGLE="<< k0.z*length;
   s << printStrength();
@@ -508,13 +523,13 @@ string Corrector::printSimTool(SimTool t) const
   if (plane == V) {
     if (k0.z!=0. || k0.s!=0.) 
       std::cout << "WARNING: " << name << " nonzero vertical or longitudinal field is not exported (plane=V)!" << std::endl;
-    s << "V" << nameInTool("KICKER","KICK",t); 
+    s << "V" << type_string(t); 
     kick = k0.x; // plane==V => vertical kick => horizontal field!
   }
   else if (plane == H) {
     if (k0.x!=0. || k0.s!=0.) 
       std::cout << "WARNING: " << name << " nonzero horizontal or longitudinal field is not exported (plane=H)!" << std::endl;
-    s << "H"<< nameInTool("KICKER","KICK",t);
+    s << "H"<< type_string(t);
     kick = k0.z; // plane==H => horizontal kick => vertical field!
   }
   else if (plane==noplane) {
@@ -541,7 +556,7 @@ string Quadrupole::printSimTool(SimTool t) const
 {
   stringstream s;
 
-  s << name <<" : "<< nameInTool("QUADRUPOLE","KQUAD",t) <<", "
+  s << printNameType(t) <<", "
     <<"L="<< length;
   s << printStrength();
   s << printEdges() << printTilt(t) <<";"<< rfMagComment() << endl;
@@ -552,7 +567,7 @@ string Sextupole::printSimTool(SimTool t) const
 {
  stringstream s;
 
-  s << name <<" : "<< nameInTool("SEXTUPOLE","KSEXT",t) <<", "
+  s << printNameType(t) <<", "
     <<"L="<< length;
   s << printStrength();
   s << printEdges() << printTilt(t) <<";"<< rfMagComment() << endl;
@@ -568,12 +583,12 @@ string Multipole::printSimTool(SimTool t) const
 
  if (t == elegant) {
    cout << "Multipole::printSimTool: No Multipole (with k1 and k2) implemented for export to elegant! Export drift.";
-   s << name <<" : "<< nameInTool("DRIFT","DRIF",t) <<", "
-     <<"L="<< length <<"; ! Multipole in libpal (with k1 and k2)!"<<endl;
+   s << pal::type_string(drift, t) <<", "
+     <<"L="<< length <<"; ! Multipole in libpalattice (with k1 and k2)!"<<endl;
    return s.str();
  }
 
-  s << name <<" : "<< nameInTool("MULTIPOLE","MULT",t) <<", "
+  s << printNameType(t) <<", "
     <<"L="<< length;
   s << printStrength();
   s << printEdges() << printTilt(t) <<";"<< rfMagComment() << endl;
@@ -583,14 +598,14 @@ string Multipole::printSimTool(SimTool t) const
 string Marker::printSimTool(SimTool t) const
 {
   stringstream s;
-  s << name <<" : "<< nameInTool("MARKER","MARK",t) <<";"<<endl;
+  s << printNameType(t) <<";"<<endl;
   return s.str();
 }
 
 string Monitor::printSimTool(SimTool t) const
 {
   stringstream s;
-  s << name <<" : "<< nameInTool("MONITOR","MONI",t) <<", "
+  s << printNameType(t) <<", "
     <<"L="<< length <<";"<<endl;
   return s.str();
 }
@@ -598,7 +613,7 @@ string Monitor::printSimTool(SimTool t) const
 string Rcollimator::printSimTool(SimTool t) const
 {
   stringstream s;
-  s << name <<" : "<< nameInTool("RCOLLIMATOR","RCOL",t) <<", "
+  s << printNameType(t) <<", "
     <<"L="<< length;
   s << printAperture(t) <<";"<<endl;
   return s.str();

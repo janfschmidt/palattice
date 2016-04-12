@@ -172,7 +172,3 @@ Warning
 --------------------------------------------------------------------------
 Some main API features may still change due to ongoing development, so
 there is no guarantee to full compatibility with new versions.
-This is especially likely in the AccLattice class, because I am not happy
-with the way one can iterate/loop through a lattice. May be I will
-completely replace the iterator based API.
-Basically this is why I did not publish it yet.
