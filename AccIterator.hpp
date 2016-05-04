@@ -1,18 +1,32 @@
-/* === AccIterator Classes ===
+/* AccIterator Classes
  * iterators to access elements in an accelerator lattice and the position, where they are mounted.
- * It allows to iterate / loop through the lattice and perform calculations regarding their position (distances etc.).
+ *
+ * Copyright (C) 2016 Jan Felix Schmidt <janschmidt@mailbox.org>
+ *   
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * AccIterator allows to iterate / loop through the lattice and perform calculations
+ * regarding their position (distances etc.).
  * All these iterators are defined as inner classes within the "AccLattice" class and
  * are accessible via the AccLattice::begin() and AccLattice::end() methods.
+ *
  * There are four iterator types intended for external usage:
- * AccLattice::iterator & AccLattice::const_iterator           -> iterate over all elements in lattice
- * AccLattice::type_iterator & AccLattice::const_type_iterator -> iterate over all elements of one type in lattice
- *
- * by Jan Schmidt <schmidt@physik.uni-bonn.de>
- *
- * This is unpublished software. Please do not copy/distribute it without
- * prior agreement of the author. Open Source publication coming soon :-)
- *
- * (c) Jan Schmidt <schmidt@physik.uni-bonn.de>, 2016
+ * AccLattice::iterator & AccLattice::const_iterator
+ * -> iterate over all elements in lattice
+ * AccLattice::type_iterator & AccLattice::const_type_iterator
+ * -> iterate over all elements of one type in lattice
  */
 
 

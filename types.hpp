@@ -1,15 +1,21 @@
-/* === data type definitions ===
- * AccPair/AccTriple for 2D/3D quantities in accelerator coordinates (x,z)/(x,z,s),
- * libpalattice exceptions, ...
+/* libpalattice data type definitions
+ * AccPair/AccTriple for 2D/3D quantities in accelerator coordinates (x,z)/(x,z,s)
  *
- * by Jan Schmidt <schmidt@physik.uni-bonn.de>
+ * Copyright (C) 2016 Jan Felix Schmidt <janschmidt@mailbox.org>
+ *   
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This is unpublished software. Please do not copy/distribute it without
- * prior agreement of the author. Open Source publication coming soon :-)
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * (c) Jan Schmidt <schmidt@physik.uni-bonn.de>, 2015
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 #ifndef __LIBPALATTICE__TYPES_HPP_
 #define __LIBPALATTICE__TYPES_HPP_
@@ -219,6 +225,7 @@ inline std::ostream &operator<<(std::ostream &out, const pal::AccTriple &A)
   out << A.x << "\t" << A.z << "\t" << A.s;
   return out;
 }
+
 
 namespace std {
   //define std::pow() & std::sqrt() for "Acc" data types

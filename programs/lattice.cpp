@@ -1,15 +1,21 @@
-/* ===libpalattice expamle program: lattice===
- * create a lattice and print some output,
- * import a lattice from madx or elegant
+/* libpalattice expamle program: Lattice access, editing & import
+ * create a lattice and print some output, import a lattice from madx or elegant
  *
- * by Jan Schmidt <schmidt@physik.uni-bonn.de>
+ * Copyright (C) 2016 Jan Felix Schmidt <janschmidt@mailbox.org>
+ *   
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This is unpublished software. Please do not copy/distribute it without
- * prior agreement of the author. Open Source publication coming soon :-)
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * (c) Jan Schmidt <schmidt@physik.uni-bonn.de>, 2015
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 #include <libpalattice/AccLattice.hpp>
 #include <iostream>
@@ -20,12 +26,13 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-
-  //--- manually filled lattice ---
-  // if no circumference is given, it is always set to the end of the last mounted element
-  // ! for rings with drift at the end circumference should be set in constructor (or drift mounted explicitly)
-  // ! via madx/elegant import the circumference is set automatically
-  // default element reference position (refPos) = pal::begin
+  /*
+   *--- manually filled lattice ---
+   * if no circumference is given, it is always set to the end of the last mounted element
+   * ! for rings with drift at the end circumference should be set in constructor (or drift mounted explicitly)
+   * ! via madx/elegant import the circumference is set automatically
+   * default element reference position (refPos) = pal::begin
+   */
   pal::AccLattice beamline;
 
   double R = 11;

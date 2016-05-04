@@ -1,29 +1,29 @@
 ******************* libpalattice ***********************************
-         C++ particle accelerator lattice libraray
-	 
-This is unpublished testing software. Please do not copy/distribute it
-without prior agreement of the author.
-Open Source publication coming soon :-)
-
-(c) Jan Schmidt <schmidt@physik.uni-bonn.de>, 2016
+         C++ particle accelerator lattice library
 ********************************************************************
-
-
 
 Please report bugs and do not hesitate to contact me if you have any questions.
 
 
+
 --------------------------------------------------------------------------
-If you used convertlattice before:
+License: GNU General Public License
 --------------------------------------------------------------------------
-If you used the statically compiled convertlattice program before,
-please first uninstall this by execution of the "uninstall.sh" script from
-your convertlattice directory.
-It is also recommended to delete the existing "libpal.ele"/"libpal.madx"
-files in your projects to avoid confusion, because the library ignores the
-old files and creates "libpalattice.ele"/"libpalattice.madx" instead
-during first Mad-X/Elegant execution in this directory.
-If you made any custom changes you should copy them to the new files.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+A copy of the GNU General Public License can be found in the "LICENSE" file.
+If not, see <http://www.gnu.org/licenses/>.
+
+
+
 
 
 
@@ -97,6 +97,20 @@ Installation
 
 
 --------------------------------------------------------------------------
+If you used convertlattice before:
+--------------------------------------------------------------------------
+If you used the statically compiled convertlattice program before,
+please first uninstall this by execution of the "uninstall.sh" script from
+your convertlattice directory.
+It is also recommended to delete the existing "libpal.ele"/"libpal.madx"
+files in your projects to avoid confusion, because the library ignores the
+old files and creates "libpalattice.ele"/"libpalattice.madx" instead
+during first Mad-X/Elegant execution in this directory.
+If you made any custom changes you should copy them to the new files.
+
+
+
+--------------------------------------------------------------------------
 Update
 --------------------------------------------------------------------------
 To get updated versions of the code just go to libpalattice directory
@@ -156,10 +170,12 @@ Documentation of libpalattice API
 Unfortunately there is no dedicated documentation yet.
 If you have some time left over please send it to me...
 
-A good start are the example programs in libpalattice/programs.
+A good start are the example programs in libpalattice/programs:
+- "lattice" for AccLattice class
+- "interptwiss" & "fields" for FunctionOfPos<T> class
 The .cpp files have many comments and show the basic usage of the classes.
 
-For the full API I refer to the header files (.hpp) in libpalattice/,
+For the full API I can only refer to the header files (.hpp) in libpalattice/,
 where nearly all classes and methods are described by short comments.
 Start with libpalattice.hpp, which is a kind of table of contents.
 
@@ -170,5 +186,5 @@ Please do not hesitate to contact me if you have any further questions.
 --------------------------------------------------------------------------
 Warning
 --------------------------------------------------------------------------
-Some main API features may still change due to ongoing development, so
+Some API features may still change due to ongoing development, so
 there is no guarantee to full compatibility with new versions.

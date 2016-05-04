@@ -1,20 +1,30 @@
-/* === SimTools Classes ===
- * classes to handle simulation tools (currently MadX, Elegant)
- * SimToolInstance is connected to a lattice file and can be executed,
+/* SimTools Classes
+ * "interface" to simulation tools (currently MadX, Elegant)
+ *
+ * Copyright (C) 2016 Jan Felix Schmidt <janschmidt@mailbox.org>
+ *   
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * SimToolInstance is connected to a lattice file and handles
+ * setup and execution of the simulation tool.
  * SimToolTable contains columns of simulation tool results
  *
  * Elegant output can be read directly from binary SDDS files
  * if libSDDS1 (SDDSToolKit-devel package) is installed.
  * See README for details.
- *
- * by Jan Schmidt <schmidt@physik.uni-bonn.de>
- *
- * This is unpublished software. Please do not copy/distribute it without
- * prior agreement of the author. Open Source publication coming soon :-)
- *
- * (c) Jan Schmidt <schmidt@physik.uni-bonn.de>, 2015
  */
-
 
 #ifndef __LIBPALATTICE_SIMTOOLS_HPP_
 #define __LIBPALATTICE_SIMTOOLS_HPP_

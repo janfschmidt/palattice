@@ -1,11 +1,4 @@
-/* === libpalattice Configuration ===
- *
- * by Jan Schmidt <schmidt@physik.uni-bonn.de>
- *
- * This is unpublished software. Please do not copy/distribute it without
- * prior agreement of the author. Open Source publication coming soon :-)
- *
- * (c) Jan Schmidt <schmidt@physik.uni-bonn.de>, 2015
+/* libpalattice Configuration
  */
 
 #ifndef __LIBPALATTICE__CONFIG_HPP_
@@ -32,7 +25,7 @@
 #define ELEGANT_SYNCH_RAD_SETTING 1     // def. of elegant dipole for export: synchrotron radiation (1=on, 0=off)
 
 
-#define VCPOS_WARNDIFF 0.05  // ELSAimport: warning for larger VC pos.diff. in MadX & ELSA-Spuren
+#define VCPOS_WARNDIFF 0.05            // ELSAimport: warning for larger VC pos.diff. in MadX & ELSA-Spuren
 #define DEFAULT_LENGTH_DIFFERENCE 0.09 // default for AccElement "effective-minus-physical" length in m (if no physical length is set)
 
 
