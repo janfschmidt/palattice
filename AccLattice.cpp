@@ -1006,6 +1006,11 @@ string AccLattice::refPos_string() const
 }
 
 
+
+// EXPERIMENTAL: magnetic field slope (edge field)
+// currently implemented as Gaussian slope
+// imortant is to keep integral field (along beam axis s) constant!
+// Gauss: f(x) = exp(-0.5*(x*0.67449/d)^2), 50% quantile (median) at 0.67449 sigma
 double AccLattice::slope(double pos, const_iterator it) const
 {
   double x=1.;
@@ -1020,7 +1025,18 @@ double AccLattice::slope(double pos, const_iterator it) const
   return exp(-0.5*pow(x/sigma,2));
 }
 
-// magnetic field including edge field (with slope)
+/* EXPERIMENTAL: magnetic field including edge field (with slope)
+ - element length is taken as effective length l_eff
+ - physical length l_phys (< l_eff) can be set for each element.
+   Default is l_eff minus DEFAULT_LENGTH_DIFFERENCE dl (set in config.hpp)
+         ___________
+        /|         |\
+       / | l_phys  | \
+      /|             |\
+     / |   l_eff     | \           element begin & end correspond to l_eff!
+ ----                   ----
+    | dl |         | dl |
+*/
 AccTriple AccLattice::B(double posIn, const AccPair &orbit) const
 {
   double pos = posMod(posIn);
