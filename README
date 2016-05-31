@@ -5,6 +5,19 @@
 Please report bugs and do not hesitate to contact me if you have any questions.
 
 
+libpalattice is a C++ library for particle accelerator lattices. It includes import from
+and export to Elegant and Mad-X. Additionally, accelerator data like Twiss parameters or
+tracking results can be imported.
+
+Besides the library, some example programs are included in the programs/ subdirectory:
+- "lattice" demonstrates the lattice data structures
+- "interptwiss" & "fields" show import and usage of "accelerator data"
+
+Additionally, a simple tool for automatic lattice format conversion between Elegant and
+Mad-X is included: "convertlattice" is also located in programs/ (see below for
+installation).
+
+
 
 --------------------------------------------------------------------------
 License: GNU General Public License
@@ -23,8 +36,43 @@ A copy of the GNU General Public License can be found in the "LICENSE" file.
 If not, see <http://www.gnu.org/licenses/>.
 
 
+--------------------------------------------------------------------------
+Installation
+--------------------------------------------------------------------------
+1) CMake is used to configure the project for your system and generate the build files.
+   Go to subdirectory build/ and run CMake by the command:
+   "cmake .."
+   - requires CMake, in Ubuntu it can be installed via "sudo apt-get install cmake"
+   - palattice requires the Gnu Scientific Library GSL,
+     in Ubuntu it can be installed via "sudo apt-get install libgsl-dev"
+   - the SDDS library libSDDS1 is recommended, see section above
+2) compile the library:
+   in palattice/build directory run
+   "make"
+3) install the library for all users of your system:
+   in build/ directory type:
+   "sudo make install"
+   - the default install path is /usr/local and can be changed in
+     palattice/CMakeLists.txt (look for "CMAKE_INSTALL_PREFIX")
+4) compile example programs including convertlattice:
+   in palattice/build directory type:
+   "make programs"
+   Now the binaries can be found in palattice/build/programs/src/programs-build/.
+   They can be copied anywhere for execution.   
+5) install convertlattice for all users of your system:
+   "sudo make install" again
+   Expert Info: convertlattice is linked against installed libpalattice. This is
+   why it is build seperately ("make programs"). But it is installed during 
+   'make install' if the binary exists.
 
-
+4-5) Alternative:
+   Alternatively, the example programs can be compiled from their own project folder:
+   in palattice/programs/build run
+   "cmake .."
+   "make"
+   The binaries are now located in palattice/programs/build.
+   convertlattice can be installed here with
+   "sudo make install"
 
 
 --------------------------------------------------------------------------
@@ -50,54 +98,8 @@ If you installed or uninstalled "SDDSToolKit-devel" and cmake does not recognize
 try deleting libpalattice/build/CMakeCache.txt and then run "cmake .." again.
 
 
-
 --------------------------------------------------------------------------
-Installation
---------------------------------------------------------------------------
-1) get a copy of the source code:
-   "git clone git@elsafs1.physik.uni-bonn.de:lib/libpalattice"
-   - requires git, in Ubuntu it can be installed via "sudo apt-get install git"
-   - repository has to be unlocked for your user/computer:
-     Send your ssh public key to schmidt@physik.uni-bonn.de
-2) CMake is used to configure the project for your system and generate the build files.
-   Go to directory libpalattice/build and run CMake by the command:
-   "cmake .."
-   - requires CMake, in Ubuntu it can be installed via "sudo apt-get install cmake"
-   - libpalattice requires the Gnu Scientific Library GSL,
-     in Ubuntu it can be installed via "sudo apt-get install libgsl0-dev"
-   - the SDDS library libSDDS1 is recommended, see section above
-3) compile the library:
-   in libpalattice/build run
-   "make"
-3) install the library for all users of your system:
-   in libpalattice/build type:
-   "sudo make install"
-   - the default install path is /usr/local and can be changed in
-     libpalattice/CMakeLists.txt (look for "CMAKE_INSTALL_PREFIX")
-4) compile example programs including convertlattice:
-   in libpalattice/build type:
-   "make programs"
-   Now the binaries can be found in libpalattice/build/programs/src/programs-build/.
-   They can be copied anywhere for execution.   
-5) install convertlattice for all users of your system:
-   "sudo make install" again
-   Expert Info: convertlattice is linked against installed libpalattice. This is
-   why its is build seperately ("make programs"). But it is installed during 
-   'make install' if the binary exists.
-
-4-5) Alternative:
-   Alternatively, the example programs can be compiled from their own project folder:
-   in libpalattice/programs/build run
-   "cmake .."
-   "make"
-   The binaries are now located in libpalattice/programs/build.
-   convertlattice can be installed here with
-   "sudo make install"
-
-
-
---------------------------------------------------------------------------
-If you used convertlattice before:
+If you used libpalattice or convertlattice before:
 --------------------------------------------------------------------------
 If you used the statically compiled convertlattice program before,
 please first uninstall this by execution of the "uninstall.sh" script from
@@ -109,11 +111,10 @@ during first Mad-X/Elegant execution in this directory.
 If you made any custom changes you should copy them to the new files.
 
 
-
 --------------------------------------------------------------------------
 Update
 --------------------------------------------------------------------------
-To get updated versions of the code just go to libpalattice directory
+To get updated versions of the code just go to palattice directory
 and type: "git pull"
 If there are any changes compile and install them by going to the
 build/ subdirectory again and typing:
@@ -123,37 +124,37 @@ build/ subdirectory again and typing:
 --------------------------------------------------------------------------
 Uninstall
 --------------------------------------------------------------------------
-To remove all library files from the installation path (/usr/local)
-go to libpalattice/build directory and type
+To remove all library files from the installation path (default /usr/local)
+go to palattice/build directory and type
 "sudo make uninstall".
 To remove all compiled files from the build directory type
 "make clean".
-To delete all source files just delete the libpalattice directory.
+To delete all source files just delete the palattice directory.
 
 
 --------------------------------------------------------------------------
-Requirements for automatic execution of Mad-X/Elegant by libpalattice
+Requirements for automatic execution of Mad-X/Elegant by palattice
 --------------------------------------------------------------------------
-The commands to run Mad-X and Elegant can be set in libpalattice/config.hpp.
+The commands to run Mad-X and Elegant can be set in palattice/config.hpp.
 Default values are:
 * command to run Mad-X: "madx"
 * command to run Elegant: "elegant"
 
 
 --------------------------------------------------------------------------
-Comment on automatic execution of Mad-X/Elegant by libpalattice
+Comment on automatic execution of Mad-X/Elegant by palattice
 --------------------------------------------------------------------------
 To allow for automatic execution of Mad-X/Elegant, the library:
-1. copies file libpalattice.madx/libpal.ele
+1. copies file libpalattice.madx/libpalattice.ele
    from /usr/local/lib/libpalattice_simTools/
    to the path of your lattice file if it does not exist there.
 2. writes the name of your lattice file (and a few other settings)
    to libpalattice.madx/libpalattice.ele.
 3. executes "madx libpalattice.madx" or "elegant libpalattice.elegant".
-(4. if Elegant is used without libSDDS1) executes
-   /usr/local/bin/elegant2libpalattice to convert SDDS files to ascii.
+[4. if Elegant is used without libSDDS1: executes
+   /usr/local/bin/elegant2libpalattice to convert SDDS files to ascii.]
 
-If execution fails for your lattice, you can edit libpalattice.madx/libpal.ele
+If execution fails for your lattice, you can edit libpalattice.madx/libpalattice.ele
 in your lattice folder or edit the original template in
 /usr/local/lib/libpalattice_simTools/.
 E.g. for a beamline (no ring) MadX twiss module fails, because of missing
@@ -165,26 +166,18 @@ quick-and-dirty so far (using sed...) and works only if "sed" is available!
 
 
 --------------------------------------------------------------------------
-Documentation of libpalattice API
+Documentation of palattice API
 --------------------------------------------------------------------------
 Unfortunately there is no dedicated documentation yet.
 If you have some time left over please send it to me...
 
-A good start are the example programs in libpalattice/programs:
+A good start are the example programs in palattice/programs:
 - "lattice" for AccLattice class
 - "interptwiss" & "fields" for FunctionOfPos<T> class
 The .cpp files have many comments and show the basic usage of the classes.
 
-For the full API I can only refer to the header files (.hpp) in libpalattice/,
+For the full API I can only refer to the header files (.hpp) in palattice/,
 where nearly all classes and methods are described by short comments.
 Start with libpalattice.hpp, which is a kind of table of contents.
 
 Please do not hesitate to contact me if you have any further questions.
-
-
-
---------------------------------------------------------------------------
-Warning
---------------------------------------------------------------------------
-Some API features may still change due to ongoing development, so
-there is no guarantee to full compatibility with new versions.
