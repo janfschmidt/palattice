@@ -1,5 +1,9 @@
-******************* libpalattice ***********************************
+********************************************************************
+			palattice
          C++ particle accelerator lattice library
+	 
+   Copyright (C) 2016 Jan Felix Schmidt <janschmidt@mailbox.org>
+   	     	 GNU General Public License
 ********************************************************************
 
 Please report bugs and do not hesitate to contact me if you have any questions.
@@ -8,6 +12,7 @@ Please report bugs and do not hesitate to contact me if you have any questions.
 libpalattice is a C++ library for particle accelerator lattices. It includes import from
 and export to Elegant and Mad-X. Additionally, accelerator data like Twiss parameters or
 tracking results can be imported.
+Lattices can also be exported to LaTeX to draw a map using tikz-palattice package.
 
 Besides the library, some example programs are included in the programs/ subdirectory:
 - "lattice" demonstrates the lattice data structures
@@ -17,23 +22,6 @@ Additionally, a simple tool for automatic lattice format conversion between Eleg
 Mad-X is included: "convertlattice" is also located in programs/ (see below for
 installation).
 
-
-
---------------------------------------------------------------------------
-License: GNU General Public License
---------------------------------------------------------------------------
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-A copy of the GNU General Public License can be found in the "LICENSE" file.
-If not, see <http://www.gnu.org/licenses/>.
 
 
 --------------------------------------------------------------------------
@@ -112,6 +100,25 @@ If you made any custom changes you should copy them to the new files.
 
 
 --------------------------------------------------------------------------
+Documentation of palattice API
+--------------------------------------------------------------------------
+Unfortunately there is no dedicated documentation yet.
+If you have some time left over please send it to me...
+
+A good start are the example programs in palattice/programs:
+- "lattice" for AccLattice class
+- "interptwiss" & "fields" for FunctionOfPos<T> class
+The .cpp files have many comments and show the basic usage of the classes.
+
+For the full API I can only refer to the header files (.hpp) in palattice/,
+where nearly all classes and methods are described by short comments.
+Start with libpalattice.hpp, which is a kind of table of contents.
+
+Please do not hesitate to contact me if you have any further questions.
+
+
+
+--------------------------------------------------------------------------
 Update
 --------------------------------------------------------------------------
 To get updated versions of the code just go to palattice directory
@@ -166,18 +173,29 @@ quick-and-dirty so far (using sed...) and works only if "sed" is available!
 
 
 --------------------------------------------------------------------------
-Documentation of palattice API
+TODOs
 --------------------------------------------------------------------------
-Unfortunately there is no dedicated documentation yet.
-If you have some time left over please send it to me...
+- replace quick-and-dirty implementation of configuring Mad-X/Elegant
+  (replace system calls to "sed" by writing config files from c++)
+- implement more element types & element parameters
+- new implementation of element_type to improve looping types &
+  type name string output
+- ...
 
-A good start are the example programs in palattice/programs:
-- "lattice" for AccLattice class
-- "interptwiss" & "fields" for FunctionOfPos<T> class
-The .cpp files have many comments and show the basic usage of the classes.
 
-For the full API I can only refer to the header files (.hpp) in palattice/,
-where nearly all classes and methods are described by short comments.
-Start with libpalattice.hpp, which is a kind of table of contents.
 
-Please do not hesitate to contact me if you have any further questions.
+--------------------------------------------------------------------------
+License: GNU General Public License
+--------------------------------------------------------------------------
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+A copy of the GNU General Public License can be found in the "LICENSE" file.
+If not, see <http://www.gnu.org/licenses/>.
