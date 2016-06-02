@@ -25,6 +25,23 @@ installation).
 
 
 --------------------------------------------------------------------------
+Installation - short
+--------------------------------------------------------------------------
+Dependencies:
+- CMake
+- Gnu Scientific Library (GSL)
+- SDDSToolKit-devel (optional, see "Requirements: libSDDS1" below)
+
+Installation:
+ cd palattice/build
+ cmake ..
+ make
+ make install
+ make programs
+ make install
+
+
+--------------------------------------------------------------------------
 Installation
 --------------------------------------------------------------------------
 1) CMake is used to configure the project for your system and generate the build files.
@@ -50,7 +67,7 @@ Installation
 5) install convertlattice for all users of your system:
    "sudo make install" again
    Expert Info: convertlattice is linked against installed libpalattice. This is
-   why it is build seperately ("make programs"). But it is installed during 
+   why it is build separately ("make programs"). But it is installed during 
    'make install' if the binary exists.
 
 4-5) Alternative:
@@ -61,6 +78,16 @@ Installation
    The binaries are now located in palattice/programs/build.
    convertlattice can be installed here with
    "sudo make install"
+
+
+--------------------------------------------------------------------------
+Remark: Operating Systems
+--------------------------------------------------------------------------
+So far, palattice has been used under Linux only (mainly Ubuntu & Debian).
+Please tell me about tests with other platforms.
+One issue will be configuring Mad-X/Elegant from C++, which currently
+uses the program "sed" (see "automatic execution of Mad-X/Elegant"
+and "TODOs" below).
 
 
 --------------------------------------------------------------------------
@@ -87,7 +114,7 @@ try deleting libpalattice/build/CMakeCache.txt and then run "cmake .." again.
 
 
 --------------------------------------------------------------------------
-If you used libpalattice or convertlattice before:
+If you used older versions of libpalattice or convertlattice before:
 --------------------------------------------------------------------------
 If you used the statically compiled convertlattice program before,
 please first uninstall this by execution of the "uninstall.sh" script from
@@ -157,7 +184,7 @@ To allow for automatic execution of Mad-X/Elegant, the library:
    to the path of your lattice file if it does not exist there.
 2. writes the name of your lattice file (and a few other settings)
    to libpalattice.madx/libpalattice.ele.
-3. executes "madx libpalattice.madx" or "elegant libpalattice.elegant".
+3. executes "madx libpalattice.madx" or "elegant libpalattice.ele".
 [4. if Elegant is used without libSDDS1: executes
    /usr/local/bin/elegant2libpalattice to convert SDDS files to ascii.]
 
