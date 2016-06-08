@@ -305,7 +305,7 @@ template<> AccTriple SimToolTable::get(unsigned int i, string keyX, string keyZ,
 
 
 SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string fileIn, string fileTag)
-  : executed(false), trackingTurns(0), trackingNumParticles(1),
+  : executed(false), trackingTurns(0), trackingNumParticles(1), trackingMomentum_MeV(0.),
     trackingNumParticlesTouched(false), tag(fileTag), tool(toolIn), mode(modeIn), verbose(false)
 {
   
@@ -454,6 +454,16 @@ void SimToolInstance::run()
       throw palatticeError("set number of Particles not implemented for madx. Please set manually in "+runFile);
     else if (tool==elegant)
       replaceInFile("n_particles_per_bunch", tmp.str(), ",", runFile);
+  }
+
+  // set tracking momentum in runFile:
+  if (trackingMomentum_MeV != 0.) {
+    tmp.str(std::string());
+    tmp << trackingMomentum_MeV;
+    if (tool== madx)
+      throw palatticeError("set momentum not implemented for madx. Please set manually in "+runFile);
+    else if (tool== elegant)
+      replaceInFile("p_central_mev", tmp.str(), ",", runFile);
   }
   
   //run madx/elegant:
@@ -798,6 +808,20 @@ void SimToolInstance::setNumParticles(unsigned int n)
     executed=false;
   }
   trackingNumParticlesTouched = true;
+}
+
+
+void SimToolInstance::setMomentum_MeV(double p_MeV)
+{
+  if (p_MeV!=trackingMomentum_MeV) {
+    
+    //currently only implemented for elegant
+    if (tool==madx)
+      throw palatticeError("set momentum not implemented for madx. Please set manually in "+runFile);
+    
+    trackingMomentum_MeV=p_MeV;
+    executed=false;
+  }
 }
 
 

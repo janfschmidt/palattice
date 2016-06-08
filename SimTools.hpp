@@ -138,6 +138,7 @@ namespace pal
     SimToolFileFormat preferedFormat;
     unsigned int trackingTurns;
     unsigned int trackingNumParticles;
+    double trackingMomentum_MeV;
     bool trackingNumParticlesTouched;
     string tag;
     string _path;
@@ -163,9 +164,11 @@ namespace pal
     void run();
     unsigned int turns() const {return trackingTurns;}
     unsigned int numParticles() const {return trackingNumParticles;}
+    double momentum_MeV() const {return trackingMomentum_MeV;}
     
     void setTurns(unsigned int t);  // if turns!=0 (default) single particle tracking is performed while madx/elegant run
     void setNumParticles(unsigned int n);
+    void setMomentum_MeV(double p_MeV);
     void setRunFile(string file) {runFile = file;}
     void setPreferedFileFormat(SimToolFileFormat f) {preferedFormat = f; executed = false;}
 
