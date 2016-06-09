@@ -112,10 +112,12 @@ public:
   AccTriple kick_mrad(const AccPair &orbit) const {return B(orbit) * 1000 * length;}
 
   // synchrotron radiation
-  //critical photon energy in keV at electron beam energy given as gamma:
-  virtual double Ecrit_keV_syli(const double& gamma) const {return 0;}
+  //critical photon energy (in 3 units) at electron beam energy given as gamma:
+  virtual double syli_Ecrit_Joule(const double& gamma) const {return 0;}
+  virtual double syli_Ecrit_keV(const double& gamma) const {return 0;}
+  virtual double syli_Ecrit_gamma(const double& gamma) const {return 0;}
   //mean number of photons emmited in this magnet by electron beam with energy given as gamma:
-  virtual double meanPhotons_syli(const double& gamma) const {return 0;}
+  virtual double syli_meanPhotons(const double& gamma) const {return 0;}
   
   bool nameMatch(vector<string> &nameList) const; // true if element name matches entry in List (can include 1 wildcard *)
   bool nameMatch(string &pattern) const;          // true if element name matches pattern (can include 1 wildcard *)
@@ -238,8 +240,10 @@ public:
 
     virtual AccTriple B() const;
     virtual AccTriple B(const AccPair &orbit) const;
-    virtual double Ecrit_keV_syli(const double& gamma) const;
-    virtual double meanPhotons_syli(const double& gamma) const;
+    virtual double syli_Ecrit_Joule(const double& gamma) const;
+    virtual double syli_Ecrit_keV(const double& gamma) const;
+    virtual double syli_Ecrit_gamma(const double& gamma) const;
+    virtual double syli_meanPhotons(const double& gamma) const;
     
     virtual string printSimTool(SimTool t) const =0;
     virtual string printLaTeX() const =0;
