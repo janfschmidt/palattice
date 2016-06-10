@@ -339,28 +339,31 @@ string AccElement::printHeader() const
 
 
 // ====== synchrotron radiation ======
-//critical photon energy in Joule at electron beam energy given as gamma
-double Magnet::syli_Ecrit_Joule(const double& gamma) const
+//critical photon energy in Joule at electron beam with reference energy given as gamma0
+//according to Matthew Sands "Physics of Electron Storage Rings" Eq. (5.9)
+double Magnet::syli_Ecrit_Joule(const double& gamma0) const
 {
-  double E = 3./2. * GSL_CONST_MKSA_PLANCKS_CONSTANT_HBAR * GSL_CONST_MKSA_SPEED_OF_LIGHT * std::pow(gamma,3) * k0.abs(); //k0 = 1/R
+  double E = 3./2. * GSL_CONST_MKSA_PLANCKS_CONSTANT_HBAR * GSL_CONST_MKSA_SPEED_OF_LIGHT * std::pow(gamma0,3) * k0.abs(); //k0 = 1/R
   return E;
 }
 //... in keV
-double Magnet::syli_Ecrit_keV(const double& gamma) const
+double Magnet::syli_Ecrit_keV(const double& gamma0) const
 {
-  return syli_Ecrit_Joule(gamma) / GSL_CONST_MKSA_ELECTRON_VOLT / 1000.;
+  return syli_Ecrit_Joule(gamma0) / GSL_CONST_MKSA_ELECTRON_VOLT / 1000.;
 }
 //... in units of gamma
-double Magnet::syli_Ecrit_gamma(const double& gamma) const
+double Magnet::syli_Ecrit_gamma(const double& gamma0) const
 {
-  return syli_Ecrit_Joule(gamma) / (GSL_CONST_MKSA_MASS_ELECTRON * std::pow(GSL_CONST_MKSA_SPEED_OF_LIGHT,2));
+  return syli_Ecrit_Joule(gamma0) / (GSL_CONST_MKSA_MASS_ELECTRON * std::pow(GSL_CONST_MKSA_SPEED_OF_LIGHT,2));
 }
 
 
-//mean number of photons emmited in this magnet by electron beam with energy given as gamma
-double Magnet::syli_meanPhotons(const double& gamma) const
+//mean number of photons emmited in this magnet by electron with reference energy given as gamma0
+//'photons per radian' according to Matthew Sands "Physics of Electron Storage Rings" Eq. (5.15)
+//'photons in bending magnet' by multiplication with bending angle l/R = l*|k0|
+double Magnet::syli_meanPhotons(const double& gamma0) const
 {
-  return 5./(2*std::sqrt(3)) * gamma/137. * length*k0.abs();
+  return 5./(2*std::sqrt(3)) * gamma0/137. * length*k0.abs();
 } 
 
 
