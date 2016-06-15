@@ -65,23 +65,35 @@ public:
   Interpolate& operator=(const Interpolate &other);
   virtual ~Interpolate();
 
+  // access data without interpolation
+  T behind(double xIn) const;    // get data of smallest x with x > xIn
+  T infrontof(double xIn) const; // get data of largest x with x <= xIn
+
+  // manual initialization of interpolation
   void init();
+
+  // access interpolated data
+  // non const version initializes interpolation automatically if not done before
+  // const version requires init() to be called before.
   T interp(double xIn);
   T interp(double xIn) const;
-  //avoiding extrapolation my mapping xIn into interpRange:
+
+  // periodic interpolation: avoiding extrapolation my mapping xIn into interpRange:
   inline T interpPeriodic(double xIn)       { while(xIn<interpMin()) {xIn+=interpRange();} return interp(interpMin()+std::fmod(xIn-interpMin(), interpRange())); }
   inline T interpPeriodic(double xIn) const { while(xIn<interpMin()) {xIn+=interpRange();} return interp(interpMin()+std::fmod(xIn-interpMin(), interpRange()));}
-  
-  void reset();                                // new initialization (for derived classes that can change data)
-  void reset(std::map<double,T> dataIn, double periodIn=0.); // new initialization and new external data
 
+  // reset initialization (for derived classes that can change data)
+  void reset();
+  void reset(std::map<double,T> dataIn, double periodIn=0.); // directly insert new external data
+
+  // info
   unsigned int size() const {return data.size();}
   double dataMin() const {return data.begin()->first;}            // minimum given _x 
   double dataMax() const {return data.rbegin()->first;}           // maximum given _x 
   double dataRange() const {return dataMax()-dataMin();}
   double interpMin() const;                             // lower limit for interpolation
   double interpMax() const;                             // upper limit for interpolation
-  double interpRange() const;
+  double interpRange() const;                           // "length" of interpolation range
 
   const char * getType() const {return gsl_spline_name(spline[0]);}
   double getPeriod() const {return period;}

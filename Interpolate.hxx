@@ -328,6 +328,34 @@ void Interpolate<T>::interp_out(double stepwidth, string filename)
 }
 
 
+// access data without interpolation
+// get data of smallest x with x > xIn
+template <class T>
+T Interpolate<T>::behind(double xIn) const
+{
+  auto it = data.upper_bound(xIn);
+  if (it==data.end()) {
+    stringstream msg;
+    msg << "Interpolate<>:behind(): " << xIn << " is out of data range.";
+    throw palatticeError(msg.str());
+  }
+  return it->second;
+}
+
+// get data of largest x with x <= xIn
+template <class T>
+T Interpolate<T>::infrontof(double xIn) const
+{
+  auto it = data.lower_bound(xIn);
+  if (it==data.begin()) {
+    stringstream msg;
+    msg << "Interpolate<>:infrontof(): " << xIn << " is out of data range.";
+    throw palatticeError(msg.str());
+  }
+  it--;
+  return it->second;
+}
+
 
 
 // ---- "defaults" for not implemented data types (see Interpolate.cpp for specialization) ----
