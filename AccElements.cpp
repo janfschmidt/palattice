@@ -486,10 +486,31 @@ string AccElement::printRF(SimTool t) const
 string AccElement::printSyli(SimTool t) const
 {
   stringstream s;
-  
-  if(t==elegant)
-    s << ", synch_rad="<<ELEGANT_SYNCH_RAD_SETTING<<", isr="<<ELEGANT_SYNCH_RAD_SETTING;
 
+  // there are two different synchrotron-radiation models in elegant:
+  // "use_synch_rad" uses a realistic photon energy spectrum
+  // "synch_rad" uses a gaussian distribution for better performance
+
+  if(t==elegant)
+    s << ", use_rad_dist="<<ELEGANT_SYNCH_RAD_SETTING;
+    // s << ", synch_rad="<<ELEGANT_SYNCH_RAD_SETTING<<", isr="<<ELEGANT_SYNCH_RAD_SETTING;
+
+  return s.str();
+}
+
+string AccElement::printNKicks(SimTool t) const
+{
+  stringstream s;
+
+  if(t==elegant) {
+    if (type==dipole)
+      s << ", N_KICKS=" << ELEGANT_DIPOLE_NKICKS;
+    else if (type==quadrupole)
+      s << ", N_KICKS=" << ELEGANT_QUADRUPOLE_NKICKS;
+    else if (type==sextupole)
+      s << ", N_KICKS=" << ELEGANT_SEXTUPOLE_NKICKS;
+  }
+  
   return s.str();
 }
 
@@ -534,7 +555,7 @@ string Dipole::printSimTool(SimTool t) const
     <<"L="<< length <<", "
     <<"ANGLE="<< k0.z*length;
   s << printStrength();
-  s << printEdges() << printTilt(t) << printSyli(t) << ";"<< rfMagComment() << endl;
+  s << printEdges() << printTilt(t) << printNKicks(t) << printSyli(t) << ";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -583,7 +604,7 @@ string Quadrupole::printSimTool(SimTool t) const
   s << printNameType(t) <<", "
     <<"L="<< length;
   s << printStrength();
-  s << printEdges() << printTilt(t) <<";"<< rfMagComment() << endl;
+  s << printEdges() << printTilt(t) << printNKicks(t) <<";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -594,7 +615,7 @@ string Sextupole::printSimTool(SimTool t) const
   s << printNameType(t) <<", "
     <<"L="<< length;
   s << printStrength();
-  s << printEdges() << printTilt(t) <<";"<< rfMagComment() << endl;
+  s << printEdges() << printTilt(t) << printNKicks(t) <<";"<< rfMagComment() << endl;
   return s.str();
 }
 

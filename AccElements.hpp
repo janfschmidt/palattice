@@ -141,6 +141,7 @@ protected:
   string printAperture(SimTool t) const;
   string printRF(SimTool t) const;
   string printSyli(SimTool t) const;
+  string printNKicks(SimTool t) const;
   string rfMagComment() const;
 };
 
