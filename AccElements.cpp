@@ -551,11 +551,10 @@ string Dipole::printSimTool(SimTool t) const
   if (k0.x!=0. || k0.s!=0.) 
     std::cout << "WARNING: " << name << " nonzero horizontal or longitudinal field is not exported!" << std::endl;
 
-  s << printNameType(t) <<", "
-    <<"L="<< length <<", "
-    <<"ANGLE="<< k0.z*length;
+  s << printNameType(t) << printNKicks(t)
+    <<", L="<< length <<", ANGLE="<< k0.z*length;
   s << printStrength();
-  s << printEdges() << printTilt(t) << printNKicks(t) << printSyli(t) << ";"<< rfMagComment() << endl;
+  s << printEdges() << printTilt(t) << printSyli(t) << ";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -601,10 +600,10 @@ string Quadrupole::printSimTool(SimTool t) const
 {
   stringstream s;
 
-  s << printNameType(t) <<", "
-    <<"L="<< length;
+  s << printNameType(t) << printNKicks(t)
+    <<", L="<< length;
   s << printStrength();
-  s << printEdges() << printTilt(t) << printNKicks(t) <<";"<< rfMagComment() << endl;
+  s << printEdges() << printTilt(t) <<";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -612,10 +611,10 @@ string Sextupole::printSimTool(SimTool t) const
 {
  stringstream s;
 
-  s << printNameType(t) <<", "
-    <<"L="<< length;
+  s << printNameType(t) << printNKicks(t)
+    <<", L="<< length;
   s << printStrength();
-  s << printEdges() << printTilt(t) << printNKicks(t) <<";"<< rfMagComment() << endl;
+  s << printEdges() << printTilt(t) <<";"<< rfMagComment() << endl;
   return s.str();
 }
 
