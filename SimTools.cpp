@@ -739,14 +739,25 @@ double SimToolInstance::readGammaCentral()
 
 double SimToolInstance::readAlphaC()
 {
- string label;
-  if (tool==madx)
-    label = "ALFA";
-  else if (tool==elegant)
-    label = "alphac";
+  string label;
+    if (tool==madx)
+      label = "ALFA";
+    else if (tool==elegant)
+      label = "alphac";
   double c = this->readParameter<double>(this->twiss(), label);
   return c;
 }
+double SimToolInstance::readAlphaC2()
+{
+  string label;
+  if (tool==madx)
+    throw palatticeError("reading 2. order momentum compaction factor from Mad-X is not implemented");
+  else if (tool==elegant)
+    label = "alphac2";
+  double c = this->readParameter<double>(this->twiss(), label);
+  return c;
+}
+
 
 AccPair SimToolInstance::readTune()
 {

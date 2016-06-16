@@ -183,7 +183,8 @@ namespace pal
     // readParameter() implementations for some parameters (labels):
     double readCircumference();
     double readGammaCentral();
-    double readAlphaC();
+    double readAlphaC();       // momentum compaction factor
+    double readAlphaC2();      // second order momemtum compaction factor
     AccPair readTune();
     AccTriple readDampingPartitionNumber_syli();
 
