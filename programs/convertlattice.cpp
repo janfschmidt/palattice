@@ -22,13 +22,15 @@
 #include <iostream>
 #include <getopt.h>
 #include <libpalattice/AccLattice.hpp>
+#include <libpalattice/gitversion.hpp>
 
 using namespace std;
 
 
 void usage()
 {
-  cout << "convert particle accelerator lattice definition files using libpalattice:" << endl
+  cout << endl;
+  cout << "convert particle accelerator lattice definition files using palattice:" << endl
        << "- MadX <--> Elegant" << endl
        << "- MadX, Elegant --> LaTeX (tikz-palattice package)" << endl << endl
        << "usage:" << endl;
@@ -48,23 +50,28 @@ void usage()
        << "* -n        offline mode. no madx or elegant execution." << endl
        << "            Thus, [FILE] must be a madx/elegant output filename:" << endl
        << "            - for MadX: a twiss file" << endl
-       << "            - for Elegant: an ascii parameter file" << endl
+       << "            - for Elegant: a parameter file (reading binary SDDS possible, see palattice README)" << endl
        << "* -h        display this help." << endl << endl;
   cout << "examples:" << endl
        << "MadX-->Elegant: convertlattice -m [MADXFILE]" <<endl
        << "Elegant-->MadX & LaTeX: convertlattice -e [ELEGANTFILE] -l" <<endl << endl;
-  cout << "For a beamline (no ring) MadX twiss module fails, because of missing start values (betx, bety)." << endl
-       << "Add them to the twiss command in libpalattice.madx to run MadX successfully." << endl;
+
+  cout << "If MadX/Elegant execution fails, edit libpalattice.madx/ele (created during first run)." << endl
+       << "E.g. for a beamline (no ring) MadX twiss module fails, because of missing start values (betx, bety)." << endl
+       << "Add them to the twiss command in libpalattice.madx to run MadX successfully." << endl << endl;
+
+  cout << "Some output can be configured in libpalattice/config.hpp (elements per row, n_kicks value, ...)." << std::endl;
 }
 
 void showInfo()
 {
-  cout << "*************************** convertlattice ***************************" << endl
-       << "This is unpublished testing software. Please do not copy/distribute it" << endl
-       << "without prior agreement of the author." << endl
-       << "Open Source publication of the full library coming soon :-)" << endl
-       << "(c) Jan Schmidt <schmidt@physik.uni-bonn.de>, 2015" << endl
-       << "**********************************************************************" << endl;
+  cout << "********************** palattice: convertlattice ***********************" << endl
+       << "palattice version " << pal::gitversion() << endl
+       << "ATTENTION: Only a limited number of element types and parameters can" << endl
+       << "be converted. Please check the created lattice for completeness!" << endl
+       << "If something is missing, please report to <janschmidt@mailbox.org>" << endl
+       << "or feel free to contribute at https://github.com/janfschmidt/palattice" << endl
+       << "************************************************************************" << endl;
 }
 
 
@@ -161,6 +168,8 @@ int main (int argc, char *argv[])
     std::cout << e.what() << std::endl;
     return 1;
   }
+
+  std::cout << "Thank you for using palattice!" << std::endl;
   
   return 0;
 }
