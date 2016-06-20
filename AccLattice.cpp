@@ -126,7 +126,7 @@ double AccLattice::theta(double posIn) const
 {
   double theta = 0.;
   // sum theta of all bending dipoles that end is at a pos < posIn
-  for (auto it=begin<dipole>(); it.pos(Anchor::end) < posIn; ++it) {
+  for (auto it=begin<dipole>(); (it!=end() && it.pos(Anchor::end)<posIn); ++it) {
     theta += it.element()->length * it.element()->k0.z; // theta= l/R = l*k0.z
   }
   // if posIn is inside a dipole, add theta of this magnet up to posIn
