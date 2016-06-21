@@ -149,6 +149,7 @@ namespace pal
     void replaceTagInFile(string name, string extension, string newTag, string file);
 
     template<class T> T readParameter_sdds(const string &file, const string &label);
+    std::string stripExtension(std::string f) const;
 
   public:
     const SimTool tool;
@@ -169,6 +170,7 @@ namespace pal
     void setTurns(unsigned int t);  // if turns!=0 (default) single particle tracking is performed while madx/elegant run
     void setNumParticles(unsigned int n);
     void setMomentum_MeV(double p_MeV);
+    
     void setRunFile(string file) {runFile = file;}
     void setPreferedFileFormat(SimToolFileFormat f) {preferedFormat = f; executed = false;}
 

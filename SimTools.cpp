@@ -341,14 +341,10 @@ string SimToolInstance::filebase() const
   else if (mode==online && tool==elegant && !sddsMode())
     filebase = "elegant";
   else if (mode==online && sddsMode())
-    filebase = "libpalattice";
+    filebase = stripExtension(runFile);
   else if (mode==offline) {
     //filebase: file without extension
-    string::size_type f2 = file.find_first_of(".");
-    if ( f2 != string::npos)
-      filebase = file.substr(0, f2);
-    else
-      filebase = file;
+    filebase = stripExtension(file);
   }
   if (mode==online && tag!="")
     filebase = filebase + "_" + tag;
@@ -356,7 +352,14 @@ string SimToolInstance::filebase() const
   return filebase;
 }
 
-
+std:: string SimToolInstance::stripExtension(std::string f) const
+{
+  std::string::size_type f2 = f.find_first_of(".");
+  if ( f2 != std::string::npos)
+    return f.substr(0, f2);
+  else
+    return f;
+}
 
 
 string SimToolInstance::trajectory(unsigned int obs, unsigned int particle) const
