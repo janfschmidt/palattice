@@ -305,7 +305,7 @@ void FunctionOfPos<T>::operator+=(FunctionOfPos<T> &other)
 
   this->reset();  // reset interpolation
 
-  string tmp = other.info.getbyLabel("Orbit Source file");
+  string tmp = other.info.getbyLabel("Data Source file");
   if (tmp != "NA") {
     this->info.add("added Orbit", tmp);
   }
@@ -330,7 +330,7 @@ void FunctionOfPos<T>::operator-=(FunctionOfPos<T> &other)
 
   this->reset();  // reset interpolation
 
-  string tmp = other.info.getbyLabel("Orbit Source file");
+  string tmp = other.info.getbyLabel("Data Source file");
   if (tmp != "NA") {
     this->info.add("subtracted Orbit", tmp);
   }
