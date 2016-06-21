@@ -89,11 +89,7 @@ template <class T>
 Interpolate<T>::~Interpolate()
 {
   gsl_interp_accel_free (acc);
-
-  if (ready) {
-    for (unsigned int i=0; i<spline.size(); i++)
-      gsl_spline_free (spline[i]);
-  }
+  reset();
 }
 
 
@@ -232,6 +228,7 @@ void Interpolate<T>::reset()
       gsl_spline_free (spline[i]);
     ready = false;
   }
+  spline.clear();
   // else
   //   cout << "INFO: Interpolate::reset(): nothing to reset." << endl;
 }

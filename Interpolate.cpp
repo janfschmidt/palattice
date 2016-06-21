@@ -32,7 +32,7 @@ using namespace pal;
 template <>
 void Interpolate<double>::initThis()
 {
-  spline.push_back( getSpline(data) );
+  spline.emplace_back( getSpline(data) );
 }
 
 //double
@@ -56,8 +56,8 @@ void Interpolate<AccPair>::initThis()
     tmpX.insert( std::pair<double,double>(it->first, it->second.x) );
     tmpZ.insert( std::pair<double,double>(it->first, it->second.z) );
   }
-  spline.push_back( getSpline(tmpX) ); // x: spline[0]
-  spline.push_back( getSpline(tmpZ) ); // z: spline[1]
+  spline.emplace_back( getSpline(tmpX) ); // x: spline[0]
+  spline.emplace_back( getSpline(tmpZ) ); // z: spline[1]
 }
 
 //AccPair
@@ -83,9 +83,9 @@ void Interpolate<AccTriple>::initThis()
     tmpZ.insert( std::pair<double,double>(it->first, it->second.z) );
     tmpS.insert( std::pair<double,double>(it->first, it->second.s) );
   }
-  spline.push_back( getSpline(tmpX) ); // x: spline[0]
-  spline.push_back( getSpline(tmpZ) ); // z: spline[1]
-  spline.push_back( getSpline(tmpS) ); // s: spline[2]
+  spline.emplace_back( getSpline(tmpX) ); // x: spline[0]
+  spline.emplace_back( getSpline(tmpZ) ); // z: spline[1]
+  spline.emplace_back( getSpline(tmpS) ); // s: spline[2]
 }
 
 //AccTriple
