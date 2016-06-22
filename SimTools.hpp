@@ -188,6 +188,7 @@ namespace pal
     double readAlphaC();       // momentum compaction factor
     double readAlphaC2();      // second order momemtum compaction factor
     AccPair readTune();
+    AccPair readChromaticity();
     AccTriple readDampingPartitionNumber_syli();
 
     string tool_string() const {if (tool==madx) return "madx"; else if (tool==elegant) return "elegant"; else return "";}

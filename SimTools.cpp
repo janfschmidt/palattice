@@ -780,6 +780,24 @@ AccPair SimToolInstance::readTune()
   return q;
 }
 
+AccPair SimToolInstance::readChromaticity()
+{
+  AccPair c;
+  string xLabel, zLabel;
+  if (tool==madx) {
+    xLabel = "DQ1";
+    zLabel = "DQ2";
+  }
+  else if (tool==elegant) {
+    xLabel = "dnux/dp";
+    zLabel = "dnuy/dp";
+  }
+    
+  c.x = readParameter<double>(twiss(), xLabel);
+  c.z = readParameter<double>(twiss(), zLabel);
+  return c;
+}
+
 AccTriple SimToolInstance::readDampingPartitionNumber_syli()
 {
   AccTriple J;
