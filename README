@@ -18,9 +18,8 @@ Besides the library, some example programs are included in the programs/ subdire
 - "lattice" demonstrates the lattice data structures
 - "interptwiss" & "fields" show import and usage of "accelerator data"
 
-Additionally, a simple tool for automatic lattice format conversion between Elegant and
-Mad-X is included: "convertlattice" is also located in programs/ (see below for
-installation).
+Additionally, "convertlattice" is included: a simple tool
+for automatic lattice format conversion between Elegant and Mad-X.
 
 
 
