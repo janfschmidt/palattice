@@ -21,8 +21,8 @@
 
 #include <iostream>
 #include <getopt.h>
-#include <libpalattice/AccLattice.hpp>
-#include <libpalattice/gitversion.hpp>
+#include "AccLattice.hpp"
+#include "gitversion.hpp"
 
 using namespace std;
 

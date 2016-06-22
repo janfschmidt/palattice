@@ -10,7 +10,7 @@ set(LIB_VERSION_MINOR 2)
 set(LIB_VERSION ${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR})
 
 # Install Path
-set(CMAKE_INSTALL_PREFIX "/usr/local")
+# set(CMAKE_INSTALL_PREFIX "/usr/local")
 set(SIMTOOL_PATH ${CMAKE_INSTALL_PREFIX}/lib/libpalattice_simTools)
 
 # Googletest Path
@@ -96,6 +96,36 @@ SET_TARGET_PROPERTIES(
   SOVERSION ${LIB_VERSION}
   )
 
+# link 'libpalattice'
+target_link_libraries(palattice
+  ${GSL_LIBRARY}
+  ${GSLCBLAS_LIBRARY}
+  )
+if(SDDS_LIBRARY)
+  target_link_libraries(palattice
+  ${SDDS_LIBRARY}
+  ${MDBCOMMON_LIBRARY}
+  ${MDB_LIBRARY}
+  ${LZMA_LIBRARY}
+  ${Z_LIBRARY}
+  )
+endif()
+
+
+
+# build 'convertlattice'
+add_executable(convertlattice convertlattice.cpp)
+
+# link 'convertlattice'
+target_link_libraries(convertlattice
+  palattice)
+if(SDDS_LIBRARY)
+  target_link_libraries(convertlattice
+    ${Z_LIBRARY}
+    )
+endif()
+
+
 
 # custom target: write header with current version
 add_custom_target(version
@@ -114,25 +144,6 @@ add_dependencies(palattice version)
 
 
 
-
-# link 'libpalattice'
-target_link_libraries(palattice
-  ${GSL_LIBRARY}
-  ${GSLCBLAS_LIBRARY}
-  )
-if(SDDS_LIBRARY)
-  target_link_libraries(palattice
-  ${SDDS_LIBRARY}
-  ${MDBCOMMON_LIBRARY}
-  ${MDB_LIBRARY}
-  ${LZMA_LIBRARY}
-  ${Z_LIBRARY}
-  )
-endif()
-
-
-
-
 # install
 install(TARGETS palattice
   LIBRARY DESTINATION lib
@@ -141,6 +152,10 @@ install(TARGETS palattice
 install(PROGRAMS simTools/elegant2libpalattice.sh
   DESTINATION bin
   RENAME elegant2libpalattice
+  )
+
+install(TARGETS convertlattice
+  DESTINATION bin
   )
 
 install(FILES
@@ -191,12 +206,14 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 
 
-# example programs, including convertlattice
-# programs are excluded from default target (all), because they
-# are linked against INSTALLED libpalattice.
+
+# example programs
+# programs are a separate project & excluded from 'all' target,
+# because they are linked against INSTALLED libpalattice
+# to demonstrate usage with your own programs.
 # use 'make', 'make install' first to install libpalattice
-# and then 'make programs' followed by another 'make install', which
-# now installs convertlattice
+# and then 'make programs'.
+# See README for details.
 include(ExternalProject)
 ExternalProject_Add(programs
   PREFIX programs
@@ -204,9 +221,3 @@ ExternalProject_Add(programs
   INSTALL_COMMAND ""
   )
 set_target_properties(programs PROPERTIES EXCLUDE_FROM_ALL TRUE)
-
-# install convertlattice
-install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/programs/src/programs-build/convertlattice
-  DESTINATION bin
-  OPTIONAL
-  )
