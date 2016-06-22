@@ -306,7 +306,7 @@ template<> AccTriple SimToolTable::get(unsigned int i, string keyX, string keyZ,
 
 SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string fileIn, string fileTag)
   : executed(false), trackingTurns(0), trackingNumParticles(1), trackingMomentum_MeV(0.),
-    trackingNumParticlesTouched(false), tag(fileTag), tool(toolIn), mode(modeIn), verbose(false)
+    trackingNumParticlesTouched(false), tag(fileTag), defaultRunFile(true), tool(toolIn), mode(modeIn), verbose(false)
 {
   
   //path: path of fileIn
@@ -422,8 +422,10 @@ void SimToolInstance::run()
   stringstream cmd, runcmd, tmp;
 
  // copy madx/elegant file (if not existing)
-  cmd << "cp -n "<< pal::simToolPath() << "/" << runFile << " " << path();
-  system(cmd.str().c_str());
+  if (defaultRunFile) {
+    cmd << "cp -n "<< pal::simToolPath() << "/" << runFile << " " << path();
+    system(cmd.str().c_str());
+  }
 
   // set lattice filename in runFile:
   tmp.str(std::string());

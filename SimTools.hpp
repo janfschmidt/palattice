@@ -144,6 +144,7 @@ namespace pal
     string _path;
     string file;     //mode=online: latticeInput, mode=offline: SimTool Output
     string runFile;
+    bool defaultRunFile;
     string outCases(string madxExt, string eleExt) const {if(tool==madx) return outFile(madxExt); else if(tool==elegant) return outFile(eleExt); return "";}
     void replaceInFile(string variable, string value, string delim, string file);
     void replaceTagInFile(string name, string extension, string newTag, string file);
@@ -171,7 +172,7 @@ namespace pal
     void setNumParticles(unsigned int n);
     void setMomentum_MeV(double p_MeV);
     
-    void setRunFile(string file) {runFile = file;}
+    void setRunFile(string file) {runFile = file; defaultRunFile=false;} //path relative to fileIn (constructor)
     void setPreferedFileFormat(SimToolFileFormat f) {preferedFormat = f; executed = false;}
 
     // read specified columns from a madx/elegant table format output file
