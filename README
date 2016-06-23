@@ -24,7 +24,7 @@ for automatic lattice format conversion between Elegant and Mad-X.
 
 
 --------------------------------------------------------------------------
-Installation - short
+Quick-Info
 --------------------------------------------------------------------------
 Dependencies:
 - CMake
@@ -38,10 +38,14 @@ Installation:
  make
  sudo make install
 
-Compile example programs:
+Compile example programs (API explanations in source files):
  cd palattice/programs/build
  cmake ..
- make 
+ make
+
+Link to libpalattice:
+ -lpalattice -lz -lgsl -lgslcblas
+ (lz is needed only if libSDDS1 is available)
 
 
 
