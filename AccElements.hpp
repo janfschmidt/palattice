@@ -118,9 +118,10 @@ public:
   virtual double syli_Ecrit_gamma(const double& gamma) const {return 0;}
   //mean number of photons emmited in this magnet by electron beam with energy given as gamma:
   virtual double syli_meanPhotons(const double& gamma) const {return 0;}
-  
-  bool nameMatch(vector<string> &nameList) const; // true if element name matches entry in List (can include 1 wildcard *)
-  bool nameMatch(string &pattern) const;          // true if element name matches pattern (can include 1 wildcard *)
+
+  // compare element name with pattern (can include 1 wildcard *)
+  bool nameMatch(const vector<string> &nameList) const;  // true if matches any entry in list
+  bool nameMatch(const string &pattern) const;                 // true if matches pattern 
 
   // string output of element type name (in simtool if given)
   string type_string() const {return pal::type_string(type);}

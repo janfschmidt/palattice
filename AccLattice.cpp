@@ -968,6 +968,30 @@ void AccLattice::subtractMisalignments(const AccLattice &other)
 
 
 
+// change family for all elements matching name pattern (can include 1 wildcard *) and (optionally) type
+// attention: family of a magnet determines sign of strength export (k1,k2) and calculation of field B()
+// internal variables k1, k2 are not changed.
+void AccLattice::setFamily(const element_family FAMILY, const string& namePattern, const element_type TYPE)
+{
+  iterator it = begin();
+  if (TYPE!=drift)
+    it = begin(TYPE);
+
+  while (it!=end()) {
+    if (it.element()->nameMatch(namePattern))
+      it.element()->family = FAMILY;
+    
+    if (TYPE==drift)
+      ++it;
+    else
+      it.next(TYPE);
+  }
+}
+
+
+
+
+
 // ------------------ "information" -----------------------
 // returns number of elements of a type in this lattice
 unsigned int AccLattice::size(element_type _type, element_plane p, element_family f) const

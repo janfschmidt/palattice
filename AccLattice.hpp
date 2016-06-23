@@ -110,6 +110,11 @@ public:
   void elegantimport(SimToolInstance &elegant);                // mount elements from elegant Lattice (read from ascii parameter file ".param", m=online: autom. elegant run)
   void elegantimport(string elegantFile, SimToolMode m=online) {SimToolInstance e(pal::elegant, m, elegantFile); elegantimport(e);}
 
+  // change family for all elements matching name pattern (can include 1 wildcard *) and (optionally) type
+  // attention: family of a magnet determines sign of strength export (k1,k2) and calculation of field B()
+  // internal variables k1, k2 are not changed.
+  void setFamily(const element_family FAMILY, const string& namePattern, const element_type TYPE=drift);
+
   void subtractCorrectorStrengths(AccLattice &other);    // subtract other corrector strengths from the ones of this lattice
   void subtractMisalignments(const AccLattice &other);   // subtract other misalignments from the ones of this lattice
 

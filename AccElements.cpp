@@ -232,7 +232,7 @@ double AccElement::rfFactor(unsigned int turn) const
 
 
 // true if element name matches entry in List (can include 1 wildcard *)
-bool AccElement::nameMatch(vector<string> &nameList) const
+bool AccElement::nameMatch(const vector<string> &nameList) const
 {
   for (unsigned int i=0; i<nameList.size(); i++) {
     if (nameMatch(nameList[i]))
@@ -243,7 +243,7 @@ bool AccElement::nameMatch(vector<string> &nameList) const
 
 
 // true if element name matches pattern (can include 1 wildcard *)
-bool AccElement::nameMatch(string &pattern) const
+bool AccElement::nameMatch(const string &pattern) const
 {
 
   if (this->name.size() < pattern.size()-1)
