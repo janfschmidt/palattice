@@ -163,7 +163,8 @@ namespace pal
     SimToolInstance(SimTool tool, SimToolMode mode, string fileIn, string fileTag="");
     ~SimToolInstance() {}
 
-    void run();
+    void run();      // run simtool if necessary
+    void forceRun();
     unsigned int turns() const {return trackingTurns;}
     unsigned int numParticles() const {return trackingNumParticles;}
     double momentum_MeV() const {return trackingMomentum_MeV;}

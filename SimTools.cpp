@@ -536,6 +536,11 @@ void SimToolInstance::run()
   executed = true;
 }
 
+void SimToolInstance::forceRun()
+{
+  executed = false;
+  run();
+}
 
 
 
