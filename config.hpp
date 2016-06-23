@@ -10,7 +10,7 @@
 
 // system commands:
 #define MADXCOMMAND "madx"        // system command to run MadX
-#define ELEGANTCOMMAND "mpirun -n 12 Pelegant"  // system command to run Elegant
+#define ELEGANTCOMMAND "elegant"  // system command to run Elegant (e.g. use "mpirun -n 4 Pelegant" for 4 threads)
 
 
 // minimum numeric values e.g. for comparisons:
