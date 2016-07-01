@@ -113,11 +113,11 @@ public:
 
   // synchrotron radiation
   //critical photon energy (in 3 units) at electron beam energy given as gamma:
-  virtual double syli_Ecrit_Joule(const double& gamma) const {return 0;}
-  virtual double syli_Ecrit_keV(const double& gamma) const {return 0;}
-  virtual double syli_Ecrit_gamma(const double& gamma) const {return 0;}
+  virtual double syli_Ecrit_Joule(const double& ) const {return 0;}
+  virtual double syli_Ecrit_keV(const double& ) const {return 0;}
+  virtual double syli_Ecrit_gamma(const double& ) const {return 0;}
   //mean number of photons emmited in this magnet by electron beam with energy given as gamma:
-  virtual double syli_meanPhotons(const double& gamma) const {return 0;}
+  virtual double syli_meanPhotons(const double& ) const {return 0;}
 
   // compare element name with pattern (can include 1 wildcard *)
   bool nameMatch(const vector<string> &nameList) const;  // true if matches any entry in list

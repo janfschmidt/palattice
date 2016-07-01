@@ -1237,7 +1237,7 @@ string AccLattice::getLine(SimTool tool) const
     line << it.element()->name;
     nInRow++;
   }//loop elements in lattice
-  
+
   //final drift to end
   if ( (circumference() - lastend) > ZERO_DISTANCE ) { //ignore very short drift
     s << "DRIFT_" << n << " : ";
@@ -1246,7 +1246,7 @@ string AccLattice::getLine(SimTool tool) const
     else
       s << "DRIFT, L=";
     s << this->circumference() - lastend <<";"<<endl;
-    line << "DRIFT_" << n;   // drift to end
+    line << ", DRIFT_" << n;   // drift to end
   }
 
   s << endl<<endl << line.str() << ")";
