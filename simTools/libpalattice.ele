@@ -10,8 +10,10 @@
 ! if it has multiple LINEs you also have to choose a beamline here
 ! ---------------------------------------------
 	lattice = "converted_elsa.madx.lte",
+!	use_beamline = ...,
 ! ---------------------------------------------
 	parameters = "%s.param",
+	p_central = 0,
 	p_central_mev = 2300,
 	random_number_seed = 42,
 &end

@@ -138,7 +138,9 @@ namespace pal
     SimToolFileFormat preferedFormat;
     unsigned int trackingTurns;
     unsigned int trackingNumParticles;
+    double trackingMomentum;
     double trackingMomentum_MeV;
+    string trackingBeamline;
     bool trackingNumParticlesTouched;
     string tag;
     string _path;
@@ -168,10 +170,17 @@ namespace pal
     unsigned int turns() const {return trackingTurns;}
     unsigned int numParticles() const {return trackingNumParticles;}
     double momentum_MeV() const {return trackingMomentum_MeV;}
-    
+    double momentum_betagamma() const {return trackingMomentum;}
+    string elegantBeamline() const {return trackingBeamline;}
+
+    // replace option values in the runFile.
+    // Please ensure the option is present in the file and is not commented out.
+    // there is NO ERROR if the option is not found!
     void setTurns(unsigned int t);  // if turns!=0 (default) single particle tracking is performed while madx/elegant run
     void setNumParticles(unsigned int n);
     void setMomentum_MeV(double p_MeV);
+    void setMomentum_betagamma(double p);
+    void setElegantBeamline(const string& bl);
     
     void setRunFile(string file) {runFile = file; defaultRunFile=false;} //path relative to fileIn (constructor)
     void setPreferedFileFormat(SimToolFileFormat f) {preferedFormat = f; executed = false;}

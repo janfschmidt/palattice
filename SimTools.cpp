@@ -305,8 +305,9 @@ template<> AccTriple SimToolTable::get(unsigned int i, string keyX, string keyZ,
 
 
 SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string fileIn, string fileTag)
-  : executed(false), trackingTurns(0), trackingNumParticles(1), trackingMomentum_MeV(0.),
-    trackingNumParticlesTouched(false), tag(fileTag), defaultRunFile(true), tool(toolIn), mode(modeIn), verbose(false)
+  : executed(false), trackingTurns(0), trackingNumParticles(1), trackingMomentum(0.), trackingMomentum_MeV(0.),
+    trackingBeamline(""), trackingNumParticlesTouched(false),
+    tag(fileTag), defaultRunFile(true), tool(toolIn), mode(modeIn), verbose(false)
 {
   
   //path: path of fileIn
@@ -393,6 +394,7 @@ void SimToolInstance::replaceInFile(string variable, string value, string delim,
     throw palatticeError("SimToolInstance::replaceInFile(): Error executing sed");
 }
 
+
 // replace a tag in a filename in a madx/elegant file via sed.
 // "[name]_[tag].[extension]", only [tag] is changed
 void SimToolInstance::replaceTagInFile(string name, string extension, string newTag, string file)
@@ -462,14 +464,23 @@ void SimToolInstance::run()
   }
 
   // set tracking momentum in runFile:
-  if (trackingMomentum_MeV != 0.) {
-    tmp.str(std::string());
-    tmp << trackingMomentum_MeV;
+  if (trackingMomentum!=0. || trackingMomentum_MeV!=0.) {
     if (tool== madx)
       throw palatticeError("set momentum not implemented for madx. Please set manually in "+runFile);
-    else if (tool== elegant)
-      replaceInFile("p_central_mev", tmp.str(), ",", runFile);
+    replaceInFile("p_central", std::to_string(trackingMomentum), ",", runFile);
+    if (trackingMomentum == 0.)
+      replaceInFile("p_central_mev", std::to_string(trackingMomentum_MeV), ",", runFile);
+    else
+      replaceInFile("p_central_mev", "0", ",", runFile);
   }
+
+  // set tracking elegant beamline:
+  if (!trackingBeamline.empty()) {
+    if (tool== madx)
+      throw palatticeError("set beamline not implemented for madx.");
+    replaceInFile("use_beamline", trackingBeamline, ",", runFile);
+  }
+
   
   //run madx/elegant:
   runcmd << "cd "<< path() << "; ";
@@ -863,5 +874,28 @@ void SimToolInstance::setMomentum_MeV(double p_MeV)
   }
 }
 
+void SimToolInstance::setMomentum_betagamma(double p)
+{
+  if (p!=trackingMomentum) {
+    
+    //currently only implemented for elegant
+    if (tool==madx)
+      throw palatticeError("set momentum not implemented for madx. Please set manually in "+runFile);
+    
+    trackingMomentum=p;
+    executed=false;
+  }
+}
 
-  
+void SimToolInstance::setElegantBeamline(const string& bl)
+{
+  if (!bl.empty()) {
+    
+    //currently only implemented for elegant
+    if (tool==madx)
+      throw palatticeError("set beamline not implemented for madx.");
+    
+    trackingBeamline=bl;
+    executed=false;
+  }
+}
