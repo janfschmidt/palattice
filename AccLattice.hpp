@@ -21,6 +21,7 @@
 #define __LIBPALATTICE_ACCLATTICE_HPP_
 
 #include <map>
+#include <unordered_map>
 #include <stdexcept>
 #include <iostream>
 #include <vector>
@@ -156,8 +157,7 @@ public:
   void madxexport(string file="",MadxLatticeType t=sequence) const {simToolExport(madx,file,t);}
 
   private:
-    iterator cast_helper(const const_iterator& it);
-    
+    typedef std::unordered_map<std::string,double> paramMap;
     // data format for elegant parameters file (".param")
     class paramRow {
     public:
@@ -167,6 +167,9 @@ public:
       double value;
       paramRow() : name(""), type(""), param(""), value(0.) {};
     };
+    iterator cast_helper(const const_iterator& it);
+    void elegantimport_mount(const double& s, paramRow& row_old, const paramMap& params, const double& l);
+    void resetParams(paramMap &params);
 
     
   public:

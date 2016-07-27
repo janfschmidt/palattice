@@ -603,17 +603,16 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
   if (elegant.mode == pal::online)
     elegant.run();
 
-  double s, pos;
-  double l, k1, k2, angle, kick, hkick, vkick, tilt, e1,e2,volt,freq; //parameter values
-  AccPair halfWidth;
+  double s, l;
+  //double l, k1, k2, angle, kick, hkick, vkick, tilt, e1,e2,volt,freq; //parameter values
+  paramMap params;
   paramRow row, row_old;
-  AccElement *element;
   fstream elegantParam;
   bool firstElement = true;
   string tmp;
 
-  pos=l=k1=k2=angle=kick=tilt=e1=e2=volt=freq=0.;   // initialize param. values
-  s = 0.;
+  s = l = 0.;
+  resetParams(params);
 
   //get metadata and set circumference
   try {
@@ -643,7 +642,38 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
 
     //mount element if next element reached (=all parameters read)
     if (row.name != row_old.name) {
+      elegantimport_mount(s, row_old, params, l);
+     // clear param. values to avoid reuse of an old value
+     l=0.;
+     resetParams(params);
+    }
 
+    //read parameter in row (if needed)
+    if (row.param == "L") {    //element length L used to get position (s)
+      l = row.value;
+      s += l;
+    }
+    else
+      params[row.param] = row.value;
+
+   row_old = row;
+  }
+  // mount last element
+  elegantimport_mount(s, row_old, params, l);
+  
+  //info stdout
+  cout << this->sizeSummary() << " read" << endl
+       <<"  as " <<this->circumference() << "m lattice from " <<elegantParamFile<<endl;
+  if (this->ignoreList.size() > 0) {
+    cout <<"* "<<this->ignoredElements()<<" elements ignored due to match with ignore list."<<endl;
+  }
+}
+
+// helper function for elegantimport(): create AccElement from imported parameters and mount in lattice
+void AccLattice::elegantimport_mount(const double& s, paramRow& row_old, const paramMap& params, const double& l)
+{
+     AccElement *element;
+  
      if (row_old.type=="CSBEND" || row_old.type=="CSRCSBEND" || row_old.type=="KSBEND" || row_old.type=="NIBEND" || row_old.type=="TUBEND" || row_old.type=="SBEN") {
        element = new Dipole(row_old.name, l, H);
      }
@@ -655,16 +685,18 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
      }
      else if (row_old.type=="VKICK") {
        element = new Corrector(row_old.name, l, V);
+       double kick = params.at("KICK");
        if (kick!=0.)  element->k0.x += sin(kick) / l; // 1/R from kick angle, straight length l
      }
      else if (row_old.type=="HKICK") {
        element = new Corrector(row_old.name, l, H);
+       double kick = params.at("KICK");
        if (kick!=0.)  element->k0.z += sin(kick) / l;
      }
      else if (row_old.type=="KICKER") {
        element = new Corrector(row_old.name, l);
-       element->k0.x += sin(vkick) / l;
-       element->k0.z += sin(hkick) / l;
+       element->k0.x += sin(params.at("VKICK")) / l;
+       element->k0.z += sin(params.at("HKICK")) / l;
      }
      else if (row_old.type=="RFCA") {
        element = new Cavity(row_old.name, l);
@@ -688,59 +720,37 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
      // }
 
      if (element->type != drift) {
+       double angle = params.at("ANGLE");
        if (angle!=0.) element->k0.z += angle / l; // 1/R from bending angle, curved length l
-       element->k1 = k1;
-       element->k2 = k2;
-       element->dpsi = tilt;
-       element->e1 = e1;
-       element->e2 = e2;
-       element->halfWidth = halfWidth;
+       element->k1 = params.at("K1");
+       element->k2 = params.at("K2");
+       element->dpsi = params.at("TILT");
+       element->e1 = params.at("E1");
+       element->e2 = params.at("E2");
+       element->halfWidth.x = params.at("X_MAX");
+       element->halfWidth.z = params.at("Y_MAX");
        if (element->type == cavity) {
-	 element->volt = volt;
-	 element->freq = freq;
+	 element->volt = params.at("VOLT");
+	 element->freq = params.at("FREQ");
        }
-	      
+
+       double pos;
        if (refPos == Anchor::begin) pos = s-l;
        else if (refPos == Anchor::center) pos = s-l/2;
        else pos = s; 
        this->mount(pos, *element); // mount element
      }
      delete element;
-     // clear param. values to avoid reuse of an old value
-     pos=l=k1=k2=angle=kick=hkick=vkick=tilt=e1=e2=volt=freq=0.;
-     halfWidth = AccPair();
-    }
+}
 
-    //read parameter in row (if needed)
-    if (row.param == "L") {    //element length L used to get position (s)
-      l = row.value;
-      s += l;
-    }
-    else if (row.param == "K1") k1 = row.value;
-    else if (row.param == "K2") k2 = row.value;
-    else if (row.param == "ANGLE") angle = row.value;
-    else if (row.param == "KICK") kick = row.value;
-    else if (row.param == "HKICK") hkick = row.value;
-    else if (row.param == "VKICK") vkick = row.value;
-    else if (row.param == "ETILT") tilt += row.value;
-    else if (row.param == "TILT") tilt += row.value;
-    else if (row.param == "E1") e1 = row.value;
-    else if (row.param == "E2") e2 = row.value;
-    else if (row.param == "X_MAX") halfWidth.x = row.value;
-    else if (row.param == "Y_MAX") halfWidth.z = row.value;
-    else if (row.param == "VOLT") volt = row.value;
-    else if (row.param == "FREQ") freq = row.value;
-    //... add more parameters here
-
-   row_old = row;
-  }
-  
-  //info stdout
-  cout << this->sizeSummary() << " read" << endl
-       <<"  as " <<this->circumference() << "m lattice from " <<elegantParamFile<<endl;
-  if (this->ignoreList.size() > 0) {
-    cout <<"* "<<this->ignoredElements()<<" elements ignored due to match with ignore list."<<endl;
-  }
+// init map of used elegant parameters
+// this is for security only: map::at() is used for access, so it throws if a paramerer
+// is used, which is not defined here (or from .param file) - e.g. due to a typo
+void AccLattice::resetParams(std::unordered_map<std::string,double> &params)
+{
+  params = {{"K1",0.}, {"K2",0.}, {"ANGLE",0.}, {"KICK",0.}, {"HKICK",0.}, {"VKICK",0.},
+	    {"TILT",0.}, {"E1",0.}, {"E2",0.}, {"VOLT",0.}, {"FREQ",0.},
+	    {"X_MAX",0.}, {"Y_MAX",0.}};   //... add more parameters here
 }
 
 
@@ -1324,7 +1334,7 @@ void AccLattice::simToolExport(SimTool tool, string filename, MadxLatticeType lt
   else {
     file.open(filename.c_str(), ios::out);
     if (!file.is_open()) {
-      msg << "ERROR: AccLattice::elegantexport(): Cannot open " << filename << ".";
+      msg << "ERROR: AccLattice::simToolExport(): Cannot open " << filename << ".";
       throw palatticeError(msg.str());
     }
     file << s.str();
