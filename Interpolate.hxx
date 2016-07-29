@@ -50,7 +50,7 @@ Interpolate<T>::Interpolate(const gsl_interp_type *t, double periodIn, std::map<
 // copy constructor
 template <class T>
 Interpolate<T>::Interpolate(const Interpolate &other)
-  : data(other.data), headerString(other.headerString), type(other.type), periodic(other.periodic), period(other.period), ready(false), info(other.info)
+  : data(other.data), headerString(other.headerString), type(other.type), period(other.period), periodic(other.periodic), ready(false), info(other.info)
 {
   acc = gsl_interp_accel_alloc ();
 
@@ -60,7 +60,7 @@ Interpolate<T>::Interpolate(const Interpolate &other)
 // move constructor
 template <class T>
 Interpolate<T>::Interpolate(Interpolate &&other)
-  : data(std::move(other.data)), headerString(std::move(other.headerString)), type(std::move(other.type)), periodic(std::move(other.periodic)), period(std::move(other.period)), ready(std::move(other.ready)), info(std::move(other.info))
+  : data(std::move(other.data)), headerString(std::move(other.headerString)), type(std::move(other.type)), period(std::move(other.period)), periodic(std::move(other.periodic)), ready(std::move(other.ready)), info(std::move(other.info))
 {
   acc = other.acc;
   other.acc=nullptr;
