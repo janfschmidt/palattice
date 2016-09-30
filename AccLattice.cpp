@@ -427,9 +427,9 @@ void AccLattice::madximport(SimToolInstance &madx)
 		<<e.filename << std::endl;
     }
 
-  if (refPos != Anchor::end)
-    cout << "WARNING: AccLattice::madximport(): The input file (MAD-X twiss) uses element end as positions." << endl
-	 << "They are transformed to the current Anchor set for this lattice: " << refPos_string() << endl;
+  // if (refPos != Anchor::end)
+  //   cout << "WARNING: AccLattice::madximport(): The input file (MAD-X twiss) uses element end as positions." << endl
+  // 	 << "They are transformed to the current Anchor set for this lattice: " << refPos_string() << endl;
 
 
   //read columns from file (execute madx if mode=online)
@@ -623,9 +623,9 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
 	      << e.filename << std::endl;
   }
 
-  if (refPos != Anchor::end)
-    cout << "WARNING: AccLattice::elegantimport(): The input file (elegant parameter) uses element end as positions." << endl
-	 << "They are transformed to the current Anchor set for this lattice: " << refPos_string() << endl;
+  // if (refPos != Anchor::end)
+  //   cout << "WARNING: AccLattice::elegantimport(): The input file (elegant parameter) uses element end as positions." << endl
+  // 	 << "They are transformed to the current Anchor set for this lattice: " << refPos_string() << endl;
 
   SimToolTable tab = elegant.readTable(elegant.lattice(), {"ElementName", "ElementParameter", "ParameterValue", "ElementType"});
   
