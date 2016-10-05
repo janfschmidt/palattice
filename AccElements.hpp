@@ -36,8 +36,8 @@ using namespace std;
 namespace pal
 {
 
-  enum element_type{dipole=0, quadrupole=1, corrector=2, sextupole=3, cavity=4, multipole=5, marker=6, monitor=7, rcollimator=8, drift=9}; //! keep dipole as first, drift as last
-  enum element_plane{H,V,L,noplane};    //horizontal,vertical,longitudinal
+  enum element_type{dipole=0, quadrupole=1, corrector=2, sextupole=3, cavity=4, multipole=5, marker=6, monitor=7, rcollimator=8, solenoid=9, drift=10}; //! keep dipole as first, drift as last
+  enum element_plane{H,V,noplane};    //horizontal,vertical
                                         //used for export and filtering only, NO INFLUENCE ON FIELD B()!
   enum element_family{F,D,nofamily};    //focus,defocus, CHANGES SIGN OF FIELD!
 
@@ -255,7 +255,7 @@ public:
   };
 
 
-  // multipole (abstract, du to export). forbids B() without orbit argument.
+  // multipole. forbids B() without orbit argument.
   class Multipole : public Magnet {
   protected:
     Multipole(element_type _type, string _name, double _length)
@@ -295,6 +295,18 @@ public:
   ~Corrector() {}
 
   virtual Corrector* clone() const {return new Corrector(*this);}
+
+  string printSimTool(SimTool t) const;
+  string printLaTeX() const;
+};
+
+class Solenoid : public Magnet {
+public:
+  Solenoid(string _name, double _length, double _k0=0.)
+    : Magnet(solenoid,_name,_length) {k0.s = _k0;}
+  ~Solenoid() {}
+
+  virtual Solenoid* clone() const {return new Solenoid(*this);}
 
   string printSimTool(SimTool t) const;
   string printLaTeX() const;

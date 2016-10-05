@@ -444,6 +444,7 @@ void AccLattice::madximport(SimToolInstance &madx)
 	"K2L",
 	"HKICK",
 	"VKICK",
+	"KSI",
 	"E1",
 	"E2",
 	"TILT",
@@ -500,6 +501,9 @@ void AccLattice::madximport(SimToolInstance &madx)
     else if (key == "\"RCOLLIMATOR\"") {
       element = new Rcollimator(name, l);
     }
+    else if (key == "\"SOLENOID\"") {
+      element = new Solenoid(name, l);
+    }
     else continue; //Drifts are not mounted explicitly
     
     // rf magnet
@@ -521,6 +525,7 @@ void AccLattice::madximport(SimToolInstance &madx)
       element->volt = twi.getd(i,"VOLT") * 1e6;
       element->freq = twi.getd(i,"FREQ") * 1e6;
     }
+    element->k0.s = twi.getd(i,"KSI")/l;
     element->k1 = twi.getd(i,"K1L")/l;
     element->k2 = twi.getd(i,"K2L")/l;
     element->dpsi += - twi.getd(i,"TILT"); // non-error tilt (e.g. skew magnets), sign see misalignments
@@ -709,6 +714,10 @@ void AccLattice::elegantimport_mount(const double& s, paramRow& row_old, const p
      }
      else if (row_old.type=="RCOL") {
        element = new Rcollimator(row_old.name, l);
+     }
+     else if (row_old.type=="SOLE") {
+       element = new Solenoid(row_old.name, l);
+       element->k0.s += params.at("KS");
      }
      else
        element = new Drift(); //Drifts are not mounted explicitly

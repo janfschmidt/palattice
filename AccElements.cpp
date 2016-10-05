@@ -67,6 +67,8 @@ string pal::type_string(pal::element_type type)
     return "Monitor";
   case rcollimator:
     return "Rcollimator";
+  case solenoid:
+    return "Slenoid";
   case drift:
     return "Drift";
   }
@@ -94,6 +96,8 @@ string pal::type_string(element_type type, SimTool t)
     return pal::simToolConditional("MONITOR","MONI",t);
   case rcollimator:
     return pal::simToolConditional("RCOLLIMATOR","RCOL",t);
+  case solenoid:
+    return pal::simToolConditional("SOLENOID","",t);
   case drift:
     return pal::simToolConditional("DRIFT","DRIF",t);
   }
@@ -131,9 +135,6 @@ Dipole::Dipole(string _name, double _length, element_plane p, double _k0)
   case H:
     k0.z = _k0;
     break;
-  case L:
-    k0.s = _k0;
-    break;
   case noplane:
     k0.x = k0.z = _k0;
     break;
@@ -153,9 +154,6 @@ Corrector::Corrector(string _name, double _length, element_plane p, double _k0)
     break;
   case H:
     k0.z = _k0;
-    break;
-  case L:
-    k0.s = _k0;
     break;
   case noplane:
     k0.x = k0.z = _k0;
@@ -576,11 +574,9 @@ string Corrector::printSimTool(SimTool t) const
     s << "H"<< type_string(t);
     kick = k0.z; // plane==H => horizontal kick => vertical field!
   }
-  else if (plane==noplane) {
+  else { //noplane
     s << "KICKER";
   }
-  else
-    throw palatticeError("Export of Corrector with plane=L not implemented!");
 
   s << ", L="<< length <<", ";
 
@@ -618,6 +614,16 @@ string Sextupole::printSimTool(SimTool t) const
   return s.str();
 }
 
+string Solenoid::printSimTool(SimTool t) const
+{
+ stringstream s;
+
+  s << printNameType(t)
+    <<", L="<< length<<", KS="<< k0.s;
+  s << printStrength();
+  s << printEdges() << printTilt(t) <<";"<< rfMagComment() << endl;
+  return s.str();
+}
 
 //elegants MULT has only 1 Order (e.g. not both k1 and k2)
 //export only for madx. for elegant a drift is exported
@@ -696,6 +702,13 @@ string Corrector::printLaTeX() const
     s << "\\kicker{"<< filterCharactersForLaTeX(name) <<"}{"<< length <<"}" << endl;
   else
     s << "\\corrector{"<< filterCharactersForLaTeX(name) <<"}{"<< length <<"}" << endl;
+  return s.str();
+}
+
+string Solenoid::printLaTeX() const
+{
+  stringstream s;
+  s << "\\solenoid{"<< filterCharactersForLaTeX(name) <<"}{"<< length <<"}" << endl;
   return s.str();
 }
 
