@@ -7,7 +7,7 @@ class AccLatticeTest : public ::testing::Test {
 public:
   pal::AccLattice lattice;
 
-  AccLatticeTest() : lattice(60.)
+  AccLatticeTest() : lattice(60., pal::Anchor::begin)
   {
     double pos = 5.0;
     std::stringstream name;

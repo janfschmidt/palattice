@@ -8,7 +8,7 @@ public:
   pal::AccLattice lattice;
   pal::AccLattice::iterator it;
 
-  AccIteratorTest() : lattice(30.), it(lattice.begin())
+  AccIteratorTest() : lattice(30., pal::Anchor::begin), it(lattice.begin())
   {
     double pos = 2.0;
     for(std::string num : {"1","2","3","4","5"}) {
