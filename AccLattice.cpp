@@ -554,7 +554,7 @@ void AccLattice::madximport(SimToolInstance &madx)
 
 
 // set misalignments from MAD-X Lattice (read ealign-output)
-// ! currently only rotation (tilt) around beam axis (s) is implemented   !
+// ! currently only implemented: tilt around beam axis (dpsi), transverse displacement (dx, dy)  !
 // ! to add others: define member in class AccElements & implement import !
 // *************************sign of rotation angle:*********************************
 // test with influence of tilt on vertical closed orbit in madx show
@@ -568,7 +568,7 @@ void AccLattice::madximportMisalignments(element_type t, string madxEalignFile)
 
   //read columns from file (execute madx if mode=online)
   SimToolTable ealign;
-  ealign = madx.readTable(madxEalignFile, {"NAME", "DPSI"});
+  ealign = madx.readTable(madxEalignFile, {"NAME", "DPSI", "DX", "DY"});
 
   //set misalignments to AccLattice elements
   string type = "-";
@@ -576,6 +576,8 @@ void AccLattice::madximportMisalignments(element_type t, string madxEalignFile)
     for (unsigned int i=0; i<ealign.rows(); i++) {
       if (ele->type==t && ele->name==removeQuote(ealign.gets(i,"NAME"))) {
 	ele->tilt += - ealign.getd(i,"DPSI");    // <<<<<<!!! sign of rotation angle (see comment above)
+	ele->displacement.x += ealing.getd(i,"DX");
+	ele->displacement.z += ealing.getd(i,"DY");
 	type = ele->type_string();
       }
     }
@@ -589,7 +591,7 @@ void AccLattice::madximportMisalignments(element_type t, string madxEalignFile)
 
 
 
-// mount elements from elegant Lattice (read from ascii parameter file ".param")
+// mount elements from elegant Lattice (read from parameter file ".param")
 // misalignments included (no separate function as for MADX)
 // >> here the file is not read by SimToolInstance::readTable,
 // >> because of different layout of .param file (no column based table!)
@@ -609,7 +611,6 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
     elegant.run();
 
   double s, l;
-  //double l, k1, k2, angle, kick, hkick, vkick, tilt, e1,e2,volt,freq; //parameter values
   paramMap params;
   paramRow row, row_old;
   fstream elegantParam;
@@ -734,6 +735,8 @@ void AccLattice::elegantimport_mount(const double& s, paramRow& row_old, const p
        element->k1 = params.at("K1");
        element->k2 = params.at("K2");
        element->tilt = params.at("TILT");
+       element->displacement.x = params.at("DX");
+       element->displacement.z = params.at("DY");
        element->e1 = params.at("E1");
        element->e2 = params.at("E2");
        element->halfWidth.x = params.at("X_MAX");
@@ -758,7 +761,7 @@ void AccLattice::elegantimport_mount(const double& s, paramRow& row_old, const p
 void AccLattice::resetParams(std::unordered_map<std::string,double> &params)
 {
   params = {{"K1",0.}, {"K2",0.}, {"ANGLE",0.}, {"KICK",0.}, {"HKICK",0.}, {"VKICK",0.},
-	    {"TILT",0.}, {"E1",0.}, {"E2",0.}, {"VOLT",0.}, {"FREQ",0.},
+	    {"TILT",0.}, {"DX",0.}, {"DY",0.}, {"E1",0.}, {"E2",0.}, {"VOLT",0.}, {"FREQ",0.},
 	    {"X_MAX",0.}, {"Y_MAX",0.}};   //... add more parameters here
 }
 

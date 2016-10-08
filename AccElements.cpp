@@ -205,6 +205,7 @@ AccElement& AccElement::operator=(const AccElement* other)
    this->plane = other->plane;
    this->family = other->family;
    this->tilt = other->tilt;
+   this->displacement = other->displacement;
    this->k0 = other->k0;
    this->k1 = other->k1;
    this->k2 = other->k2;
@@ -283,6 +284,7 @@ bool AccElement::operator==(const AccElement &o) const
   else if (std::fabs(o.k1-k1) > COMPARE_DOUBLE_EQUAL) return false;
   else if (std::fabs(o.k2-k2) > COMPARE_DOUBLE_EQUAL) return false;
   else if (std::fabs(o.tilt-tilt) > COMPARE_DOUBLE_EQUAL) return false;
+  else if ((displacement-o.displacement).abs() > COMPARE_DOUBLE_EQUAL) return false;
   // libpal internal variables
   else if (o.plane != plane) return false;
   else if (o.family != family) return false;
@@ -312,7 +314,8 @@ string AccElement::print() const
 
   s <<std::setw(w)<< name <<std::setw(w)<< type_string() <<std::setw(w) << length
     <<std::setw(w)<< k0.x <<std::setw(w)<< k0.z <<std::setw(w)<< k0.s
-    <<std::setw(w)<< k1 <<std::setw(w)<< k2 <<std::setw(w)<< tilt
+    <<std::setw(w)<< k1 <<std::setw(w)<< k2
+    <<std::setw(w)<< tilt <<std::setw(w)<< displacement.x <<std::setw(w)<< displacement.z
     <<std::setw(w)<< e1 <<std::setw(w)<< e2
     <<std::setw(w)<< halfWidth.x <<std::setw(w)<< halfWidth.z << std::endl;
 
@@ -327,7 +330,7 @@ string AccElement::printHeader() const
 
   s <<std::setw(w)<< "Name" <<std::setw(w)<< "Type" <<std::setw(w)<< "Length/m"
     <<std::setw(w)<< "k0.x / 1/m" <<std::setw(w)<< "k0.z / 1/m" <<std::setw(w)<< "k0.s / 1/m" <<std::setw(w)<< "k1 / 1/m^2" <<std::setw(w)<< "k2 / 1/m^3" 
-    <<std::setw(w)<< "Rotation(s)/rad"
+    <<std::setw(w)<< "tilt(s)/rad" <<std::setw(w)<< "dx/m" <<std::setw(w)<< "dz/m"
     <<std::setw(w)<< "e1 / rad" <<std::setw(w)<< "e2 / rad"
     <<std::setw(w)<< "halfWidth.x / m" <<std::setw(w)<< "halfWidth.z / m" << std::endl;
 
@@ -377,6 +380,9 @@ AccTriple Magnet::B() const
 AccTriple Magnet::B(const AccPair &orbit) const
 {
   AccTriple tmp;
+  //misalignment: displacement in x and z:
+  // shift orbit to sytem of magnet
+  orbit -= displacement;
   //misalignment: tilt around s-Axis:
   // if B depends on orbit, two steps are required:
   // 1. rotate orbit to system of magnet (-tilt)
@@ -421,7 +427,7 @@ AccTriple Multipole::B() const
 // libpal and elegant (tilt) use clockwise definition, so sign is changed here
 // to get the correct signs in madx (sign also changed during madximport, see AccLattice.cpp)
 // *********************************************************************************
-string AccElement::printTilt(SimTool t) const
+string AccElement::printMisalign(SimTool t) const
 {
   stringstream s;
   if (std::fabs(tilt)>=MIN_EXPORT_TILT) {
@@ -429,6 +435,12 @@ string AccElement::printTilt(SimTool t) const
       s <<", TILT="<< tilt;
     else if (t == madx)
       s <<", TILT="<< - tilt;
+  }
+  if (std::fabs(displacement.x)>=MIN_EXPORT_DISPLACEMENT) {
+    s <<", DX="<< displacement.x;
+  }
+  if (std::fabs(displacement.z)>=MIN_EXPORT_DISPLACEMENT) {
+    s <<", DY="<< displacement.z;
   }
   return s.str();
 }
@@ -552,7 +564,7 @@ string Dipole::printSimTool(SimTool t) const
   s << printNameType(t) << printNKicks(t)
     <<", L="<< length <<", ANGLE="<< k0.z*length;
   s << printStrength();
-  s << printEdges() << printTilt(t) << printSyli(t) << ";"<< rfMagComment() << endl;
+  s << printEdges() << printMisalign(t) << printSyli(t) << ";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -586,7 +598,7 @@ string Corrector::printSimTool(SimTool t) const
     s << "KICK="<< asin(kick*length);
 
   
-  s << printTilt(t) <<";"<< rfMagComment() << endl;
+  s << printMisalign(t) <<";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -599,7 +611,7 @@ string Quadrupole::printSimTool(SimTool t) const
   s << printNameType(t) << printNKicks(t)
     <<", L="<< length;
   s << printStrength();
-  s << printEdges() << printTilt(t) <<";"<< rfMagComment() << endl;
+  s << printEdges() << printMisalign(t) <<";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -610,7 +622,7 @@ string Sextupole::printSimTool(SimTool t) const
   s << printNameType(t) << printNKicks(t)
     <<", L="<< length;
   s << printStrength();
-  s << printEdges() << printTilt(t) <<";"<< rfMagComment() << endl;
+  s << printEdges() << printMisalign(t) <<";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -621,7 +633,7 @@ string Solenoid::printSimTool(SimTool t) const
   s << printNameType(t)
     <<", L="<< length<<", KS="<< k0.s;
   s << printStrength();
-  s << printEdges() << printTilt(t) <<";"<< rfMagComment() << endl;
+  s << printEdges() << printMisalign(t) <<";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -641,7 +653,7 @@ string Multipole::printSimTool(SimTool t) const
   s << printNameType(t) <<", "
     <<"L="<< length;
   s << printStrength();
-  s << printEdges() << printTilt(t) <<";"<< rfMagComment() << endl;
+  s << printEdges() << printMisalign(t) <<";"<< rfMagComment() << endl;
   return s.str();
 }
 

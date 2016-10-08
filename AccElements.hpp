@@ -74,6 +74,7 @@ public:
   
   //alignment errors:
   double tilt;           //rotation around s axis / rad
+  AccPair displacement;  //transverse displacement in x and z direction / m
 
   //rectangular aperture, only used for rcollimator!
   AccPair halfWidth;    //half width of the beam pipe / m
@@ -139,7 +140,7 @@ public:
 protected:
   void checkPhysLength(); // check for valid value and (re-)calculate physLength from default (config.hpp)
   string printNameType(SimTool t) const {return name + " : " + type_string(t);}
-  string printTilt(SimTool t) const;
+  string printMisalign(SimTool t) const;
   string printEdges() const;
   string printStrength() const;
   string printAperture(SimTool t) const;
