@@ -382,16 +382,16 @@ AccTriple Magnet::B(const AccPair &orbit) const
   AccTriple tmp;
   //misalignment: displacement in x and z:
   // shift orbit to sytem of magnet
-  orbit -= displacement;
+  AccPair oPrime = orbit - displacement;
   //misalignment: tilt around s-Axis:
   // if B depends on orbit, two steps are required:
   // 1. rotate orbit to system of magnet (-tilt)
   // 2. rotate calculated field back to lab frame (+tilt)
-  AccPair rotOrbit = orbit.tilt(- tilt);
+  oPrime = oPrime.tilt(- tilt);
   
   //quadrupole & sextupole field (k1 & k2)
-  tmp.x= k1*rotOrbit.z + k2*rotOrbit.x*rotOrbit.z;
-  tmp.z= k1*rotOrbit.x + 0.5*k2*(rotOrbit.x*rotOrbit.x-rotOrbit.z*rotOrbit.z);
+  tmp.x= k1*oPrime.z + k2*oPrime.x*oPrime.z;
+  tmp.z= k1*oPrime.x + 0.5*k2*(oPrime.x*oPrime.x-oPrime.z*oPrime.z);
   tmp.s=0;
   
   if(family==D) tmp*=(-1.); //sign of k1,k2

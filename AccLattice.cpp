@@ -576,8 +576,8 @@ void AccLattice::madximportMisalignments(element_type t, string madxEalignFile)
     for (unsigned int i=0; i<ealign.rows(); i++) {
       if (ele->type==t && ele->name==removeQuote(ealign.gets(i,"NAME"))) {
 	ele->tilt += - ealign.getd(i,"DPSI");    // <<<<<<!!! sign of rotation angle (see comment above)
-	ele->displacement.x += ealing.getd(i,"DX");
-	ele->displacement.z += ealing.getd(i,"DY");
+	ele->displacement.x += ealign.getd(i,"DX");
+	ele->displacement.z += ealign.getd(i,"DY");
 	type = ele->type_string();
       }
     }

@@ -18,6 +18,7 @@
 #define ZERO_DISTANCE 1e-6         // used to compare positions/m in Accelerator (treated as equal if difference is smaller than this number)
 #define MIN_AMPLITUDE 1e-10        // For smaller Amplitudes in Field Spectrum the phase is set to 0.0
 #define MIN_EXPORT_TILT 1e-9       // smaller element tilts/rad are ignored during lattice export
+#define MIN_EXPORT_DISPLACEMENT 1e-6 // smaller element shifts/m are ignored during lattice export
 
 
 // MadX/Elegant export:
