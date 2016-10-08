@@ -140,7 +140,8 @@ public:
 protected:
   void checkPhysLength(); // check for valid value and (re-)calculate physLength from default (config.hpp)
   string printNameType(SimTool t) const {return name + " : " + type_string(t);}
-  string printMisalign(SimTool t) const;
+  string printTilt(SimTool t) const;
+  string printDisplace() const;
   string printEdges() const;
   string printStrength() const;
   string printAperture(SimTool t) const;
@@ -161,7 +162,7 @@ protected:
     
     virtual AccTriple B() const {return zeroTriple;}
     virtual AccTriple B(const AccPair &orbit) const {return B();}
-    virtual string printSimTool(SimTool t) const =0;
+    virtual string printSimTool(SimTool t) const;
     virtual string printLaTeX() const =0;
   };
   
@@ -175,7 +176,6 @@ public:
   
   virtual Drift* clone() const {return new Drift(*this);}
 
-  virtual string printSimTool(SimTool t) const;
   virtual string printLaTeX() const;
 };
 

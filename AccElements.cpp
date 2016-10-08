@@ -427,7 +427,7 @@ AccTriple Multipole::B() const
 // libpal and elegant (tilt) use clockwise definition, so sign is changed here
 // to get the correct signs in madx (sign also changed during madximport, see AccLattice.cpp)
 // *********************************************************************************
-string AccElement::printMisalign(SimTool t) const
+string AccElement::printTilt(SimTool t) const
 {
   stringstream s;
   if (std::fabs(tilt)>=MIN_EXPORT_TILT) {
@@ -436,6 +436,12 @@ string AccElement::printMisalign(SimTool t) const
     else if (t == madx)
       s <<", TILT="<< - tilt;
   }
+  return s.str();
+}
+
+string AccElement::printDisplace() const
+{
+  stringstream s;
   if (std::fabs(displacement.x)>=MIN_EXPORT_DISPLACEMENT) {
     s <<", DX="<< displacement.x;
   }
@@ -535,7 +541,7 @@ string AccElement::rfMagComment() const
 
 
 
-string Drift::printSimTool(SimTool t) const
+string NoMagnet::printSimTool(SimTool t) const
 {
   stringstream s;
 
@@ -550,7 +556,7 @@ string Cavity::printSimTool(SimTool t) const
 
   s << printNameType(t) <<", "
     <<"L="<< length <<", "
-    << printRF(t) <<";"<< endl;
+    << printRF(t) << printDisplace() <<";"<< endl;
   return s.str();
 }
 
@@ -564,7 +570,7 @@ string Dipole::printSimTool(SimTool t) const
   s << printNameType(t) << printNKicks(t)
     <<", L="<< length <<", ANGLE="<< k0.z*length;
   s << printStrength();
-  s << printEdges() << printMisalign(t) << printSyli(t) << ";"<< rfMagComment() << endl;
+  s << printEdges() << printTilt(t) << printDisplace() << printSyli(t) << ";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -598,7 +604,7 @@ string Corrector::printSimTool(SimTool t) const
     s << "KICK="<< asin(kick*length);
 
   
-  s << printMisalign(t) <<";"<< rfMagComment() << endl;
+  s << printTilt(t) <<";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -611,7 +617,7 @@ string Quadrupole::printSimTool(SimTool t) const
   s << printNameType(t) << printNKicks(t)
     <<", L="<< length;
   s << printStrength();
-  s << printEdges() << printMisalign(t) <<";"<< rfMagComment() << endl;
+  s << printEdges() << printTilt(t) << printDisplace()<<";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -622,7 +628,7 @@ string Sextupole::printSimTool(SimTool t) const
   s << printNameType(t) << printNKicks(t)
     <<", L="<< length;
   s << printStrength();
-  s << printEdges() << printMisalign(t) <<";"<< rfMagComment() << endl;
+  s << printEdges() << printTilt(t) << printDisplace() <<";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -633,7 +639,7 @@ string Solenoid::printSimTool(SimTool t) const
   s << printNameType(t)
     <<", L="<< length<<", KS="<< k0.s;
   s << printStrength();
-  s << printEdges() << printMisalign(t) <<";"<< rfMagComment() << endl;
+  s << printEdges() << printTilt(t) << printDisplace() <<";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -653,7 +659,7 @@ string Multipole::printSimTool(SimTool t) const
   s << printNameType(t) <<", "
     <<"L="<< length;
   s << printStrength();
-  s << printEdges() << printMisalign(t) <<";"<< rfMagComment() << endl;
+  s << printEdges() << printTilt(t) << printDisplace() <<";"<< rfMagComment() << endl;
   return s.str();
 }
 
@@ -668,7 +674,8 @@ string Monitor::printSimTool(SimTool t) const
 {
   stringstream s;
   s << printNameType(t) <<", "
-    <<"L="<< length <<";"<<endl;
+    <<"L="<< length;
+  s << printTilt(t) << printDisplace() <<";"<<endl;
   return s.str();
 }
 
@@ -677,7 +684,7 @@ string Rcollimator::printSimTool(SimTool t) const
   stringstream s;
   s << printNameType(t) <<", "
     <<"L="<< length;
-  s << printAperture(t) <<";"<<endl;
+  s << printAperture(t) << printDisplace() <<";"<<endl;
   return s.str();
 }
 
