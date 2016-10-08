@@ -528,7 +528,7 @@ void AccLattice::madximport(SimToolInstance &madx)
     element->k0.s = twi.getd(i,"KSI")/l;
     element->k1 = twi.getd(i,"K1L")/l;
     element->k2 = twi.getd(i,"K2L")/l;
-    element->dpsi += - twi.getd(i,"TILT"); // non-error tilt (e.g. skew magnets), sign see misalignments
+    element->tilt += - twi.getd(i,"TILT"); // non-error tilt (e.g. skew magnets), sign see misalignments
     //misalignments in AccLattice::madximportMisalignments()
     s = twi.getd(i,"S");
     if (refPos == Anchor::begin) s -= l;
@@ -554,13 +554,13 @@ void AccLattice::madximport(SimToolInstance &madx)
 
 
 // set misalignments from MAD-X Lattice (read ealign-output)
-// ! currently only rotation (dpsi) around beam axis (s) is implemented   !
+// ! currently only rotation (tilt) around beam axis (s) is implemented   !
 // ! to add others: define member in class AccElements & implement import !
 // *************************sign of rotation angle:*********************************
-// test with influence of dpsi on vertical closed orbit in madx show
-// that dpsi is defined counter clockwise (dpsi>0 for dipole => kick to negative z)
+// test with influence of tilt on vertical closed orbit in madx show
+// that tilt is defined counter clockwise (tilt>0 for dipole => kick to negative z)
 // libpalattice and elegant (tilt) use clockwise definition, so sign is changed here
-// to get the correct signs for the magnetic fields calculated from dpsi
+// to get the correct signs for the magnetic fields calculated from tilt
 // *********************************************************************************
 void AccLattice::madximportMisalignments(element_type t, string madxEalignFile)
 {
@@ -575,7 +575,7 @@ void AccLattice::madximportMisalignments(element_type t, string madxEalignFile)
   for (auto ele : *this) {
     for (unsigned int i=0; i<ealign.rows(); i++) {
       if (ele->type==t && ele->name==removeQuote(ealign.gets(i,"NAME"))) {
-	ele->dpsi += - ealign.getd(i,"DPSI");    // <<<<<<!!! sign of rotation angle (see comment above)
+	ele->tilt += - ealign.getd(i,"DPSI");    // <<<<<<!!! sign of rotation angle (see comment above)
 	type = ele->type_string();
       }
     }
@@ -733,7 +733,7 @@ void AccLattice::elegantimport_mount(const double& s, paramRow& row_old, const p
        if (angle!=0.) element->k0.z += angle / l; // 1/R from bending angle, curved length l
        element->k1 = params.at("K1");
        element->k2 = params.at("K2");
-       element->dpsi = params.at("TILT");
+       element->tilt = params.at("TILT");
        element->e1 = params.at("E1");
        element->e2 = params.at("E2");
        element->halfWidth.x = params.at("X_MAX");
@@ -972,7 +972,7 @@ void AccLattice::subtractMisalignments(const AccLattice &other)
     }
 
     // subtract
-    it.element()->dpsi -= otherIt.element()->dpsi;
+    it.element()->tilt -= otherIt.element()->tilt;
     // set otherIt to next corrector
     ++otherIt;
   }

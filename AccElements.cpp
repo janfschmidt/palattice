@@ -111,7 +111,7 @@ string pal::type_string(element_type type, SimTool t)
 AccElement::AccElement(element_type _type, string _name, double _length)
   : type(_type),name(_name),length(_length),plane(noplane),family(nofamily)
 {
-  physLength = k1 = k2 = Qrf1 = dQrf = dpsi = e1 = e2 = 0.;
+  physLength = k1 = k2 = Qrf1 = dQrf = tilt = e1 = e2 = 0.;
 
   if (length < 0.) {
     stringstream msg;
@@ -204,7 +204,7 @@ AccElement& AccElement::operator=(const AccElement* other)
    this->name = other->name;
    this->plane = other->plane;
    this->family = other->family;
-   this->dpsi = other->dpsi;
+   this->tilt = other->tilt;
    this->k0 = other->k0;
    this->k1 = other->k1;
    this->k2 = other->k2;
@@ -282,7 +282,7 @@ bool AccElement::operator==(const AccElement &o) const
   else if ((k0-o.k0).abs() > COMPARE_DOUBLE_EQUAL) return false;
   else if (std::fabs(o.k1-k1) > COMPARE_DOUBLE_EQUAL) return false;
   else if (std::fabs(o.k2-k2) > COMPARE_DOUBLE_EQUAL) return false;
-  else if (std::fabs(o.dpsi-dpsi) > COMPARE_DOUBLE_EQUAL) return false;
+  else if (std::fabs(o.tilt-tilt) > COMPARE_DOUBLE_EQUAL) return false;
   // libpal internal variables
   else if (o.plane != plane) return false;
   else if (o.family != family) return false;
@@ -312,7 +312,7 @@ string AccElement::print() const
 
   s <<std::setw(w)<< name <<std::setw(w)<< type_string() <<std::setw(w) << length
     <<std::setw(w)<< k0.x <<std::setw(w)<< k0.z <<std::setw(w)<< k0.s
-    <<std::setw(w)<< k1 <<std::setw(w)<< k2 <<std::setw(w)<< dpsi
+    <<std::setw(w)<< k1 <<std::setw(w)<< k2 <<std::setw(w)<< tilt
     <<std::setw(w)<< e1 <<std::setw(w)<< e2
     <<std::setw(w)<< halfWidth.x <<std::setw(w)<< halfWidth.z << std::endl;
 
@@ -371,7 +371,7 @@ double Magnet::syli_meanPhotons(const double& gamma0) const
 // Magnet
 AccTriple Magnet::B() const
 {
-  return k0.tilt(dpsi);
+  return k0.tilt(tilt);
 }
 
 AccTriple Magnet::B(const AccPair &orbit) const
@@ -379,9 +379,9 @@ AccTriple Magnet::B(const AccPair &orbit) const
   AccTriple tmp;
   //misalignment: tilt around s-Axis:
   // if B depends on orbit, two steps are required:
-  // 1. rotate orbit to system of magnet (-dpsi)
-  // 2. rotate calculated field back to lab frame (+dpsi)
-  AccPair rotOrbit = orbit.tilt(- dpsi);
+  // 1. rotate orbit to system of magnet (-tilt)
+  // 2. rotate calculated field back to lab frame (+tilt)
+  AccPair rotOrbit = orbit.tilt(- tilt);
   
   //quadrupole & sextupole field (k1 & k2)
   tmp.x= k1*rotOrbit.z + k2*rotOrbit.x*rotOrbit.z;
@@ -393,7 +393,7 @@ AccTriple Magnet::B(const AccPair &orbit) const
   //dipole field (k0)
   tmp += k0;
   
-  return tmp.tilt(this->dpsi);
+  return tmp.tilt(this->tilt);
 }
 
 
@@ -415,20 +415,20 @@ AccTriple Multipole::B() const
 // ============ printSimTool (elegant or madx) ======================
 
 
-// *************************sign of rotation angle dpsi:*********************************
-// test with influence of dpsi on vertical closed orbit in madx show
-// that dpsi is defined counter clockwise (dpsi>0 for dipole => kick to negative z)
+// *************************sign of rotation angle tilt:*********************************
+// test with influence of tilt on vertical closed orbit in madx show
+// that tilt is defined counter clockwise (tilt>0 for dipole => kick to negative z)
 // libpal and elegant (tilt) use clockwise definition, so sign is changed here
 // to get the correct signs in madx (sign also changed during madximport, see AccLattice.cpp)
 // *********************************************************************************
 string AccElement::printTilt(SimTool t) const
 {
   stringstream s;
-  if (std::fabs(dpsi)>=MIN_EXPORT_TILT) {
+  if (std::fabs(tilt)>=MIN_EXPORT_TILT) {
     if (t == elegant)
-      s <<", TILT="<< dpsi;
+      s <<", TILT="<< tilt;
     else if (t == madx)
-      s <<", TILT="<< - dpsi;
+      s <<", TILT="<< - tilt;
   }
   return s.str();
 }

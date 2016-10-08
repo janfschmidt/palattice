@@ -73,7 +73,7 @@ public:
   double e2;
   
   //alignment errors:
-  double dpsi;           //rotation around s axis / rad
+  double tilt;           //rotation around s axis / rad
 
   //rectangular aperture, only used for rcollimator!
   AccPair halfWidth;    //half width of the beam pipe / m

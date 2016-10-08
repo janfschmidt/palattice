@@ -102,11 +102,11 @@ public:
   }
   
 
-  // tilt clockwise around s (longitudinal) axis -> dpsi
-  AccPair tilt(const double dpsi) const {
+  // tilt clockwise around s (longitudinal) axis
+  AccPair tilt(const double tilt) const {
     AccPair tmp;
-    tmp.x = this->x*cos(dpsi) + this->z*sin(dpsi);
-    tmp.z = - this->x*sin(dpsi) + this->z*cos(dpsi);
+    tmp.x = this->x*cos(tilt) + this->z*sin(tilt);
+    tmp.z = - this->x*sin(tilt) + this->z*cos(tilt);
     return tmp;
   }
 };
@@ -186,11 +186,11 @@ public:
     return std::sqrt(std::pow(x,2) + std::pow(z,2) + std::pow(s,2));
   }
   
-  // tilt clockwise around s (longitudinal) axis -> dpsi
-  AccTriple tilt(const double dpsi) const {
+  // tilt clockwise around s (longitudinal) axis
+  AccTriple tilt(const double tilt) const {
     AccTriple tmp;
-    tmp.x = this->x*cos(dpsi) + this->z*sin(dpsi);
-    tmp.z = - this->x*sin(dpsi) + this->z*cos(dpsi);
+    tmp.x = this->x*cos(tilt) + this->z*sin(tilt);
+    tmp.z = - this->x*sin(tilt) + this->z*cos(tilt);
     tmp.s = this->s;
     return tmp;
   }
