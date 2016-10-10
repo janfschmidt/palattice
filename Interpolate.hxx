@@ -364,7 +364,7 @@ void Interpolate<T>::initThis()
 }
 
 template <class T>
-T Interpolate<T>::interpThis(double xIn) const
+T Interpolate<T>::interpThis(double) const
 {
   throw palatticeError("ERROR: Interpolate<>:interpThis(): Interpolation is not implemented for this data type.");
 }

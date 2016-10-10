@@ -279,7 +279,7 @@ bool SimToolInstance::sddsMode() const {return false;}
 
 
 
-template<> AccPair SimToolTable::get(unsigned int i, string keyX, string keyZ, string keyS) const
+template<> AccPair SimToolTable::get(unsigned int i, string keyX, string keyZ, string) const
 {
   if (keyZ.empty())
     throw palatticeError("SimToolTable::get<AccPair>: No key for z column given!");

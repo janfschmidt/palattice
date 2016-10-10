@@ -161,7 +161,7 @@ protected:
     virtual NoMagnet* clone() const =0;
     
     virtual AccTriple B() const {return zeroTriple;}
-    virtual AccTriple B(const AccPair &orbit) const {return B();}
+    virtual AccTriple B(const AccPair&) const {return B();}
     virtual string printSimTool(SimTool t) const;
     virtual string printLaTeX() const =0;
   };

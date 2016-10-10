@@ -48,7 +48,7 @@ string pal::axis_string(AccAxis a)
 
 //double
 template <>
-vector<double> FunctionOfPos<double>::getVector(double stepwidth,AccAxis axis) const
+vector<double> FunctionOfPos<double>::getVector(double stepwidth,AccAxis) const
 {
   // axis not needed, if only 1D values exist.
   vector<double> out;
@@ -68,7 +68,7 @@ vector<double> FunctionOfPos<double>::getVector(double stepwidth,AccAxis axis) c
 
 //int
 template <>
-vector<double> FunctionOfPos<int>::getVector(double stepwidth,AccAxis axis) const
+vector<double> FunctionOfPos<int>::getVector(double stepwidth,AccAxis) const
 { 
   // axis not needed, if only 1D values exist.
   vector<double> out;

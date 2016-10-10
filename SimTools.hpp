@@ -277,7 +277,7 @@ namespace pal
 //SimToolTable template function implementation:
 //keyZ & keyS ignored for 1D data (used with AccPair&AccTriple specializations)
 template<class T>
-inline T pal::SimToolTable::get(unsigned int index, string key, string keyZ, string keyS) const
+inline T pal::SimToolTable::get(unsigned int index, string key, string, string) const
 {
   if (index >= this->rows()) {
     stringstream msg;
