@@ -116,11 +116,15 @@ public:
   void print(string filename="") const;
 
   // operators
+  // other FunctionOfPos
   // interpolated values of other are used,
   // so datapoints can be different, but circumference & number of turns have to match.
   // exclusion: other has 1 turn only. then this one turn is used with every turn
-  void operator+=(FunctionOfPos<T> &other);
-  void operator-=(FunctionOfPos<T> &other);
+  void operator+=(const FunctionOfPos<T> &other);
+  void operator-=(const FunctionOfPos<T> &other);
+  // constant value
+  void operator+=(const T &value);
+  void operator-=(const T &value);
 
   // construct Spectrum (FFT) from this FunctionOfPos (for 1D values, chosen by axis).
   // axis is ignored for 1D data (int or double)

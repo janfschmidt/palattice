@@ -288,7 +288,7 @@ bool FunctionOfPos<T>::compatible(FunctionOfPos<T> &o) const
 
 // ---------------- operators -------------------------
 template <class T>
-void FunctionOfPos<T>::operator+=(FunctionOfPos<T> &other)
+void FunctionOfPos<T>::operator+=(const FunctionOfPos<T> &other)
 {
   if (!compatible(other))
     throw invalid_argument("Addition of FunctionOfPos<T> objects not possible (incompatible circumference or number of turns).");
@@ -313,7 +313,7 @@ void FunctionOfPos<T>::operator+=(FunctionOfPos<T> &other)
 }
 
 template <class T>
-void FunctionOfPos<T>::operator-=(FunctionOfPos<T> &other)
+void FunctionOfPos<T>::operator-=(const FunctionOfPos<T> &other)
 {
   if (!compatible(other))
     throw invalid_argument("Addition of FunctionOfPos<T> objects not possible (incompatible circumference or number of turns).");
@@ -335,6 +335,20 @@ void FunctionOfPos<T>::operator-=(FunctionOfPos<T> &other)
     this->info.add("subtracted Orbit", tmp);
   }
   this->info.addStatistics(mean(),stddev());
+}
+
+template <class T>
+void FunctionOfPos<T>::operator+=(const T &value)
+{
+  for(auto &it : this->data)
+    it->second += value;
+}
+
+template <class T>
+void FunctionOfPos<T>::operator-=(const T &value)
+{
+  for(auto &it : this->data)
+    it->second -= value;
 }
 
 // construct Spectrum (FFT) from this FunctionOfPos
