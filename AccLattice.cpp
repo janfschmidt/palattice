@@ -108,6 +108,15 @@ AccLattice& AccLattice::operator= (const AccLattice &other)
 }
 
 
+// total length of all Dipoles
+double AccLattice::bentLength() const
+{
+  double l=0.;
+  for (auto it=begin<dipole>(); it!=end(); ++it)
+    l += it.element()->length;
+  return l;
+}
+
 
 
 void AccLattice::setCircumference(double c)

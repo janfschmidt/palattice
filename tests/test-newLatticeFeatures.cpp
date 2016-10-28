@@ -48,6 +48,13 @@ TEST_F(AccLatticeTest, setFamily) {
   EXPECT_EQ(5u, lattice.size(pal::quadrupole, pal::noplane, pal::D));
 }
 
+TEST_F(AccLatticeTest, bentLength) {
+  EXPECT_EQ(9*2.5, lattice.bentLength());
+  lattice.dismount(lattice.begin<pal::dipole>());
+  EXPECT_EQ(8*2.5, lattice.bentLength());
+}
+
+
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

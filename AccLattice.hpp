@@ -68,13 +68,14 @@ public:
   AccLattice& operator= (const AccLattice &other);
 
   double circumference() const {return circ;}
+  double bentLength() const;                                          // total length of all Dipoles
 
   void setComment(string _comment) {comment=_comment; info.add("Comment", comment);}
   string getComment() const {return comment;}
 
   double posMod(double posIn) const {return fmod(posIn,circ);}        // get position modulo circumference
   unsigned int turn(double posIn) const {return int(posIn/circ + ZERO_DISTANCE) + 1;} // get turn from position
-  double theta(double posIn) const;                                   // get rotation angle [0,2pi]: increases lin. in bending dipoles, constant in-between. 
+  double theta(double posIn) const;                                   // get rotation angle [0,2pi]: increases lin. in bending dipoles, constant in-between.
 
     // iterator
     iterator begin() {return iterator(elements.begin(),&elements,&refPos,&circ);}
