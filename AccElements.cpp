@@ -68,7 +68,7 @@ string pal::type_string(pal::element_type type)
   case rcollimator:
     return "Rcollimator";
   case solenoid:
-    return "Slenoid";
+    return "Solenoid";
   case drift:
     return "Drift";
   }

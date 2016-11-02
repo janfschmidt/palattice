@@ -552,8 +552,8 @@ void AccLattice::madximport(SimToolInstance &madx)
 
 
   //info stdout
-  cout << this->sizeSummary() << " read" << endl
-       <<"  as " <<this->circumference() << "m lattice from " <<madxTwissFile<<endl;
+  cout << this->sizeSummary() << endl
+       <<"  read as " <<this->circumference() << "m lattice from " <<madxTwissFile<<endl;
   if (this->ignoreList.size() > 0) {
     cout <<"* "<<this->ignoredElements()<<" elements ignored due to match with ignore list."<<endl;
   }
@@ -677,8 +677,8 @@ void AccLattice::elegantimport(SimToolInstance &elegant)
   elegantimport_mount(s, row_old, params, l);
   
   //info stdout
-  cout << this->sizeSummary() << " read" << endl
-       <<"  as " <<this->circumference() << "m lattice from " <<elegantParamFile<<endl;
+  cout << this->sizeSummary() << endl
+       <<"  read as " <<this->circumference() << "m lattice from " <<elegantParamFile<<endl;
   if (this->ignoreList.size() > 0) {
     cout <<"* "<<this->ignoredElements()<<" elements ignored due to match with ignore list."<<endl;
   }
@@ -1039,10 +1039,29 @@ unsigned int AccLattice::size(element_type _type, element_plane p, element_famil
 
 string AccLattice::sizeSummary() const
 {
+  unsigned int numPerLine = 4;
   stringstream s;
-  s << "* "<<this->size(dipole)<<" dipoles, "<<this->size(quadrupole)<<" quadrupoles, "
-    <<this->size(sextupole)<<" sextupoles, "<<this->size(corrector)<<" correctors, "
-    <<this->size(cavity)<<" cavities, "<<this->size(multipole)<<" multipoles";
+  unsigned int i=1;
+  element_type t=dipole;
+  
+  s << "* " << this->size(t)<<" "<< pal::type_string(t) << "s";
+  t=element_type(t+1);
+  
+  for (; t!=drift; t=element_type(t+1)) {
+    auto num = this->size(t);
+    if (num > 0) {
+      if (i >= numPerLine) {
+	s <<","<< std::endl << "  ";
+	i=0;
+      }
+      else {
+	s << ", ";
+	i++;
+      }
+      s << num <<" "<< pal::type_string(t) << "s";
+    }
+  }
+  
   return s.str();
 }
 
