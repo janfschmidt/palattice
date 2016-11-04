@@ -110,7 +110,7 @@ public:
 
   // tests
   bool exists(double pos, unsigned int turn=1) const; // is there data at pos?
-  bool compatible(FunctionOfPos<T> &other) const; // can I add/subract with other? (data at same pos?)
+  bool compatible(const FunctionOfPos<T> &other) const; // can I add/subract with other? (data at same pos?)
 
   // output
   void print(string filename="") const;

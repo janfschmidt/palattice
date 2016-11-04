@@ -254,7 +254,7 @@ bool FunctionOfPos<T>::exists(double pos, unsigned int turnIn) const
 //   1. circumferences are equal
 //   2. same number of turns or "other" has only 1 turn  (+= or -= add/sub. this 1 turn to/from each turn)
 template <class T>
-bool FunctionOfPos<T>::compatible(FunctionOfPos<T> &o) const
+bool FunctionOfPos<T>::compatible(const FunctionOfPos<T> &o) const
 {
   if ( turns() == 0 || o.turns() == 0 ) {
     if (verbose)
