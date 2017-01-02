@@ -413,7 +413,14 @@ AccTriple Multipole::B() const
 }
 
 
- 
+// Dipole: Integral field including Bx from edge focussing
+// ! Uses given orbit for begin and end of magnet
+AccTriple Dipole::B_int(const AccPair &orbit) const
+{
+  auto Bint = AccElement::B_int(orbit);
+  Bint.x -= ( tan(this->e1)/ + tan(this->e2)/R() ) * orbit.z;
+  return Bint;
+}
 
 
 

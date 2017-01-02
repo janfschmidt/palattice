@@ -69,7 +69,7 @@ std::complex<double> ResStrengths::calculate(double agamma)
 
       // dipole
       if (it.element()->type == dipole) {
-	double R = 1/it.element()->k0.z; // bending radius
+	double R = ((Dipole*)it.element())->R(); // bending radius
 	// horizontal component of fringe field due to edge angle (e1,e2):
 	//   Bx*l = k*z*l = - tan(e1)/R*z1 - tan(e2)/R*z2
 	// (longitudinal fringe field not implemented)

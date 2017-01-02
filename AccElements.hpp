@@ -287,6 +287,10 @@ public:
 
   virtual Dipole* clone() const {return new Dipole(*this);}
 
+  virtual AccTriple B_int(const AccPair &orbit) const; // includes Bx from edge focussing
+  double R() const {return 1/k0.z;}
+  void setR(double R) {k0=AccTriple(); k0.z=1/R;}
+  
   string printSimTool(SimTool t) const;
   string printLaTeX() const;
 };
