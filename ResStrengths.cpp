@@ -54,13 +54,10 @@ std::complex<double> ResStrengths::operator[](double agamma)
 // Fields are NOT expressed by linear approx. of particle motion as by Courant-Ruth and DEPOL code,
 // but the magnetic fields are used directly.
 // !!! At the moment the orbit/field inside a magnet is assumed to be constant.
-// !!! As edge focusing fields are not included in AccLattice,
-//     they are NOT included in res. strengths here.
+// !!! edge focusing of dipoles is not included in AccLattice, but horizontal edge fields is
+//     calculated here. Longitudinal component is not implemented.
 std::complex<double> ResStrengths::calculate(double agamma)
 {
-  //debug:
-  //std::cout << "calc! (for agamma=" << agamma << ")" << std::endl;
-
   std::complex<double> epsilon (0,0);
 
   for (unsigned int turn=1; turn<=nturns; turn++) {
@@ -70,9 +67,15 @@ std::complex<double> ResStrengths::calculate(double agamma)
       // assume particle velocity parallel to s-axis, B is already normalized to rigidity (BR)_0 = p_0/e
       std::complex<double> omega = (1+agamma)*it.element()->B(orbit->interp(it.pos())).x - im * (1+a_gyro)*it.element()->B(orbit->interp(it.pos())).s;
 
-      // dipole: epsilon = 1/2pi * omega * R/(i*agamma) * (e^{i*agamma*theta2}-e^{i*agamma*theta1})
+      // dipole
       if (it.element()->type == dipole) {
 	double R = 1/it.element()->k0.z; // bending radius
+	// horizontal component of fringe field due to edge angle (e1,e2):
+	//   Bx*l = k*z*l = - tan(e1)/R*z1 - tan(e2)/R*z2
+	// (longitudinal fringe field not implemented)
+	omega -= (1+agamma) * ( tan(it.element()->e1)/R * orbit->interp(it.begin()).z
+				+ tan(it.element()->e2)/R * orbit->interp(it.end()).z );
+	// dipole: epsilon = 1/2pi * omega * R/(i*agamma) * (e^{i*agamma*theta2}-e^{i*agamma*theta1})
 	epsilon += 1/(2*M_PI) * omega * R/(im*agamma) * (std::exp(im*agamma*(lattice->theta(it.end())+turn*2*M_PI)) - std::exp(im*agamma*(lattice->theta(it.begin())+turn*2*M_PI)));
       }
       // all others: epsilon = 1/2pi * e^{i*agamma*theta} *  omega * l
