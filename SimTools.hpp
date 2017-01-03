@@ -150,6 +150,7 @@ namespace pal
     string outCases(string madxExt, string eleExt) const {if(tool==madx) return outFile(madxExt); else if(tool==elegant) return outFile(eleExt); return "";}
     void replaceInFile(string variable, string value, string delim, string file);
     void replaceTagInFile(string name, string extension, string newTag, string file);
+    void system_throwing(const std::string& cmd) const; //system call wrapper throwing std::system_error
 
     template<class T> T readParameter_sdds(const string &file, const string &label);
     std::string stripExtension(std::string f) const;

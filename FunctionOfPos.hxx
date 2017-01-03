@@ -481,6 +481,9 @@ void FunctionOfPos<T>::readSimToolParticleColumn(SimToolInstance &s, unsigned in
 	  else if (s.tool==pal::elegant) {
 	    turn = tab.get<unsigned int>(i,"Turn"); // +1 included in elegant2libpalattice.sh
 	  }
+	  else {
+	    throw std::runtime_error("simtool " + s.tool_string() + " not implemented in FunctionOfPos<>::readSimToolParticleColumn()");
+	  }
 	  T otmp = tab.get<T>(i, valX, valZ, valS);
 	  this->set(otmp, obsPos, turn);
 	}

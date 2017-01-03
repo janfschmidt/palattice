@@ -81,7 +81,7 @@ TEST(sdds, ColumnValues) {
 
   SDDS_ReadTable(t);
   void *mem;
-  double s;
+  double s=0.;
   std::vector<double> x;
   unsigned int length=SDDS_CountRowsOfInterest(t);
   for (auto i=0u; i<length; i++) {

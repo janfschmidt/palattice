@@ -80,7 +80,7 @@ int main (int argc, char *argv[])
   string out = "-";
   bool m,e,l;
   m=e=l=false;
-  pal::SimTool tool;
+  pal::SimTool tool = pal::elegant;
   pal::SimToolMode mode = pal::online;
   pal::MadxLatticeType ltype = pal::sequence;
 

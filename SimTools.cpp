@@ -411,6 +411,16 @@ void SimToolInstance::replaceTagInFile(string name, string extension, string new
 }
 
 
+
+//system call wrapper throwing std::system_error if return value=!0
+void SimToolInstance::system_throwing(const std::string& cmd) const
+{
+  auto ret = system(cmd.c_str());
+  if (ret!=0) {
+    throw std::system_error(ret, std::system_category());
+  }
+}
+
 // run madx/elegant (online mode only)
 // single particle tracking is only done if trackingTurns!=0
 //  (elegant does this automatically, for madx it is handled below)
@@ -426,7 +436,7 @@ void SimToolInstance::run()
  // copy madx/elegant file (if not existing)
   if (defaultRunFile) {
     cmd << "cp -n "<< pal::simToolPath() << "/" << runFile << " " << path();
-    system(cmd.str().c_str());
+    system_throwing(cmd.str());
   }
 
   // set lattice filename in runFile:
@@ -488,7 +498,7 @@ void SimToolInstance::run()
     //avoid fatal error "cannot open input file: madx.observe"
     cmd.str(std::string());
     cmd << "cd "<<path()<<"; echo \"\" > madx.observe";
-    system(cmd.str().c_str());
+    system_throwing(cmd.str());
     // ---
     runcmd << MADXCOMMAND << " < ";
     cout << "Run MadX 1...";
@@ -503,10 +513,11 @@ void SimToolInstance::run()
   else
     runcmd << " > " <<tool_string()<< ".log";
   cout << " (log: " << log() << ")" << endl;
-  int ret = system(runcmd.str().c_str());
-  if (ret != 0) {
+  try {
+    system_throwing(runcmd.str());
+  } catch (std::system_error& e) {
     stringstream msg;
-    msg << tool_string() << " Error! (see " << log() <<")";
+    msg << tool_string() << " Error! (return code "<<e.code()<<", see " << log() <<")";
     throw palatticeError(msg.str());
   }
 
@@ -521,7 +532,7 @@ void SimToolInstance::run()
       tmp << "watchfiles";
     else
       tmp << "NO";
-    system(tmp.str().c_str());
+    system_throwing(tmp.str());
   }
 
 
@@ -532,7 +543,7 @@ void SimToolInstance::run()
     cmd << "cd "<< path() << "; "
 	<< "grep BPM " << lattice() << " | awk '{gsub(\"\\\"\",\"\",$2); print \"ptc_observe, place=\"$2\";\"}' > " 
 	<< "madx.observe";
-    system(cmd.str().c_str());
+    system_throwing(cmd.str());
     
     // 2. madx run -> using madx.observe
     cout << "Run MadX 2... (log: " << log() << ")" << endl;

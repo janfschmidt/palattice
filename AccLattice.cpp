@@ -1232,7 +1232,7 @@ string AccLattice::getLine(SimTool tool) const
 {
   std::stringstream s;    //drift definitions
   std::stringstream line; //lattice line 
-  double driftlength, lastend;
+  double driftlength, lastend=0.;
   const_iterator it=begin();
 
   line << "LIBPALATTICE : LINE=(";
@@ -1408,7 +1408,7 @@ void AccLattice::latexexport(string filename) const
 
   //lattice
   s << "\\begin{document}" << endl << "\\begin{lattice}" << endl;
-  double driftlength, lastend;
+  double driftlength, lastend=0.;
   for (auto it=begin(); it!=end(); ++it) {
     if (it == begin()) {
       driftlength = it.begin();

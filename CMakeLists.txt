@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 2.8)
 
 project(palattice CXX)
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
 # Project Version
 set(LIB_VERSION_MAJOR 3.8)
