@@ -86,7 +86,6 @@ add_library(palattice SHARED
   FunctionOfPos.cpp
   Field.cpp
   Spectrum.cpp
-  ResStrengths.cpp
   ELSASpuren.cpp
   )
 SET_TARGET_PROPERTIES(
