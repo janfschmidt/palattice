@@ -70,7 +70,7 @@ public:
   double dQrf;           // RF magnet tune change per turn (linear frequency sweep)
 
   //edge angles / rad
-  //used only for import/export and integrated field B_int(orbit)
+  //used only for import/export
   double e1;
   double e2;
   
@@ -104,7 +104,7 @@ public:
 
   // integral magnetic field
   virtual AccTriple B_int() const {return B() * length;}
-  virtual AccTriple B_int(const AccPair &orbit) const {return B(orbit) * (length + orbit.x*(tan(e1)+tan(e2)) );} //edges: length depends on x
+  virtual AccTriple B_int(const AccPair &orbit) const {return B(orbit) * length;}
   //RF magnets (oscillating fields)
   double rfFactor(unsigned int turn) const; // Magnetic field amplitude factor for oscillating fields
   AccTriple B_rf(unsigned int turn) const {return B() * rfFactor(turn);}
@@ -287,7 +287,6 @@ public:
 
   virtual Dipole* clone() const {return new Dipole(*this);}
 
-  virtual AccTriple B_int(const AccPair &orbit) const; // includes Bx from edge focussing
   double R() const {return 1/k0.z;}
   void setR(double R) {k0=AccTriple(); k0.z=1/R;}
   
