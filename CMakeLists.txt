@@ -170,7 +170,6 @@ install(FILES
   FunctionOfPos.hxx
   Field.hpp
   Spectrum.hpp
-  ResStrengths.hpp
   ELSASpuren.hpp
   types.hpp
   config.hpp
