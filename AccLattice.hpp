@@ -61,7 +61,7 @@ public:
   const Anchor refPos;
   Metadata info;
 
-  AccLattice(double _circumference=0., Anchor _refPos=Anchor::end);
+  explicit AccLattice(double _circumference=0., Anchor _refPos=Anchor::end);
   AccLattice(SimToolInstance &sim, Anchor _refPos=Anchor::end, string ignoreFile=""); //direct madx/elegant import
   AccLattice(const AccLattice &other);
   ~AccLattice();
