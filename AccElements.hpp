@@ -68,6 +68,7 @@ public:
   double k2;             // magnet strength. m / m^-3
   double Qrf1;           // RF magnet tune for turn=1
   double dQrf;           // RF magnet tune change per turn (linear frequency sweep)
+  unsigned int rfPeriod; // RF magnet frequency sweep length in turns. Sweep is repeated periodically.
 
   //edge angles / rad
   //used only for import/export

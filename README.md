@@ -145,7 +145,8 @@ Since version SDDSToolKit-devel-3.3.1-2 "Most of the important functions should
 now be thread safe" (Elegant forum, "libSDDS and threads"). Using this, libpalattice
 was successfully tested with a parallelized application.
 
-libSDDS1 requires zlib, in Ubuntu it is in the package `zlib1g`.
+libSDDS1 requires zlib, (in Ubuntu it is in the package `zlib1g`)
+and liblzma (in Ubuntu it is in the package `liblzma-dev`).
 
 If you installed or uninstalled `SDDSToolKit-devel` and cmake does not recognize,
 try deleting `libpalattice/build/CMakeCache.txt` and then run `cmake ..` again.

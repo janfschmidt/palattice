@@ -112,6 +112,7 @@ AccElement::AccElement(element_type _type, string _name, double _length)
   : type(_type),name(_name),length(_length),plane(noplane),family(nofamily)
 {
   physLength = k1 = k2 = Qrf1 = dQrf = tilt = e1 = e2 = 0.;
+  rfPeriod = 0;
 
   if (length < 0.) {
     stringstream msg;
@@ -211,18 +212,21 @@ AccElement& AccElement::operator=(const AccElement* other)
    this->k2 = other->k2;
    this->Qrf1 = other->Qrf1;
    this->dQrf = other->dQrf;
+   this->rfPeriod = other->rfPeriod;
 
    return *this;
 }
 
 
 // Magnetic field amplitude factor for oscillating fields
-// B(orbit,turn) = B(orbit) * rfFactor(turn)
+// B_rf(orbit,turn) = B(orbit) * rfFactor(turn)
 // ! fixed starting phase
 double AccElement::rfFactor(unsigned int turn) const
 {
   if(Qrf1==0. && dQrf==0.)
     return 1.;
+  if(rfPeriod!=0.)
+    turn = turn % rfPeriod;
 
   double phi = turn*Qrf1 + turn*(turn+1)/2 * dQrf;
   return cos(2*M_PI*phi);
