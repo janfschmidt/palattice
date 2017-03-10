@@ -90,15 +90,18 @@ namespace pal
   class EnergyRamp {
   protected:
     std::function<double(double)> ramp;
+    bool _isSet;
     
   public:
     double tStop;        // file export: ramp end time / s
     unsigned int nSteps; // file export: number of steps
-    
-    EnergyRamp(std::function<double(double)> f) : ramp(f), tStop(0.1), nSteps(200) {}
+
+    EnergyRamp() : ramp([&](double){return 1.;}), _isSet(false), tStop(0.1), nSteps(200) {}
+    EnergyRamp(std::function<double(double)> f) : ramp(f), _isSet(true), tStop(0.1), nSteps(200) {}
     ~EnergyRamp() {}
 
-    void set(std::function<double(double)> f) {ramp = f;}
+    bool isSet() const {return _isSet;}
+    void set(std::function<double(double)> f) {ramp = f; _isSet = true;}
     double get(double x) const {return ramp(x);}
     void toFile(const std::string& filename) const;
   };
@@ -154,6 +157,9 @@ namespace pal
   
 
 
+
+  
+
   // an instance of madx or elegant: a "project" with a path and filenames.
   // it can run madx/elegant and read columns from their output files.
   class SimToolInstance {
@@ -166,18 +172,21 @@ namespace pal
     double trackingMomentum_MeV;
     string trackingBeamline;
     bool trackingNumParticlesTouched;
+    EnergyRamp eleRamp;
     string tag;
     string _path;
     string file;     //mode=online: latticeInput, mode=offline: SimTool Output
     string runFile;
     bool defaultRunFile;
+    const std::string rampFile;
     string outCases(string madxExt, string eleExt) const {if(tool==madx) return outFile(madxExt); else if(tool==elegant) return outFile(eleExt); return "";}
     void replaceInFile(string variable, string value, string delim, string file);
     void replaceTagInFile(string name, string extension, string newTag, string file);
-    void setRampInFile(bool ramp, string file);
+    void switchRampInFile(bool ramp, string file);
 
     template<class T> T readParameter_sdds(const string &file, const string &label);
     std::string stripExtension(std::string f) const;
+    void writeConfigToRunFile();
 
   public:
     const SimTool tool;
@@ -206,6 +215,7 @@ namespace pal
     void setMomentum_MeV(double p_MeV);
     void setMomentum_betagamma(double p);
     void setElegantBeamline(const string& bl);
+    void setElegantEnergyRamp(std::function<double(double)> f); // as factor of configured Momentum
     
     void setRunFile(string file) {runFile = file; defaultRunFile=false;} //path relative to fileIn (constructor)
     void setPreferedFileFormat(SimToolFileFormat f) {preferedFormat = f; executed = false;}

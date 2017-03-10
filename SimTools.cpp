@@ -320,7 +320,7 @@ template<> AccTriple SimToolTable::get(unsigned int i, string keyX, string keyZ,
 SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string fileIn, string fileTag)
   : executed(false), trackingTurns(0), trackingNumParticles(1), trackingMomentum(0.), trackingMomentum_MeV(0.),
     trackingBeamline(""), trackingNumParticlesTouched(false),
-    tag(fileTag), defaultRunFile(true), tool(toolIn), mode(modeIn), verbose(false)
+    tag(fileTag), defaultRunFile(true), rampFile("ramp.sdds"), tool(toolIn), mode(modeIn), verbose(false)
 {
   
   //path: path of fileIn
@@ -423,20 +423,21 @@ void SimToolInstance::replaceTagInFile(string name, string extension, string new
     throw palatticeError("SimToolInstance::replaceTagInFile(): Error executing sed");
 }
 
-void SimToolInstance::setRampInFile(bool ramp, string file)
+void SimToolInstance::switchRampInFile(bool ramp, string file)
 {
   stringstream cmd;
   cmd << "cd "<< path() << "; ";
   cmd << "sed -i 's%&insert_elements.*rampp.*&end%";
   if (ramp)
-    cmd << "&insert_elements name=MY_START,element_def=\"ramp: rampp,waveform=\\\"ramp.sdds=t+pcentralFactor\\\"\" &end%'";
+    cmd << "&insert_elements name=MY_START,element_def=\"ramp: rampp,waveform=\\\""
+	<< rampFile << "=t+pcentralFactor\\\"\" &end%'";
   else
     cmd << "! &insert_elements rampp_PLACEHOLDER_FOR_PALATTICE &end%'";
   cmd << " " << file;
   cout << cmd.str() << endl;
   int ret = system(cmd.str().c_str());
   if (ret != 0)
-    throw palatticeError("SimToolInstance::setRampInFile(): Error executing sed");
+    throw palatticeError("SimToolInstance::switchRampInFile(): Error executing sed");
 }
 
 
@@ -459,6 +460,87 @@ void SimToolInstance::run()
     system_throwing(cmd.str());
   }
 
+  writeConfigToRunFile();    
+  
+  //run madx/elegant:
+  runcmd << "cd "<< path() << "; ";
+  if (tool== madx) {
+    //avoid fatal error "cannot open input file: madx.observe"
+    cmd.str(std::string());
+    cmd << "cd "<<path()<<"; echo \"\" > madx.observe";
+    system_throwing(cmd.str());
+    // ---
+    runcmd << MADXCOMMAND << " < ";
+    cout << "Run MadX 1...";
+  }
+  else {
+    runcmd << ELEGANTCOMMAND << " ";
+    cout << "Run Elegant...";
+  }
+  runcmd << runFile;
+  if (this->verbose)
+    runcmd << " | tee " <<tool_string()<< ".log";
+  else
+    runcmd << " > " <<tool_string()<< ".log";
+  cout << " (log: " << log() << ")" << endl;
+  try {
+    system_throwing(runcmd.str());
+  } catch (std::system_error& e) {
+    stringstream msg;
+    msg << tool_string() << " Error! (return code "<<e.code()<<", see " << log() <<")";
+    throw palatticeError(msg.str());
+  }
+
+  //elegant without sdds: run shell script for sdds to ascii conversion
+  if ( !sddsMode() && tool==elegant ) {
+    tmp.str(std::string());
+    tmp << "cd "<<path()<<"; elegant2libpalattice ";
+    if (tag=="") tmp << "none";
+    else tmp << tag;
+    tmp << " libpalattice ";
+    if (trackingTurns !=0)
+      tmp << "watchfiles";
+    else
+      tmp << "NO";
+    system_throwing(tmp.str());
+  }
+
+  //MadX: additional commands to set tracking observation points at each BPM (element name including BPM)
+  cmd.str(std::string());
+  if (tool== madx && trackingTurns!=0) {
+    //write BPMs as observation points to madx.observe
+    cmd << "cd "<< path() << "; "
+	<< "grep BPM " << lattice() << " | awk '{gsub(\"\\\"\",\"\",$2); print \"ptc_observe, place=\"$2\";\"}' > " 
+	<< "madx.observe";
+    system_throwing(cmd.str());
+    
+    // 2. madx run -> using madx.observe
+    cout << "Run MadX 2... (log: " << log() << ")" << endl;
+    int ret = system(runcmd.str().c_str());
+    if (ret != 0) {
+      stringstream msg;
+      msg << tool_string() << " Error! (see " << log() <<")";
+      throw palatticeError(msg.str());
+    }
+  }
+
+  executed = true;
+}
+
+
+
+void SimToolInstance::forceRun()
+{
+  executed = false;
+  run();
+}
+
+
+
+void SimToolInstance::writeConfigToRunFile()
+{
+  std::stringstream tmp;
+  
   // set lattice filename in runFile:
   tmp.str(std::string());
   tmp << "\""<<file<<"\"";
@@ -504,78 +586,17 @@ void SimToolInstance::run()
     replaceInFile("use_beamline", trackingBeamline, ",", runFile);
   }
 
-  
-  //run madx/elegant:
-  runcmd << "cd "<< path() << "; ";
-  if (tool== madx) {
-    //avoid fatal error "cannot open input file: madx.observe"
-    cmd.str(std::string());
-    cmd << "cd "<<path()<<"; echo \"\" > madx.observe";
-    system_throwing(cmd.str());
-    // ---
-    runcmd << MADXCOMMAND << " < ";
-    cout << "Run MadX 1...";
-  }
-  else {
-    runcmd << ELEGANTCOMMAND << " ";
-    cout << "Run Elegant...";
-  }
-  runcmd << runFile;
-  if (this->verbose)
-    runcmd << " | tee " <<tool_string()<< ".log";
-  else
-    runcmd << " > " <<tool_string()<< ".log";
-  cout << " (log: " << log() << ")" << endl;
-  try {
-    system_throwing(runcmd.str());
-  } catch (std::system_error& e) {
-    stringstream msg;
-    msg << tool_string() << " Error! (return code "<<e.code()<<", see " << log() <<")";
-    throw palatticeError(msg.str());
-  }
-
-  //elegant without sdds: run shell script for sdds to ascii conversion
-  if ( !sddsMode() && tool==elegant ) {
-    tmp.str(std::string());
-    tmp << "cd "<<path()<<"; elegant2libpalattice ";
-    if (tag=="") tmp << "none";
-    else tmp << tag;
-    tmp << " libpalattice ";
-    if (trackingTurns !=0)
-      tmp << "watchfiles";
-    else
-      tmp << "NO";
-    system_throwing(tmp.str());
-  }
-
-
-  //MadX: additional commands to set tracking observation points at each BPM (element name including BPM)
-  cmd.str(std::string());
-  if (tool== madx && trackingTurns!=0) {
-    //write BPMs as observation points to madx.observe
-    cmd << "cd "<< path() << "; "
-	<< "grep BPM " << lattice() << " | awk '{gsub(\"\\\"\",\"\",$2); print \"ptc_observe, place=\"$2\";\"}' > " 
-	<< "madx.observe";
-    system_throwing(cmd.str());
-    
-    // 2. madx run -> using madx.observe
-    cout << "Run MadX 2... (log: " << log() << ")" << endl;
-    int ret = system(runcmd.str().c_str());
-    if (ret != 0) {
-      stringstream msg;
-      msg << tool_string() << " Error! (see " << log() <<")";
-      throw palatticeError(msg.str());
+  // set elegant energy ramp:
+  if (tool==elegant) {
+    if (eleRamp.isSet()) {
+      eleRamp.toFile(path()+rampFile);
+      switchRampInFile(true, runFile);
     }
+    else
+      switchRampInFile(false, runFile);
   }
-
-  executed = true;
 }
 
-void SimToolInstance::forceRun()
-{
-  executed = false;
-  run();
-}
 
 
 
@@ -926,6 +947,8 @@ void SimToolInstance::setElegantBeamline(const string& bl)
   }
 }
 
+void SimToolInstance::setElegantEnergyRamp(std::function<double(double)> f) {eleRamp.set(f);}
+
 
 
 
@@ -933,6 +956,9 @@ void SimToolInstance::setElegantBeamline(const string& bl)
 
 void EnergyRamp::toFile(const std::string& filename) const
 {
+  if (!isSet())
+    throw std::runtime_error("Cannot write empty EnergyRamp to file!");
+  
   auto dt = tStop / nSteps;
   double t = 0.;
 
