@@ -31,12 +31,25 @@
 #include <string>
 #include <cstdio>
 #include <cstdlib>
+#include <memory>
 #include "SimTools.hpp"
 #include "types.hpp"
 #include "config.hpp"
 
 using namespace pal;
 using namespace std;
+
+
+//system call wrapper throwing std::system_error if return value=!0
+void pal::system_throwing(const std::string& cmd)
+{
+  auto ret = system(cmd.c_str());
+  if (ret!=0) {
+    throw std::system_error(ret, std::system_category());
+  }
+}
+
+
 
 
 
@@ -410,16 +423,23 @@ void SimToolInstance::replaceTagInFile(string name, string extension, string new
     throw palatticeError("SimToolInstance::replaceTagInFile(): Error executing sed");
 }
 
-
-
-//system call wrapper throwing std::system_error if return value=!0
-void SimToolInstance::system_throwing(const std::string& cmd) const
+void SimToolInstance::setRampInFile(bool ramp, string file)
 {
-  auto ret = system(cmd.c_str());
-  if (ret!=0) {
-    throw std::system_error(ret, std::system_category());
-  }
+  stringstream cmd;
+  cmd << "cd "<< path() << "; ";
+  cmd << "sed -i 's%&insert_elements.*rampp.*&end%";
+  if (ramp)
+    cmd << "&insert_elements name=MY_START,element_def=\"ramp: rampp,waveform=\\\"ramp.sdds=t+pcentralFactor\\\"\" &end%'";
+  else
+    cmd << "! &insert_elements rampp_PLACEHOLDER_FOR_PALATTICE &end%'";
+  cmd << " " << file;
+  cout << cmd.str() << endl;
+  int ret = system(cmd.str().c_str());
+  if (ret != 0)
+    throw palatticeError("SimToolInstance::setRampInFile(): Error executing sed");
 }
+
+
 
 // run madx/elegant (online mode only)
 // single particle tracking is only done if trackingTurns!=0
@@ -467,16 +487,11 @@ void SimToolInstance::run()
   if (trackingNumParticlesTouched) {
     tmp.str(std::string());
     tmp << trackingNumParticles;
-    if (tool==madx)
-      throw palatticeError("set number of Particles not implemented for madx. Please set manually in "+runFile);
-    else if (tool==elegant)
-      replaceInFile("n_particles_per_bunch", tmp.str(), ",", runFile);
+    replaceInFile("n_particles_per_bunch", tmp.str(), ",", runFile);
   }
 
   // set tracking momentum in runFile:
   if (trackingMomentum!=0. || trackingMomentum_MeV!=0.) {
-    if (tool== madx)
-      throw palatticeError("set momentum not implemented for madx. Please set manually in "+runFile);
     replaceInFile("p_central", std::to_string(trackingMomentum), ",", runFile);
     if (trackingMomentum == 0.)
       replaceInFile("p_central_mev", std::to_string(trackingMomentum_MeV), ",", runFile);
@@ -486,8 +501,6 @@ void SimToolInstance::run()
 
   // set tracking elegant beamline:
   if (!trackingBeamline.empty()) {
-    if (tool== madx)
-      throw palatticeError("set beamline not implemented for madx.");
     replaceInFile("use_beamline", trackingBeamline, ",", runFile);
   }
 
@@ -782,8 +795,10 @@ double SimToolInstance::readAlphaC()
 double SimToolInstance::readAlphaC2()
 {
   string label;
-  if (tool==madx)
-    throw palatticeError("reading 2. order momentum compaction factor from Mad-X is not implemented");
+  if (tool==madx) {
+    std::cout << "WARNING: reading 2. order momentum compaction factor from Mad-X is not implemented" << std::endl;
+    return 0.;
+  }
   else if (tool==elegant)
     label = "alphac2";
   double c = this->readParameter<double>(this->twiss(), label);
@@ -863,7 +878,7 @@ void SimToolInstance::setNumParticles(unsigned int n)
     
     //currently only implemented for elegant
     if (tool==madx)
-      throw palatticeError("set number of Particles not implemented for madx. Please set manually in "+runFile);
+      std::cout << "WARNING: set number of particles not implemented for madx. Please set manually in " << runFile << std::endl;
     
     trackingNumParticles=n;
     executed=false;
@@ -878,7 +893,7 @@ void SimToolInstance::setMomentum_MeV(double p_MeV)
     
     //currently only implemented for elegant
     if (tool==madx)
-      throw palatticeError("set momentum not implemented for madx. Please set manually in "+runFile);
+      std::cout << "WARNING: set momentum not implemented for madx. Please set manually in " << runFile << std::endl;
     
     trackingMomentum_MeV=p_MeV;
     executed=false;
@@ -891,7 +906,7 @@ void SimToolInstance::setMomentum_betagamma(double p)
     
     //currently only implemented for elegant
     if (tool==madx)
-      throw palatticeError("set momentum not implemented for madx. Please set manually in "+runFile);
+      std::cout << "WARNING: set momentum not implemented for madx. Please set manually in " << runFile << std::endl;
     
     trackingMomentum=p;
     executed=false;
@@ -904,9 +919,68 @@ void SimToolInstance::setElegantBeamline(const string& bl)
     
     //currently only implemented for elegant
     if (tool==madx)
-      throw palatticeError("set beamline not implemented for madx.");
+      std::cout << "WARNING: set beamline not implemented for madx." << std::endl;
     
     trackingBeamline=bl;
     executed=false;
   }
+}
+
+
+
+
+// EnergyRamp
+
+void EnergyRamp::toFile(const std::string& filename) const
+{
+  auto dt = tStop / nSteps;
+  double t = 0.;
+
+  //======================================================================================
+#ifdef LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY
+  //======================================================================================
+  std::unique_ptr<SDDS_DATASET> tab(new SDDS_DATASET);
+  if( SDDS_InitializeOutput(tab.get(),SDDS_BINARY,1,"palattice EnergyRamp","EnergyRamp",filename.c_str()) !=1 ||
+      SDDS_DefineSimpleColumn(tab.get(),"t","s",SDDS_DOUBLE) != 1 || 
+      SDDS_DefineSimpleColumn(tab.get(),"pcentralFactor","",SDDS_DOUBLE) != 1 || 
+      SDDS_WriteLayout(tab.get())  != 1)
+    {
+      throw SDDSError();
+    }
+  SDDS_StartPage(tab.get(), nSteps+1);
+
+  for (auto row=0u; row<=nSteps; row++) {
+    if (SDDS_SetRowValues(tab.get(), SDDS_SET_BY_NAME | SDDS_PASS_BY_VALUE, row,
+			  "t", t,
+			  "pcentralFactor", ramp(t),
+			  NULL) != 1) {
+      throw SDDSError();
+    }
+    t += dt;
+  }
+  if (SDDS_WritePage(tab.get()) != 1)
+    throw SDDSError();
+  if (SDDS_Terminate(tab.get()) != 1)
+    throw SDDSError();
+  //======================================================================================
+#else
+  //======================================================================================
+  ofstream csv;
+  csv.open((filename+".csv").c_str());
+  if(!csv.is_open())
+    throw palatticeFileError(filename);
+  for (auto row=0u; row<=nSteps; row++) {
+    csv << t << "," << ramp(t) << std::endl;
+    t += dt;
+  }
+  csv.close();
+
+  std::stringstream s;
+  s << "csv2sdds " << filename
+    << ".csv -columnData=name=t,type=float,units=s -columnData=name=pcentralFactor,type=float "
+    << filename;
+  system_throwing(s.str().c_str());
+  //======================================================================================
+#endif
+  //======================================================================================
 }

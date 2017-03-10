@@ -61,6 +61,9 @@ namespace pal
       return false;
   }
 
+  //system call wrapper throwing std::system_error
+  void system_throwing(const std::string& cmd);
+
   
 #ifdef LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY
   enum SimToolFileFormat{ascii,sdds};
@@ -80,6 +83,27 @@ namespace pal
     void set(string _column, double _min, double _max) {column=_column; min=_min; max=_max; on=true;}
     char* c_column() {return const_cast<char *>(column.c_str());}
   };
+
+
+
+  
+  class EnergyRamp {
+  protected:
+    std::function<double(double)> ramp;
+    
+  public:
+    double tStop;        // file export: ramp end time / s
+    unsigned int nSteps; // file export: number of steps
+    
+    EnergyRamp(std::function<double(double)> f) : ramp(f), tStop(0.1), nSteps(200) {}
+    ~EnergyRamp() {}
+
+    void set(std::function<double(double)> f) {ramp = f;}
+    double get(double x) const {return ramp(x);}
+    void toFile(const std::string& filename) const;
+  };
+
+
 
   
   // a table with columns accessible by column key (string) and row index (int).
@@ -150,7 +174,7 @@ namespace pal
     string outCases(string madxExt, string eleExt) const {if(tool==madx) return outFile(madxExt); else if(tool==elegant) return outFile(eleExt); return "";}
     void replaceInFile(string variable, string value, string delim, string file);
     void replaceTagInFile(string name, string extension, string newTag, string file);
-    void system_throwing(const std::string& cmd) const; //system call wrapper throwing std::system_error
+    void setRampInFile(bool ramp, string file);
 
     template<class T> T readParameter_sdds(const string &file, const string &label);
     std::string stripExtension(std::string f) const;

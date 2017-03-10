@@ -18,6 +18,9 @@
 	random_number_seed = 42,
 &end
 
+! Energy Ramp
+! keep the following line to allow libpalattice to set an energy ramp
+! &insert_elements rampp_PLACEHOLDER_FOR_PALATTICE &end
 
 ! WATCH element at every BPM Monitor & at start Marker
 ! needed for libpalattice import of single particle trajectories
