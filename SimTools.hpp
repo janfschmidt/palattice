@@ -93,11 +93,12 @@ namespace pal
     bool _isSet;
     
   public:
+    double tStart;       // file export: ramp end time / s
     double tStop;        // file export: ramp end time / s
     unsigned int nSteps; // file export: number of steps
 
     EnergyRamp() : ramp([&](double){return 1.;}), _isSet(false), tStop(0.1), nSteps(200) {}
-    EnergyRamp(std::function<double(double)> f) : ramp(f), _isSet(true), tStop(0.1), nSteps(200) {}
+    EnergyRamp(std::function<double(double)> f) : ramp(f), _isSet(true), tStart(0.), tStop(0.1), nSteps(200) {}
     ~EnergyRamp() {}
 
     bool isSet() const {return _isSet;}
@@ -172,7 +173,6 @@ namespace pal
     double trackingMomentum_MeV;
     string trackingBeamline;
     bool trackingNumParticlesTouched;
-    EnergyRamp eleRamp;
     string tag;
     string _path;
     string file;     //mode=online: latticeInput, mode=offline: SimTool Output
@@ -215,10 +215,14 @@ namespace pal
     void setMomentum_MeV(double p_MeV);
     void setMomentum_betagamma(double p);
     void setElegantBeamline(const string& bl);
-    void setElegantEnergyRamp(std::function<double(double)> f); // as factor of configured Momentum
     
     void setRunFile(string file) {runFile = file; defaultRunFile=false;} //path relative to fileIn (constructor)
     void setPreferedFileFormat(SimToolFileFormat f) {preferedFormat = f; executed = false;}
+
+    // configure elegant energy ramp (as factor of configured Momentum)
+    // is activated automatically in runFile if set with EnergyRamp::set()
+    EnergyRamp elegantEnergyRamp;
+
 
     // read specified columns from a madx/elegant table format output file
     // - if columnKeys is not given, all columns are read

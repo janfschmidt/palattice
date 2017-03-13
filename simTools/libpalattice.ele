@@ -22,7 +22,7 @@
 ! keep the following line to allow libpalattice to set an energy ramp
 &insert_elements
 	name = MY_START,
-	element_def = "ramp: rampp,waveform='ramp.sdds=t+pcentralFactor'",
+	element_def = "ramp: rampp,waveform=\"ramp.sdds=t+pcentralFactor\"",
 	disable = 1 !PAL_ENERGY_RAMP
 &end
 

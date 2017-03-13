@@ -433,7 +433,7 @@ void SimToolInstance::switchRampInFile(bool ramp, string file)
   else
     cmd << "1";
   cmd << " !PAL_ENERGY_RAMP%' " << file;
-  cout << cmd.str() << endl;
+  //cout << cmd.str() << endl;
   int ret = system(cmd.str().c_str());
   if (ret != 0)
     throw palatticeError("SimToolInstance::switchRampInFile(): Error executing sed");
@@ -587,8 +587,8 @@ void SimToolInstance::writeConfigToRunFile()
 
   // set elegant energy ramp:
   if (tool==elegant) {
-    if (eleRamp.isSet()) {
-      eleRamp.toFile(path()+rampFile);
+    if (elegantEnergyRamp.isSet()) {
+      elegantEnergyRamp.toFile(path()+rampFile);
       switchRampInFile(true, runFile);
     }
     else
@@ -946,8 +946,6 @@ void SimToolInstance::setElegantBeamline(const string& bl)
   }
 }
 
-void SimToolInstance::setElegantEnergyRamp(std::function<double(double)> f) {eleRamp.set(f);}
-
 
 
 
@@ -959,7 +957,7 @@ void EnergyRamp::toFile(const std::string& filename) const
     throw std::runtime_error("Cannot write empty EnergyRamp to file!");
   
   auto dt = tStop / nSteps;
-  double t = 0.;
+  auto t = tStart;
 
   //======================================================================================
 #ifdef LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY
