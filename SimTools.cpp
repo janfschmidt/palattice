@@ -427,13 +427,12 @@ void SimToolInstance::switchRampInFile(bool ramp, string file)
 {
   stringstream cmd;
   cmd << "cd "<< path() << "; ";
-  cmd << "sed -i 's%&insert_elements.*rampp.*&end%";
+  cmd << "sed -i 's%disable =.*PAL_ENERGY_RAMP%disable = ";
   if (ramp)
-    cmd << "&insert_elements name=MY_START,element_def=\"ramp: rampp,waveform=\\\""
-	<< rampFile << "=t+pcentralFactor\\\"\" &end%'";
+    cmd << "0";
   else
-    cmd << "! &insert_elements rampp_PLACEHOLDER_FOR_PALATTICE &end%'";
-  cmd << " " << file;
+    cmd << "1";
+  cmd << " !PAL_ENERGY_RAMP%' " << file;
   cout << cmd.str() << endl;
   int ret = system(cmd.str().c_str());
   if (ret != 0)

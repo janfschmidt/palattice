@@ -20,7 +20,11 @@
 
 ! Energy Ramp
 ! keep the following line to allow libpalattice to set an energy ramp
-! &insert_elements rampp_PLACEHOLDER_FOR_PALATTICE &end
+&insert_elements
+	name = MY_START,
+	element_def = "ramp: rampp,waveform='ramp.sdds=t+pcentralFactor'",
+	disable = 1 !PAL_ENERGY_RAMP
+&end
 
 ! WATCH element at every BPM Monitor & at start Marker
 ! needed for libpalattice import of single particle trajectories
@@ -29,11 +33,11 @@
 	type = MARK,
 	s_start = 0.0,
 	s_end = 0.01,
-	element_def = "wbeg: watch,filename="%s000.w",mode="coord"",
+	element_def = "wbeg: watch,filename="%s000.w",mode=coord",
 &end
 &insert_elements
 	type = MONI,
-	element_def = "w1: watch,filename="%s%03ld.w",mode="coord"",
+	element_def = "w1: watch,filename="%s%03ld.w",mode=coord",
 	add_at_end = 1,
 &end
 ! -------------------------------------------------------------------
