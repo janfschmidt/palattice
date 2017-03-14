@@ -94,16 +94,16 @@ void SimToolTable::init_sdds(const string &filename, std::vector<string> columnK
   
    if ( SDDS_InitializeInput(table_sdds.get(),const_cast<char*>(filename.c_str())) != 1 ) {
      //SDDS_PrintErrors(stdout, SDDS_VERBOSE_PrintErrors);
-     throw SDDSError();
+     throw SDDSError(filename);
    }
    
    sddsFileIsOpen = true;
   
   auto ret = SDDS_ReadPage(table_sdds.get());
   if( ret == -1 )
-    throw SDDSPageError();
+    throw SDDSPageError(filename);
   else if (ret == 0)
-    throw SDDSError();
+    throw SDDSError(filename);
 
   //select columns
    if (columnKeys.size() > 0) {
@@ -112,7 +112,7 @@ void SimToolTable::init_sdds(const string &filename, std::vector<string> columnK
       tmp << key << " ";
     SDDS_SetColumnFlags(table_sdds.get(),0); // unselect all columns first
     if( SDDS_SetColumnsOfInterest(table_sdds.get(), SDDS_NAMES_STRING, tmp.str().c_str()) != 1 )
-    throw SDDSError();
+      throw SDDSError(filename);
    }
 
   sdds = true;
@@ -130,13 +130,13 @@ void SimToolTable::nextPage()
 
   auto ret = SDDS_ReadPage(table_sdds.get());
   if( ret == -1 )
-    throw SDDSPageError();
+    throw SDDSPageError(name());
   else if (ret == 0)
-    throw SDDSError();
+    throw SDDSError(name());
   
   if (sddsFilter.on) {
     if ( SDDS_FilterRowsOfInterest(table_sdds.get(), sddsFilter.c_column(),sddsFilter.min,sddsFilter.max,SDDS_AND) == -1)
-      throw SDDSError();
+      throw SDDSError(name());
   }
 }
 
@@ -151,7 +151,7 @@ void SimToolTable::filterRows(string column, double min, double max)
 
   sddsFilter.set(column,min,max);
   if ( SDDS_FilterRowsOfInterest(table_sdds.get(), sddsFilter.c_column(),sddsFilter.min,sddsFilter.max,SDDS_AND) == -1)
-    throw SDDSError();
+    throw SDDSError(name());
 }
 
 bool SimToolInstance::sddsMode() const
@@ -171,10 +171,10 @@ string SimToolTable::getParameter(const string &label)
     throw palatticeError("SimToolTable::getParameter(): Can only be used in SDDS mode. Use SimToolInstamce::readParameter() instead");
 
   auto dataIndex = SDDS_GetParameterIndex(table_sdds.get(), const_cast<char*>(label.c_str()));
-  if (dataIndex == -1) throw SDDSError();
+  if (dataIndex == -1) throw SDDSError(name());
   auto dataType = SDDS_GetParameterType(table_sdds.get(), dataIndex);
   void* mem = SDDS_GetParameterByIndex(table_sdds.get(), dataIndex, NULL);
-  if (mem == NULL) throw SDDSError();
+  if (mem == NULL) throw SDDSError(name());
 
   stringstream s;
 
@@ -218,7 +218,7 @@ template<>
 string SimToolTable::get_sdds(unsigned int index, string key) const
 {
   auto dataIndex = SDDS_GetColumnIndex(table_sdds.get(), const_cast<char*>(key.c_str()));
-  if (dataIndex == -1) throw SDDSError();
+  if (dataIndex == -1) throw SDDSError(name());
   auto dataType = SDDS_GetColumnType(table_sdds.get(), dataIndex);
   void* mem = SDDS_GetValueByIndex(table_sdds.get(), dataIndex, index, NULL);
   if (mem == NULL) {
@@ -263,6 +263,20 @@ string SimToolTable::get_sdds(unsigned int index, string key) const
   //free(mem); 
 
   return s.str();
+}
+
+
+SDDSError::SDDSError(std::string name)
+  : tabname(name)
+{
+  char* bp;
+  size_t size;
+  FILE* stream;
+  stream = open_memstream (&bp, &size);
+  SDDS_PrintErrors(stream,0);
+  fclose (stream);
+  sddsMsg = bp;
+  SDDS_ClearErrors();
 }
 
 //======================================================================================
@@ -968,7 +982,7 @@ void EnergyRamp::toFile(const std::string& filename) const
       SDDS_DefineSimpleColumn(tab.get(),"pcentralFactor","",SDDS_DOUBLE) != 1 || 
       SDDS_WriteLayout(tab.get())  != 1)
     {
-      throw SDDSError();
+      throw SDDSError(filename);
     }
   SDDS_StartPage(tab.get(), nSteps+1);
 
@@ -977,14 +991,14 @@ void EnergyRamp::toFile(const std::string& filename) const
 			  "t", t,
 			  "pcentralFactor", ramp(t),
 			  NULL) != 1) {
-      throw SDDSError();
+      throw SDDSError(filename);
     }
     t += dt;
   }
   if (SDDS_WritePage(tab.get()) != 1)
-    throw SDDSError();
+    throw SDDSError(filename);
   if (SDDS_Terminate(tab.get()) != 1)
-    throw SDDSError();
+    throw SDDSError(filename);
   //======================================================================================
 #else
   //======================================================================================

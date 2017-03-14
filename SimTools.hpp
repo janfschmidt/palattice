@@ -275,18 +275,30 @@ namespace pal
 
   class SDDSError : public std::exception
   {
+  protected:
+    std::string sddsMsg;
+    const std::string tabname;
+  public:
+    SDDSError() : sddsMsg("sorry, message not stored"), tabname("?") {}
+    SDDSError(std::string name);
     virtual const char* what() const throw()
     {
-      SDDS_PrintErrors(stdout,SDDS_VERBOSE_PrintErrors);
-      return "SDDS ERROR description above";
+      std::stringstream s;
+      s << "SDDS ERROR in " << tabname << ": " << sddsMsg;
+      return s.str().c_str();
     }
   };
 
   class SDDSPageError : public SDDSError {
+  public:
+    SDDSPageError(std::string name) : SDDSError(name) {}
     virtual const char* what() const throw()
     {
-      return "End of SDDS file reached.";
+      std::stringstream s;
+      s << "End of SDDS file " << tabname << " reached";
+      return s.str().c_str();
     }
+
   };
   
 //======================================================================================
@@ -413,7 +425,7 @@ inline T pal::SimToolTable::getParameter(const string &label)
     throw palatticeError("SimToolTable::getParameter(): Can only be used in SDDS mode. Use SimToolInstance::readParameter() instead");
 
   void* mem = SDDS_GetParameter(table_sdds.get(), const_cast<char*>(label.c_str()), NULL);
-  if (mem == NULL) throw SDDSError();
+  if (mem == NULL) throw SDDSError(name());
   T ret = *static_cast<T *>(mem);
   
   free(mem);
