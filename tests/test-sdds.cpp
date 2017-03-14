@@ -306,6 +306,22 @@ TEST(sddsSimTool, Circumference) {
 }
 
 
+TEST(sddsSimTool, Exception) {
+  pal::SimToolInstance elegant(pal::elegant, pal::offline, TEST_PARAM_FILE);
+
+  EXPECT_THROW(elegant.readTable(elegant.orbit(), {"s", "x", "yyyy"}), pal::SDDSError);
+
+  std::stringstream s;
+  s << "SDDS-Error:\nUnable to process column selection--unrecognized column name yyyy seen (SDDS_SetColumnsOfInterest)\n [" << TEST_ORBIT_FILE << "]";
+  
+  try {
+    elegant.readTable(elegant.orbit(), {"s", "x", "yyyy"});
+  }
+  catch (SDDSError &e) {
+    EXPECT_STREQ(e.what(), s.str().c_str());
+  }
+}
+
 
 
 

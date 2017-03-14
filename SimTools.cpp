@@ -51,11 +51,30 @@ void pal::system_throwing(const std::string& cmd)
 
 
 
-
-
 //======================================================================================
 #ifdef LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY
 //======================================================================================
+
+
+void pal::throwSDDSError(std::string file)
+{
+  char* bp;
+  size_t size;
+  FILE* stream;
+  stream = open_memstream (&bp, &size);
+  SDDS_PrintErrors(stream,SDDS_VERBOSE_PrintErrors);
+  fclose (stream);
+  // printf ("buf = %s", bp);
+  std::string msg(bp,size);
+  free(bp);
+  SDDS_ClearErrors();
+
+  std::stringstream s;
+  s << "SDDS-" << msg
+    << " [" << file << "]";
+  throw pal::SDDSError(s.str());
+}
+
 
 unsigned int SimToolTable::rows() const
 {
@@ -94,7 +113,7 @@ void SimToolTable::init_sdds(const string &filename, std::vector<string> columnK
   
    if ( SDDS_InitializeInput(table_sdds.get(),const_cast<char*>(filename.c_str())) != 1 ) {
      //SDDS_PrintErrors(stdout, SDDS_VERBOSE_PrintErrors);
-     throw SDDSError(filename);
+     throwSDDSError(filename);
    }
    
    sddsFileIsOpen = true;
@@ -103,7 +122,7 @@ void SimToolTable::init_sdds(const string &filename, std::vector<string> columnK
   if( ret == -1 )
     throw SDDSPageError(filename);
   else if (ret == 0)
-    throw SDDSError(filename);
+    throwSDDSError(filename);
 
   //select columns
    if (columnKeys.size() > 0) {
@@ -112,7 +131,7 @@ void SimToolTable::init_sdds(const string &filename, std::vector<string> columnK
       tmp << key << " ";
     SDDS_SetColumnFlags(table_sdds.get(),0); // unselect all columns first
     if( SDDS_SetColumnsOfInterest(table_sdds.get(), SDDS_NAMES_STRING, tmp.str().c_str()) != 1 )
-      throw SDDSError(filename);
+      throwSDDSError(filename);
    }
 
   sdds = true;
@@ -132,11 +151,11 @@ void SimToolTable::nextPage()
   if( ret == -1 )
     throw SDDSPageError(name());
   else if (ret == 0)
-    throw SDDSError(name());
+    throwSDDSError(name());
   
   if (sddsFilter.on) {
     if ( SDDS_FilterRowsOfInterest(table_sdds.get(), sddsFilter.c_column(),sddsFilter.min,sddsFilter.max,SDDS_AND) == -1)
-      throw SDDSError(name());
+      throwSDDSError(name());
   }
 }
 
@@ -151,7 +170,7 @@ void SimToolTable::filterRows(string column, double min, double max)
 
   sddsFilter.set(column,min,max);
   if ( SDDS_FilterRowsOfInterest(table_sdds.get(), sddsFilter.c_column(),sddsFilter.min,sddsFilter.max,SDDS_AND) == -1)
-    throw SDDSError(name());
+    throwSDDSError(name());
 }
 
 bool SimToolInstance::sddsMode() const
@@ -171,10 +190,10 @@ string SimToolTable::getParameter(const string &label)
     throw palatticeError("SimToolTable::getParameter(): Can only be used in SDDS mode. Use SimToolInstamce::readParameter() instead");
 
   auto dataIndex = SDDS_GetParameterIndex(table_sdds.get(), const_cast<char*>(label.c_str()));
-  if (dataIndex == -1) throw SDDSError(name());
+  if (dataIndex == -1) throwSDDSError(name());
   auto dataType = SDDS_GetParameterType(table_sdds.get(), dataIndex);
   void* mem = SDDS_GetParameterByIndex(table_sdds.get(), dataIndex, NULL);
-  if (mem == NULL) throw SDDSError(name());
+  if (mem == NULL) throwSDDSError(name());
 
   stringstream s;
 
@@ -218,7 +237,7 @@ template<>
 string SimToolTable::get_sdds(unsigned int index, string key) const
 {
   auto dataIndex = SDDS_GetColumnIndex(table_sdds.get(), const_cast<char*>(key.c_str()));
-  if (dataIndex == -1) throw SDDSError(name());
+  if (dataIndex == -1) throwSDDSError(name());
   auto dataType = SDDS_GetColumnType(table_sdds.get(), dataIndex);
   void* mem = SDDS_GetValueByIndex(table_sdds.get(), dataIndex, index, NULL);
   if (mem == NULL) {
@@ -266,19 +285,6 @@ string SimToolTable::get_sdds(unsigned int index, string key) const
 }
 
 
-SDDSError::SDDSError(std::string name)
-  : tabname(name)
-{
-  char* bp;
-  size_t size;
-  FILE* stream;
-  stream = open_memstream (&bp, &size);
-  SDDS_PrintErrors(stream,0);
-  fclose (stream);
-  sddsMsg = bp;
-  SDDS_ClearErrors();
-}
-
 //======================================================================================
 #else
 //======================================================================================
@@ -287,11 +293,11 @@ unsigned int SimToolTable::rows() const {return table.begin()->second.size();}
 
 unsigned int SimToolTable::columns() const {return table.size();}
 
-void SimToolTable::init_sdds(const string &filename, vector<string> columnKeys) {} //dummy
+void SimToolTable::init_sdds(const string&, vector<string>) {} //dummy
 
 void SimToolTable::nextPage() {} //dummy
 
-void SimToolTable::filterRows(string column, double min, double max) {} //dummy
+void SimToolTable::filterRows(string, double, double) {} //dummy
 
 bool SimToolInstance::sddsMode() const {return false;}
 
@@ -982,7 +988,7 @@ void EnergyRamp::toFile(const std::string& filename) const
       SDDS_DefineSimpleColumn(tab.get(),"pcentralFactor","",SDDS_DOUBLE) != 1 || 
       SDDS_WriteLayout(tab.get())  != 1)
     {
-      throw SDDSError(filename);
+      throwSDDSError(filename);
     }
   SDDS_StartPage(tab.get(), nSteps+1);
 
@@ -991,14 +997,14 @@ void EnergyRamp::toFile(const std::string& filename) const
 			  "t", t,
 			  "pcentralFactor", ramp(t),
 			  NULL) != 1) {
-      throw SDDSError(filename);
+      throwSDDSError(filename);
     }
     t += dt;
   }
   if (SDDS_WritePage(tab.get()) != 1)
-    throw SDDSError(filename);
+    throwSDDSError(filename);
   if (SDDS_Terminate(tab.get()) != 1)
-    throw SDDSError(filename);
+    throwSDDSError(filename);
   //======================================================================================
 #else
   //======================================================================================

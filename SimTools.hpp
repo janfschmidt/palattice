@@ -273,32 +273,17 @@ namespace pal
   template<> string SimToolTable::getParameter(const string &label);
   template<> string SimToolTable::get_sdds(unsigned int index, string key) const;
 
-  class SDDSError : public std::exception
+  void throwSDDSError(std::string file);
+
+  class SDDSError : public std::runtime_error
   {
-  protected:
-    std::string sddsMsg;
-    const std::string tabname;
   public:
-    SDDSError() : sddsMsg("sorry, message not stored"), tabname("?") {}
-    SDDSError(std::string name);
-    virtual const char* what() const throw()
-    {
-      std::stringstream s;
-      s << "SDDS ERROR in " << tabname << ": " << sddsMsg;
-      return s.str().c_str();
-    }
+    SDDSError(std::string msg) : std::runtime_error(msg) {}
   };
 
   class SDDSPageError : public SDDSError {
   public:
-    SDDSPageError(std::string name) : SDDSError(name) {}
-    virtual const char* what() const throw()
-    {
-      std::stringstream s;
-      s << "End of SDDS file " << tabname << " reached";
-      return s.str().c_str();
-    }
-
+    SDDSPageError(std::string msg) : SDDSError(msg) {}
   };
   
 //======================================================================================
@@ -447,13 +432,13 @@ inline T pal::SimToolInstance::readParameter_sdds(const string &file, const stri
 // always false if LIBPALATTICE_USE_SDDS_TOOLKIT_LIBRARY is not defined.
 
 template<class T>
-inline T pal::SimToolTable::get_sdds(unsigned int index, string key) const {throw sddsDummyCalled();}
+inline T pal::SimToolTable::get_sdds(unsigned int, string) const {throw sddsDummyCalled();}
 
 template<class T>
-inline T pal::SimToolTable::getParameter(const string &label) {throw sddsDummyCalled();}
+inline T pal::SimToolTable::getParameter(const string&) {throw sddsDummyCalled();}
 
 template<class T>
-inline T pal::SimToolInstance::readParameter_sdds(const string &file, const string &label) {throw sddsDummyCalled();}
+inline T pal::SimToolInstance::readParameter_sdds(const string &, const string &) {throw sddsDummyCalled();}
   
 //======================================================================================
 #endif
