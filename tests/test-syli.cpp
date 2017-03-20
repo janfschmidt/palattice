@@ -25,11 +25,11 @@ TEST(SyliTests, syliElement) {
   EXPECT_NEAR(12.4, l.begin(pal::dipole).element()->syli_meanPhotons(2300./0.511), 0.05);
 }
 
-TEST(SyliTests, integralRadius) {
+TEST(SyliTests, avgRadius) {
   pal::SimToolInstance s(pal::elegant, pal::online, TEST_LATTICE_FILE);
   pal::AccLattice l(s);
 
-  EXPECT_NEAR(11, l.integralDipoleRadius(), 0.05);
+  EXPECT_NEAR(11, l.avgDipoleRadius(), 0.05);
 }
 
 

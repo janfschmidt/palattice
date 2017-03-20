@@ -1466,8 +1466,8 @@ double AccLattice::overvoltageFactor(const double& gamma) const {
 }
 
 
-// integral over bending radius around ring: R^exponent ds
-double AccLattice::integralDipoleRadius(int exponent) const
+// average bending radius around ring: integral R^exponent ds / total-dipole-length
+double AccLattice::avgDipoleRadius(int exponent) const
 {
   double sum = 0;
   double totalLength = 0;

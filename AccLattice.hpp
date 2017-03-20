@@ -144,7 +144,7 @@ public:
   //additional Physical Quantities
   double Erev_keV_syli(const double& gamma) const;     // energy loss per turn in keV for electron beam with energy given by gamma
   double overvoltageFactor(const double& gamma) const; // overvoltage factor q, from total voltage of all cavities
-  double integralDipoleRadius(int exponent=1) const;   // integral over bending radius around ring: R^exponent ds
+  double avgDipoleRadius(int exponent=1) const;        // average bending radius around ring: integral R^exponent ds / total-dipole-length
   unsigned int harmonicNumber() const;                 // harmonic number h, from cavity frequency and circumference
   
   // output & export (stdout or file)
