@@ -1,5 +1,5 @@
 #palattice
-#### a C++ particle accelerator lattice library
+**a C++ particle accelerator lattice library**
 	 
 *Copyright (C) 2016 Jan Felix Schmidt <janschmidt@mailbox.org>, GNU General Public License*
 ********************************************************************
@@ -20,16 +20,16 @@ for automatic lattice format conversion between Elegant and Mad-X.
 Please report bugs and do not hesitate to contact me if you have any questions.
 
 
-##Quick-Info
+## Installation TL;DR
 
-####Dependencies:
+#### Dependencies:
 
 - CMake
 - Gnu Scientific Library (GSL)
 - SDDSToolKit-devel (optional, see "Requirements: libSDDS1" below)
 - zlib Compression Library (needed by SDDSToolKit-devel)
 
-####Installation:
+#### Installation:
 
 ```
  cd palattice/build
@@ -38,7 +38,7 @@ Please report bugs and do not hesitate to contact me if you have any questions.
  sudo make install
 ```
 
-####Compile example programs (API explanations in source files):
+#### Compile example programs (API explanations in source files):
 
 ```
  cd palattice/programs/build
@@ -46,7 +46,7 @@ Please report bugs and do not hesitate to contact me if you have any questions.
  make
 ```
 
-####Link your code to libpalattice:
+#### Link your code to libpalattice:
 
 ```
  -lpalattice -lz -lgsl -lgslcblas
@@ -55,7 +55,7 @@ Please report bugs and do not hesitate to contact me if you have any questions.
 
 
 
-##Detailed Installation Guide
+## Detailed Installation Guide
 
 1. CMake is used to configure the project for your system and generate the build files.
    Go to subdirectory build/ and run CMake by the command:
@@ -85,7 +85,7 @@ Please report bugs and do not hesitate to contact me if you have any questions.
    The binaries are now located in `palattice/build/programs/src/programs-build/`.
 
 
-####Remark: Operating Systems
+#### Remark: Operating Systems
 
 So far, palattice has been used under Linux only (mainly Ubuntu & Debian).
 Please tell me about tests with other platforms.
@@ -93,7 +93,7 @@ One issue will be configuring Mad-X/Elegant from C++, which currently
 uses the program `sed` (see "automatic execution of Mad-X/Elegant"
 and "TODOs" below).
 
-####If you used older versions of libpalattice (< 3.2.3) before:
+#### If you used older versions of libpalattice (< 3.2.3) before:
 
 It is recommended to delete the existing `libpal.ele`/`libpal.madx`
 files in your projects to avoid confusion, because the library ignores the
@@ -106,7 +106,7 @@ please first uninstall this by execution of the `uninstall.sh` script from
 your convertlattice directory.
 
 
-####Update
+#### Update
 
 To get updated versions of the code just go to palattice directory
 and type: `git pull`
@@ -116,7 +116,7 @@ build/ subdirectory again and typing:
 
 
 
-####Uninstall
+#### Uninstall
 
 To remove all library files from the installation path (default /usr/local)
 go to palattice/build directory and type
@@ -129,7 +129,7 @@ To delete all source files just delete the palattice directory.
 
 
 
-##Recommended: libSDDS1
+## Recommended: libSDDS1
 
 From version 3.7.2, libpalattice can read SDDS binary files directly, which
 are the default output of Elegant. This requires libSDDS1 by the
@@ -153,7 +153,7 @@ try deleting `libpalattice/build/CMakeCache.txt` and then run `cmake ..` again.
 
 
 
-##Requirements for automatic execution of Mad-X/Elegant by palattice
+## Requirements for automatic execution of Mad-X/Elegant by palattice
 
 The commands to run Mad-X and Elegant can be set in `palattice/config.hpp`.
 Default values are:
@@ -164,7 +164,7 @@ Default values are:
 
 
 
-##Comment on automatic execution of Mad-X/Elegant by palattice
+## Comment on automatic execution of Mad-X/Elegant by palattice
 
 To allow for automatic execution of Mad-X/Elegant, the library:
 
@@ -193,7 +193,7 @@ quick-and-dirty so far (using `sed`...) and works only if `sed` is available!
 
 
 
-##Documentation of palattice API
+## Documentation of palattice API
 
 Unfortunately there is no dedicated documentation yet.
 If you have some time left over please send it to me...
@@ -212,7 +212,7 @@ Please do not hesitate to contact me if you have any further questions.
 
 
 
-##TODOs
+## TODOs
 
 - replace quick-and-dirty implementation of configuring Mad-X/Elegant
   (replace system calls to `sed` by writing config files from c++)
