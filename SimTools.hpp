@@ -210,7 +210,7 @@ namespace pal
     // replace option values in the runFile.
     // Please ensure the option is present in the file and is not commented out.
     // there is NO ERROR if the option is not found!
-    void setTurns(unsigned int t);  // if turns!=0 (default) single particle tracking is performed while madx/elegant run
+    void setTurns(unsigned int t);  // if turns!=0 (0 is default) single particle tracking is performed while madx/elegant run
     void setNumParticles(unsigned int n);
     void setMomentum_MeV(double p_MeV);
     void setMomentum_betagamma(double p);

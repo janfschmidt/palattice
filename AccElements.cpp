@@ -97,7 +97,7 @@ string pal::type_string(element_type type, SimTool t)
   case rcollimator:
     return pal::simToolConditional("RCOLLIMATOR","RCOL",t);
   case solenoid:
-    return pal::simToolConditional("SOLENOID","",t);
+    return pal::simToolConditional("SOLENOID","SOLE",t);
   case drift:
     return pal::simToolConditional("DRIFT","DRIF",t);
   }
