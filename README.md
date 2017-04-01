@@ -1,4 +1,5 @@
-#palattice
+# palattice
+
 **a C++ particle accelerator lattice library**
 	 
 *Copyright (C) 2016 Jan Felix Schmidt <janschmidt@mailbox.org>, GNU General Public License*
@@ -106,16 +107,6 @@ please first uninstall this by execution of the `uninstall.sh` script from
 your convertlattice directory.
 
 
-#### Update
-
-To get updated versions of the code just go to palattice directory
-and type: `git pull`
-If there are any changes compile and install them by going to the
-build/ subdirectory again and typing:
-`make`, `sudo make install`
-
-
-
 #### Uninstall
 
 To remove all library files from the installation path (default /usr/local)
@@ -134,8 +125,8 @@ To delete all source files just delete the palattice directory.
 From version 3.7.2, libpalattice can read SDDS binary files directly, which
 are the default output of Elegant. This requires libSDDS1 by the
 SDDS/Elegant developers from Argonne National Lab.
-A package called `SDDSToolKit-devel` can be [downloaded](www.aps.anl.gov/Accelerator_Systems_Division/Accelerator_Operations_Physics/software.shtml).
-If you have any questions about it, I recommend asking in the [Elegant forum](www.aps.anl.gov/Accelerator_Systems_Division/Accelerator_Operations_Physics/phpBB3/)
+A package called `SDDSToolKit-devel` can be [downloaded](http://www.aps.anl.gov/Accelerator_Systems_Division/Accelerator_Operations_Physics/software.shtml).
+If you have any questions about it, I recommend asking in the [Elegant forum](http://www.aps.anl.gov/Accelerator_Systems_Division/Accelerator_Operations_Physics/phpBB3/)
 
 cmake automatically detects, if libSDDS1 is installed on your system and deactivates
 the SDDS support otherwise, so that you can still use libpalattice.
@@ -199,9 +190,9 @@ Unfortunately there is no dedicated documentation yet.
 If you have some time left over please send it to me...
 
 A good start are the example programs in `palattice/programs`:
-- `lattice` for `pal::AccLattice` class
-- `interptwiss` & `fields` for `pal::FunctionOfPos<T>` class
-The `.cpp` files have many comments and show the basic usage of the classes.
+- `lattice.cpp` for `pal::AccLattice` class
+- `interptwiss.cpp` & `fields.cpp` for `pal::FunctionOfPos<T>` class
+The source files have many comments and show the basic usage of the classes.
 
 For the full API I can only refer to the header files (`.hpp`) in `palattice/`,
 where nearly all classes and methods are described by short comments.
