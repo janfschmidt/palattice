@@ -111,12 +111,13 @@ public:
   AccTriple B_rf(unsigned int turn) const {return B() * rfFactor(turn);}
   AccTriple B_rf(unsigned int turn, const AccPair &orbit) const {return B(orbit) * rfFactor(turn);}
 
-  // get magnetic field kick angle
-  AccTriple kick_mrad() const {return B() * 1000 * length;}
-  AccTriple kick_mrad(const AccPair &orbit) const {return B(orbit) * 1000 * length;}
-  // set magnetic field by kick angle (1/R from kick angle, straight length l)
-  void hkick_mrad(double kick) {k0.z = std::sin(kick) / length;}
-  void vkick_mrad(double kick) {k0.x = std::sin(kick) / length;}
+  // get kick angles from magnetic field (B.x -> kick.z, B.z -> -kick.x, kick.s=0)
+  AccTriple kick_rad() const;
+  AccTriple kick_rad(const AccPair &orbit) const;
+  
+  // set homogeneous magnetic field by kick angle (1/R from kick angle, straight length l)
+  void setHkick_rad(double hkick) {k0.z = - std::sin(hkick) / length;}  // kick.x -> -B.z
+  void setVkick_rad(double vkick) {k0.x = std::sin(vkick) / length;}    // kick.z -> B.x
 
   // synchrotron radiation
   //critical photon energy (in 3 units) at electron beam energy given as gamma:

@@ -304,6 +304,22 @@ bool AccElement::operator!=(const AccElement &o) const
 }
 
 
+// get kick angles from magnetic field
+AccTriple AccElement::kick_rad() const
+{
+  AccTriple alpha;
+  alpha.z = std::asin( B().x * length );
+  alpha.x = - std::asin( B().z * length );
+  return alpha;
+}
+AccTriple AccElement::kick_rad(const AccPair &orbit) const
+{
+  AccTriple alpha;
+  alpha.z = std::asin( B(orbit).x * length );
+  alpha.x = - std::asin( B(orbit).z * length );
+  return alpha;
+}
+  
 
 
 
@@ -579,21 +595,20 @@ string Dipole::printSimTool(SimTool t) const
 
 string Corrector::printSimTool(SimTool t) const
 {
+  auto kick=kick_rad();
+
   stringstream s;
-  double kick=0.;
- 
+  // name & type
   s << name << " : ";
   if (plane == V) {
-    if (k0.z!=0. || k0.s!=0.) 
-      std::cout << "WARNING: " << name << " nonzero vertical or longitudinal field is not exported (plane=V)!" << std::endl;
+    if (kick.x!=0. || kick.s!=0.) 
+      std::cout << "WARNING: " << name << " nonzero horizontal or longitudinal kick is not exported (plane=V)!" << std::endl;
     s << "V" << type_string(t); 
-    kick = k0.x; // plane==V => vertical kick => horizontal field!
   }
   else if (plane == H) {
-    if (k0.x!=0. || k0.s!=0.) 
-      std::cout << "WARNING: " << name << " nonzero horizontal or longitudinal field is not exported (plane=H)!" << std::endl;
+    if (kick.z!=0. || kick.s!=0.) 
+      std::cout << "WARNING: " << name << " nonzero vertical or longitudinal field is not exported (plane=H)!" << std::endl;
     s << "H"<< type_string(t);
-    kick = k0.z; // plane==H => horizontal kick => vertical field!
   }
   else { //noplane
     s << "KICKER";
@@ -601,11 +616,13 @@ string Corrector::printSimTool(SimTool t) const
 
   s << ", L="<< length <<", ";
 
-  if (plane == noplane)
-    s << "VKICK="<< asin(k0.x*length) <<", HKICK="<< asin(k0.z*length);
+  // kick
+  if (plane == V)
+    s << "KICK="<< kick.z;
+  else if (plane == H)
+    s << "KICK="<< kick.x;
   else
-    s << "KICK="<< asin(kick*length);
-
+    s << "VKICK="<< kick.z <<", HKICK="<< kick.x;
   
   s << printTilt(t) <<";"<< rfMagComment() << endl;
   return s.str();

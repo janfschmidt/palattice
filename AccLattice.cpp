@@ -522,8 +522,8 @@ void AccLattice::madximport(SimToolInstance &madx)
     // }
 
     if (angle!=0.) element->k0.z += angle / l; // 1/R from bending angle, curved length l
-    if (hkick!=0. && element->plane!=V)  element->k0.z += sin(hkick) / l; // 1/R from kick angle, straight length l
-    if (vkick!=0. && element->plane!=H)  element->k0.x += sin(vkick) / l;
+    if (hkick!=0. && element->plane!=V)  element->setHkick_rad(hkick); // 1/R from kick angle, straight length l
+    if (vkick!=0. && element->plane!=H)  element->setVkick_rad(vkick);
     element->e1 = twi.getd(i,"E1");
     element->e2 = twi.getd(i,"E2");
     if (twi.gets(i,"APERTYPE")=="\"RECTANGLE\"") {
@@ -701,17 +701,17 @@ void AccLattice::elegantimport_mount(const double& s, paramRow& row_old, const p
      else if (row_old.type=="VKICK") {
        element = new Corrector(row_old.name, l, V);
        double kick = params.at("KICK");
-       if (kick!=0.)  element->k0.x += sin(kick) / l; // 1/R from kick angle, straight length l
+       if (kick!=0.)  element->setVkick_rad(kick); // 1/R from kick angle, straight length l
      }
      else if (row_old.type=="HKICK") {
        element = new Corrector(row_old.name, l, H);
        double kick = params.at("KICK");
-       if (kick!=0.)  element->k0.z += sin(kick) / l;
+       if (kick!=0.)  element->setHkick_rad(kick);
      }
      else if (row_old.type=="KICKER") {
        element = new Corrector(row_old.name, l);
-       element->k0.x += sin(params.at("VKICK")) / l;
-       element->k0.z += sin(params.at("HKICK")) / l;
+       element->setVkick_rad(params.at("VKICK"));
+       element->setHkick_rad(params.at("HKICK"));
      }
      else if (row_old.type=="RFCA") {
        element = new Cavity(row_old.name, l);
