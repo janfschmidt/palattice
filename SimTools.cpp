@@ -340,7 +340,8 @@ template<> AccTriple SimToolTable::get(unsigned int i, string keyX, string keyZ,
 SimToolInstance::SimToolInstance(SimTool toolIn, SimToolMode modeIn, string fileIn, string fileTag)
   : executed(false), trackingTurns(0), trackingNumParticles(1), trackingMomentum(0.), trackingMomentum_MeV(0.),
     trackingBeamline(""), trackingNumParticlesTouched(false),
-    tag(fileTag), defaultRunFile(true), rampFile("ramp.sdds"), tool(toolIn), mode(modeIn), verbose(false)
+    tag(fileTag), defaultRunFile(true), rampFile("ramp.sdds"), eleCmd(ELEGANTCOMMAND), madCmd(MADXCOMMAND),
+    tool(toolIn), mode(modeIn), verbose(false)
 {
   
   //path: path of fileIn
@@ -489,11 +490,11 @@ void SimToolInstance::run()
     cmd << "cd "<<path()<<"; echo \"\" > madx.observe";
     system_throwing(cmd.str());
     // ---
-    runcmd << MADXCOMMAND << " < ";
+    runcmd << madCmd << " < ";
     cout << "Run MadX 1...";
   }
   else {
-    runcmd << ELEGANTCOMMAND << " ";
+    runcmd << eleCmd << " ";
     cout << "Run Elegant...";
   }
   runcmd << runFile;
@@ -780,7 +781,7 @@ string SimToolInstance::readParameter(const string &file, const string &label)
       string::size_type newStart = val.find_first_not_of(" ");
       if (newStart != string::npos)
 	val = val.substr(newStart);
-	return val;
+      return val;
     }
     else if ((tool==madx && tmp=="*") || (tool==elegant && tmp=="***"))
       break;
