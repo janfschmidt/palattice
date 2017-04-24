@@ -178,7 +178,10 @@ namespace pal
     string file;     //mode=online: latticeInput, mode=offline: SimTool Output
     string runFile;
     bool defaultRunFile;
+    
     const std::string rampFile;
+    std::string eleCmd, madCmd;
+    
     string outCases(string madxExt, string eleExt) const {if(tool==madx) return outFile(madxExt); else if(tool==elegant) return outFile(eleExt); return "";}
     void replaceInFile(string variable, string value, string delim, string file);
     void replaceTagInFile(string name, string extension, string newTag, string file);
@@ -218,6 +221,8 @@ namespace pal
     
     void setRunFile(string file) {runFile = file; defaultRunFile=false;} //path relative to fileIn (constructor)
     void setPreferedFileFormat(SimToolFileFormat f) {preferedFormat = f; executed = false;}
+    void setElegantCommand(std::string cmd) {eleCmd = cmd;}
+    void setMadxCommand(std::string cmd) {madCmd = cmd;}
 
     // configure elegant energy ramp (as factor of configured Momentum)
     // is activated automatically in runFile if set with EnergyRamp::set()
