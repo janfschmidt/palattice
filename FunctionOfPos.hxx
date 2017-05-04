@@ -337,19 +337,70 @@ void FunctionOfPos<T>::operator-=(const FunctionOfPos<T> &other)
   this->info.addStatistics(mean(),stddev());
 }
 
+
+
 template <class T>
 void FunctionOfPos<T>::operator+=(const T &value)
 {
   for(auto &it : this->data)
-    it->second += value;
+    it.second += value;
 }
 
 template <class T>
 void FunctionOfPos<T>::operator-=(const T &value)
 {
   for(auto &it : this->data)
-    it->second -= value;
+    it.second -= value;
 }
+
+template <class T>
+void FunctionOfPos<T>::operator*=(const T &value)
+{
+  for(auto &it : this->data)
+    it.second *= value;
+}
+
+template <class T>
+void FunctionOfPos<T>::operator/=(const T &value)
+{
+  for(auto &it : this->data)
+    it.second /= value;
+}
+
+
+template <class T>
+FunctionOfPos<T> FunctionOfPos<T>::operator+(const T &value) const
+{
+  auto fop = *this;
+  fop += value;
+  return fop;
+}
+
+template <class T>
+FunctionOfPos<T> FunctionOfPos<T>::operator-(const T &value) const
+{
+  auto fop = *this;
+  fop -= value;
+  return fop;
+}
+
+template <class T>
+FunctionOfPos<T> FunctionOfPos<T>::operator*(const T &value) const
+{
+  auto fop = *this;
+  fop *= value;
+  return fop;
+}
+
+template <class T>
+FunctionOfPos<T> FunctionOfPos<T>::operator/(const T &value) const
+{
+  auto fop = *this;
+  fop /= value;
+  return fop;
+}
+
+
 
 // construct Spectrum (FFT) from this FunctionOfPos
 // uses getVector() to generate 1D input data

@@ -125,6 +125,13 @@ public:
   // constant value
   void operator+=(const T &value);
   void operator-=(const T &value);
+  void operator*=(const T &value);
+  void operator/=(const T &value);
+  FunctionOfPos<T> operator+(const T &value) const;
+  FunctionOfPos<T> operator-(const T &value) const;
+  FunctionOfPos<T> operator*(const T &value) const;
+  FunctionOfPos<T> operator/(const T &value) const;
+
 
   // construct Spectrum (FFT) from this FunctionOfPos (for 1D values, chosen by axis).
   // axis is ignored for 1D data (int or double)
