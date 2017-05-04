@@ -6,7 +6,7 @@ set(CMAKE_BUILD_TYPE Release)
 
 # Project Version
 set(LIB_VERSION_MAJOR 3.9)
-set(LIB_VERSION_MINOR 2)
+set(LIB_VERSION_MINOR 3)
 set(LIB_VERSION ${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR})
 
 # Install Path
