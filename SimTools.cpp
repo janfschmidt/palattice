@@ -538,25 +538,47 @@ void SimToolInstance::writeTurnsToRunFile(unsigned int t)
 // set tracking number of particles in runFile:
 void SimToolInstance::writeParticlesToRunFile()
 {
-  if (trackingNumParticlesTouched) {
-    std::stringstream tmp;
-    tmp << trackingNumParticles;
+  if (!trackingNumParticlesTouched)
+    return;
+  
+  std::stringstream tmp;
+  tmp << trackingNumParticles;
+  if (tool==elegant)
     replaceInFile("n_particles_per_bunch", tmp.str(), ",", runFile);
-  }
+  else if (tool==madx)
+    std::cout << "WARNING: set number of particles not implemented for madx. Please set manually in " << runFile << std::endl;
 }
 
 // set tracking momentum in runFile:
 void SimToolInstance::writeMomentumToRunFile()
 {
-  if (trackingMomentum!=0. || trackingMomentum_MeV!=0.) {
+  if (trackingMomentum==0. && trackingMomentum_MeV==0.)
+    return;
+  
+  if (tool==elegant) {
     replaceInFile("p_central", std::to_string(trackingMomentum), ",", runFile);
     if (trackingMomentum == 0.)
       replaceInFile("p_central_mev", std::to_string(trackingMomentum_MeV), ",", runFile);
     else
       replaceInFile("p_central_mev", "0", ",", runFile);
   }
+  else if (tool==madx) {
+    std::cout << "WARNING: set momentum not implemented for madx. Please set manually in " << runFile << std::endl;
+  }
 }
 
+void SimToolInstance::writeBeamlineToRunFile()
+{
+  if (trackingBeamline.empty())
+    return;
+    
+  if (tool==elegant) {
+    replaceInFile("use_beamline", trackingBeamline, ",", runFile);
+  }
+  else if (tool==madx) {
+    std::cout << "WARNING: set beamline not implemented for madx." << std::endl;
+  }
+}
 
 // write current configuration to runfile
 void SimToolInstance::writeToRunFile()
@@ -577,10 +599,7 @@ void SimToolInstance::writeToRunFile()
   
   writeMomentumToRunFile();
 
-  // set tracking elegant beamline:
-  if (!trackingBeamline.empty()) {
-    replaceInFile("use_beamline", trackingBeamline, ",", runFile);
-  }
+  writeBeamlineToRunFile();
 
   // set elegant energy ramp:
   if (tool==elegant) {
@@ -957,12 +976,7 @@ void SimToolInstance::setTurns(unsigned int t)
 
 void SimToolInstance::setNumParticles(unsigned int n)
 {
-  if (n!=trackingNumParticles) {
-    
-    //currently only implemented for elegant
-    if (tool==madx)
-      std::cout << "WARNING: set number of particles not implemented for madx. Please set manually in " << runFile << std::endl;
-    
+  if (n!=trackingNumParticles) {    
     trackingNumParticles=n;
     executed=false;
   }
@@ -973,11 +987,6 @@ void SimToolInstance::setNumParticles(unsigned int n)
 void SimToolInstance::setMomentum_MeV(double p_MeV)
 {
   if (p_MeV!=trackingMomentum_MeV) {
-    
-    //currently only implemented for elegant
-    if (tool==madx)
-      std::cout << "WARNING: set momentum not implemented for madx. Please set manually in " << runFile << std::endl;
-    
     trackingMomentum_MeV=p_MeV;
     executed=false;
   }
@@ -985,12 +994,7 @@ void SimToolInstance::setMomentum_MeV(double p_MeV)
 
 void SimToolInstance::setMomentum_betagamma(double p)
 {
-  if (p!=trackingMomentum) {
-    
-    //currently only implemented for elegant
-    if (tool==madx)
-      std::cout << "WARNING: set momentum not implemented for madx. Please set manually in " << runFile << std::endl;
-    
+  if (p!=trackingMomentum) {    
     trackingMomentum=p;
     executed=false;
   }
@@ -998,12 +1002,7 @@ void SimToolInstance::setMomentum_betagamma(double p)
 
 void SimToolInstance::setElegantBeamline(const string& bl)
 {
-  if (!bl.empty()) {
-    
-    //currently only implemented for elegant
-    if (tool==madx)
-      std::cout << "WARNING: set beamline not implemented for madx." << std::endl;
-    
+  if (!bl.empty()) {    
     trackingBeamline=bl;
     executed=false;
   }

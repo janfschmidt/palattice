@@ -195,6 +195,7 @@ namespace pal
     void writeTurnsToRunFile(unsigned int t);
     void writeParticlesToRunFile();
     void writeMomentumToRunFile();
+    void writeBeamlineToRunFile();
     void writeToRunFile();
     void writeMadxObserve();
     void clearMadxObserve();
