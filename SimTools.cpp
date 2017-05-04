@@ -464,84 +464,41 @@ void SimToolInstance::switchRampInFile(bool ramp, string file)
 
 // run madx/elegant (online mode only)
 // single particle tracking is only done if trackingTurns!=0
-//  (elegant does this automatically, for madx it is handled below)
 void SimToolInstance::run()
 {
   if (mode==offline)
     throw palatticeError("You cannot run "+tool_string()+" from a SimToolInstance in offline mode.");
 
-  if (executed) return; // only run madx/elegant once
+  // only run madx/elegant once
+  if (executed)
+    return;
 
-  stringstream cmd, runcmd, tmp;
-
- // copy madx/elegant file (if not existing)
+ // copy madx/elegant runfile (if not existing)
   if (defaultRunFile) {
+    stringstream cmd;
     cmd << "cp -n "<< pal::simToolPath() << "/" << runFile << " " << path();
     system_throwing(cmd.str());
   }
 
-  writeConfigToRunFile();    
+  // write current configuration to runfile
+  writeToRunFile();
   
   //run madx/elegant:
-  runcmd << "cd "<< path() << "; ";
-  if (tool== madx) {
-    //avoid fatal error "cannot open input file: madx.observe"
-    cmd.str(std::string());
-    cmd << "cd "<<path()<<"; echo \"\" > madx.observe";
-    system_throwing(cmd.str());
-    // ---
-    runcmd << madCmd << " < ";
-    cout << "Run MadX 1...";
+  if (tool==madx && trackingTurns!=0) {       // special case: single particle tracking with madx
+    clearMadxObserve();                       // avoid madx error "cannot open input file: madx.observe"
+    writeTurnsToRunFile(0);                   // no tracking
+    executeSimTool("for observation points"); // first run to create twiss with MONITOR positions
+    writeMadxObserve();                       // write "ptc_observe" command for each MONITOR
+    writeTurnsToRunFile(trackingTurns);       // activate tracking
+    executeSimTool("for tracking");           // second run for tracking
   }
   else {
-    runcmd << eleCmd << " ";
-    cout << "Run Elegant...";
-  }
-  runcmd << runFile;
-  if (this->verbose)
-    runcmd << " | tee " <<tool_string()<< ".log";
-  else
-    runcmd << " > " <<tool_string()<< ".log";
-  cout << " (log: " << log() << ")" << endl;
-  try {
-    system_throwing(runcmd.str());
-  } catch (std::system_error& e) {
-    stringstream msg;
-    msg << tool_string() << " Error! (return code "<<e.code()<<", see " << log() <<")";
-    throw palatticeError(msg.str());
+    executeSimTool();
   }
 
   //elegant without sdds: run shell script for sdds to ascii conversion
   if ( !sddsMode() && tool==elegant ) {
-    tmp.str(std::string());
-    tmp << "cd "<<path()<<"; elegant2libpalattice ";
-    if (tag=="") tmp << "none";
-    else tmp << tag;
-    tmp << " libpalattice ";
-    if (trackingTurns !=0)
-      tmp << "watchfiles";
-    else
-      tmp << "NO";
-    system_throwing(tmp.str());
-  }
-
-  //MadX: additional commands to set tracking observation points at each BPM (element name including BPM)
-  cmd.str(std::string());
-  if (tool== madx && trackingTurns!=0) {
-    //write BPMs as observation points to madx.observe
-    cmd << "cd "<< path() << "; "
-	<< "grep BPM " << lattice() << " | awk '{gsub(\"\\\"\",\"\",$2); print \"ptc_observe, place=\"$2\";\"}' > " 
-	<< "madx.observe";
-    system_throwing(cmd.str());
-    
-    // 2. madx run -> using madx.observe
-    cout << "Run MadX 2... (log: " << log() << ")" << endl;
-    int ret = system(runcmd.str().c_str());
-    if (ret != 0) {
-      stringstream msg;
-      msg << tool_string() << " Error! (see " << log() <<")";
-      throw palatticeError(msg.str());
-    }
+    sdds2ascii();
   }
 
   executed = true;
@@ -556,18 +513,55 @@ void SimToolInstance::forceRun()
 }
 
 
-
-void SimToolInstance::writeConfigToRunFile()
+// set lattice filename in runFile:
+void SimToolInstance::writeLatticeToRunFile()
 {
   std::stringstream tmp;
-  
-  // set lattice filename in runFile:
-  tmp.str(std::string());
   tmp << "\""<<file<<"\"";
   if (tool== madx)
     replaceInFile("call, file", tmp.str(), ";", runFile);
   else if (tool== elegant)
     replaceInFile("lattice", tmp.str(), ",", runFile);
+}
+
+// set tracking turns in runFile:
+void SimToolInstance::writeTurnsToRunFile(unsigned int t)
+{
+  std::stringstream tmp;
+  tmp << t;
+  if (tool== madx)
+    replaceInFile("turns", tmp.str(), ",", runFile);
+  else if (tool== elegant)
+    replaceInFile("n_passes", tmp.str(), ",", runFile);
+}
+
+// set tracking number of particles in runFile:
+void SimToolInstance::writeParticlesToRunFile()
+{
+  if (trackingNumParticlesTouched) {
+    std::stringstream tmp;
+    tmp << trackingNumParticles;
+    replaceInFile("n_particles_per_bunch", tmp.str(), ",", runFile);
+  }
+}
+
+// set tracking momentum in runFile:
+void SimToolInstance::writeMomentumToRunFile()
+{
+  if (trackingMomentum!=0. || trackingMomentum_MeV!=0.) {
+    replaceInFile("p_central", std::to_string(trackingMomentum), ",", runFile);
+    if (trackingMomentum == 0.)
+      replaceInFile("p_central_mev", std::to_string(trackingMomentum_MeV), ",", runFile);
+    else
+      replaceInFile("p_central_mev", "0", ",", runFile);
+  }
+}
+
+
+// write current configuration to runfile
+void SimToolInstance::writeToRunFile()
+{
+  writeLatticeToRunFile();
 
   // set output file tag in madx runFile:
   if (tool== madx) {
@@ -576,30 +570,12 @@ void SimToolInstance::writeConfigToRunFile()
     replaceTagInFile("madx", "quadealign", tag, runFile); // quadealign file
     replaceInFile("ptc_track, file", filebase(), ",", runFile);        // "obs" files
   }
-
-  // set tracking turns in runFile:
-    tmp.str(std::string());
-    tmp << trackingTurns;
-    if (tool== madx)
-      replaceInFile("turns", tmp.str(), ",", runFile);
-    else if (tool== elegant)
-      replaceInFile("n_passes", tmp.str(), ",", runFile);
-
-  // set tracking number of particles in runFile:
-  if (trackingNumParticlesTouched) {
-    tmp.str(std::string());
-    tmp << trackingNumParticles;
-    replaceInFile("n_particles_per_bunch", tmp.str(), ",", runFile);
-  }
-
-  // set tracking momentum in runFile:
-  if (trackingMomentum!=0. || trackingMomentum_MeV!=0.) {
-    replaceInFile("p_central", std::to_string(trackingMomentum), ",", runFile);
-    if (trackingMomentum == 0.)
-      replaceInFile("p_central_mev", std::to_string(trackingMomentum_MeV), ",", runFile);
-    else
-      replaceInFile("p_central_mev", "0", ",", runFile);
-  }
+  
+  writeTurnsToRunFile(trackingTurns);
+  
+  writeParticlesToRunFile();
+  
+  writeMomentumToRunFile();
 
   // set tracking elegant beamline:
   if (!trackingBeamline.empty()) {
@@ -615,6 +591,72 @@ void SimToolInstance::writeConfigToRunFile()
     else
       switchRampInFile(false, runFile);
   }
+}
+
+
+//MadX: additional commands to set tracking observation points at each MONITOR
+void SimToolInstance::writeMadxObserve()
+{
+  std::stringstream cmd;
+  //write BPMs as observation points to madx.observe
+  cmd << "grep MONITOR " << lattice() << " | awk '{gsub(\"\\\"\",\"\",$2); print \"ptc_observe, place=\"$2\";\"}' > " 
+      << path() << "/madx.observe";
+  system_throwing(cmd.str());
+}
+
+void SimToolInstance::clearMadxObserve()
+{
+  std::stringstream cmd;
+  cmd << "echo \"\" > "<<path()<<"/madx.observe";
+  system_throwing(cmd.str());
+}
+
+
+void SimToolInstance::executeSimTool(std::string reason)
+{
+  std::stringstream runcmd;
+  runcmd << "cd "<< path() << "; ";
+  if (tool== madx) {
+    runcmd << madCmd << " < ";
+  }
+  else {
+    runcmd << eleCmd << " ";
+  }
+  runcmd << runFile;
+  cout << "Run "<<tool_string()<<" "<< reason <<"... (log: " << log() << ")" << endl;
+  if (this->verbose) {
+    runcmd << " | tee ";
+  }
+  else {
+    runcmd << " > ";
+  }
+  runcmd <<tool_string()<< ".log";
+
+  try {
+    system_throwing(runcmd.str());
+  }
+  catch (std::system_error& e) {
+    stringstream msg;
+    msg << tool_string() << " Error! (return code "<<e.code()<<", see " << log() <<")";
+    throw palatticeError(msg.str());
+  }
+}
+
+
+//elegant without sdds: run shell script for sdds to ascii conversion
+void SimToolInstance::sdds2ascii()
+{
+  std::stringstream tmp;
+  tmp << "cd "<<path()<<"; elegant2libpalattice ";
+  if (tag=="") tmp << "none";
+  else tmp << tag;
+  tmp << " libpalattice ";
+  if (trackingTurns !=0)
+    tmp << "watchfiles";
+  else
+    tmp << "NO";
+  
+  system_throwing(tmp.str());
 }
 
 

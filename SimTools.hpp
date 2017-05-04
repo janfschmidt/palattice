@@ -189,7 +189,17 @@ namespace pal
 
     template<class T> T readParameter_sdds(const string &file, const string &label);
     std::string stripExtension(std::string f) const;
-    void writeConfigToRunFile();
+
+  private:
+    void writeLatticeToRunFile();
+    void writeTurnsToRunFile(unsigned int t);
+    void writeParticlesToRunFile();
+    void writeMomentumToRunFile();
+    void writeToRunFile();
+    void writeMadxObserve();
+    void clearMadxObserve();
+    void executeSimTool(std::string reason="");
+    void sdds2ascii();
 
   public:
     const SimTool tool;
