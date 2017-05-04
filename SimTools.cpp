@@ -563,7 +563,10 @@ void SimToolInstance::writeMomentumToRunFile()
       replaceInFile("p_central_mev", "0", ",", runFile);
   }
   else if (tool==madx) {
-    std::cout << "WARNING: set momentum not implemented for madx. Please set manually in " << runFile << std::endl;
+    if (trackingMomentum != 0.) {
+      std::cout << "WARNING: set momentum as beta*gamma not implemented for madx. Use SimToolInstance::setMomentum_MeV() instead." << std::endl;
+    }
+    replaceInFile("PC", std::to_string(trackingMomentum_MeV/1000.), ";", runFile);
   }
 }
 
